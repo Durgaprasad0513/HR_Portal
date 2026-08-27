@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import MainLayout from '@/components/layout/MainLayout';
@@ -26,6 +27,16 @@ import LeaveApplicationPage from '@/pages/leave/LeaveApplicationPage';
 import LeaveHistoryPage from '@/pages/leave/LeaveHistoryPage';
 import LeaveApprovalsPage from '@/pages/leave/LeaveApprovalsPage';
 
+// New Modules
+import TravelListPage from '@/pages/travel/TravelListPage';
+import AssetListPage from '@/pages/assets/AssetListPage';
+import RecruitmentPage from '@/pages/recruitment/RecruitmentPage';
+import PerformanceListPage from '@/pages/performance/PerformanceListPage';
+import TrainingListPage from '@/pages/training/TrainingListPage';
+import RequestListPage from '@/pages/requests/RequestListPage';
+import PolicyListPage from '@/pages/policies/PolicyListPage';
+import NotificationListPage from '@/pages/notifications/NotificationListPage';
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -52,6 +63,19 @@ const AppRoutes = () => {
           <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR', 'MANAGER']} />}>
             <Route path="/leaves/approvals" element={<LeaveApprovalsPage />} />
           </Route>
+
+          {/* New Module Routes */}
+          <Route path="/travel" element={<TravelListPage />} />
+          <Route path="/assets" element={<AssetListPage />} />
+          <Route path="/performance" element={<PerformanceListPage />} />
+          <Route path="/training" element={<TrainingListPage />} />
+          <Route path="/requests" element={<RequestListPage />} />
+          <Route path="/policies" element={<PolicyListPage />} />
+          <Route path="/notifications" element={<NotificationListPage />} />
+
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR']} />}>
+            <Route path="/recruitment" element={<RecruitmentPage />} />
+          </Route>
         </Route>
       </Route>
     </Routes>
@@ -59,3 +83,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -6,10 +7,18 @@ import {
   Users, 
   Building2, 
   Clock, 
-  CalendarDays,
+  
   FilePlus,
   History,
-  CheckSquare
+  CheckSquare,
+  Plane,
+  Monitor,
+  UserSearch,
+  Star,
+  GraduationCap,
+  HelpCircle,
+  FileText,
+  Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,10 +39,50 @@ export function Sidebar() {
     { name: 'Approvals', path: '/leaves/approvals', icon: CheckSquare, roles: ['ADMIN', 'HR', 'MANAGER'] },
   ];
 
+  const moduleItems = [
+    { name: 'Travel Allowance', path: '/travel', icon: Plane, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+    { name: 'Assets', path: '/assets', icon: Monitor, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+    { name: 'Recruitment', path: '/recruitment', icon: UserSearch, roles: ['ADMIN', 'HR'] },
+    { name: 'Performance', path: '/performance', icon: Star, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+    { name: 'Training', path: '/training', icon: GraduationCap, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+    { name: 'Requests', path: '/requests', icon: HelpCircle, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+    { name: 'Policies', path: '/policies', icon: FileText, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+    { name: 'Notifications', path: '/notifications', icon: Bell, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+  ];
+
   const filterRoles = (items: any[]) => items.filter(item => user && item.roles.includes(user.role));
 
   const filteredNavItems = filterRoles(navItems);
   const filteredLeaveItems = filterRoles(leaveItems);
+  const filteredModuleItems = filterRoles(moduleItems);
+
+  const renderNavSection = (items: any[], title?: string) => (
+    <>
+      {title && (
+        <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          {title}
+        </div>
+      )}
+      <div className="space-y-1">
+        {items.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) => cn(
+              "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors",
+              isActive ? "bg-slate-800 text-indigo-400" : "text-slate-300"
+            )}
+          >
+            <item.icon className={cn(
+              "mr-3 h-5 w-5 flex-shrink-0",
+              location.pathname.startsWith(item.path) ? "text-indigo-400" : "text-slate-400 group-hover:text-white"
+            )} />
+            {item.name}
+          </NavLink>
+        ))}
+      </div>
+    </>
+  );
 
   return (
     <div className="flex h-screen w-64 flex-col border-r bg-slate-900 text-slate-300">
@@ -62,27 +111,13 @@ export function Sidebar() {
 
           {filteredLeaveItems.length > 0 && (
             <div className="pt-4">
-              <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Leaves
-              </div>
-              <div className="space-y-1">
-                {filteredLeaveItems.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    className={({ isActive }) => cn(
-                      "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors",
-                      isActive ? "bg-slate-800 text-indigo-400" : "text-slate-300"
-                    )}
-                  >
-                    <item.icon className={cn(
-                      "mr-3 h-5 w-5 flex-shrink-0",
-                      location.pathname === item.path ? "text-indigo-400" : "text-slate-400 group-hover:text-white"
-                    )} />
-                    {item.name}
-                  </NavLink>
-                ))}
-              </div>
+              {renderNavSection(filteredLeaveItems, 'Leaves')}
+            </div>
+          )}
+
+          {filteredModuleItems.length > 0 && (
+            <div className="pt-4">
+              {renderNavSection(filteredModuleItems, 'Modules')}
             </div>
           )}
         </nav>
@@ -90,3 +125,4 @@ export function Sidebar() {
     </div>
   );
 }
+
