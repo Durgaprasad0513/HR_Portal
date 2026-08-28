@@ -1,18 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* Navy scale — top nav, headings, approve buttons */
+  --color-navy-50: #eef2ff;
+  --color-navy-100: #dce4fd;
+  --color-navy-200: #bccafb;
+  --color-navy-300: #8ba5f8;
+  --color-navy-400: #5b7cf3;
+  --color-navy-500: #3553e6;
+  --color-navy-600: #2a3fcf;
+  --color-navy-700: #2433a8;
+  --color-navy-800: #1e2d86;
+  --color-navy-900: #1B2559;
+  --color-navy-950: #111640;
+
+  /* Accent Orange — CTAs, active nav, add buttons, pagination active */
+  --color-accent-50: #fff7ed;
+  --color-accent-100: #ffedd5;
+  --color-accent-200: #fed7aa;
+  --color-accent-300: #fdba74;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #F97316;
+  --color-accent-600: #ea580c;
+  --color-accent-700: #c2410c;
+  --color-accent-800: #9a3412;
+  --color-accent-900: #7c2d12;
+
+  /* Keep primary as navy alias for backward compat */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #dce4fd;
+  --color-primary-200: #bccafb;
+  --color-primary-300: #8ba5f8;
+  --color-primary-400: #5b7cf3;
+  --color-primary-500: #1B2559;
+  --color-primary-600: #1B2559;
+  --color-primary-700: #111640;
+  --color-primary-800: #111640;
+  --color-primary-900: #0a0d26;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-[#F8FAFC] text-slate-900 antialiased;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
