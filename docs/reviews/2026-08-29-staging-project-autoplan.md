@@ -46,6 +46,29 @@ Employees may access only their own permitted information. HR and Management adm
 - Preserve all existing uncommitted work.
 - Propose fixes as prioritized implementation tasks for approval.
 
+## Confirmed Premises
+
+Confirmed by the user on 2026-08-29.
+
+1. The supplied PDF is the authoritative final product scope.
+2. `staging` is an unfinished phased implementation, not a production-ready release.
+3. Role-based and employee-level access must be enforced on the server, not only hidden in the interface.
+4. The target roles are Super Admin, HR Admin, REMOVED_ROLE, Reporting Manager, and Employee. The two Main Admins are accounts within the administrator role model.
+5. Foundation and security must be completed before unfinished modules are treated as ready.
+6. PostgreSQL through Docker is the standard local database setup; pgAdmin is optional administration tooling.
+7. In-system notifications are required now; email, WhatsApp, and SMS are future work.
+8. Attendance, leave, news, and task modules are outside the supplied scope, so their current removal is intentional.
+9. `HRMagnet` and `PeopleFlow` are placeholder names. The target is HR Management Portal or Pattabhi Agro Foods branding.
+10. Previously approved UI removals remain requirements and will not be reversed by this review.
+
+## Baseline Verification
+
+- Server TypeScript build: passing.
+- Prisma schema validation: passing.
+- Client TypeScript/Vite build: failing with unused imports and type errors.
+- Client and server lint commands: unavailable because ESLint is not installed.
+- Automated test files: none found.
+
 ## Expected Deliverables
 
 - Requirements-to-implementation coverage matrix
