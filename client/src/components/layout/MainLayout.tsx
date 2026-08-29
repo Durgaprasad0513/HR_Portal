@@ -2,18 +2,14 @@ import React from 'react';
 
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
-import { Header } from './Header';
 
 export default function MainLayout() {
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
-        </main>
-      </div>
+      <main className="flex-1 overflow-y-auto p-6 lg:px-8">
+        <Outlet />
+      </main>
     </div>
   );
 }

@@ -1,114 +1,99 @@
-import React from 'react';
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { policiesApi } from '@/api/policies';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { DataTable } from '@/components/ui/DataTable';
+import { Search, Plus, FileText, MoreHorizontal, Download, Link as LinkIcon } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import toast from 'react-hot-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Check } from 'lucide-react';
 
 export default function PolicyListPage() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
-  const { data: policiesData, isLoading } = useQuery({
-    queryKey: ['policies'],
-    queryFn: policiesApi.getAll,
-  });
-
-  const { data: myAcknowledgements } = useQuery({
-    queryKey: ['myAcknowledgements'],
-    queryFn: policiesApi.getMyAcknowledgements,
-    enabled: !isAdminOrHR,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: policiesApi.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policies'] });
-      toast.success('Policy uploaded successfully');
-      setIsModalOpen(false);
+  const columns = [
+    { 
+      header: 'Documents', 
+      accessor: (row: any) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
+             <FileText className="w-4 h-4 text-blue-500" />
+          </div>
+          <span className="font-semibold text-navy-900">{row.name}</span>
+        </div>
+      )
     },
-    onError: () => toast.error('Failed to upload policy')
-  });
-
-  const acknowledgeMutation = useMutation({
-    mutationFn: policiesApi.acknowledge,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myAcknowledgements'] });
-      toast.success('Policy acknowledged');
+    { header: 'Created Date', accessor: 'date', className: 'text-gray-600' },
+    { 
+      header: 'Created By', 
+      accessor: (row: any) => (
+         <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-accent-100 flex items-center justify-center text-accent-700 font-bold text-[10px]">
+              {row.author.substring(0,2).toUpperCase()}
+            </div>
+            <span className="text-gray-600">{row.author}</span>
+         </div>
+      ) 
     },
-    onError: () => toast.error('Failed to acknowledge policy')
-  });
+    { header: 'Files count', accessor: 'count', className: 'text-gray-600' },
+    { header: 'Description', accessor: 'description', className: 'text-gray-500 truncate max-w-xs' },
+    { 
+      header: 'Action', 
+      accessor: () => (
+        <div className="flex items-center gap-2">
+          <button className="p-1 text-gray-400 hover:text-accent-500 transition-colors" title="Download"><Download className="w-4 h-4" /></button>
+          <button className="p-1 text-gray-400 hover:text-accent-500 transition-colors" title="Copy Link"><LinkIcon className="w-4 h-4" /></button>
+          <button className="p-1 text-gray-400 hover:text-navy-900 transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+        </div>
+      ) 
+    },
+  ];
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    createMutation.mutate(Object.fromEntries(formData.entries()));
-  };
-
-  const isAcknowledged = (policyId: string) => {
-    return myAcknowledgements?.data?.some((ack: any) => ack.policyId === policyId);
-  };
+  const mockDocuments = [
+    { id: '1', name: 'Employee Handbook 2024', date: 'Dec 01, 2023', author: 'HR Dept', count: '1 file', description: 'Updated company policies and guidelines' },
+    { id: '2', name: 'Q4 Financial Report', date: 'Nov 15, 2023', author: 'Finance', count: '3 files', description: 'Quarterly financial statements' },
+    { id: '3', name: 'Brand Guidelines', date: 'Oct 20, 2023', author: 'Marketing', count: '1 file', description: 'Official brand assets and usage rules' },
+    { id: '4', name: 'Health Insurance Info', date: 'Sep 05, 2023', author: 'HR Dept', count: '2 files', description: 'Benefit details for next year' },
+  ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Company Policies</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-navy-900">Documents</h1>
+        
         {isAdminOrHR && (
-          <Button onClick={() => setIsModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Upload Policy
+          <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+            <Plus className="w-4 h-4" /> Upload Document
           </Button>
         )}
       </div>
 
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {policiesData?.data?.map((policy: any) => (
-            <Card key={policy.id}>
-              <CardHeader>
-                <CardTitle className="text-lg">{policy.name}</CardTitle>
-                <Badge variant="info">{policy.category}</Badge>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500 mb-4">Version: {policy.version}</p>
-                {!isAdminOrHR && (
-                  <Button
-                    variant={isAcknowledged(policy.id) ? "outline" : "default"}
-                    disabled={isAcknowledged(policy.id) || acknowledgeMutation.isPending}
-                    onClick={() => acknowledgeMutation.mutate(policy.id)}
-                    className="w-full"
-                  >
-                    {isAcknowledged(policy.id) ? (
-                      <><Check className="w-4 h-4 mr-2" /> Acknowledged</>
-                    ) : (
-                      'Acknowledge'
-                    )}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex items-center gap-3 animate-in fade-in">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <input 
+            placeholder="Search documents, files..." 
+            className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
+          />
         </div>
-      )}
+        <select className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-500">
+          <option>All Types</option>
+          <option>PDF</option>
+          <option>Word</option>
+        </select>
+      </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Upload Policy">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input name="name" label="Policy Name" required />
-          <Input name="category" label="Category" required />
-          <Input name="version" label="Version" required />
+      <div className="animate-in fade-in">
+        <DataTable columns={columns} data={mockDocuments} keyField="id" selectable />
+      </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Upload Document">
+        <form className="space-y-4">
+          <Input name="name" label="Document Name" required />
+          <Input name="description" label="Description" required />
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={createMutation.isPending}>Upload</Button>
+            <Button type="submit">Upload</Button>
           </div>
         </form>
       </Modal>
