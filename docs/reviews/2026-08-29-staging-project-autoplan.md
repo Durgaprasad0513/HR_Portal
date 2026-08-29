@@ -262,3 +262,153 @@ Both CEO voices agree on the same structural correction: security, authorization
 | Keep five roles for pilot | Avoid premature generic infrastructure | Accepted with future extensibility note |
 | Keep prior UI removals | User-approved simplification and authoritative scope alignment | Accepted |
 | Defer external channels | In-system value must work before channel expansion | Accepted |
+
+## Phase 2 - Design / Usability Review
+
+Status: complete. Two independent design voices reviewed the live application, source, supplied scope, and available reference screenshots. The optional gstack design generator and browse daemon were unavailable, so no speculative mockups were produced and no application code was changed.
+
+### Executive Design Verdict
+
+Design readiness is **2.6/10**. The portal has a reusable visual foundation, but it is not ready for UAT or real employee data. Its primary design failure is truthfulness and permission awareness rather than polish: realistic fixtures are presented as live HR, financial, audit, and KPI information; all roles receive the same HR dashboard; navigation is not derived from permissions; failure and recovery states are largely absent; and mobile wayfinding is incomplete.
+
+The next design milestone is a permission-aware employee system-of-record slice with complete states and privacy-safe Self, Manager, HR, and Restricted views. Do not continue literal replication of the Visily references, and do not reverse any previously approved removal.
+
+### Seven-Pass Scorecard
+
+| Pass | Score | Decision |
+|---|---:|---|
+| Information architecture | 3/10 | Generate navigation, routes, tabs, commands, and actions from effective permissions and release readiness. |
+| Interaction-state coverage | 2/10 | Introduce a shared loading, empty, filtered-empty, error/retry, success, forbidden, and transition contract. |
+| User journeys and trust | 2/10 | Replace generic role experiences and fake values with scoped work queues and source-backed records. |
+| Mock-data / AI-slop risk | 1/10 | Remove production-path fixtures and no-op high-trust actions; isolate any demo data behind a persistent label. |
+| Design-system consistency | 5/10 | Keep the shared primitives and navy/orange foundation, then consolidate tokens, spacing, icons, and terminology. |
+| Responsive behavior and accessibility | 3/10 | Fix mobile navigation/profile wayfinding and semantic dialogs, inputs, tables, controls, focus, and keyboard paths. |
+| Unresolved design decisions | 2/10 | Lock disclosure, dashboards, readiness gates, document boundaries, localization, and metric definitions before expansion. |
+
+### Role and Navigation Map
+
+| Role | Intended home and scope | Current trust break | Required design |
+|---|---|---|---|
+| Super Admin | System readiness, access, security, audit, and organization oversight | Fake HR dashboard; inert settings; placeholder roles/reports | Admin control center with real state, permission-change confirmation, and audit attribution |
+| HR Admin | Employee lifecycle, restricted records, workflows, policies, and operations | Live and fabricated values are indistinguishable | HR work queue organized by lifecycle and urgency, with restricted sections clearly marked |
+| REMOVED_ROLE | Permitted HR operations without restricted fields | Missing from client role model; routes and navigation disagree with server catalog | Full role support with effective permissions, masked fields, and only authorized actions |
+| Reporting Manager | Direct reports, approvals, performance, and team training | Receives HR dashboard and may see organization-level affordances | Team-scoped dashboard, approval inbox, direct-report summaries, and escalation states |
+| Employee | Own profile, assets, training, travel, requests, policies, and notifications | Sees HR metrics, administrative routes, and fabricated profile/payroll data | Self-service home with own records, privacy language, correction/request actions, and trustworthy statuses |
+
+Navigation must be produced from one effective-permission source. Unauthorized links must not appear, and a direct unauthorized URL must show a clear permission-denied state with a safe next destination instead of silently redirecting.
+
+### Core Journey Pattern
+
+Every workflow should use the same emotional and interaction sequence:
+
+1. **Orientation:** identify the user's role and whether the scope is My records, My team, or Organization.
+2. **Confidence:** show only real, permitted data and clearly identify restricted or not-yet-collected fields.
+3. **Action:** explain required information, owner/approver, SLA, and possible next states.
+4. **Transition:** validate before advancement, prevent duplicates, preserve drafts, and announce progress.
+5. **Confirmation:** provide a durable identifier, timestamp, new status, and next expected event.
+6. **Recovery:** retain entered data, explain the failure, and offer retry or escalation.
+7. **Privacy reassurance:** do not expose or hint at fields outside the user's disclosure scope.
+
+### Interaction-State Matrix
+
+| Area | Loading | Honest empty | Filtered empty | Error / retry | Success | Permission state | Transition protection |
+|---|---|---|---|---|---|---|---|
+| Employees / profile | Present | Partial | Partial | Missing | Toast only | Missing | Partial |
+| Travel | Present | Generic | N/A | Missing | Toast | Partial | Partial; wizard validation can be bypassed |
+| Assets | Present | Generic | N/A | Missing | Toast | CTA-only | Partial |
+| Recruitment | Partial | Replaced by fixtures | Missing | Missing | No real workflow | Route-only | Drag is visual only |
+| Attrition | Missing | Replaced by hardcoded metrics | Missing | Missing | N/A | Route-only | Missing |
+| Performance | Missing | Replaced by fixtures | Missing | Missing | Missing | Tabs not scoped | Missing |
+| Training | Present | Generic | N/A | Missing | Toast | CTA-only | Partial |
+| Requests | Present | Generic | N/A | Missing | Toast | Data-source-only | Partial |
+| Policies / documents | Missing | Replaced by fixtures | Missing | Missing | No real upload | CTA-only | Missing |
+| Notifications | Present | Present | N/A | Missing | Missing | Ownership implied | Partial |
+| Audit / login / settings | Missing | Replaced by fake/default values | Missing | Missing | No-op save | Route-only | Missing |
+| Dashboard / reports / roles | Missing | Fake or placeholder | Missing | Missing | Missing | Route-only | Missing |
+
+### Design Findings and Corrections
+
+#### P0 - Trust and disclosure blockers
+
+1. Derive navigation, route guards, dashboard content, tabs, commands, and row actions from effective permissions for all five roles.
+2. Replace the universal HR dashboard with role-specific, API-backed work queues and metrics with documented definitions.
+3. Redesign employee detail into My Profile, Team Member Summary, HR Record, and Restricted Record disclosure modes. Missing data must render as missing, never as plausible examples.
+4. Remove all production-path fixtures: dashboard KPIs, employee office/type defaults, candidate fallbacks, performance people, policy documents, attrition percentages, and fake audit/login events.
+5. Feature-gate unfinished recruitment, performance, attrition, reports, role management, and settings instead of presenting them as operational.
+6. Remove no-op high-trust actions and the reintroduced Time Off, Leave Requests, Payroll Processing, generic download, and other previously removed UI.
+7. Separate secure employee documents from organization policies; apply masking and download/open auditing before exposing restricted files.
+
+#### P1 - Workflow, state, mobile, and accessibility
+
+1. Complete the shared state contract with module-specific first-use and filtered empties, recoverable errors, retry, durable success, permission denial, disabled reasons, and transition feedback.
+2. Make travel, assets, requests, policies, and employee lifecycle complete vertical workflows before expanding breadth.
+3. Replace the mobile horizontal navigation strip with a permission-filtered drawer or primary navigation plus More; provide mobile section navigation for long profiles.
+4. Add semantic dialog behavior, focus management, Escape and restoration; connect labels and errors; label icon buttons, checkboxes, and pagination; support keyboard alternatives to drag-and-drop.
+5. Use INR, Indian dates/addresses/statutory terminology, and the configured organization time zone.
+
+#### P2 - System consistency
+
+1. Consolidate page width, gutters, typography, control radius, state colors, focus presentation, density, icons, and terminology.
+2. Replace HRMagnet/PeopleFlow and unsupported marketing claims with Pattabhi Agro Foods / HR Management Portal branding once final assets are supplied.
+3. Define document information architecture and every dashboard/attrition metric before presenting them.
+
+#### P3 - Polish
+
+- Refine motion, microcopy, and visual detail only after real data, permissions, workflows, states, and accessibility are dependable.
+
+### Module Design Coverage
+
+| Module | Current state | Required next design |
+|---|---|---|
+| Employee management | Live list mixed with fabricated columns; unsafe hybrid profile | Disclosure-safe profile modes, real fields, account lifecycle, and permissioned actions |
+| Travel | Basic request wizard/list | Travel mode, expense evidence, approvals, settlement, history, validation, and INR |
+| Assets | Basic list/create | Assignment, custody history, condition, return, loss/damage, warranty, and employee view |
+| Recruitment | Hybrid API/mock tables and no-op board | Gate until requisition/candidate transitions, interview history, offers, and resumes are real and protected |
+| Attrition | Hardcoded metrics and chart placeholder | Gate until definitions, source provenance, filters, permissions, and calculations exist |
+| Performance | Mock timeline | Stage/field ownership, confidential versus released views, and full approval history |
+| Training | Basic list/create | Target audience, participants, attendance, feedback, assessment, certificate, cost, and completion |
+| Requests | Basic list/create | Ticket identity, category, assignment, SLA, discussion, attachments, history, resolution, and closure |
+| Policies / documents | Mock policy list with generic actions | Versioned policies, applicability and acknowledgement; separate protected employee documents |
+| Supporting systems | Fake dashboard/audit/login; placeholder reports/roles; thin notifications | Truthful role dashboards, real security events, actionable notifications, and readiness gating |
+
+### Preserve and Reuse
+
+- React, Vite, TanStack Query, modular page structure, and existing shared component concepts.
+- Navy/orange palette, restrained surfaces, and internal-tool information density.
+- Button, Card, Badge, LoadingSpinner, EmptyState, and search/filter/table patterns after state and accessibility corrections.
+- Recruitment tabs/board as eventual alternative views once transitions and keyboard paths are real.
+- Employee-profile sectioning and sticky desktop anchor concept, redesigned around disclosure modes.
+- Initials only as a non-photo fallback; do not restore profile-photo/avatar UI.
+- Simplified email/password login and all other approved removals.
+
+### Explicitly Not in Scope
+
+Do not restore attendance/time tracking, leave/time-off management, news, task/to-do modules, dashboard calendar/events, employee directory, organization chart, social login/signup, generic or bulk downloads, profile-photo/avatar UI, external email/WhatsApp/SMS workflows, or payroll processing as a new module. Restricted salary, bank, and statutory fields may exist as protected employee-record data; that does not justify a Payroll Processing screen.
+
+### Unresolved Decisions with Recommended Defaults
+
+| Decision | Recommended default | Finalization point |
+|---|---|---|
+| Effective permission source | Server-computed permissions drive all UI and API enforcement | Engineering review |
+| Employee disclosure | Four explicit Self, Manager, HR, and Restricted modes | Before profile implementation |
+| Unfinished modules | Hidden behind release flags; never populated with fixtures | Immediate implementation backlog |
+| Document boundaries | Policies and employee documents are separate products/storage paths | Engineering review |
+| Mobile navigation | Permission-filtered drawer or primary set plus More | Design implementation |
+| Branding | Pattabhi Agro Foods HR Portal; final logo/name supplied by owner | Before visual release pass |
+| Metrics | No dashboard metric without owner, formula, denominator, time window, and API source | Analytics implementation |
+
+### Challenge-Gate Conclusion
+
+Both design voices independently reached the same conclusion: challenge the current literal Visily/mock-data implementation direction, but do not challenge any approved removal. Keep the restrained visual language and reusable component foundation. Replace screen breadth with truthful, permission-aware, privacy-safe work queues and complete vertical journeys.
+
+### Design Decision Audit Trail
+
+| Decision | Principle used | Outcome |
+|---|---|---|
+| Keep prior removals | User-approved simplification and authoritative scope | Accepted |
+| Reject production-path fixtures | HR users must be able to trust every displayed value | Accepted |
+| Use role-specific dashboards | Relevance and least-privilege disclosure | Accepted |
+| Split employee profile modes | Privacy by purpose and role | Accepted |
+| Feature-gate incomplete screens | Honest readiness over decorative breadth | Accepted |
+| Keep shared visual foundation | Reuse coherent primitives while correcting behavior | Accepted |
+| Defer polish | Trust, workflow completion, accessibility, and recovery come first | Accepted |
