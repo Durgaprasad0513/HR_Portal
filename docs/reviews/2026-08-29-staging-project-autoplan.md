@@ -69,6 +69,8 @@ Confirmed by the user on 2026-08-29.
 - Client and server lint commands: unavailable because ESLint is not installed.
 - Automated test files: none found.
 
+Current-tree recheck on 2026-08-29: the uncommitted Prisma schema changed after the initial baseline and now fails validation with 42 errors. `Role` contains duplicate `REMOVED_ROLE` values, the `User` and `Employee` model declarations are missing around lines 254-274, and downstream relations cannot resolve those models. The earlier passing Prisma/server baseline is therefore historical, not the present release state.
+
 ## Expected Deliverables
 
 - Requirements-to-implementation coverage matrix
@@ -412,3 +414,212 @@ Both design voices independently reached the same conclusion: challenge the curr
 | Feature-gate incomplete screens | Honest readiness over decorative breadth | Accepted |
 | Keep shared visual foundation | Reuse coherent primitives while correcting behavior | Accepted |
 | Defer polish | Trust, workflow completion, accessibility, and recovery come first | Accepted |
+
+## Phase 3 - Engineering Review
+
+Status: complete. One independent engineering voice completed a full read-only review. A second Codex reviewer independently scanned the architecture, contracts, schema, runtime logs, and build diagnostics; it confirmed the same core failure pattern before account usage limits prevented its final prose. A replacement independent voice supplied the closing verdict. No application code or data was changed.
+
+### Executive Engineering Verdict
+
+Engineering readiness is **2/10**. The React/Express/Prisma/PostgreSQL structure is a reasonable prototype foundation, but the current release is a **no-go for UAT, production, or real confidential employee data**.
+
+The latest working-tree verification found an additional immediate blocker: `server/prisma/schema.prisma` fails `prisma validate` with 42 errors. It duplicates `REMOVED_ROLE` and contains orphaned User/Employee fields rather than valid model declarations. No Prisma generation, migration, or database-dependent release should proceed until that uncommitted schema is repaired and revalidated.
+
+The original login outage is evidenced in `server-dev.log`: Express started, but Prisma could not reach PostgreSQL at `localhost:5432`. A read-only probe on 2026-08-29 confirmed the database is reachable now. However, `/api/health` checks only Express and returned healthy during a database-dependent failure pattern; deployment needs distinct liveness and database-backed readiness checks.
+
+Even with the database reachable, core workflows remain blocked by request-shape, ID, enum, field-name, path, and HTTP-method drift. The dominant security failure is module-level RBAC without consistent record-level `SELF`, `TEAM`, `ORG`, and `RESTRICTED` enforcement.
+
+### Current and Target Architecture
+
+```text
+Current
+Browser / React / Vite
+  -> React Router + AuthContext
+  -> JWT in localStorage + Axios
+  -> Express CORS / JSON
+  -> JWT signature check
+  -> module/action permission check
+  -> Zod validator (body only)
+  -> controller -> domain service -> Prisma -> PostgreSQL
+
+Required cross-cutting spine
+  -> server-backed/revocable session and account lifecycle
+  -> record-scope policy: SELF | TEAM | ORG | RESTRICTED
+  -> canonical request/response contracts
+  -> workflow transition + history + idempotency service
+  -> private file/attachment service
+  -> transactional domain event -> notification + audit producers
+  -> structured logging, metrics, readiness, migrations, CI and tests
+```
+
+### Request and Data Flow
+
+```text
+Login
+POST /auth/login
+  -> validate email/password
+  -> query User + safe Employee projection
+  -> check active account
+  -> compare bcrypt hash
+  -> issue token + effective permissions
+  -> record login/security event (missing today)
+
+Authorized mutation
+request id + actor/session
+  -> authenticate current account/session
+  -> module action permission
+  -> record scope + restricted-field policy
+  -> validate params/query/body canonical contract
+  -> transaction with expected current state/version
+  -> write domain record + immutable transition/audit event
+  -> enqueue in-system notification
+  -> return safe projection + durable operation id
+```
+
+Today, authentication trusts JWT claims until expiry; validation often rejects before the controller; service updates do not verify actor relationship/current state/version; and audit/notification/login producers are absent.
+
+### Role and Record-Scope Matrix
+
+| Role | Required record scope | Current engineering condition | Exit requirement |
+|---|---|---|---|
+| Super Admin | ORG + RESTRICTED, with stronger controls for destructive/export/access changes | Module bypass returns true; no dual control, session enforcement, or audit producer | Attributed actions, revocable sessions, export/destruction safeguards, negative tests |
+| HR Admin | ORG plus explicit restricted fields and stage ownership | Broad full permissions; response and workflow policies are inconsistent | Purpose-specific projections and complete workflow authorization |
+| REMOVED_ROLE | ORG operations, restricted fields only where explicitly granted | Server catalog exists; client role type and routes disagree | Shared role contract and module/field negative tests |
+| Reporting Manager | TEAM/direct reports plus delegated approvals | `requireStaffView` allows manager, while services commonly query organization-wide data | Manager predicate applied in every database query/mutation |
+| Employee | SELF only, with released/permitted fields | Employee list/detail and several ID mutations lack ownership checks | Guessed-ID tests prove no cross-employee read/write/export/file access |
+
+### Engineering Findings
+
+#### P0 - Release blockers
+
+1. **The current Prisma schema is invalid.** `Role` duplicates `REMOVED_ROLE`; lines 254-274 contain orphaned fields/braces; `User` and `Employee` are unresolved; validation reports 42 errors. Repair the canonical models before any database or service validation.
+2. **Record-level authorization is incomplete.** Employee list/detail use module view and field stripping, but the service queries all records or arbitrary IDs. Notification mark-read/delete mutate by ID without recipient ownership. Manager-accessible staff services lack team predicates. The permission matrix GET is available to any authenticated user.
+3. **Validation is structurally broken across modules.** The working tree contains mixed validator styles, while many routes still pass schemas wrapped as `{ body, params }` to body-only validation. Canonicalize params/query/body parsing before exercising workflows.
+4. **Identifiers and enums disagree.** Prisma primarily generates CUIDs, while many schemas require UUIDs. Training, request, policy, and client role enums diverge from Prisma; the client omits `REMOVED_ROLE`.
+5. **Client/server endpoint contracts disagree.** Recruitment uses client PUT/server PATCH; requests client PATCH/server PUT; assets client PUT/server PATCH; performance client PUT but server exposes PATCH `/ratings`; notifications use `/read-all` versus `/mark-all-read`. Several forms submit different field names than their schemas.
+6. **Sensitive response projections are unsafe.** Audit uses `include: { user: true }`; policies include the full uploader; requests include full employee/assignee records. Password hashes and unrelated PII can be returned.
+7. **Authentication is not a complete security boundary.** JWT secret has an insecure fallback; default lifetime is seven days; tokens are in localStorage; current session/account checks cannot be trusted until the malformed schema and token-version fields are reconciled. Reset/change/invite/activate/logout/revoke/2FA flows remain incomplete.
+8. **There is no authorization proof.** No automated tests or CI exist, client build fails, and lint commands cannot run because ESLint is absent.
+
+#### P1 - Pilot blockers
+
+1. **Database changes are unreproducible.** There is no Prisma migrations directory and scripts rely on `db push`; rollback and release migration strategy are absent.
+2. **Normal deletion destroys HR history.** Employee deletion removes the user and employee while many HR relations cascade. Replace it with status/effective-dated offboarding and a retention-governed purge.
+3. **Money is not accounting-safe.** Salary, travel, asset, candidate, and training amounts use `Float`, lack currency, accept client totals, and have no immutable approval snapshot. Use Decimal or integer minor units, INR/currency, and server calculations.
+4. **Workflows are unconstrained updates.** Travel approval/settlement, request status, candidate changes, performance approval, and asset assignment/return lack transition rules, actor ownership, history, idempotency, transactions, or optimistic concurrency. Asset return incorrectly leaves status `IN_USE`.
+5. **Private files are only client-supplied strings.** Employee documents, bills, resumes, certificates, and policies have no upload validation, scanning, quarantine, private storage, signed access, retention, or download audit.
+6. **Audit, login history, and notifications have readers but no reliable producers.** High-trust changes cannot be reconstructed or surfaced as real events.
+7. **Docker and operations are fragile.** Compose and `.env.example` use different database passwords; images/secrets are not production-hardened; no DB readiness dependency, backup/restore rehearsal, or migration deploy step exists. pgAdmin remains optional tooling, not a runtime dependency.
+8. **Required workflow persistence is shallow.** No ticket number/history/comments, interview history, asset custody ledger, performance stage history, policy supersession, or employee account lifecycle exists.
+
+#### P2 - Scale and operability
+
+- Most staff list services use unpaginated `findMany`; common scope/filter indexes are absent.
+- Permission checks query the database repeatedly and `ensureDefaults` runs on access paths.
+- No request/query timeout, rate limiting, correlation ID, structured log, metrics, tracing, or PII-redaction policy exists.
+- Controller-level catch blocks often convert known failures into generic 400/500 responses, bypassing consistent error classification and recovery guidance.
+- Health checks, alerts, and dashboards do not cover database latency, failed logins, repeated denials, workflow failures, or backup status.
+
+#### P3 - Deferred engineering refinements
+
+- External messaging, advanced analytics, broad exports, generic custom roles, and automation remain deferred until the secure vertical workflows are proven.
+
+### Workflow Integrity Matrix
+
+| Workflow | Existing foundation | Required control before ready |
+|---|---|---|
+| Employee lifecycle | Employee/User models and CRUD | Invitation, activation, field ownership, history, deactivation, session revoke, retention-safe purge |
+| Travel | Request, approval, settlement fields/routes | Manager relationship, legal transitions, evidence, server totals, verification, immutable settlement events |
+| Assets | Asset CRUD/assign/return | Correct status machine, custody ledger, condition, ownership, concurrency, loss/damage handling |
+| Recruitment | Requisition/Candidate models/routes | Protected resumes, interview/offer history, allowed transitions, confidentiality, metrics provenance |
+| Performance | Review fields/routes | Employee -> Manager -> HR -> Final ownership, stage projections, released-state policy, history |
+| Training | Training/participant models | Targeting, assignment, attendance, feedback, assessment, certificate security, completion history |
+| Requests | Request/assignment/status | `HR-YYYY-NNNNNN`, comments, attachments, SLA, reassignment/transition history, closure rules |
+| Policies | Policy/acknowledgement models | File security, applicability, version supersession, reminders, authorized acknowledgement/download |
+| Notifications | Inbox read/mutate endpoints | Transactional event producer, recipient ownership, dedupe, deep link, delivery/retry record |
+| Audit/login | Read services and tables | Central producer, safe projections, immutable attribution, security events, retention |
+
+### Failure and Rescue Registry
+
+| ID | Priority | Failure | Evidence | Required rescue |
+|---|---:|---|---|---|
+| ENG-F0 | P0 | Prisma cannot validate or generate safely | Duplicate role and missing User/Employee models; 42 validation errors | Restore canonical schema, validate, generate, then establish migration baseline |
+| ENG-F1 | P0 | Login fails while API appears alive | `server-dev.log` database connection failure; `/api/health` is Express-only | Align credentials; fail startup clearly; liveness + DB readiness |
+| ENG-F2 | P0 | Valid-looking form returns 400 | Validator parses body while schema expects wrapper | Canonical validation of params/query/body + contract tests |
+| ENG-F3 | P0 | Employee reads another employee | Employee routes/services lack SELF/TEAM predicate | Central scope policy in database queries + guessed-ID tests |
+| ENG-F4 | P0 | Deactivated user keeps access | JWT verified without current account/session check | Revocable session and active-user enforcement |
+| ENG-F5 | P0 | User mutates another notification | Notification update/delete use ID only | Compound recipient/id predicate and 404/403-safe behavior |
+| ENG-F6 | P0 | REMOVED_ROLE client cannot compile/route correctly | Server has role; client `Role` omits it | One generated/shared role contract |
+| ENG-F7 | P0 | Client calls nonexistent method/path | API wrapper/route mismatches | Executable API contract matrix |
+| ENG-F8 | P0 | Credential/PII relation leaks | Broad `user: true`/`assignedTo: true` includes | Safe select projections and response snapshot tests |
+| ENG-F9 | P1 | Asset return remains in use | Return service sets `IN_USE` | Legal state transition and lifecycle test |
+| ENG-F10 | P1 | Concurrent approvals overwrite | Unconditional Prisma updates | Transaction, expected version/state, idempotency key |
+| ENG-F11 | P1 | Offboarding destroys history | Hard delete plus cascade | Archive/effective dates; isolated purge process |
+| ENG-F12 | P1 | Financial rounding/tampering | Float and client-provided totals | Fixed precision, currency, server calculation |
+| ENG-F13 | P1 | Private file is guessed/substituted | Plain path strings, no file service | Private storage, scanning, signed access, audit |
+| ENG-F14 | P1 | Security incident cannot be reconstructed | Producers absent | Transactional audit/login/event instrumentation |
+| ENG-F15 | P1 | Development reset erases real data | Seed script deletes core tables | Environment guard and explicit isolated reset command |
+| ENG-F16 | P2 | Large lists exhaust API/browser | Unpaginated staff `findMany` | Pagination, indexes, bounded exports |
+
+### Test and Release Matrix
+
+| Area | Mandatory automated coverage |
+|---|---|
+| Build/schema | Client type-check/Vite build, server build, lint, Prisma validate, migration deploy/rollback rehearsal |
+| Login/session | Valid/invalid login, DB unavailable, inactive account, expired/revoked token, lockout, reset/change, timeout, secret validation |
+| Authorization | Five roles x SELF/TEAM/ORG/RESTRICTED x read/add/edit/delete/approve/export, including guessed IDs |
+| Contracts | Every client wrapper versus server method/path/body/query/params/enum/ID/response and error shape |
+| Employee lifecycle | Invite, activate, update, restricted fields, deactivate, revoke, offboard, retain history |
+| Travel | Create/deduplicate, approve/reject, advance, evidence, verify, settle, concurrency, illegal transitions |
+| Assets | Assign/reassign/return/damaged/lost, custody history, ownership, concurrency |
+| Recruitment | Requisition, candidate, interview, offer, join/reject, salary masking, resume authorization |
+| Performance | Stage actor/field ownership, disclosure, final release, concurrent review protection |
+| Training | Assignment, attendance, feedback, assessment, certificate authorization |
+| Requests | Ticket sequence, assignment, discussion, SLA, transitions, close/reopen policy |
+| Policies/files | Applicability, versioning, acknowledgement, upload scan, signed download, retention |
+| Audit/notifications | Domain event generation, attribution, before/after values, recipient ownership, dedupe/retry |
+| Integrity/operations | Money precision, transaction rollback, retention/cascade guards, DB readiness, backup restore |
+| UI/system states | Loading, honest empty, error/retry, permission denied, disabled transition, session expiry, mobile/keyboard |
+
+### Recommended Engineering Decisions
+
+| Decision | Recommended default | Tradeoff |
+|---|---|---|
+| Session model | Server-backed revocable sessions in secure cookies | More state; strongest confidential-portal control |
+| Authorization | Small centralized policy layer with SELF/TEAM/ORG/RESTRICTED | Less flexible than a generic engine; much lower complexity now |
+| Contracts | Canonical schemas shared/generated for client and server | Build tooling work; eliminates drift |
+| Money | Integer minor units or Prisma Decimal plus currency | Migration/formatting work; prevents rounding errors |
+| Files | Private object storage with scanning and signed URLs | Integration cost; required confidentiality |
+| History | Effective-dated lifecycle and append-only transitions | More tables; preserves auditability |
+| Concurrency | Transaction + current-state/version precondition + idempotency key | Extra protocol fields; prevents duplicate/overwritten operations |
+| Reports | CSV first, then required XLSX/PDF after authorization/export audit | Delays rich output; reduces early risk |
+
+### Preserve and Reuse
+
+- React, Vite, TanStack Query, Express, Prisma, PostgreSQL, Zod, and modular server/page structure.
+- Shared UI primitives and the existing five role templates as starting points.
+- `my-*` self-service endpoint pattern after ownership enforcement.
+- Restricted-field helper concept after it is moved behind safe projections and record-scope checks.
+- PostgreSQL through Docker as the canonical local database; pgAdmin as optional administration tooling.
+- Every approved UI removal.
+
+### Explicitly Not in Scope
+
+Do not reintroduce attendance, leave/time-off, news, tasks/to-do, payroll processing, dashboard events, employee directory/org chart, avatars, generic downloads, social login/signup, external messaging, advanced automation, or advanced analytics before source workflows are trusted.
+
+### Unresolved Engineering Decisions
+
+1. Exact direct-report/delegation rules for Reporting Managers.
+2. Field-by-field restricted access for REMOVED_ROLE.
+3. Session/refresh duration and revocation storage.
+4. File provider, scanning/quarantine, retention, and download policy.
+5. Decimal versus minor units and supported currencies.
+6. Ticket-number generation and transactional locking strategy.
+7. Effective-dated employee history and legal retention/purge periods.
+8. Workflow delegation/escalation and separation of duties.
+9. Backup target, encryption, RPO/RTO, rehearsal cadence, and owner.
+10. Shared contract generation approach.
+
+### Challenge-Gate Conclusion
+
+Challenge continued horizontal feature construction. Do not challenge or reverse prior removals. The correct sequence is foundation -> secure employee lifecycle/self-service/documents/requests -> travel/assets -> recruitment/performance/training -> trusted analytics/reports -> future integrations. A module is not ready until its contract executes, legal transitions are audited, and positive plus negative authorization tests pass.
