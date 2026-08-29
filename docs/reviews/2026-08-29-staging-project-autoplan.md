@@ -1,7 +1,7 @@
 <!-- /autoplan restore point: /c/Users/VDurgaprasad/.gstack/projects/techsupportlohitha-hr_management_web_app/staging-autoplan-restore-20260829-141807.md -->
 # HR Management Portal - Full Project Review Plan
 
-Status: Review in progress
+Status: Review complete; implementation not started
 Branch: `staging`
 Requirements baseline: `C:\Users\VDurgaprasad\Downloads\SCOPE (1).pdf`
 
@@ -808,3 +808,161 @@ The gstack JSONL task export is not available in this environment because `jq` i
 ### DX Challenge-Gate Conclusion
 
 Challenge demo-first horizontal expansion. Preserve the approved product and UI scope, but stop treating a locally running page as proof of a reproducible system. The required maintainer contract is: clone -> install -> validate environment -> start ready PostgreSQL -> apply versioned migrations -> seed isolated development data -> start services -> prove database readiness -> log in -> prove role isolation -> run one root quality gate. No module should advance until this path works from a clean Windows checkout.
+
+## Phase 5 - Consolidated Delivery Plan
+
+### Final Review Verdict
+
+The project has a useful React/Express/Prisma foundation and broad module scaffolding, but it is currently a prototype rather than a trustworthy HR system. The present `staging` tree is a **P0 no-go for UAT or production** because the Prisma schema does not validate, client contracts/builds are broken, role checks do not consistently constrain records, confidential relations can be over-returned, setup is not reproducible, and no automated test or migration safety net exists.
+
+The review is complete. No application fixes were made. The approved implementation order is trust foundation first, then secure vertical workflows, then analytics and future integrations.
+
+### Requirements-to-Implementation Coverage Matrix
+
+| Scope area | Existing foundation | Current maturity | Blocking gap | Delivery gate |
+|---|---|---|---|---|
+| Authentication and user accounts | Login, JWT, auth context, user records | Partial / unsafe | Revocable sessions, reset/invite, inactive-account enforcement, login audit, secure secret/config | Gate 0 |
+| Roles and permissions | Five-role direction, permission catalog/middleware | Partial / inconsistent | SELF/TEAM/ORG/RESTRICTED predicates on every query/mutation; field projections; server-authoritative navigation/actions | Gate 0 |
+| Employee management | List/detail/forms, employee/department services | Prototype | Canonical schema, lifecycle history, field ownership, restricted data, deactivation/session revoke, document security | Gate 1 |
+| Travel allowance and settlement | Request/approval/settlement UI and services | Prototype | Legal transitions, manager scope, server totals, Decimal currency, evidence, idempotency, audit history | Gate 2 |
+| Asset management | CRUD/assign/return UI and services | Prototype | Correct state machine, custody ledger, conditions, ownership, concurrency, loss/damage path, value privacy | Gate 2 |
+| Recruitment tracking | Requisition/candidate UI and services | Prototype | Protected files, HR-only confidentiality, interviews/offers/history, state validation, provenance | Gate 3 |
+| Attrition analytics | Early page/schema direction | Not trustworthy | Authoritative employee lifecycle data, definition/denominator, privacy threshold, drill-down permissions | Gate 4 |
+| Performance reviews | Review routes/services and UI direction | Prototype | Employee -> Manager -> HR -> Final workflow, released-field policy, history, team scope, audit | Gate 3 |
+| Training management | Training/participant routes/services and screens | Prototype | Assignment/attendance/feedback/assessment/certificate workflow, access rules, protected evidence | Gate 3 |
+| Employee requests/helpdesk | Request CRUD/status foundation | Prototype | Ticket sequence, comments/attachments, SLA, assignment, transitions, ownership, closure/reopen history | Gate 1 |
+| Policies/documents | Policy/acknowledgement foundation | Prototype | Private storage, applicability/versioning, signed access, acknowledgement assignment, reminders, audit | Gate 1 |
+| Dashboards/reports | Dashboard/report pages and chart primitives | Demo-biased | Real permission-scoped sources, metric definitions, freshness, empty/error states, export controls | Gate 4 |
+| Notifications | Inbox/read state services | Incomplete | Transactional producers, recipient ownership, dedupe, retry/delivery record, deep links | Gate 1 |
+| Settings/audit/login history | Routes/pages/tables exist | Storage/read shell | Central event producers, immutable attribution, safe projections, permission-change/login/security events | Gate 0/1 |
+| Local operations | Compose, pgAdmin, package scripts, README | Non-reproducible | Valid schema, migrations, canonical env, readiness, safe seed, one root verification path | Gate 0 |
+
+### Target Architecture and Trust Boundary
+
+```text
+Browser
+  -> permission-aware React route and action layer
+  -> typed API client generated from one contract
+  -> Express route: authenticate -> authorize module -> validate input
+  -> service: resolve SELF/TEAM/ORG/RESTRICTED scope -> enforce workflow transition
+  -> Prisma query with safe select projection and transaction/idempotency guard
+  -> PostgreSQL
+       + audit/outbox event in the same transaction
+       -> in-system notification producer
+
+Private HR documents
+  -> metadata in PostgreSQL
+  -> encrypted private object storage
+  -> quarantine/scan -> authorized short-lived download -> audit event
+```
+
+The client improves usability but is never the security boundary. Record scope and restricted-field projection belong in server-side database queries. Two administrator accounts do not bypass auditing.
+
+### Delivery Gates
+
+#### Gate 0 - Trust Foundation (P0; blocks all UAT)
+
+1. Restore a single canonical valid Prisma schema; reconcile `User`, `Employee`, roles, relations, IDs, money, state enums, and current intentional module removals.
+2. Create and commit a migration baseline; prove empty-database install and upgrade rehearsal; environment-gate all destructive seed/reset behavior.
+3. Align Docker, ports, environment templates, config validation, readiness, pinned images, and the clean Windows bootstrap/login path.
+4. Make client/server builds and lint pass; remove contract drift in methods, paths, body/query/params shapes, IDs, enums, and response types.
+5. Implement server-owned module plus record-scope policy, safe projections, session revocation, inactive-user enforcement, and notification ownership.
+6. Add central audit/login producers, structured safe error codes/correlation IDs, and liveness versus database/schema readiness.
+7. Add CI gates for schema validation/generation, migrations, client/server build, lint, tests, and database-backed role/login smoke.
+
+Exit evidence: every Gate 0 verification passes from a clean checkout; all five roles pass positive and negative scope tests; no response exposes password hashes or unauthorized restricted fields.
+
+#### Gate 1 - Secure Employee Core (P1)
+
+1. Deliver employee lifecycle, field ownership, effective dates, deactivation, restricted views, and self/manager/HR profile modes.
+2. Deliver private document storage/access, policy versions and acknowledgements, requests/helpdesk workflow, in-system notifications, and complete audit history.
+3. Replace fake/static dashboard and profile values with real sources, honest empty states, and role work queues.
+
+Exit evidence: employee, manager, REMOVED_ROLE, HR Admin, and Super Admin journeys pass browser/API tests; offboarding revokes access without erasing required history; document access is private and audited.
+
+#### Gate 2 - Travel and Assets (P1)
+
+Deliver complete state machines, role ownership, evidence, financial precision, approvals, settlement/custody history, duplicate-submit safety, and concurrency protection.
+
+Exit evidence: legal and illegal transitions, retries, cross-record guesses, concurrent actions, and report totals are tested.
+
+#### Gate 3 - Talent Workflows (P1/P2)
+
+Deliver recruitment, performance, and training as explicit stage-owned workflows with confidential projections, evidence/history, and notification/audit events.
+
+Exit evidence: every stage identifies its actor, allowed inputs, transition, rollback/rescue behavior, released employee view, and negative authorization cases.
+
+#### Gate 4 - Trusted Dashboards and Reports (P2)
+
+Deliver metric definitions, source provenance, date/filter semantics, privacy thresholds, freshness states, authorized drill-downs, controlled exports, and reconciliation tests. Attrition ships here only after employee lifecycle data is trustworthy.
+
+#### Gate 5 - Future Integrations (P3 / deferred)
+
+Email, WhatsApp, SMS, advanced automation, advanced analytics, generic custom-role infrastructure, and other integrations remain deferred until the in-system workflows and audit trail are stable.
+
+### Cross-Cutting Acceptance Matrix
+
+| Area | Required proof |
+|---|---|
+| Schema/release | Prisma validate/generate; migration from empty DB; upgrade from prior snapshot; guarded seed; backup/restore rehearsal |
+| Authentication | Valid/invalid/inactive login; expiration; rotation; revocation; password change/reset/invite; throttling; login audit |
+| Authorization | Five-role matrix across self, direct report, unrelated employee, organization, and restricted fields; read and mutation cases |
+| Contracts | Generated/shared contract; client/server method/path/body/query/params/ID/enum/response parity; stable error codes |
+| Workflows | Valid transitions; invalid/out-of-order/duplicate/concurrent actions; delegation; no self-approval; immutable history |
+| Documents | Type/size rejection; quarantine/scan; private access; signed expiry; unauthorized download; retention; audit |
+| UI | Desktop/mobile; permission-aware navigation/actions; loading/empty/error/forbidden/success; keyboard/focus/labels/contrast |
+| Operations | DB down, unapplied migration, port conflict, stale permission, timeout/retry, health/readiness, logs without PII |
+| Quality | Root build/lint/test/schema/smoke command and CI; no fixture or fake values in production paths |
+
+### Consolidated Decision Register
+
+The user's automatic gstack choice applies these recommended defaults so implementation is not blocked on review questions:
+
+1. Reporting Managers receive direct-report `TEAM` scope only. Delegation must be explicit, time-bounded, audited, and must not permit self-approval.
+2. REMOVED_ROLEs receive operational organization scope but no salary, bank, government ID, final performance recommendation, candidate compensation, or other restricted fields unless explicitly granted.
+3. Use short-lived access tokens plus rotating, server-revocable sessions; revoke on deactivation, password change, privilege change, or administrator action. Final durations remain configuration, with secure defaults and tests.
+4. Use private S3-compatible object storage, quarantine and malware scanning, short-lived authorized downloads, and audit events. Local development may use a compatible local service; raw storage paths never become API access controls.
+5. Use Prisma `Decimal` plus explicit currency; initial business currency is INR while the model remains currency-aware.
+6. Generate request numbers transactionally with a unique constraint and idempotency protection.
+7. Use effective-dated employee/workflow history. Until HR/legal approve a retention schedule, default to no automatic purge; deletion is a separately authorized and audited retention job.
+8. Workflow escalation/delegation is time-bounded and audited; separation of duties prevents the originator from giving final approval where a second actor is required.
+9. Initial operations target: encrypted daily backups, RPO <=24 hours, RTO <=4 hours, and quarterly restore rehearsal with an owner and recorded evidence. Production sign-off may tighten these targets.
+10. Use an OpenAPI-centered executable contract and generate client request/response types; do not maintain parallel hand-written contracts.
+11. A module appears in navigation only after its schema, contract, positive/negative authorization tests, core browser journey, error/empty states, and audit obligations pass.
+12. Approved UI removals and PDF scope boundaries remain unchanged.
+
+### First Implementation Slice
+
+The recommended first implementation request is **Gate 0A: restore the database and executable contract baseline**:
+
+1. Preserve the current dirty working tree and identify the intended canonical `User` and `Employee` model definitions from history and current services.
+2. Repair `schema.prisma`, remove the duplicate role, validate/generate, and reconcile seed data to the approved roles/modules.
+3. Add the initial migration without destructive reset of user data; use a fresh development database for proof.
+4. Align canonical environment/Compose credentials and make readiness check PostgreSQL/schema state.
+5. Make server/client builds pass and add the first DB-backed login plus cross-employee denial smoke tests.
+
+Stop after this slice for review before expanding into the remaining Gate 0 authorization, audit, and CI work.
+
+### Explicit Deferrals and Preserved Decisions
+
+- Attendance, leave/time-off, news, tasks/to-do, payroll processing, dashboard events/to-do, employee directory/org chart, avatars, generic downloads, and social signup/login stay removed.
+- In-system notifications are required; email, WhatsApp, and SMS remain future work.
+- PostgreSQL through Docker is canonical local storage; pgAdmin is optional.
+- HR Management Portal / Pattabhi Agro Foods replaces HRMagnet/PeopleFlow placeholder branding.
+- Do not delete or overwrite the user's current application changes, one-off tools, logs, or supplied documents without a separate scoped implementation decision.
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|---|---|---:|---:|---|---|
+| CEO Review | `/plan-ceo-review` | Scope and product sequence | 1 | COMPLETE - issues open | Prototype/no-go; sequence trust foundation before module breadth |
+| Codex / outside voices | `/codex review` | Independent challenge | 4 | PARTIAL - CLI quota fallback used | Independent CEO, design, engineering, and DX voices converged; one Codex CLI run hit its usage limit and was replaced by a fresh independent agent |
+| Eng Review | `/plan-eng-review` | Architecture and tests | 1 | COMPLETE - P0 blockers | Invalid current schema, record-scope/security leaks, contract drift, no migrations/tests/readiness |
+| Design Review | `/plan-design-review` | UI/UX and trust | 1 | COMPLETE - remediation planned | 2.6/10 current; fake/static trust cues, role journeys, states, responsive and accessibility gaps |
+| DX Review | `/plan-devex-review` | Maintainer experience | 1 | COMPLETE - remediation planned | 2.1/10 current -> 8.4/10 planned; TTHW 30-60+ minutes/blocked -> <=10 minutes target |
+
+**CROSS-MODEL:** Independent reviews agree that database/schema recovery, server-enforced record scope, executable contracts, auditability, reproducible setup, and tests must precede further module expansion.
+
+**VERDICT:** REVIEW COMPLETE; NOT CLEARED FOR UAT OR PRODUCTION. Ready to begin the approved Gate 0A implementation slice, not ready to ship.
+
+NO UNRESOLVED DECISIONS
