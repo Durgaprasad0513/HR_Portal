@@ -623,3 +623,188 @@ Do not reintroduce attendance, leave/time-off, news, tasks/to-do, payroll proces
 ### Challenge-Gate Conclusion
 
 Challenge continued horizontal feature construction. Do not challenge or reverse prior removals. The correct sequence is foundation -> secure employee lifecycle/self-service/documents/requests -> travel/assets -> recruitment/performance/training -> trusted analytics/reports -> future integrations. A module is not ready until its contract executes, legal transitions are audited, and positive plus negative authorization tests pass.
+
+## Phase 4 - Developer Experience Review
+
+### Executive DX Verdict
+
+The repository is not yet a dependable maintainer experience. A developer can clone the project and see a plausible quick-start guide, but the guide, environment templates, Docker configuration, Prisma lifecycle, application contracts, and quality commands disagree. The current malformed Prisma schema makes time to first working login unbounded. Initial DX readiness is **2.1/10**; this is a P0 release concern because unreliable setup prevents every security, workflow, and UAT claim from being reproduced.
+
+The recommended mode is **DX POLISH**: keep the agreed product scope, make the complete maintainer journey deterministic, and defer ecosystem polish until the secure core works.
+
+### Developer Persona Card
+
+| Field | Definition |
+|---|---|
+| Who | An internal maintainer or future engineer working mainly on Windows |
+| Context | Clones `staging`, uses Docker PostgreSQL because native database support is constrained, optionally uses pgAdmin, and maintains React, Express, Prisma, and role-scoped HR workflows |
+| Tolerance | About 10 minutes from a prepared workstation to a verified local login; one actionable recovery path when a prerequisite is missing |
+| Expects | One canonical environment template, reproducible migrations and seed data, one root quality command, clear readiness diagnostics, accurate docs, and safe role fixtures |
+
+### Developer Perspective
+
+I open the README expecting the fastest route to a working HR portal. It tells me to install three dependency trees, start Docker, copy the root environment example into the server, push the Prisma schema, seed, then start two processes. I follow that path, but the Docker password differs from the copied database URL. A second server environment example uses another port and expiry period, so I do not know which file is authoritative. If I get past the connection issue, Prisma cannot validate the current schema, and the repository contains no migration history that would tell me what the database should be. The README still describes removed attendance and leave features, old roles, and obsolete endpoints, so I cannot use it to decide whether a missing screen is intentional. The health endpoint can say OK while PostgreSQL-backed login is unavailable. Generic API errors and split frontend/backend logs tell me that something failed, but not whether the cause is Docker, schema drift, stale seed data, authorization, or a mismatched client contract. I start reading source files and one-off repair scripts. At that point the repository has stopped being self-explanatory, and a first login depends on local knowledge rather than a reproducible workflow.
+
+### Competitive DX Benchmark
+
+| Reference | Starting pattern | Notable choice | Application here |
+|---|---|---|---|
+| Docker Compose | One command starts a declared multi-service stack | Runtime dependencies are encoded together | Start PostgreSQL and pgAdmin with health checks and pinned images |
+| Supabase local workflow | `start` applies migrations and seed, then prints service URLs | Database state is reproducible from version control | Bootstrap database, seed safe fixtures, and print app/API/pgAdmin URLs |
+| Prisma Migrate | Migration history is created, committed, and applied predictably | Schema change history is a source artifact | Replace normal `db push` setup with a committed baseline and migration commands |
+| Current portal | Five documented stages plus manual repair | Steps and credentials disagree; schema cannot validate | Current TTHW: 30-60+ minutes or blocked |
+| Target portal | Install, bootstrap, run, verify | Opinionated defaults with explicit overrides | Target TTHW: <=10 minutes on a prepared workstation |
+
+Benchmark references: Docker Compose documentation, Supabase local development workflow, and Prisma Migrate documentation. Exact third-party timing is not used as a release claim; the portal target is measured against its own clean Windows checkout.
+
+### Magical Moment Specification
+
+The maintainer's first meaningful moment is not a green Vite page. It is signing in as a seeded role and seeing a real, database-backed, permission-correct dashboard.
+
+Target delivery:
+
+```text
+npm ci
+npm run bootstrap:dev
+npm run dev
+
+READY database=<healthy> schema=<current> seed=<development>
+APP   http://localhost:5173
+API   http://localhost:5000/api
+ADMIN admin@local.example / <documented development-only secret>
+```
+
+`bootstrap:dev` must verify supported Node/Docker versions, create a local environment from one template without overwriting an existing secret, start and wait for PostgreSQL, apply committed migrations, run an environment-gated idempotent development seed, and verify database readiness. It must report the problem, likely cause, and exact next action when a step fails. pgAdmin remains optional.
+
+### Developer Journey Map
+
+| Stage | Current experience | Required resolution | Status |
+|---|---|---|---|
+| Discover | README advertises removed modules, old roles, and old endpoints | Rewrite from the PDF and approved decisions; label implemented, planned, and deferred areas | P1 planned |
+| Install | Root, client, and server installs are manual; supported versions are not pinned | One root install contract, Node/package-manager pinning, Windows + Docker prerequisites | P1 planned |
+| First run | Two environment examples and Compose disagree; Prisma is invalid; no migrations | Canonical env, fail-fast configuration, Compose health, baseline migration, safe seed, bootstrap command | P0 planned |
+| First login | Credentials are embedded in stale docs; no automated smoke path | Development-only role fixtures and a DB-backed login/authorization smoke test | P0 planned |
+| Real usage | Client methods, fields, enums, and IDs drift from server contracts | Shared executable contracts and one create/read smoke path per scoped module | P0 planned |
+| Debug | Process-only health check, generic errors, split logs, no troubleshooting map | Liveness/readiness split, stable error codes, correlation IDs, role-safe logs, troubleshooting guide | P1 planned |
+| Test | No tests; lint scripts reference a missing tool; client build fails | Root verify command plus unit, contract, authorization, migration, and browser smoke suites in CI | P0/P1 planned |
+| Upgrade | `db push`, ignored migrations, latest pgAdmin image, destructive seed | Versioned migrations, pinned runtime images, backup/restore and rollback guidance, changelog | P1 planned |
+
+### First-Time Developer Confusion Report
+
+| Time | Observation | Resolution in plan |
+|---|---|---|
+| T+0:00 | README says `git clone <repo-url>` and `cd hr-management-app`, not this repository's verified path | Replace placeholders with clone-agnostic, root-relative instructions |
+| T+2:00 | Developer installs dependencies in three directories and cannot tell whether all lockfiles are authoritative | Define one root installation command and workspace/package policy |
+| T+5:00 | Docker starts, but the copied root database password does not match Compose | One canonical env template generated from compatible Compose defaults |
+| T+8:00 | Server may use 3000 or 5000 depending on which example was followed | One port contract; bootstrap prints the resolved URLs |
+| T+10:00 | Prisma validation fails and there is no migration history to recover from | Repair schema first, commit baseline migration, block bootstrap on validation failure |
+| T+15:00 | Health can report OK while login cannot reach PostgreSQL | Separate liveness from database/schema readiness |
+| T+20:00 | README and UI disagree about roles and intentionally removed modules | Scope/status matrix generated from the authoritative plan |
+| T+30:00+ | Developer reads source, logs, and undocumented `fix_*` scripts to infer intended state | Troubleshooting guide and governed `tools/` directory; retire obsolete artifacts only after review |
+
+### Eight-Pass DX Scorecard
+
+| Dimension | Current | Planned | Evidence and 10/10 gap |
+|---|---:|---:|---|
+| Getting Started | 2/10 | 9/10 | README lines 38-97 requires many manual steps; canonical bootstrap and clean-clone proof are missing |
+| API/interface consistency | 2/10 | 9/10 | Client/server methods, payload fields, enum values, validation shape, and CUID/UUID assumptions drift |
+| Error messages/debugging | 3/10 | 8/10 | Generic errors and process-only health do not identify database/schema/contract failures or corrective action |
+| Documentation/learning | 3/10 | 9/10 | README lines 5-21 and 140-155 describe removed features, old roles, and stale APIs; no architecture or permissions guide |
+| Upgrade/migration | 1/10 | 9/10 | `.gitignore` excludes migrations; normal setup uses `db push`; no backup, restore, compatibility, or rollback contract |
+| Developer environment/tooling | 3/10 | 8/10 | No CI/tests/version pinning; lint is unavailable; many unmanaged scripts and generated artifacts occupy the root |
+| Community/maintainer contract | 1/10 | 7/10 | No contributing guide, issue templates, ownership map, changelog, or compatibility policy |
+| Measurement/feedback | 1/10 | 8/10 | No setup, smoke, test, coverage, migration-rehearsal, or DX timing evidence is collected |
+| **Overall** | **2.1/10** | **8.4/10** | Planned score depends on implementation and a fresh-checkout boomerang review; it is not current readiness |
+
+TTHW classification: **Red Flag / blocked** now; target **Needs Work-to-Competitive for an internal full-stack app** at <=10 minutes on a prepared workstation. The first Docker image pull may exceed the target and must be reported separately from repeat setup time.
+
+### Error Paths That Must Become Actionable
+
+| Failure | Current signal | Required developer signal |
+|---|---|---|
+| PostgreSQL unavailable | Login fails while `/api/health` can remain green | `DB_UNAVAILABLE`, readiness red, checked host/port, Docker recovery command, correlation ID |
+| Prisma/schema drift | Validator emits many low-level relation errors | Bootstrap stops before startup, names schema validation as the failed gate, points to migration/schema recovery guide |
+| Invalid request contract | Generic `Validation failed` or page toast | Stable code, field path, expected shape, safe received summary, contract-doc link |
+| Expired/revoked/inactive session | Broad 401 redirect | Safe reason code, preserved destination, re-authentication action, server audit event |
+| Client/server route mismatch | 404/405 or generic mutation failure | Contract test fails in CI with expected versus actual method/path before browser use |
+| Unauthorized record access | Generic forbidden or accidental data | Server-owned scope predicate, stable safe 403/404 behavior, negative role test |
+
+### What Already Exists and Should Be Reused
+
+- Root `npm run dev` already launches the server and client together.
+- Docker Compose already declares PostgreSQL and optional pgAdmin with a persistent volume.
+- Root, client, and server lockfiles can support repeatable installs once their ownership policy is documented.
+- Prisma seed data already provides representative roles and employees, but it must be brought into current scope and guarded against destructive use.
+- Express has shared authentication, validation, response, and error middleware that can carry stable error codes and correlation IDs.
+- TypeScript, Vite hot reload, `tsx watch`, and TanStack Query provide a fast feedback foundation.
+- Existing development logs and repair scripts contain diagnostic history; classify them before retiring or moving them rather than deleting blindly.
+
+### DX Implementation Tasks
+
+- [ ] **DX-T1 (P0, human: ~1 day / CC: ~1h)** - Database contract - Restore a canonical valid Prisma schema and establish a committed migration baseline.
+  - Surfaced by: First run and Upgrade passes; current validation has 42 errors and `.gitignore` excludes migrations.
+  - Files: `server/prisma/schema.prisma`, `server/prisma/migrations/`, `.gitignore`, root/server package scripts.
+  - Verify: validate/generate; empty DB migrate + seed + login; prior snapshot migrate + smoke; restore rehearsal.
+- [ ] **DX-T2 (P0, human: ~1 day / CC: ~1h)** - Bootstrap - Add a safe, idempotent clean-clone setup and diagnostics command.
+  - Surfaced by: Getting Started pass; current five-stage path has conflicting defaults.
+  - Files: root `package.json`, a reviewed `tools/` bootstrap script, environment templates, `docker-compose.yml`.
+  - Verify: clean Windows checkout reaches database readiness and first login without source inspection.
+- [ ] **DX-T3 (P0, human: ~4h / CC: ~30m)** - Configuration - Make one environment template authoritative and reject unsafe/missing configuration before listening.
+  - Surfaced by: Docker/env password, 3000/5000 port, token-expiry, and default-secret conflicts.
+  - Files: `.env.example`, `server/.env.example`, `docker-compose.yml`, `server/src/config/index.ts`, `server/src/server.ts`.
+  - Verify: missing/unsafe values fail with actionable messages; approved development defaults work unchanged.
+- [ ] **DX-T4 (P0, human: ~2 days / CC: ~2h)** - Contracts - Align client/server methods, IDs, fields, enums, responses, and validation shapes.
+  - Surfaced by: API/interface pass and engineering ENG-F2/6/7.
+  - Files: `client/src/api/`, shared types, `server/src/modules/**`, `server/src/middleware/validate.middleware.ts`.
+  - Verify: executable contract matrix plus one positive and relevant negative smoke flow per in-scope module.
+- [ ] **DX-T5 (P0, human: ~1 day / CC: ~1h)** - Quality gate - Make build, schema, lint, tests, and DB-backed login smoke executable from the root.
+  - Surfaced by: broken client build, missing ESLint dependency, and absence of tests/CI.
+  - Files: package manifests, lint/test configuration, test suites, `.github/workflows/`.
+  - Verify: one root command and pull-request workflow pass from a clean checkout.
+- [ ] **DX-T6 (P1, human: ~4h / CC: ~30m)** - Documentation - Rewrite README to match the PDF, five roles, current modules, Docker workflow, and approved deferrals.
+  - Surfaced by: Documentation pass; current README is materially stale.
+  - Files: `README.md` and focused docs under `docs/`.
+  - Verify: a maintainer unfamiliar with the repo completes setup using docs only.
+- [ ] **DX-T7 (P1, human: ~1 day / CC: ~1h)** - Diagnostics - Split liveness/readiness and add safe structured errors, correlation IDs, UI error states, and recovery guidance.
+  - Surfaced by: Error Messages pass and the observed database/login outage.
+  - Files: server config/app/error middleware, client API/query/error UI, `docs/troubleshooting.md`.
+  - Verify: DB-down, invalid payload, expired session, forbidden record, route drift, and 500 drills each identify next action.
+- [ ] **DX-T8 (P1, human: ~1 day / CC: ~1h)** - Release safety - Define migration, development seed, backup/restore, image pinning, changelog, and rollback procedures.
+  - Surfaced by: Upgrade pass; seed deletes records and `pgadmin:latest` is unpinned.
+  - Files: seed/migration scripts, Compose, `CHANGELOG.md`, `docs/operations.md`.
+  - Verify: destructive seed refuses non-development environments; migration and restore rehearsals are recorded.
+- [ ] **DX-T9 (P2, human: ~1 day / CC: ~1h)** - Maintainer contract - Add architecture, permissions, API contract, testing, contribution, ownership, and compatibility documentation.
+  - Surfaced by: Documentation and Community passes.
+  - Files: `docs/architecture.md`, `docs/permissions.md`, `docs/api-contracts.md`, `docs/testing.md`, `CONTRIBUTING.md`, issue templates.
+  - Verify: review checklist can locate each source of truth in under two minutes.
+- [ ] **DX-T10 (P2, human: ~4h / CC: ~30m)** - Repository hygiene - Classify, move, document, or retire one-off repair scripts, logs, reports, and generated artifacts.
+  - Surfaced by: Developer Environment pass; the root contains many unmanaged `fix_*`, `update_*`, log, PDF, DOCX, and temporary files.
+  - Files: repository root, `.gitignore`, governed `tools/` and artifact locations.
+  - Verify: clean checkout contains only intentional source/doc assets and every retained tool has ownership, purpose, safety, and usage notes.
+- [ ] **DX-T11 (P2, human: ~4h / CC: ~30m)** - Measurement - Record setup time, readiness, first login, smoke results, quality-pass rate, and top failure categories without HR PII.
+  - Surfaced by: Measurement pass.
+  - Files: CI artifacts, smoke tooling, issue templates, telemetry/observability configuration.
+  - Verify: fresh-checkout `/devex-review` can compare measured TTHW and failure rates with this plan.
+
+The gstack JSONL task export is not available in this environment because `jq` is not installed. The markdown task list above is the authoritative DX handoff for this run.
+
+### Explicitly Not in DX Scope
+
+- Do not introduce a public SDK, CLI product, hosted playground, or external developer platform; this is an internal application maintainer journey.
+- Do not replace React, Express, Prisma, PostgreSQL, Docker, or pgAdmin merely to improve onboarding.
+- Do not restore attendance, leave, news, tasks, payroll processing, dashboard events/to-do, directory/org chart, avatars, generic downloads, or social login/signup.
+- Do not add external notification channels, advanced analytics, custom-role infrastructure, or broad exports before secure source workflows are proven.
+- Do not delete one-off scripts, logs, or supplied artifacts during review; classify them during implementation with the user’s ownership preserved.
+
+### DX Decisions Applied Automatically
+
+1. Primary product type: internal full-stack web application and service, with repository documentation and local Docker platform surfaces.
+2. Primary persona: Windows maintainer using Docker PostgreSQL and optional pgAdmin.
+3. Mode: DX POLISH because the agreed scope is correct but every maintainer touchpoint needs a reliable contract.
+4. Target: <=10 minutes to first DB-backed role login on a prepared workstation; report first image-pull time separately.
+5. Magical moment: one safe bootstrap followed by a real, permission-correct dashboard login.
+6. Resolve every critical confusion point in the plan; defer public ecosystem polish.
+
+### DX Challenge-Gate Conclusion
+
+Challenge demo-first horizontal expansion. Preserve the approved product and UI scope, but stop treating a locally running page as proof of a reproducible system. The required maintainer contract is: clone -> install -> validate environment -> start ready PostgreSQL -> apply versioned migrations -> seed isolated development data -> start services -> prove database readiness -> log in -> prove role isolation -> run one root quality gate. No module should advance until this path works from a clean Windows checkout.
