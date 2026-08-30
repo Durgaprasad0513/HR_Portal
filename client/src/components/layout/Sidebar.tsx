@@ -139,15 +139,6 @@ export function Sidebar() {
             <Search className="h-4 w-4 text-white/80" />
           </button>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200 ease-out hover:bg-white/10 hover:-translate-y-0.5 active:scale-95"
-            title="Toggle theme"
-          >
-            <Sun className="h-4 w-4 text-white/80 hidden dark:block" />
-            <Moon className="h-4 w-4 text-white/80 block dark:hidden" />
-          </button>
 
           {/* Notifications */}
           <NavLink
