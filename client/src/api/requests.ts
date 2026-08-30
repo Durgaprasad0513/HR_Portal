@@ -15,11 +15,11 @@ export const requestsApi = {
     return data;
   },
   updateStatus: async (id: string, payload: any) => {
-    const { data } = await apiClient.patch<ApiResponse<any>>(`/requests/${id}/status`, payload);
+    const { data } = await apiClient.put<ApiResponse<any>>(`/requests/${id}/status`, payload);
     return data;
   },
   assign: async (id: string, payload: any) => {
-    const { data } = await apiClient.patch<ApiResponse<any>>(`/requests/${id}/assign`, payload);
+    const { data } = await apiClient.put<ApiResponse<any>>(`/requests/${id}/assign`, payload);
     return data;
   }
 };

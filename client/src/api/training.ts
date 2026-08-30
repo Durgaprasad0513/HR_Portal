@@ -25,5 +25,13 @@ export const trainingApi = {
   getMyTrainings: async () => {
     const { data } = await apiClient.get<ApiResponse<any[]>>('/training/my-trainings');
     return data;
+  },
+  submitFeedback: async (id: string, payload: any) => {
+    const { data } = await apiClient.post<ApiResponse<any>>(`/training/${id}/feedback`, payload);
+    return data;
+  },
+  recordAssessment: async (id: string, payload: any) => {
+    const { data } = await apiClient.post<ApiResponse<any>>(`/training/${id}/assessments`, payload);
+    return data;
   }
 };

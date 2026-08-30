@@ -1,10 +1,9 @@
-import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { CheckCircle, Clock, BookOpen, Monitor, Ticket, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function EmployeeDashboard() {
-  const { user } = useAuth();
+  const {} = useAuth();
   
   return (
     <div className="space-y-6">

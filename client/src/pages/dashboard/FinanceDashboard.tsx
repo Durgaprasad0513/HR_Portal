@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { CreditCard, DollarSign, Receipt, PiggyBank } from 'lucide-react';
 
@@ -11,7 +10,7 @@ export function FinanceDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Settlements</p>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">$12,450</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">₹12,450</h3>
               </div>
               <div className="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
                 <Receipt className="h-6 w-6 text-amber-600 dark:text-amber-400" />
@@ -28,7 +27,7 @@ export function FinanceDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Travel Advances</p>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">$8,200</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">₹8,200</h3>
               </div>
               <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
                 <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -88,7 +87,7 @@ export function FinanceDashboard() {
                   <p className="text-xs text-gray-500">Submitted by Mike Ross</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">$345.00</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">₹345.00</p>
                   <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Pending Review</span>
                 </div>
               </div>
@@ -99,7 +98,7 @@ export function FinanceDashboard() {
                   <p className="text-xs text-gray-500">Submitted by IT Dept</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">$1,250.00</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">₹1,250.00</p>
                   <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Approved</span>
                 </div>
               </div>

@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, LogOut, User, Search, Sun, Moon } from 'lucide-react';
+import { Menu, LogOut, User, Search, Sun, Moon, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CommandPalette } from '@/components/ui/CommandPalette';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useTheme } from 'next-themes';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notificationsApi } from '@/api/notifications';
 
 export function Header() {
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  const { data: notifs } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => notificationsApi.getAll().then(res => res.data),
+    refetchInterval: 60000 // Poll every minute
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: (id: string) => notificationsApi.markRead(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  });
+
+  const unreadCount = notifs?.filter(n => !n.isRead).length || 0;
 
   return (
     <>
@@ -41,9 +60,50 @@ export function Header() {
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
           
+          <div className="relative">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => { setNotifOpen(!notifOpen); setDropdownOpen(false); }}
+              className="text-gray-600 dark:text-gray-300 relative"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-2 h-2 w-2 rounded-full bg-red-500"></span>
+              )}
+            </Button>
+            
+            {notifOpen && (
+              <div className="absolute right-0 top-10 mt-2 w-80 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-sm text-navy-900 dark:text-white flex justify-between">
+                  Notifications
+                  <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{unreadCount} new</span>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {notifs && notifs.length > 0 ? (
+                    notifs.map(n => (
+                      <div 
+                        key={n.id} 
+                        className={`p-3 border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${n.isRead ? 'opacity-60' : ''}`}
+                        onClick={() => {
+                          if (!n.isRead) markReadMutation.mutate(n.id);
+                        }}
+                      >
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{n.title || n.notificationType}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{n.message}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-sm text-gray-500">No notifications</div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div 
             className="flex items-center cursor-pointer space-x-2"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
+            onClick={() => { setDropdownOpen(!dropdownOpen); setNotifOpen(false); }}
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold">
               {user?.email?.[0].toUpperCase()}
@@ -66,7 +126,10 @@ export function Header() {
               </button>
               <button 
                 className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-gray-700"
-                onClick={logout}
+                onClick={() => {
+                  setDropdownOpen(false);
+                  setLogoutConfirmOpen(true);
+                }}
               >
                 <LogOut className="mr-2 h-4 w-4" /> Logout
               </button>
@@ -75,6 +138,15 @@ export function Header() {
         </div>
       </header>
       <CommandPalette open={cmdOpen} setOpen={setCmdOpen} />
+      
+      <ConfirmDialog 
+        isOpen={logoutConfirmOpen}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of the HR portal?"
+        confirmLabel="Log Out"
+        onConfirm={logout}
+        onCancel={() => setLogoutConfirmOpen(false)}
+      />
     </>
   );
 }

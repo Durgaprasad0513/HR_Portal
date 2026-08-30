@@ -17,6 +17,7 @@ enum Role {
   ADMIN
   HR
   REMOVED_ROLE
+  REMOVED_ROLE
   MANAGER
   EMPLOYEE
 }
@@ -249,121 +250,19 @@ enum NotificationType {
 // ============================================================
 // Models
 // ============================================================
-model User {
-  id         String    @id @default(cuid())
-  email      String    @unique
-  password   String
-  role       Role      @default(EMPLOYEE)
-  isActive   Boolean   @default(true)
-  employeeId String?   @unique
-  employee   Employee? @relation(fields: [employeeId], references: [id])
 
-  failedLoginAttempts   Int       @default(0)
-  passwordLastChangedAt DateTime?
-  twoFactorEnabled      Boolean   @default(false)
-  sessionTimeoutMinutes Int       @default(30)
-  deactivatedAt         DateTime?
-  tokenVersion          Int       @default(0)
-
-  loginHistory           LoginHistory[]     @relation("UserLoginHistory")
-  auditLogs              AuditLog[]
-  uploadedDocuments      EmployeeDocument[] @relation("DocumentUploader")
-  verifiedTravelRequests TravelRequest[]    @relation("TravelVerifier")
-  uploadedPolicies       Policy[]           @relation("PolicyUploader")
-  assignedRequests       EmployeeRequest[]  @relation("RequestAssignee")
-  permissionsCreated     ModulePermission[] @relation("PermissionCreator")
-
-  createdAt DateTime @default(now())
+  deactivatedAt     DateTime?
+  tokenVersion      Int           @default(0)
+createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
 }
 
-model Employee {
-  id           String    @id @default(cuid())
-  employeeCode String    @unique
-  firstName    String
-  lastName     String
-  email        String    @unique
-  phone        String?
-  dateOfBirth  DateTime?
-  gender       Gender?
-  address      String?
-  city         String?
-  state        String?
-  zipCode      String?
-  country      String?   @default("India")
 
-  maritalStatus            MaritalStatus?
-  alternateMobile          String?
-  personalEmail            String?
-  permanentAddress         String?
-  emergencyContactName     String?
-  emergencyContactRelation String?
-  emergencyContactNumber   String?
-
-  joiningDate  DateTime
-  designation  String
-  salary       Decimal?
-  status       EmployeeStatus @default(ACTIVE)
-  profilePhoto String?
-
-  grade            String?
-  location         String?
-  employmentType   EmploymentType @default(PERMANENT)
-  probationPeriod  Int?
-  confirmationDate DateTime?
-  resignationDate  DateTime?
-  noticePeriod     Int?
-  lastWorkingDate  DateTime?
-  exitType         ExitType?
-  exitReason       String?
-
-  ctc               Decimal?
-  basicSalary       Decimal?
-  grossSalary       Decimal?
-  bankName          String?
-  bankAccountNumber String?
-  ifscCode          String?
-  pfNumber          String?
-  uanNumber         String?
-  esiNumber         String?
-  panNumber         String?
-  aadhaarNumber     String?
-  statutoryRemarks  String?
-
-  isActive      Boolean   @default(true)
-  deactivatedAt DateTime?
-
-  departmentId String?
-  department   Department? @relation("DepartmentEmployees", fields: [departmentId], references: [id])
-
-  managerId    String?
-  manager      Employee?  @relation("ManagerSubordinates", fields: [managerId], references: [id])
-  subordinates Employee[] @relation("ManagerSubordinates")
-
-  user           User?
-  attendance     Attendance[]
-  leaveRequests  Leave[]        @relation("EmployeeLeaves")
-  approvedLeaves Leave[]        @relation("ApproverLeaves")
-  leaveBalances  LeaveBalance[]
-
-  headOfDepartment Department? @relation("DepartmentHead")
-
-  documents              EmployeeDocument[]
-  travelRequests         TravelRequest[]         @relation("EmployeeTravelRequests")
-  approvedTravelRequests TravelRequest[]         @relation("TravelApprover")
-  assignedAssets         Asset[]                 @relation("AssetAssignee")
-  raisedRequisitions     Requisition[]           @relation("RequisitionRaiser")
-  interviewedCandidates  Candidate[]             @relation("CandidateInterviewer")
-  performanceReviews     PerformanceReview[]     @relation("EmployeeReviews")
-  approvedReviews        PerformanceReview[]     @relation("ReviewApprover")
-  trainingParticipations TrainingParticipant[]
-  employeeRequests       EmployeeRequest[]
-  policyAcknowledgements PolicyAcknowledgement[]
-  notifications          Notification[]
-
-  createdAt DateTime @default(now())
+  isActive          Boolean       @default(true)
+  deactivatedAt     DateTime?
+createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("employees")

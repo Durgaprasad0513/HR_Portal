@@ -1,10 +1,9 @@
-import React from 'react';
 
 import { cn } from '@/lib/utils';
 
 export function Card({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm", className)} {...props}>
+    <div className={cn("rounded-xl border border-slate-border bg-surface text-text-body shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out", className)} {...props}>
       {children}
     </div>
   );

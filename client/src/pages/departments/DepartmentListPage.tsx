@@ -1,4 +1,3 @@
-import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -33,7 +32,8 @@ export default function DepartmentListPage() {
           icon={Building2}
           title="No Departments found"
           description="Get started by creating a new department."
-          action={<Button onClick={() => navigate('/departments/new')}><Plus className="mr-2 h-4 w-4" /> Add Department</Button>}
+          actionLabel="Add Department"
+          onAction={() => navigate('/departments/new')}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

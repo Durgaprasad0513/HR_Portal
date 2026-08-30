@@ -9,15 +9,17 @@ interface Column<T> {
 }
 
 interface DataTableProps<T> {
+  emptyMessage?: string;
   columns: Column<T>[];
   data: T[];
   keyField: keyof T;
   selectable?: boolean;
   pageSize?: number;
   onSelectionChange?: (selected: T[]) => void;
+  onRowClick?: (row: T) => void;
 }
 
-export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 10, onSelectionChange }: DataTableProps<T>) {
+export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 10, onSelectionChange, onRowClick }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
@@ -110,13 +112,15 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
                 return (
                   <tr
                     key={key}
+                    onClick={() => onRowClick && onRowClick(row)}
                     className={cn(
                       "hover:bg-slate-50 transition-colors",
+                      onRowClick && "cursor-pointer",
                       isSelected && "bg-accent-50"
                     )}
                   >
                     {selectable && (
-                      <td className="px-4 py-3 w-10">
+                      <td className="px-4 py-3 w-10" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}

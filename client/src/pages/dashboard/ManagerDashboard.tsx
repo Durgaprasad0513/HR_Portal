@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Users, AlertCircle, TrendingUp, Calendar } from 'lucide-react';
 
@@ -88,7 +87,7 @@ export function ManagerDashboard() {
                   <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-semibold">AD</div>
                   <div>
                     <p className="text-sm font-medium dark:text-gray-200">Alice Doe</p>
-                    <p className="text-xs text-gray-500">Expense Report: $340.50</p>
+                    <p className="text-xs text-gray-500">Expense Report: ₹340.50</p>
                   </div>
                 </div>
                 <div className="flex gap-2">

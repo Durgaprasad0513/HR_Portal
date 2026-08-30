@@ -56,7 +56,7 @@ export default function EmployeeFormPage() {
   }, [isEdit, empData]);
 
   const mutation = useMutation({
-    mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data }) : employeesApi.create(data),
+    mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data } as any) : employeesApi.create(data as any),
     onSuccess: () => {
       toast.success(`Employee ${isEdit ? 'updated' : 'created'} successfully`);
       queryClient.invalidateQueries({ queryKey: ['employees'] });

@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { employeesApi } from '@/api/employees';
 import { departmentsApi } from '@/api/departments';
+import { useAuth } from '@/contexts/AuthContext';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { Plus, Search, MoreHorizontal, Download, Phone, Mail } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Plus, Search, MoreHorizontal, UsersRound } from 'lucide-react';
 import { Employee } from '@/types';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/Card';
-
-type Tab = 'Team members' | 'Directory' | 'Org chart';
 
 export default function EmployeeListPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('Team members');
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   
@@ -31,16 +28,6 @@ export default function EmployeeListPage() {
     queryFn: () => employeesApi.getAll({ search, departmentId }),
   });
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'success' | 'danger' | 'warning' | 'default'> = {
-      ACTIVE: 'success',
-      TERMINATED: 'danger',
-      ON_LEAVE: 'warning',
-      INACTIVE: 'default',
-    };
-    return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
-  };
-
   const getEmpTypeBadge = (type: string = 'Full time') => {
     if (type === 'Full time') return <Badge variant="success">Full time</Badge>;
     if (type === 'Part time') return <Badge variant="warning">Part time</Badge>;
@@ -48,14 +35,6 @@ export default function EmployeeListPage() {
   };
 
   const columns = [
-    { 
-      header: 'Avatar', 
-      accessor: (row: Employee) => (
-        <div className="h-8 w-8 rounded-full bg-accent-100 flex items-center justify-center text-accent-700 font-bold text-xs">
-          {row.firstName[0]}{row.lastName[0]}
-        </div>
-      )
-    },
     { 
       header: 'Name', 
       accessor: (row: Employee) => (
@@ -78,7 +57,10 @@ export default function EmployeeListPage() {
     {
       header: 'Action',
       accessor: (row: Employee) => (
-        <button onClick={() => navigate(`/employees/${row.id}`)} className="text-gray-400 hover:text-navy-900 transition-colors">
+        <button 
+          onClick={(e) => { e.stopPropagation(); navigate(`/employees/${row.id}`); }} 
+          className="text-gray-400 hover:text-navy-900 transition-colors"
+        >
           <MoreHorizontal className="h-5 w-5" />
         </button>
       ),
@@ -87,26 +69,8 @@ export default function EmployeeListPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+      <div className="border-b border-gray-200 pb-4">
         <h1 className="text-2xl font-bold tracking-tight text-navy-900">Employee Management</h1>
-        
-        <div className="flex bg-gray-100 p-1 rounded-full w-full sm:w-auto">
-          {(['Team members', 'Directory', 'Org chart'] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "px-4 py-1.5 text-sm font-medium rounded-full transition-colors flex-1 sm:flex-none text-center",
-                activeTab === tab 
-                  ? "bg-white text-navy-900 shadow-sm" 
-                  : "text-gray-500 hover:text-gray-700"
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Action Bar */}
@@ -138,74 +102,55 @@ export default function EmployeeListPage() {
             ))}
           </select>
 
-          <button className="text-sm text-gray-500 hover:text-navy-900 underline underline-offset-2">
+          <button
+            type="button"
+            onClick={() => {
+              setSearch('');
+              setDepartmentId('');
+            }}
+            disabled={!search && !departmentId}
+            className="text-sm text-gray-500 hover:text-navy-900 underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline"
+          >
             Clear filters
           </button>
         </div>
 
-        {/* Buttons */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Button variant="outline" className="gap-2 text-gray-600">
-            <Download className="w-4 h-4" /> Download
-          </Button>
-          <Button onClick={() => navigate('/employees/new')} className="gap-2">
-            <Plus className="w-4 h-4" /> Add new
-          </Button>
+        <div className="shrink-0">
+          {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+            <Button onClick={() => navigate('/employees/new')} className="gap-2">
+              <Plus className="w-4 h-4" /> Add new
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Content Area */}
       {isLoading ? (
         <div className="py-12"><LoadingSpinner /></div>
-      ) : activeTab === 'Team members' ? (
+      ) : empData?.data?.length === 0 ? (
+        <EmptyState 
+          icon={UsersRound}
+          title="No employees found"
+          description={search || departmentId ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
+          actionLabel={search || departmentId ? "Clear Filters" : ((user?.role === 'ADMIN' || user?.role === 'HR') ? "Add Employee" : undefined)}
+          onAction={() => {
+            if (search || departmentId) {
+              setSearch('');
+              setDepartmentId('');
+            } else if (user?.role === 'ADMIN' || user?.role === 'HR') {
+              navigate('/employees/new');
+            }
+          }}
+        />
+      ) : (
         <DataTable 
           columns={columns} 
           data={empData?.data || []} 
           keyField="id" 
           selectable
           pageSize={10}
+          onRowClick={(row) => navigate(`/employees/${row.id}`)}
         />
-      ) : activeTab === 'Directory' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {empData?.data?.map((emp) => (
-            <Card key={emp.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div className="h-20 w-20 rounded-full bg-accent-100 flex items-center justify-center text-accent-700 font-bold text-2xl mb-4 border-4 border-white shadow-sm ring-2 ring-gray-50">
-                  {emp.firstName[0]}{emp.lastName[0]}
-                </div>
-                <h3 className="font-bold text-navy-900 text-lg">{emp.firstName} {emp.lastName}</h3>
-                <p className="text-sm text-gray-500 mb-4">{emp.designation}</p>
-                
-                <div className="w-full space-y-2 mb-6">
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-600">
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>{emp.phone || '202-555-0123'}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-600">
-                    <Mail className="w-3.5 h-3.5" />
-                    <span className="truncate">{emp.email}</span>
-                  </div>
-                </div>
-
-                <Button 
-                  variant="outline" 
-                  className="w-full text-accent-600 border-accent-200 hover:bg-accent-50"
-                  onClick={() => navigate(`/employees/${emp.id}`)}
-                >
-                  View profile
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="p-12 text-center text-gray-500 flex flex-col items-center justify-center min-h-[400px]">
-             <img src="https://ui-avatars.com/api/?name=Org+Chart&background=F1F5F9&color=94A3B8&size=100" alt="Org Chart placeholder" className="mb-4 rounded-full" />
-             <p className="text-lg font-medium text-navy-900 mb-2">Org Chart View</p>
-             <p>The organizational chart view is currently under development.</p>
-          </CardContent>
-        </Card>
       )}
     </div>
   );

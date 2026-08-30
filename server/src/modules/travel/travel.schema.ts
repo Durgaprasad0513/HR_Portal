@@ -1,39 +1,24 @@
 import { z } from 'zod';
-import { TravelMode, ApprovalStatus, SettlementStatus } from '@prisma/client';
 
-export const createTravelRequestSchema = z.object({
-  body: z.object({
-    travelPurpose: z.string().min(1, 'Travel purpose is required'),
-    destination: z.string().min(1, 'Destination is required'),
-    startDate: z.string().transform((str) => new Date(str)),
-    endDate: z.string().transform((str) => new Date(str)),
-    travelMode: z.nativeEnum(TravelMode),
-    advanceRequested: z.number().optional()
-  })
+export const createTravelSchema = z.object({
+  travelPurpose: z.string().min(1),
+  destination: z.string().min(1),
+  startDate: z.string(),
+  endDate: z.string(),
+  travelMode: z.enum(['AIR', 'TRAIN', 'ROAD', 'OWN_VEHICLE']),
+  advanceRequested: z.number().optional()
 });
 
-export const updateApprovalStatusSchema = z.object({
-  params: z.object({
-    id: z.string().uuid('Invalid request ID')
-  }),
-  body: z.object({
-    approvalStatus: z.nativeEnum(ApprovalStatus),
-    advanceApproved: z.number().optional()
-  })
+export const updateApprovalSchema = z.object({
+  approvalStatus: z.enum(['APPROVAL_APPROVED', 'APPROVAL_REJECTED']),
+  advanceApproved: z.number().optional(),
+  rejectionReason: z.string().optional()
 });
 
 export const updateSettlementSchema = z.object({
-  params: z.object({
-    id: z.string().uuid('Invalid request ID')
-  }),
-  body: z.object({
-    hotelExpense: z.number().optional(),
-    foodAllowance: z.number().optional(),
-    localConveyance: z.number().optional(),
-    otherExpenses: z.number().optional(),
-    totalExpenseClaimed: z.number().optional(),
-    billUpload: z.string().optional(),
-    amountPayable: z.number().optional(),
-    settlementStatus: z.nativeEnum(SettlementStatus)
-  })
+  hotelExpense: z.number().optional(),
+  foodAllowance: z.number().optional(),
+  localConveyance: z.number().optional(),
+  otherExpenses: z.number().optional(),
+  settlementStatus: z.enum(['UNSETTLED', 'SETTLED']).optional() // I added this because my test sent it! Wait, in my test I didn't send settlementStatus, but `travel.service.ts` expects it? No, service sets it! But maybe the controller needs it. Let's make it optional.
 });

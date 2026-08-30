@@ -3,38 +3,30 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Search, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Tab = 'My Performance' | 'Team Performance Summary';
+
+import { useQuery } from '@tanstack/react-query';
+import { performanceApi } from '@/api/performance';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function PerformanceListPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('My Performance');
   
-  // Mock data structure matching the timeline view from Visily Page 8
-  const timelineData = [
-    {
-      year: '2023',
-      reviews: [
-        { title: 'Annual Performance Review 2023', employee: 'David Smith', date: 'Dec 01 - Dec 15, 2023', period: '2023', status: 'In Progress' },
-        { title: 'Q3 Performance Review', employee: 'David Smith', date: 'Oct 01 - Oct 15, 2023', period: 'Q3 2023', status: 'Completed' },
-        { title: 'Mid-year Performance Review', employee: 'David Smith', date: 'Jul 01 - Jul 15, 2023', period: 'Mid-year 2023', status: 'Completed' },
-      ]
-    },
-    {
-      year: '2022',
-      reviews: [
-        { title: 'Annual Performance Review 2022', employee: 'David Smith', date: 'Dec 01 - Dec 15, 2022', period: '2022', status: 'Closed' },
-      ]
-    }
-  ];
+  const { data: reviews, isLoading } = useQuery({
+    queryKey: ['performance', activeTab],
+    queryFn: () => activeTab === 'My Performance' ? performanceApi.getMyReviews().then(res => res.data) : performanceApi.getAll().then(res => res.data)
+  });
 
   const getStatusBadge = (status: string) => {
     switch(status) {
-      case 'In Progress': return <Badge variant="info">In Progress</Badge>;
-      case 'Completed': return <Badge variant="success">Completed</Badge>;
-      case 'Closed': return <Badge variant="default">Closed</Badge>;
+      case 'DRAFT': return <Badge variant="default">Draft</Badge>;
+      case 'SELF_SUBMITTED': return <Badge variant="info">Self Appraised</Badge>;
+      case 'MANAGER_SUBMITTED': return <Badge variant="warning">Manager Appraised</Badge>;
+      case 'APPROVAL_APPROVED': return <Badge variant="success">Completed</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };
@@ -88,64 +80,49 @@ export default function PerformanceListPage() {
 
       {/* Timeline View */}
       <div className="max-w-4xl pt-4 animate-in fade-in">
-        <div className="relative border-l-2 border-gray-100 ml-4 space-y-12">
-          
-          {timelineData.map((group) => (
-            <div key={group.year} className="relative">
-              {/* Year Marker */}
-              <div className="absolute -left-[35px] top-0 bg-white border-2 border-gray-200 text-gray-600 font-bold text-sm rounded-full h-16 w-16 flex items-center justify-center shadow-sm">
-                {group.year}
-              </div>
-              
-              <div className="pl-16 space-y-6 pt-2">
-                {group.reviews.map((review, idx) => (
-                  <Card key={idx} className="hover:shadow-md transition-shadow relative">
-                    {/* Status dot connection */}
-                    <div className="absolute top-8 -left-[4.5rem] w-8 border-t-2 border-gray-100 border-dashed"></div>
-                    <div className="absolute top-7 -left-[4.8rem] h-3 w-3 rounded-full bg-gray-200 ring-4 ring-white"></div>
-
-                    <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-3 flex-1">
-                          <div className="flex items-center gap-3">
-                            <h3 className="font-bold text-lg text-navy-900">{review.title}</h3>
-                            {getStatusBadge(review.status)}
-                          </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <p className="text-gray-500 mb-0.5">Employee</p>
-                              <div className="flex items-center gap-2">
-                                <div className="h-5 w-5 rounded-full bg-accent-100 flex items-center justify-center text-accent-700 font-bold text-[10px]">
-                                  {review.employee.split(' ').map(n=>n[0]).join('')}
-                                </div>
-                                <span className="font-medium text-navy-900">{review.employee}</span>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-gray-500 mb-0.5">Date</p>
-                              <p className="font-medium text-navy-900">{review.date}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500 mb-0.5">Review period</p>
-                              <p className="font-medium text-navy-900">{review.period}</p>
-                            </div>
+        <div className="relative border-l-2 border-gray-100 ml-4 space-y-6 pl-12">
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : !reviews || reviews.length === 0 ? (
+            <div className="p-8 text-gray-500">No performance reviews found.</div>
+          ) : (
+            reviews.map((review: any) => (
+              <Card key={review.id} className="hover:shadow-md transition-shadow relative">
+                <div className="absolute top-8 -left-[3.5rem] w-6 border-t-2 border-gray-100 border-dashed"></div>
+                <div className="absolute top-7 -left-[3.8rem] h-3 w-3 rounded-full bg-gray-200 ring-4 ring-white"></div>
+                
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-3 flex-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-bold text-lg text-navy-900">{review.reviewPeriod} Review</h3>
+                        {getStatusBadge(review.finalApprovalStatus || 'DRAFT')}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-500 mb-0.5">Employee</p>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-navy-900">
+                              {review.employee ? `${review.employee.firstName} ${review.employee.lastName}` : 'N/A'}
+                            </span>
                           </div>
                         </div>
-                        
-                        <div className="shrink-0 flex items-center">
-                          <Button variant="outline" className="text-accent-600 border-accent-200 hover:bg-accent-50">
-                            View details
-                          </Button>
+                        <div>
+                          <p className="text-gray-500 mb-0.5">Self Rating</p>
+                          <p className="font-medium text-navy-900">{review.selfRating || '-'}/5</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 mb-0.5">Manager Rating</p>
+                          <p className="font-medium text-navy-900">{review.managerRating || '-'}/5</p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ))}
-
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </div>

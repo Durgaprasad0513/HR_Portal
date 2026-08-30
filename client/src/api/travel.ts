@@ -1,29 +1,27 @@
 import apiClient from './client';
-import { ApiResponse, TravelRequest } from '../types';
+import { ApiResponse } from '../types';
 
 export const travelApi = {
-  create: async (data: Partial<TravelRequest>) => {
-    const { data: res } = await apiClient.post<ApiResponse<TravelRequest>>('/travel', data);
-    return res;
-  },
-  getMyRequests: async () => {
-    const { data } = await apiClient.get<ApiResponse<TravelRequest[]>>('/travel/my-requests');
-    return data;
-  },
-  getAll: async () => {
-    const { data } = await apiClient.get<ApiResponse<TravelRequest[]>>('/travel');
+  getAll: async (params?: any) => {
+    const { data } = await apiClient.get<ApiResponse<any[]>>('/travel', { params });
     return data;
   },
   getById: async (id: string) => {
-    const { data } = await apiClient.get<ApiResponse<TravelRequest>>(`/travel/${id}`);
+    const { data } = await apiClient.get<ApiResponse<any>>(`/travel/${id}`);
     return data;
   },
-  updateApproval: async (id: string, payload: { approvalStatus: string; remarks?: string }) => {
-    const { data } = await apiClient.patch<ApiResponse<TravelRequest>>(`/travel/${id}/approval`, payload);
+  create: async (payload: any) => {
+    const { data } = await apiClient.post<ApiResponse<any>>('/travel', payload);
     return data;
   },
-  updateSettlement: async (id: string, payload: { settlementStatus: string }) => {
-    const { data } = await apiClient.patch<ApiResponse<TravelRequest>>(`/travel/${id}/settlement`, payload);
+  updateApproval: async (id: string, payload: any) => {
+    const { data } = await apiClient.patch<ApiResponse<any>>(`/travel/${id}/approve`, payload);
     return data;
   },
+  updateSettlement: async (id: string, payload: any) => {
+    const { data } = await apiClient.patch<ApiResponse<any>>(`/travel/${id}/settle`, payload);
+    return data;
+  }
 };
+
+// updated

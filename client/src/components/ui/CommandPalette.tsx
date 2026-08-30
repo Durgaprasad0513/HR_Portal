@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Command } from 'cmdk';
-import { Search, User, FileText, Settings, LayoutDashboard, Briefcase, Plane, Laptop, Star, GraduationCap, LifeBuoy, FileCheck, BarChart3, Shield } from 'lucide-react';
+import { Search, User, Settings, LayoutDashboard, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CommandPaletteProps {

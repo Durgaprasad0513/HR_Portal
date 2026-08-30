@@ -1,82 +1,51 @@
-import { Response } from 'express';
-import { AuthRequest } from '../../middleware/auth.middleware';
+import { Request, Response } from 'express';
 import { travelService } from './travel.service';
 import { sendSuccess, sendError } from '../../utils/response';
-import { Role } from '@prisma/client';
+import { AuthRequest } from '../../middleware/auth.middleware';
 
 export class TravelController {
   async createTravelRequest(req: AuthRequest, res: Response) {
     try {
-      if (!req.user?.employeeId) {
-        return sendError(res, 'Employee profile not found', 400);
-      }
-      const travelRequest = await travelService.createTravelRequest(req.user.employeeId, req.body);
-      return sendSuccess(res, travelRequest, 'Travel request created successfully', 201);
+      const result = await travelService.createTravelRequest(req.user!, req.body, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Travel request created successfully');
     } catch (error: any) {
-      return sendError(res, error.message || 'Error creating travel request', 400);
+      return sendError(res, error.message, 400);
     }
   }
 
-  async getMyRequests(req: AuthRequest, res: Response) {
+  async getTravelRequests(req: AuthRequest, res: Response) {
     try {
-      if (!req.user?.employeeId) {
-        return sendError(res, 'Employee profile not found', 400);
-      }
-      const requests = await travelService.getTravelRequests({ employeeId: req.user.employeeId });
-      return sendSuccess(res, requests, 'Travel requests retrieved successfully');
+      const result = await travelService.getTravelRequests(req.user!, req.query);
+      return sendSuccess(res, result, 'Travel requests retrieved');
     } catch (error: any) {
-      return sendError(res, error.message || 'Error retrieving travel requests');
+      return sendError(res, error.message, 500);
     }
   }
 
-  async getAllRequests(req: AuthRequest, res: Response) {
+  async getTravelRequestById(req: AuthRequest, res: Response) {
     try {
-      const requests = await travelService.getTravelRequests({});
-      return sendSuccess(res, requests, 'Travel requests retrieved successfully');
-    } catch (error) {
-      return sendError(res, 'Error retrieving travel requests');
-    }
-  }
-
-  async getRequestById(req: AuthRequest, res: Response) {
-    try {
-      const id = req.params.id as string;
-      const request = await travelService.getTravelRequestById(id as string);
-      
-      if (!request) {
-        return sendError(res, 'Travel request not found', 404);
-      }
-      
-      if (req.user!.role === Role.EMPLOYEE && request.employeeId !== req.user!.employeeId) {
-        return sendError(res, 'Unauthorized access', 403);
-      }
-
-      return sendSuccess(res, request, 'Travel request retrieved successfully');
-    } catch (error) {
-      return sendError(res, 'Error retrieving travel request');
+      const result = await travelService.getTravelRequestById(req.user!, req.params.id as string);
+      return sendSuccess(res, result, 'Travel request retrieved');
+    } catch (error: any) {
+      return sendError(res, error.message, 404);
     }
   }
 
   async updateApprovalStatus(req: AuthRequest, res: Response) {
     try {
-      const id = req.params.id as string;
-      if (!req.user?.employeeId) {
-        return sendError(res, 'Employee profile not found', 400);
-      }
-      const updatedRequest = await travelService.updateApprovalStatus(id as string, req.body, req.user!.employeeId as string);
-      return sendSuccess(res, updatedRequest, 'Approval status updated successfully');
-    } catch (error) {
-      return sendError(res, 'Error updating approval status');
+      const result = await travelService.updateApprovalStatus(req.params.id as string, req.body, req.user!.employeeId!, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Approval status updated');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
     }
   }
 
   async updateSettlement(req: AuthRequest, res: Response) {
     try {
-      const id = req.params.id as string;
-      const updatedRequest = await travelService.updateSettlement(id as string, req.body, req.user!.userId);
-      return sendSuccess(res, updatedRequest, 'Settlement updated successfully');
-    } catch (error) {
-      return sendError(res, 'Error updating settlement');
+      const result = await travelService.updateSettlement(req.params.id as string, req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Settlement recorded');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
     }
   }
 }

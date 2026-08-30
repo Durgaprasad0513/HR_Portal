@@ -1,9 +1,8 @@
-import React from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { trainingApi } from '@/api/training';
 import { DataTable } from '@/components/ui/DataTable';
-import { Badge } from '@/components/ui/Badge';
+import {} from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal } from '@/components/ui/Modal';

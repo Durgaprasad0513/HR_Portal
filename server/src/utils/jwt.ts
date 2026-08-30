@@ -6,6 +6,7 @@ interface JwtPayload {
   email: string;
   role: string;
   employeeId: string | null;
+  tokenVersion: number;
 }
 
 export const generateToken = (payload: JwtPayload): string => {

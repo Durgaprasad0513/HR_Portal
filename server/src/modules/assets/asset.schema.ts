@@ -1,40 +1,25 @@
 import { z } from 'zod';
-import { AssetType, AssetCategory, AssetCondition, AssetReturnCondition } from '@prisma/client';
 
 export const createAssetSchema = z.object({
-  body: z.object({
-    assetType: z.nativeEnum(AssetType),
-    assetCategory: z.nativeEnum(AssetCategory),
-    brandModel: z.string().min(1, 'Brand/Model is required'),
-    serialNumber: z.string().min(1, 'Serial number is required'),
-    purchaseDate: z.string().transform((str) => new Date(str)),
-    purchaseValue: z.number().min(0),
-    vendor: z.string().optional(),
-    warrantyExpiryDate: z.string().transform((str) => new Date(str)).optional(),
-    remarks: z.string().optional()
-  })
+  assetType: z.enum(['LAPTOP', 'DESKTOP', 'MOBILE', 'SIM', 'ID_CARD', 'LAPTOP_BAG', 'VEHICLE', 'TOOLS', 'MACHINERY_TOOL', 'ASSET_OTHER']),
+  assetCategory: z.enum(['IT', 'NON_IT', 'VEHICLE_CAT']),
+  brandModel: z.string().optional(),
+  serialNumber: z.string().optional(),
+  purchaseValue: z.number().optional(),
+  assignedEmployeeId: z.string().optional(),
+  status: z.enum(['IN_USE', 'RETURNED', 'DAMAGED', 'LOST', 'RETIRED']).optional()
 });
 
 export const updateAssetSchema = z.object({
-  params: z.object({ id: z.string().uuid() }),
-  body: createAssetSchema.shape.body.partial()
+  assetLocation: z.string().optional(),
+  status: z.enum(['IN_USE', 'RETURNED', 'DAMAGED', 'LOST', 'RETIRED']).optional()
 });
 
 export const assignAssetSchema = z.object({
-  params: z.object({ id: z.string().uuid() }),
-  body: z.object({
-    assignedEmployeeId: z.string().uuid('Invalid employee ID'),
-    issueDate: z.string().transform((str) => new Date(str)),
-    issueCondition: z.nativeEnum(AssetCondition),
-    assetLocation: z.string().optional()
-  })
+  assignedEmployeeId: z.string(), // Removed uuid() because it might be CUID from Prisma
+  issueCondition: z.enum(['NEW', 'GOOD', 'FAIR']).optional()
 });
 
 export const returnAssetSchema = z.object({
-  params: z.object({ id: z.string().uuid() }),
-  body: z.object({
-    returnDate: z.string().transform((str) => new Date(str)),
-    returnCondition: z.nativeEnum(AssetReturnCondition),
-    remarks: z.string().optional()
-  })
+  returnCondition: z.enum(['RETURN_GOOD', 'RETURN_DAMAGED', 'RETURN_LOST']).optional()
 });
