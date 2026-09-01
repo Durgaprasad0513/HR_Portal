@@ -1,22 +1,17 @@
 import { Router } from 'express';
 import { travelController } from './travel.controller';
-import { authenticate, authorize } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validate.middleware';
-import { createTravelRequestSchema, updateApprovalStatusSchema, updateSettlementSchema } from './travel.schema';
-import { Role } from '@prisma/client';
+import { authenticate, requirePermission } from '../../middleware/auth.middleware';
+import { validateRequest } from '../../middleware/validate.middleware';
+import { createTravelSchema, updateApprovalSchema, updateSettlementSchema } from './travel.schema';
 
 const router = Router();
 
 router.use(authenticate);
 
-// Employee routes
-router.post('/', validate(createTravelRequestSchema), travelController.createTravelRequest);
-router.get('/my-requests', travelController.getMyRequests);
-router.get('/:id', travelController.getRequestById);
-
-// Admin, HR, Manager routes
-router.get('/', authorize(Role.ADMIN, Role.HR, Role.MANAGER), travelController.getAllRequests);
-router.patch('/:id/approval', authorize(Role.ADMIN, Role.HR, Role.MANAGER), validate(updateApprovalStatusSchema), travelController.updateApprovalStatus);
-router.patch('/:id/settlement', authorize(Role.ADMIN, Role.HR), validate(updateSettlementSchema), travelController.updateSettlement);
+router.post('/', requirePermission('travel', 'add'), validateRequest({ body: createTravelSchema }), (req, res) => travelController.createTravelRequest(req, res));
+router.get('/', requirePermission('travel', 'view'), (req, res) => travelController.getTravelRequests(req, res));
+router.get('/:id', requirePermission('travel', 'view'), (req, res) => travelController.getTravelRequestById(req, res));
+router.put('/:id/approve', requirePermission('travel', 'approve'), validateRequest({ body: updateApprovalSchema }), (req, res) => travelController.updateApprovalStatus(req, res));
+router.put('/:id/settle', requirePermission('travel', 'edit'), validateRequest({ body: updateSettlementSchema }), (req, res) => travelController.updateSettlement(req, res));
 
 export default router;

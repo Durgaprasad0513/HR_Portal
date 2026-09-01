@@ -1,21 +1,30 @@
 import { Router } from 'express';
 import { trainingController } from './training.controller';
-import { authenticate, authorize } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validate.middleware';
-import { createTrainingSchema, updateTrainingSchema, addParticipantSchema, updateParticipantSchema } from './training.schema';
+import { authenticate, requirePermission, requireStaffView } from '../../middleware/auth.middleware';
+import { validateRequest } from '../../middleware/validate.middleware';
+import { 
+  createTrainingSchema, 
+  updateTrainingSchema, 
+  addParticipantSchema, 
+  submitFeedbackSchema,
+  recordAssessmentSchema
+} from './training.schema';
 
 const router = Router();
 
 router.use(authenticate);
 
-router.get('/my-trainings', trainingController.getMyTrainings);
+router.get('/my-trainings', requirePermission('training', 'view'), trainingController.getMyTrainings);
+router.get('/', requireStaffView('training'), trainingController.getAllTrainings);
+router.post('/', requirePermission('training', 'add'), validateRequest({ body: createTrainingSchema }), trainingController.createTraining);
+router.put('/:id', requirePermission('training', 'edit'), validateRequest({ body: updateTrainingSchema }), trainingController.updateTraining);
 
-router.get('/', authorize('ADMIN', 'HR'), trainingController.getAllTrainings);
-router.post('/', authorize('ADMIN', 'HR'), validate(createTrainingSchema), trainingController.createTraining);
-router.put('/:id', authorize('ADMIN', 'HR'), validate(updateTrainingSchema), trainingController.updateTraining);
+// Participants
+router.post('/:id/participants', requirePermission('training', 'edit'), validateRequest({ body: addParticipantSchema }), trainingController.addParticipant);
+router.delete('/:id/participants/:employeeId', requirePermission('training', 'edit'), trainingController.removeParticipant);
 
-router.post('/:id/participants', authorize('ADMIN', 'HR'), validate(addParticipantSchema), trainingController.addParticipant);
-router.delete('/:id/participants/:employeeId', authorize('ADMIN', 'HR'), trainingController.removeParticipant);
-router.put('/:id/participants/:employeeId', authorize('ADMIN', 'HR'), validate(updateParticipantSchema), trainingController.updateParticipant);
+// Feedback and Assessment
+router.put('/:id/participants/:employeeId/feedback', requirePermission('training', 'view'), validateRequest({ body: submitFeedbackSchema }), trainingController.submitFeedback);
+router.put('/:id/participants/:employeeId/assessment', requirePermission('training', 'edit'), validateRequest({ body: recordAssessmentSchema }), trainingController.recordAssessment);
 
 export default router;

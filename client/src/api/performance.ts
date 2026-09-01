@@ -14,12 +14,16 @@ export const performanceApi = {
     const { data } = await apiClient.post<ApiResponse<any>>('/performance', payload);
     return data;
   },
-  update: async (id: string, payload: any) => {
-    const { data } = await apiClient.put<ApiResponse<any>>(`/performance/${id}`, payload);
+  submitSelfAppraisal: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/performance/${id}/submit-self`, payload);
     return data;
   },
-  approve: async (id: string, payload: any) => {
-    const { data } = await apiClient.patch<ApiResponse<any>>(`/performance/${id}/approve`, payload);
+  submitManagerAppraisal: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/performance/${id}/submit-manager`, payload);
+    return data;
+  },
+  submitHrAppraisal: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/performance/${id}/submit-hr`, payload);
     return data;
   }
 };

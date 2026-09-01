@@ -1,6 +1,77 @@
 @import "tailwindcss";
+@theme { --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif; }
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Modern Food-Tech Tokens */
+  --canvas: #F8FAFC;
+  --surface: #FFFFFF;
+  --tint: #F1F5F9;
+  --border: #E2E8F0;
+
+  --sidebar-bg: #0F172A;
+  
+  --brand-primary: #EA580C;
+  --brand-primary-hover: #C2410C;
+  --brand-primary-light: #FFEDD5;
+
+  --text-heading: #0F172A;
+  --text-body: #1E293B;
+  --text-muted: #64748B;
+
+  --status-active: #10B981;
+  --status-active-bg: #ECFDF5;
+  
+  --status-standby: #6366F1;
+  --status-standby-bg: #EEF2FF;
+  
+  --status-warning: #F59E0B;
+  --status-warning-bg: #FFFBEB;
+  
+  --status-danger: #EF4444;
+  --status-danger-bg: #FEF2F2;
+}
+
+.dark {
+  --canvas: #0F172A;
+  --surface: #1E293B;
+  --tint: #334155;
+  --border: #475569;
+  --text-heading: #F8FAFC;
+  --text-body: #CBD5E1;
+  --text-muted: #94A3B8;
+  
+  --status-active-bg: #065F46;
+  --status-standby-bg: #3730A3;
+  --status-warning-bg: #92400E;
+  --status-danger-bg: #991B1B;
+}
+
+
 
 @theme {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-tint: var(--tint);
+  --color-slate-border: var(--border);
+  --color-sidebar: var(--sidebar-bg);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-hover: var(--brand-primary-hover);
+  --color-brand-light: var(--brand-primary-light);
+
+  --color-text-heading: var(--text-heading);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+
+  --color-status-active: var(--status-active);
+  --color-status-active-bg: var(--status-active-bg);
+  --color-status-standby: var(--status-standby);
+  --color-status-standby-bg: var(--status-standby-bg);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-bg: var(--status-danger-bg);
   /* Navy scale — top nav, headings, approve buttons */
   --color-navy-50: #eef2ff;
   --color-navy-100: #dce4fd;
@@ -40,6 +111,6 @@
 }
 
 body {
-  @apply bg-[#F8FAFC] text-slate-900 antialiased;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  @apply bg-canvas text-text-body antialiased;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }

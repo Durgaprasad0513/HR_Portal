@@ -2,6 +2,14 @@
 
 A full-stack HR Management web application built with React, Node.js, Express, PostgreSQL, and Prisma.
 
+## Project documentation
+
+- [Implementation plan](docs/implementation/README.md) — ordered gates, acceptance criteria, and the next work to implement.
+- [Gate 0A execution guide](docs/implementation/how-to-execute-gate-0a.md) — safe step-by-step database, build, login, and authorization baseline.
+- [Full gstack project review](docs/reviews/2026-08-29-staging-project-autoplan.md) — CEO, design, engineering, DX, risk, and requirements findings.
+
+> Current status: the review is complete, but the present `staging` tree is not cleared for UAT or production. Start with Gate 0A before using the remaining quick-start instructions below.
+
 ## 🚀 Features
 
 - **Authentication** — JWT-based login with role-based access control (RBAC)

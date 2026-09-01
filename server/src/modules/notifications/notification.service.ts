@@ -8,9 +8,9 @@ export class NotificationService {
     });
   }
 
-  async markAsRead(id: string) {
+  async markAsRead(id: string, recipientId: string) {
     return prisma.notification.update({
-      where: { id },
+      where: { id, recipientId },
       data: { isRead: true }
     });
   }
@@ -28,7 +28,7 @@ export class NotificationService {
     });
   }
 
-  async deleteNotification(id: string) {
+  async deleteNotification(id: string, recipientId: string) {
     return prisma.notification.delete({
       where: { id }
     });

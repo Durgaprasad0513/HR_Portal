@@ -9,15 +9,17 @@ interface Column<T> {
 }
 
 interface DataTableProps<T> {
+  emptyMessage?: string;
   columns: Column<T>[];
   data: T[];
   keyField: keyof T;
   selectable?: boolean;
   pageSize?: number;
   onSelectionChange?: (selected: T[]) => void;
+  onRowClick?: (row: T) => void;
 }
 
-export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 10, onSelectionChange }: DataTableProps<T>) {
+export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 10, onSelectionChange, onRowClick }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
@@ -65,18 +67,18 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
   }, [currentPage, totalPages]);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900 overflow-hidden">
       <div className="w-full overflow-auto">
         <table className="w-full text-sm text-left">
           <thead>
-            <tr className="border-b border-slate-200">
+            <tr className="border-b border-slate-200 dark:border-slate-700">
               {selectable && (
                 <th className="px-4 py-3 w-10">
                   <input
                     type="checkbox"
                     checked={allOnPageSelected}
                     onChange={toggleAll}
-                    className="h-4 w-4 rounded border-gray-300 text-accent-500 focus:ring-accent-400"
+                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:ring-accent-400"
                   />
                 </th>
               )}
@@ -84,7 +86,7 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
                 <th
                   key={i}
                   className={cn(
-                    "px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider",
+                    "px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider",
                     col.className
                   )}
                 >
@@ -93,7 +95,7 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {pageData.length === 0 ? (
               <tr>
                 <td
@@ -110,18 +112,20 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
                 return (
                   <tr
                     key={key}
+                    onClick={() => onRowClick && onRowClick(row)}
                     className={cn(
-                      "hover:bg-slate-50 transition-colors",
-                      isSelected && "bg-accent-50"
+                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                      onRowClick && "cursor-pointer",
+                      isSelected && "bg-accent-50 dark:bg-accent-900/20"
                     )}
                   >
                     {selectable && (
-                      <td className="px-4 py-3 w-10">
+                      <td className="px-4 py-3 w-10" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleRow(row)}
-                          className="h-4 w-4 rounded border-gray-300 text-accent-500 focus:ring-accent-400"
+                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:ring-accent-400"
                         />
                       </td>
                     )}
@@ -142,21 +146,21 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
 
       {/* Pagination */}
       {data.length > pageSize && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
-          <p className="text-sm text-gray-500">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
             Show {startIdx + 1} to {Math.min(endIdx, data.length)} of {data.length} results
           </p>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             {pageNumbers.map((num, idx) =>
               num === '...' ? (
-                <span key={`dots-${idx}`} className="px-1 text-gray-400">⋯</span>
+                <span key={`dots-${idx}`} className="px-1 text-gray-400 dark:text-gray-500">⋯</span>
               ) : (
                 <button
                   key={num}
@@ -165,7 +169,7 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
                     "h-8 w-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors",
                     currentPage === num
                       ? "bg-accent-500 text-white"
-                      : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                      : "border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
                   )}
                 >
                   {num}
@@ -175,7 +179,7 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

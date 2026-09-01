@@ -1,33 +1,166 @@
 import prisma from '../../config/database';
+import { notificationDispatcher } from '../../utils/notification.dispatcher';
+import { Role, Prisma } from '@prisma/client';
+import { getModuleScope } from '../../utils/authorization';
+
+interface CurrentUser {
+  id: string;
+  userId: string;
+  email: string;
+  role: string;
+  employeeId?: string | null;
+}
 
 export class PerformanceService {
-  async createReview(data: any) {
-    return prisma.performanceReview.create({ data });
+  async getMyReviews(employeeId: string) {
+    return prisma.performanceReview.findMany({
+      where: { employeeId },
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
-  async getReviews(filters: any = {}) {
+  async getReviews(currentUser: CurrentUser, filters: any = {}) {
+    const scope = getModuleScope(currentUser.role as Role, 'performance');
+    if (scope !== 'ORG' && !currentUser.employeeId) return [];
+
+    let scopeQuery: Prisma.PerformanceReviewWhereInput = {};
+    if (scope === 'TEAM') {
+      scopeQuery = { employee: { managerId: currentUser.employeeId! } };
+    } else if (scope === 'SELF') {
+      scopeQuery = { employeeId: currentUser.employeeId! };
+    }
+
     return prisma.performanceReview.findMany({
-      where: filters,
+      where: { ...filters, ...scopeQuery },
       include: {
-        employee: { select: { id: true, firstName: true, lastName: true } },
-        finalApprovedBy: { select: { id: true, firstName: true, lastName: true } }
+        employee: { select: { id: true, firstName: true, lastName: true, department: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
   }
 
-  async updateReview(id: string, data: any) {
-    return prisma.performanceReview.update({ where: { id }, data });
+  async createReview(data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
+    return prisma.$transaction(async (tx) => {
+      const review = await tx.performanceReview.create({ data });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'CREATE_PERFORMANCE_REVIEW',
+          moduleAffected: 'performance',
+          recordIdAffected: review.id,
+          userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      return review;
+    });
   }
 
-  async approveReview(id: string, data: any, approvedById: string) {
-    return prisma.performanceReview.update({
+  async submitSelfAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
+    if (!currentUser.employeeId) throw new Error('Only employees can submit a self appraisal');
+    
+    const review = await prisma.performanceReview.findUnique({ where: { id } });
+    if (!review) throw new Error('Review not found');
+    if (review.employeeId !== currentUser.employeeId) {
+      throw new Error('You can only submit self appraisal for your own review');
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.performanceReview.update({
+        where: { id },
+        data: {
+          achievedValue: data.achievedValue,
+          selfRating: data.selfRating,
+          employeeComments: data.employeeComments,
+          strengths: data.strengths,
+          areasOfImprovement: data.areasOfImprovement,
+          trainingRequirement: data.trainingRequirement
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'SUBMIT_SELF_APPRAISAL',
+          moduleAffected: 'performance',
+          recordIdAffected: id,
+          userId: currentUser.userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      return updated;
+    });
+  }
+
+  async submitManagerAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
+    if (!currentUser.employeeId) throw new Error('Only managers can submit a manager appraisal');
+    
+    const review = await prisma.performanceReview.findUnique({ 
       where: { id },
-      data: {
-        ...data,
-        finalApprovedById: approvedById,
-        finalApprovalDate: new Date()
-      }
+      include: { employee: true } 
+    });
+    if (!review) throw new Error('Review not found');
+    
+    if (review.employee.managerId !== currentUser.employeeId) {
+      throw new Error('Only the direct manager can submit manager appraisal');
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.performanceReview.update({
+        where: { id },
+        data: {
+          managerRating: data.managerRating,
+          managerComments: data.managerComments,
+          promotionRecommendation: data.promotionRecommendation,
+          salaryRevisionRecommendation: data.salaryRevisionRecommendation
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'SUBMIT_MANAGER_APPRAISAL',
+          moduleAffected: 'performance',
+          recordIdAffected: id,
+          userId: currentUser.userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      return updated;
+    });
+  }
+
+  async submitHRAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
+    if (currentUser.role !== 'HR' && currentUser.role !== 'ADMIN') {
+      throw new Error('Only HR or Admin can submit HR appraisal');
+    }
+
+    const review = await prisma.performanceReview.findUnique({ where: { id } });
+    if (!review) throw new Error('Review not found');
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.performanceReview.update({
+        where: { id },
+        data: {
+          hrRating: data.hrRating,
+          hrComments: data.hrComments,
+          finalRating: data.finalRating,
+          finalApprovalStatus: data.finalApprovalStatus
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'SUBMIT_HR_APPRAISAL',
+          moduleAffected: 'performance',
+          recordIdAffected: id,
+          userId: currentUser.userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      // Notify employee of final appraisal decision
+      notificationDispatcher.dispatch({
+        employeeId: review.employeeId,
+        notificationType: 'REVIEW_DUE',
+        message: `Your performance review has been finalized with status: ${data.finalApprovalStatus}.`,
+        triggerEvent: data.finalApprovalStatus,
+        channels: ['IN_APP', 'EMAIL']
+      }).catch(() => {});
+      return updated;
     });
   }
 }

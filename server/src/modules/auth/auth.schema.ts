@@ -6,3 +6,13 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters')
+});
+
+export const setupPasswordSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters')
+});

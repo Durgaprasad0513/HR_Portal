@@ -34,7 +34,7 @@ npm-debug.log*
 
 # Prisma
 server/prisma/*.db
-server/prisma/migrations/
+
 
 # Uploads
 server/uploads/*

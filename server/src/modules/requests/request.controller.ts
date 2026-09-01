@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
+import { requestService } from './request.service';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuthRequest } from '../../middleware/auth.middleware';
-import { requestService } from './request.service';
 
 export class RequestController {
   async createRequest(req: AuthRequest, res: Response) {
@@ -9,10 +9,10 @@ export class RequestController {
       const employeeId = req.user?.employeeId;
       if (!employeeId) return sendError(res, 'Employee not found', 404);
       
-      const newRequest = await requestService.createRequest(employeeId, req.body);
-      return sendSuccess(res, newRequest, 'Request created successfully', 201);
+      const newReq = await requestService.createRequest(employeeId, req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, newReq, 'Request created successfully');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
   }
 
@@ -22,7 +22,7 @@ export class RequestController {
       if (!employeeId) return sendError(res, 'Employee not found', 404);
       
       const requests = await requestService.getMyRequests(employeeId);
-      return sendSuccess(res, requests, 'My requests retrieved successfully');
+      return sendSuccess(res, requests, 'Requests retrieved successfully');
     } catch (error: any) {
       return sendError(res, error.message, 500);
     }
@@ -31,27 +31,27 @@ export class RequestController {
   async getAllRequests(req: Request, res: Response) {
     try {
       const requests = await requestService.getAllRequests(req.query);
-      return sendSuccess(res, requests, 'All requests retrieved successfully');
+      return sendSuccess(res, requests, 'Requests retrieved successfully');
     } catch (error: any) {
       return sendError(res, error.message, 500);
     }
   }
 
-  async assignRequest(req: Request, res: Response) {
+  async assignRequest(req: AuthRequest, res: Response) {
     try {
-      const request = await requestService.assignRequest(req.params.id as string, req.body.assignedToId);
-      return sendSuccess(res, request, 'Request assigned successfully');
+      const assigned = await requestService.assignRequest(req.params.id as string, req.body.assignedToId, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, assigned, 'Request assigned successfully');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
   }
 
-  async updateRequestStatus(req: Request, res: Response) {
+  async updateRequestStatus(req: AuthRequest, res: Response) {
     try {
-      const request = await requestService.updateRequestStatus(req.params.id as string, req.body);
-      return sendSuccess(res, request, 'Request status updated successfully');
+      const updated = await requestService.updateRequestStatus(req.params.id as string, req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, updated, 'Request status updated');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
   }
 }

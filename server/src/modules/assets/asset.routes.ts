@@ -1,21 +1,20 @@
 import { Router } from 'express';
 import { assetController } from './asset.controller';
-import { authenticate, authorize } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validate.middleware';
+import { authenticate, requirePermission } from '../../middleware/auth.middleware';
+import { validateRequest } from '../../middleware/validate.middleware';
 import { createAssetSchema, updateAssetSchema, assignAssetSchema, returnAssetSchema } from './asset.schema';
-import { Role } from '@prisma/client';
 
 const router = Router();
 
 router.use(authenticate);
 
-router.get('/my-assets', assetController.getMyAssets);
-
-router.post('/', authorize(Role.ADMIN, Role.HR), validate(createAssetSchema), assetController.createAsset);
-router.get('/', authorize(Role.ADMIN, Role.HR), assetController.getAssets);
-router.get('/:id', authorize(Role.ADMIN, Role.HR), assetController.getAssetById);
-router.patch('/:id', authorize(Role.ADMIN, Role.HR), validate(updateAssetSchema), assetController.updateAsset);
-router.patch('/:id/assign', authorize(Role.ADMIN, Role.HR), validate(assignAssetSchema), assetController.assignAsset);
-router.patch('/:id/return', authorize(Role.ADMIN, Role.HR), validate(returnAssetSchema), assetController.returnAsset);
+router.post('/', requirePermission('assets', 'add'), validateRequest({ body: createAssetSchema }), (req, res) => assetController.createAsset(req, res));
+router.get('/', requirePermission('assets', 'view'), (req, res) => assetController.getAssets(req, res));
+router.get('/:id', requirePermission('assets', 'view'), (req, res) => assetController.getAssetById(req, res));
+router.put('/:id', requirePermission('assets', 'edit'), validateRequest({ body: updateAssetSchema }), (req, res) => assetController.updateAsset(req, res));
+router.put('/:id/assign', requirePermission('assets', 'edit'), validateRequest({ body: assignAssetSchema }), (req, res) => assetController.assignAsset(req, res));
+router.put('/:id/return', requirePermission('assets', 'edit'), validateRequest({ body: returnAssetSchema }), (req, res) => assetController.returnAsset(req, res));
+router.put('/:id/damage', requirePermission('assets', 'edit'), (req, res) => assetController.reportDamage(req, res));
+router.put('/:id/lost', requirePermission('assets', 'edit'), (req, res) => assetController.reportLost(req, res));
 
 export default router;

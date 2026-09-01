@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Star, MoreHorizontal, Clock } from 'lucide-react';
@@ -39,13 +39,13 @@ function SortableCandidateCard({ candidate }: { candidate: Candidate }) {
                  {candidate.name.substring(0,2).toUpperCase()}
                </div>
                <div>
-                  <div className="font-semibold text-navy-900 text-sm">{candidate.name}</div>
-                  <div className="flex items-center text-[10px] text-gray-500 mt-0.5">
+                  <div className="font-semibold text-navy-900 dark:text-white text-sm">{candidate.name}</div>
+                  <div className="flex items-center text-[10px] text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5">
                     <Clock className="w-3 h-3 mr-1" /> 2 days ago
                   </div>
                </div>
              </div>
-             <MoreHorizontal className="w-4 h-4 text-gray-400" />
+             <MoreHorizontal className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="flex text-amber-400 pt-1">
              <Star className="w-3.5 h-3.5 fill-current"/><Star className="w-3.5 h-3.5 fill-current"/><Star className="w-3.5 h-3.5 fill-current"/><Star className="w-3.5 h-3.5 text-gray-300"/><Star className="w-3.5 h-3.5 text-gray-300"/>
@@ -63,10 +63,10 @@ function KanbanColumn({ title, candidates }: { title: string; candidates: Candid
   });
 
   return (
-    <div className="flex flex-col bg-gray-50 rounded-xl p-4 min-w-[280px] border border-gray-100">
+    <div className="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-xl p-4 min-w-[280px] border border-gray-100 dark:border-gray-800">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-xs text-gray-500 uppercase tracking-wider">{title}</h3>
-        <span className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded-full">{candidates.length}</span>
+        <h3 className="font-bold text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">{title}</h3>
+        <span className="bg-gray-200 text-gray-700 dark:text-gray-300 text-xs font-bold px-2 py-0.5 rounded-full">{candidates.length}</span>
       </div>
       <div ref={setNodeRef} className="flex-1 min-h-[150px]">
         <SortableContext items={candidates.map(c => c.id)} strategy={verticalListSortingStrategy}>
@@ -159,8 +159,8 @@ export function KanbanBoard({ candidates, onStatusChange }: KanbanBoardProps) {
                     {activeCandidate.name.substring(0,2).toUpperCase()}
                   </div>
                   <div>
-                      <div className="font-semibold text-navy-900 text-sm">{activeCandidate.name}</div>
-                      <div className="flex items-center text-[10px] text-gray-500 mt-0.5">
+                      <div className="font-semibold text-navy-900 dark:text-white text-sm">{activeCandidate.name}</div>
+                      <div className="flex items-center text-[10px] text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5">
                         <Clock className="w-3 h-3 mr-1" /> 2 days ago
                       </div>
                   </div>

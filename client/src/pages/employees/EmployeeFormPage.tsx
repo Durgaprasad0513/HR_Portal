@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText, CheckCircle2, Upload } from 'lucide-react';
 
 export default function EmployeeFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,20 +16,27 @@ export default function EmployeeFormPage() {
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
-    employeeCode: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    departmentId: '',
-    designation: '',
-    joiningDate: new Date().toISOString().split('T')[0],
-    status: 'ACTIVE',
+    employeeCode: '', firstName: '', lastName: '', email: '', phone: '',
+    departmentId: '', designation: '', joiningDate: new Date().toISOString().split('T')[0],
+    employmentType: 'PERMANENT', dateOfBirth: '', gender: '', address: '',
+    city: '', state: '', zipCode: '', country: '', managerId: '',
+    location: '', status: 'ACTIVE',
+    maritalStatus: '', alternateMobile: '', personalEmail: '', permanentAddress: '',
+    emergencyContactName: '', emergencyContactRelation: '', emergencyContactNumber: '',
+    grade: '', probationPeriod: '', confirmationDate: '', resignationDate: '',
+    noticePeriod: '', lastWorkingDate: '', exitType: '', exitReason: '',
+    ctc: '', basicSalary: '', grossSalary: '', bankName: '', bankAccountNumber: '',
+    ifscCode: '', pfNumber: '', uanNumber: '', esiNumber: '', panNumber: '', aadhaarNumber: '', statutoryRemarks: ''
   });
 
   const { data: deptData } = useQuery({
     queryKey: ['departments'],
     queryFn: departmentsApi.getAll,
+  });
+
+  const { data: employeesList } = useQuery({
+    queryKey: ['employees', 'all'],
+    queryFn: () => employeesApi.getAll({ limit: 1000 }),
   });
 
   const { data: empData, isLoading: isLoadingEmp } = useQuery({
@@ -50,14 +57,48 @@ export default function EmployeeFormPage() {
         departmentId: e.departmentId || '',
         designation: e.designation,
         joiningDate: new Date(e.joiningDate).toISOString().split('T')[0],
-        status: e.status,
+        employmentType: e.employmentType || 'PERMANENT',
+        dateOfBirth: e.dateOfBirth ? new Date(e.dateOfBirth).toISOString().split('T')[0] : '',
+        gender: e.gender || '',
+        address: e.address || '', city: e.city || '', state: e.state || '',
+        zipCode: e.zipCode || '', country: e.country || '',
+        managerId: e.managerId || '', location: e.location || '', status: e.status || 'ACTIVE',
+        maritalStatus: e.maritalStatus || '', alternateMobile: e.alternateMobile || '',
+        personalEmail: e.personalEmail || '', permanentAddress: e.permanentAddress || '',
+        emergencyContactName: e.emergencyContactName || '', emergencyContactRelation: e.emergencyContactRelation || '',
+        emergencyContactNumber: e.emergencyContactNumber || '', grade: e.grade || '',
+        probationPeriod: e.probationPeriod?.toString() || '',
+        confirmationDate: e.confirmationDate ? new Date(e.confirmationDate).toISOString().split('T')[0] : '',
+        resignationDate: e.resignationDate ? new Date(e.resignationDate).toISOString().split('T')[0] : '',
+        noticePeriod: e.noticePeriod?.toString() || '',
+        lastWorkingDate: e.lastWorkingDate ? new Date(e.lastWorkingDate).toISOString().split('T')[0] : '',
+        exitType: e.exitType || '', exitReason: e.exitReason || '',
+        ctc: e.ctc?.toString() || '', basicSalary: e.basicSalary?.toString() || '',
+        grossSalary: e.grossSalary?.toString() || '', bankName: e.bankName || '',
+        bankAccountNumber: e.bankAccountNumber || '', ifscCode: e.ifscCode || '',
+        pfNumber: e.pfNumber || '', uanNumber: e.uanNumber || '', esiNumber: e.esiNumber || '',
+        panNumber: e.panNumber || '', aadhaarNumber: e.aadhaarNumber || '', statutoryRemarks: e.statutoryRemarks || ''
       });
     }
   }, [isEdit, empData]);
 
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
   const mutation = useMutation({
-    mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data }) : employeesApi.create(data),
-    onSuccess: () => {
+    mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data } as any) : employeesApi.create(data as any),
+    onSuccess: async (res) => {
+      if (!isEdit && pendingFile && res?.data?.id) {
+        const fd = new FormData();
+        fd.append('file', pendingFile);
+        fd.append('documentType', 'EDUCATIONAL_CERTIFICATE');
+        fd.append('documentName', pendingFile.name);
+        fd.append('employeeId', res.data.id);
+        try {
+          await employeesApi.uploadDocument(fd);
+        } catch (e) {
+          toast.error('Employee created but document upload failed');
+        }
+      }
       toast.success(`Employee ${isEdit ? 'updated' : 'created'} successfully`);
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       navigate('/employees');
@@ -67,6 +108,28 @@ export default function EmployeeFormPage() {
     }
   });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('documentType', 'EDUCATIONAL_CERTIFICATE');
+      fd.append('documentName', file.name);
+      fd.append('employeeId', id!);
+      return employeesApi.uploadDocument(fd);
+    },
+    onSuccess: () => {
+      toast.success('Document uploaded successfully');
+      setSelectedFile(null);
+      queryClient.invalidateQueries({ queryKey: ['employee', id] });
+    },
+    onError: () => toast.error('Failed to upload document')
+  });
+
+  const handleFileUpload = () => {
+    if (selectedFile) uploadMutation.mutate(selectedFile);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -74,7 +137,24 @@ export default function EmployeeFormPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(formData);
+    const payload: any = { ...formData };
+    
+    // Convert empty strings to undefined to not fail validations
+    Object.keys(payload).forEach(key => {
+      if (payload[key] === '') {
+        delete payload[key];
+      }
+    });
+
+    // Convert numeric fields
+    const numericFields = ['salary', 'probationPeriod', 'noticePeriod', 'ctc', 'basicSalary', 'grossSalary'];
+    numericFields.forEach(field => {
+      if (payload[field]) {
+        payload[field] = Number(payload[field]);
+      }
+    });
+    
+    mutation.mutate(payload);
   };
 
   if (isEdit && isLoadingEmp) return <div>Loading...</div>;
@@ -85,7 +165,7 @@ export default function EmployeeFormPage() {
         <Button variant="ghost" onClick={() => navigate('/employees')}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back
         </Button>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {isEdit ? 'Edit Employee' : 'Add New Employee'}
         </h1>
       </div>
@@ -102,6 +182,45 @@ export default function EmployeeFormPage() {
               <Input label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required />
               <Input label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} required />
               <Input label="Phone" name="phone" value={formData.phone} onChange={handleChange} />
+              <Input label="Alternate Mobile" name="alternateMobile" value={formData.alternateMobile} onChange={handleChange} />
+              <Input label="Personal Email" type="email" name="personalEmail" value={formData.personalEmail} onChange={handleChange} />
+              
+              <Input label="Emergency Contact Name" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} />
+              <Input label="Emergency Contact Number" name="emergencyContactNumber" value={formData.emergencyContactNumber} onChange={handleChange} />
+              <Input label="Emergency Contact Relation" name="emergencyContactRelation" value={formData.emergencyContactRelation} onChange={handleChange} />
+
+              <Input label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
+              <div className="flex flex-col space-y-1 w-full">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender</label>
+                <select 
+                  name="gender" 
+                  value={formData.gender} 
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Address Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Input label="Street Address" name="address" value={formData.address} onChange={handleChange} />
+              </div>
+              <Input label="City" name="city" value={formData.city} onChange={handleChange} />
+              <Input label="State / Province" name="state" value={formData.state} onChange={handleChange} />
+              <Input label="ZIP / Postal Code" name="zipCode" value={formData.zipCode} onChange={handleChange} />
+              <Input label="Country" name="country" value={formData.country} onChange={handleChange} />
             </div>
           </CardContent>
         </Card>
@@ -113,12 +232,12 @@ export default function EmployeeFormPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700">Department</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
                 <select 
                   name="departmentId" 
                   value={formData.departmentId} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                 >
                   <option value="">Select Department</option>
@@ -131,13 +250,62 @@ export default function EmployeeFormPage() {
               <Input label="Designation" name="designation" value={formData.designation} onChange={handleChange} required />
               <Input label="Joining Date" type="date" name="joiningDate" value={formData.joiningDate} onChange={handleChange} required />
               
+              <Input label="Confirmation Date" type="date" name="confirmationDate" value={formData.confirmationDate} onChange={handleChange} />
+              <Input label="Last Working Date" type="date" name="lastWorkingDate" value={formData.lastWorkingDate} onChange={handleChange} />
+              <Input label="Resignation Date" type="date" name="resignationDate" value={formData.resignationDate} onChange={handleChange} />
+              <Input label="Probation Period (Days)" type="number" name="probationPeriod" value={formData.probationPeriod} onChange={handleChange} />
+              <Input label="Notice Period (Days)" type="number" name="noticePeriod" value={formData.noticePeriod} onChange={handleChange} />
+              
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700">Status</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Employment Type</label>
+                <select 
+                  name="employmentType" 
+                  value={formData.employmentType} 
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="PERMANENT">Full-time</option>
+                  <option value="CONTRACT">Part-time / Contract</option>
+                  <option value="INTERN">Intern</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col space-y-1 w-full">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Line Manager</label>
+                <select 
+                  name="managerId" 
+                  value={formData.managerId} 
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select Manager</option>
+                  {employeesList?.data?.map((emp: any) => (
+                    <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col space-y-1 w-full">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Office Location</label>
+                <select 
+                  name="location" 
+                  value={formData.location} 
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select Office</option>
+                  <option value="Hyd Office">Hyd Office</option>
+                  <option value="Peddapuram Plant">Peddapuram Plant</option>
+                </select>
+              </div>
+              
+              <div className="flex flex-col space-y-1 w-full">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Employee Status</label>
                 <select 
                   name="status" 
                   value={formData.status} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
@@ -145,13 +313,95 @@ export default function EmployeeFormPage() {
                 </select>
               </div>
             </div>
-            
-            <div className="flex justify-end pt-4 gap-2">
-              <Button type="button" variant="outline" onClick={() => navigate('/employees')}>Cancel</Button>
-              <Button type="submit" isLoading={mutation.isPending}>Save Employee</Button>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Payroll & HR Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input label="CTC (Annual)" type="number" name="ctc" value={formData.ctc} onChange={handleChange} />
+              <Input label="Basic Salary" type="number" name="basicSalary" value={formData.basicSalary} onChange={handleChange} />
+              <Input label="Gross Salary" type="number" name="grossSalary" value={formData.grossSalary} onChange={handleChange} />
+              
+              <Input label="Bank Name" name="bankName" value={formData.bankName} onChange={handleChange} />
+              <Input label="Account Number" name="bankAccountNumber" value={formData.bankAccountNumber} onChange={handleChange} />
+              <Input label="IFSC Code" name="ifscCode" value={formData.ifscCode} onChange={handleChange} />
+              
+              <Input label="PF Number" name="pfNumber" value={formData.pfNumber} onChange={handleChange} />
+              <Input label="UAN Number" name="uanNumber" value={formData.uanNumber} onChange={handleChange} />
+              <Input label="ESI Number" name="esiNumber" value={formData.esiNumber} onChange={handleChange} />
+              <Input label="PAN Number" name="panNumber" value={formData.panNumber} onChange={handleChange} />
+              <Input label="Aadhaar Number" name="aadhaarNumber" value={formData.aadhaarNumber} onChange={handleChange} />
+              
+              <div className="md:col-span-3">
+                <Input label="Statutory Remarks" name="statutoryRemarks" value={formData.statutoryRemarks} onChange={handleChange} />
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Documents & Certificates</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isEdit ? (
+              <>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="file" 
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100 dark:file:bg-accent-900 dark:file:text-accent-200"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleFileUpload} 
+                    disabled={!selectedFile || uploadMutation.isPending}
+                    className="shrink-0"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload
+                  </Button>
+                </div>
+
+                {empData?.data?.documents && empData.data.documents.length > 0 && (
+                  <div className="mt-6 space-y-4">
+                    <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Uploaded Certificates</h3>
+                    {empData.data.documents.map((doc: any) => (
+                      <div key={doc.id} className="flex items-start gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-lg">
+                        <div className="bg-blue-50 p-3 rounded-lg"><FileText className="text-blue-500 w-6 h-6" /></div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-navy-900 dark:text-white">{doc.documentName}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{doc.documentType.replace('_', ' ')} • {new Date(doc.uploadDate).toLocaleDateString()}</p>
+                          <div className="mt-2 flex items-center gap-2 text-sm text-accent-500 font-medium cursor-pointer">
+                            <CheckCircle2 className="w-4 h-4" /> Verified
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Select a certificate to upload once the employee is created.</p>
+                <input 
+                  type="file" 
+                  onChange={(e) => setPendingFile(e.target.files?.[0] || null)}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100 dark:file:bg-accent-900 dark:file:text-accent-200"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        <div className="flex justify-end pt-6 gap-2">
+          <Button type="button" variant="outline" onClick={() => navigate('/employees')}>Cancel</Button>
+          <Button type="submit" isLoading={mutation.isPending}>Save Employee</Button>
+        </div>
       </form>
     </div>
   );

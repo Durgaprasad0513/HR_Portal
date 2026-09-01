@@ -1,10 +1,9 @@
-import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { CheckCircle, Clock, BookOpen, Monitor, Ticket, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function EmployeeDashboard() {
-  const { user } = useAuth();
+  const {} = useAuth();
   
   return (
     <div className="space-y-6">
@@ -30,7 +29,7 @@ export function EmployeeDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Leave Balance</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">Leave Balance</p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">12 Days</h3>
               </div>
               <div className="h-12 w-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
@@ -44,7 +43,7 @@ export function EmployeeDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned Assets</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">Assigned Assets</p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">2 Items</h3>
               </div>
               <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -58,7 +57,7 @@ export function EmployeeDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Open Tickets</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">Open Tickets</p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">1 Pending</h3>
               </div>
               <div className="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
@@ -84,7 +83,7 @@ export function EmployeeDashboard() {
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-1">
                   <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: '45%' }}></div>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">45% Completed</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">45% Completed</p>
               </div>
               
               <div className="border border-gray-100 dark:border-gray-800 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
@@ -95,7 +94,7 @@ export function EmployeeDashboard() {
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-1">
                   <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: '0%' }}></div>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">0% Completed</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">0% Completed</p>
               </div>
             </div>
           </CardContent>
@@ -111,16 +110,16 @@ export function EmployeeDashboard() {
                 <div className="h-2 w-2 mt-2 rounded-full bg-emerald-500 flex-shrink-0"></div>
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm">Townhall Q3 2026 Scheduled</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Join us on Friday at 3 PM EST for the quarterly update.</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">2 hours ago</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Join us on Friday at 3 PM EST for the quarterly update.</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2">2 hours ago</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="h-2 w-2 mt-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm">New Wellness Policy Updated</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Please review the new gym reimbursement guidelines.</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">1 day ago</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Please review the new gym reimbursement guidelines.</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2">1 day ago</p>
                 </div>
               </div>
             </div>
