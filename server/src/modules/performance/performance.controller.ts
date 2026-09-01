@@ -1,54 +1,62 @@
-import { Response } from 'express';
-import { AuthRequest } from '../../middleware/auth.middleware';
+import { Request, Response } from 'express';
 import { performanceService } from './performance.service';
 import { sendSuccess, sendError } from '../../utils/response';
-import { Role } from '@prisma/client';
+import { AuthRequest } from '../../middleware/auth.middleware';
 
 export class PerformanceController {
-  async createReview(req: AuthRequest, res: Response) {
+  getMyReviews = async (req: AuthRequest, res: Response) => {
     try {
-      const review = await performanceService.createReview(req.body);
-      return sendSuccess(res, review, 'Performance review created successfully', 201);
-    } catch (error) {
-      return sendError(res, 'Error creating performance review');
+      const result = await performanceService.getMyReviews(req.user!.employeeId!);
+      return sendSuccess(res, result, 'My reviews retrieved');
+    } catch (error: any) {
+      return sendError(res, error.message, 500);
     }
-  }
+  };
 
-  async getMyReviews(req: AuthRequest, res: Response) {
+  createReview = async (req: AuthRequest, res: Response) => {
     try {
-      const reviews = await performanceService.getReviews({ employeeId: req.user!.employeeId as string });
-      return sendSuccess(res, reviews, 'Reviews retrieved successfully');
-    } catch (error) {
-      return sendError(res, 'Error retrieving reviews');
+      const result = await performanceService.createReview(req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Performance review created');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
     }
-  }
+  };
 
-  async getReviews(req: AuthRequest, res: Response) {
+  getReviews = async (req: AuthRequest, res: Response) => {
     try {
-      const reviews = await performanceService.getReviews(req.query);
-      return sendSuccess(res, reviews, 'Reviews retrieved successfully');
-    } catch (error) {
-      return sendError(res, 'Error retrieving reviews');
+      const result = await performanceService.getReviews(req.user!, req.query);
+      return sendSuccess(res, result, 'Reviews retrieved');
+    } catch (error: any) {
+      return sendError(res, error.message, 500);
     }
-  }
+  };
 
-  async updateReviewRatings(req: AuthRequest, res: Response) {
+  submitSelfAppraisal = async (req: AuthRequest, res: Response) => {
     try {
-      const review = await performanceService.updateReview(req.params.id as string, req.body);
-      return sendSuccess(res, review, 'Review updated successfully');
-    } catch (error) {
-      return sendError(res, 'Error updating review');
+      const result = await performanceService.submitSelfAppraisal(req.params.id as string, req.body, req.user!, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Self appraisal submitted');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
     }
-  }
+  };
 
-  async approveReview(req: AuthRequest, res: Response) {
+  submitManagerAppraisal = async (req: AuthRequest, res: Response) => {
     try {
-      const review = await performanceService.approveReview(req.params.id as string, req.body, req.user!.userId);
-      return sendSuccess(res, review, 'Review approved successfully');
-    } catch (error) {
-      return sendError(res, 'Error approving review');
+      const result = await performanceService.submitManagerAppraisal(req.params.id as string, req.body, req.user!, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Manager appraisal submitted');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
     }
-  }
+  };
+
+  submitHRAppraisal = async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await performanceService.submitHRAppraisal(req.params.id as string, req.body, req.user!, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'HR appraisal submitted');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
+    }
+  };
 }
 
 export const performanceController = new PerformanceController();

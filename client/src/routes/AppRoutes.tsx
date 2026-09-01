@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import MainLayout from '@/components/layout/MainLayout';
@@ -19,23 +17,21 @@ import EmployeeDetailPage from '@/pages/employees/EmployeeDetailPage';
 import DepartmentListPage from '@/pages/departments/DepartmentListPage';
 import DepartmentFormPage from '@/pages/departments/DepartmentFormPage';
 
-// Attendance
-import AttendancePage from '@/pages/attendance/AttendancePage';
-
-// Leaves
-import LeaveApplicationPage from '@/pages/leave/LeaveApplicationPage';
-import LeaveHistoryPage from '@/pages/leave/LeaveHistoryPage';
-import LeaveApprovalsPage from '@/pages/leave/LeaveApprovalsPage';
-
-// New Modules
-import TravelListPage from '@/pages/travel/TravelListPage';
-import AssetListPage from '@/pages/assets/AssetListPage';
-import RecruitmentPage from '@/pages/recruitment/RecruitmentPage';
+// Modules
 import PerformanceListPage from '@/pages/performance/PerformanceListPage';
 import TrainingListPage from '@/pages/training/TrainingListPage';
 import RequestListPage from '@/pages/requests/RequestListPage';
 import PolicyListPage from '@/pages/policies/PolicyListPage';
+import AssetListPage from '@/pages/assets/AssetListPage';
+import TravelListPage from '@/pages/travel/TravelListPage';
+import RecruitmentPage from '@/pages/recruitment/RecruitmentPage';
 import NotificationListPage from '@/pages/notifications/NotificationListPage';
+import AttritionDashboardPage from '@/pages/attrition/AttritionDashboardPage';
+import SettingsPage from '@/pages/settings/SettingsPage';
+import AuditLogPage from '@/pages/audit/AuditLogPage';
+import LoginHistoryPage from '@/pages/loginHistory/LoginHistoryPage';
+import ReportsPage from '@/pages/reports/ReportsPage';
+import RoleManagementPage from '@/pages/roles/RoleManagementPage';
 
 const AppRoutes = () => {
   return (
@@ -52,29 +48,29 @@ const AppRoutes = () => {
           <Route path="/employees/:id" element={<EmployeeDetailPage />} />
           <Route path="/employees/:id/edit" element={<EmployeeFormPage />} />
           
+          <Route path="/performance" element={<PerformanceListPage />} />
+          <Route path="/documents" element={<PolicyListPage />} />
+          <Route path="/assets" element={<AssetListPage />} />
+          <Route path="/travel" element={<TravelListPage />} />
+          <Route path="/recruitment" element={<RecruitmentPage />} />
+          
           <Route path="/departments" element={<DepartmentListPage />} />
           <Route path="/departments/new" element={<DepartmentFormPage />} />
           <Route path="/departments/:id/edit" element={<DepartmentFormPage />} />
           
-          <Route path="/attendance" element={<AttendancePage />} />
-          
-          <Route path="/leaves/apply" element={<LeaveApplicationPage />} />
-          <Route path="/leaves/history" element={<LeaveHistoryPage />} />
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR', 'MANAGER']} />}>
-            <Route path="/leaves/approvals" element={<LeaveApprovalsPage />} />
-          </Route>
-
-          {/* New Module Routes */}
-          <Route path="/travel" element={<TravelListPage />} />
-          <Route path="/assets" element={<AssetListPage />} />
-          <Route path="/performance" element={<PerformanceListPage />} />
           <Route path="/training" element={<TrainingListPage />} />
           <Route path="/requests" element={<RequestListPage />} />
-          <Route path="/policies" element={<PolicyListPage />} />
+          <Route path="/policies" element={<Navigate to="/documents" replace />} />
+          <Route path="/profile" element={<Navigate to="/settings" replace />} />
           <Route path="/notifications" element={<NotificationListPage />} />
 
           <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR']} />}>
-            <Route path="/recruitment" element={<RecruitmentPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/audit" element={<AuditLogPage />} />
+            <Route path="/login-history" element={<LoginHistoryPage />} />
+            <Route path="/roles" element={<RoleManagementPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/attrition" element={<AttritionDashboardPage />} />
           </Route>
         </Route>
       </Route>
@@ -83,4 +79,3 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
-

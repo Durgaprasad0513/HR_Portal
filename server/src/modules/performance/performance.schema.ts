@@ -1,39 +1,33 @@
 import { z } from 'zod';
-import { ReviewPeriod, ApprovalStatus } from '@prisma/client';
 
 export const createPerformanceReviewSchema = z.object({
-  body: z.object({
-    employeeId: z.string().uuid(),
-    reviewPeriod: z.nativeEnum(ReviewPeriod),
-    kraDescription: z.string().optional(),
-    kpiWeightage: z.number().optional(),
-    goalDescription: z.string().optional(),
-    targetValue: z.number().optional()
-  })
+  employeeId: z.string(),
+  reviewPeriod: z.enum(['QUARTERLY', 'HALF_YEARLY', 'ANNUAL']),
+  kraDescription: z.string().optional(),
+  kpiWeightage: z.number().optional(),
+  goalDescription: z.string().optional(),
+  targetValue: z.string().optional()
 });
 
-export const updateReviewRatingsSchema = z.object({
-  params: z.object({ id: z.string().uuid() }),
-  body: z.object({
-    achievedValue: z.number().optional(),
-    selfRating: z.number().optional(),
-    managerRating: z.number().optional(),
-    hrRating: z.number().optional(),
-    finalRating: z.number().optional(),
-    managerComments: z.string().optional(),
-    employeeComments: z.string().optional(),
-    hrComments: z.string().optional(),
-    strengths: z.string().optional(),
-    areasOfImprovement: z.string().optional(),
-    trainingRequirement: z.string().optional(),
-    promotionRecommendation: z.boolean().optional(),
-    salaryRevisionRecommendation: z.boolean().optional()
-  })
+export const selfAppraisalSchema = z.object({
+  achievedValue: z.string().optional(),
+  selfRating: z.number().min(1).max(5).optional(),
+  employeeComments: z.string().optional(),
+  strengths: z.string().optional(),
+  areasOfImprovement: z.string().optional(),
+  trainingRequirement: z.string().optional()
 });
 
-export const approveReviewSchema = z.object({
-  params: z.object({ id: z.string().uuid() }),
-  body: z.object({
-    finalApprovalStatus: z.nativeEnum(ApprovalStatus)
-  })
+export const managerAppraisalSchema = z.object({
+  managerRating: z.number().min(1).max(5).optional(),
+  managerComments: z.string().optional(),
+  promotionRecommendation: z.boolean().optional(),
+  salaryRevisionRecommendation: z.string().optional() // schema is string
+});
+
+export const hrAppraisalSchema = z.object({
+  hrRating: z.number().min(1).max(5).optional(),
+  hrComments: z.string().optional(),
+  finalRating: z.number().min(1).max(5).optional(),
+  finalApprovalStatus: z.enum(['APPROVAL_PENDING', 'APPROVAL_APPROVED', 'APPROVAL_REJECTED'])
 });

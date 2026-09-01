@@ -10,8 +10,8 @@ export const recruitmentApi = {
     const { data } = await apiClient.post<ApiResponse<any>>('/recruitment/requisitions', payload);
     return data;
   },
-  updateRequisition: async (id: string, payload: any) => {
-    const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/requisitions/${id}`, payload);
+  updateRequisitionStatus: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/requisitions/${id}/status`, payload);
     return data;
   },
   getCandidates: async (id: string) => {
@@ -22,8 +22,18 @@ export const recruitmentApi = {
     const { data } = await apiClient.post<ApiResponse<any>>('/recruitment/candidates', payload);
     return data;
   },
-  updateCandidate: async (id: string, payload: any) => {
-    const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/candidates/${id}`, payload);
+  screenCandidate: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/candidates/${id}/screen`, payload);
+    return data;
+  },
+  interviewCandidate: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/candidates/${id}/interview`, payload);
+    return data;
+  },
+  offerCandidate: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/candidates/${id}/offer`, payload);
     return data;
   }
 };
+
+// updated

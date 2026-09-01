@@ -15,15 +15,11 @@ export const assetsApi = {
     return data;
   },
   update: async (id: string, payload: any) => {
-    const { data } = await apiClient.put<ApiResponse<any>>(`/assets/${id}`, payload);
+    const { data } = await apiClient.patch<ApiResponse<any>>(`/assets/${id}`, payload);
     return data;
   },
-  delete: async (id: string) => {
-    const { data } = await apiClient.delete<ApiResponse<any>>(`/assets/${id}`);
-    return data;
-  },
-  getMyAssets: async () => {
-    const { data } = await apiClient.get<ApiResponse<any[]>>('/assets/my-assets');
+  assignAsset: async (id: string, payload: any) => {
+    const { data } = await apiClient.patch<ApiResponse<any>>(`/assets/${id}/assign`, payload);
     return data;
   },
   returnAsset: async (id: string, payload: any) => {
@@ -31,3 +27,5 @@ export const assetsApi = {
     return data;
   }
 };
+
+// updated

@@ -16,9 +16,11 @@ export class NotificationController {
     }
   }
 
-  async markAsRead(req: Request, res: Response) {
+  async markAsRead(req: AuthRequest, res: Response) {
     try {
-      const notification = await notificationService.markAsRead(req.params.id as string);
+      const employeeId = req.user?.employeeId;
+      if (!employeeId) return sendError(res, 'Employee not found', 404);
+      const notification = await notificationService.markAsRead(req.params.id as string, employeeId);
       return sendSuccess(res, notification, 'Notification marked as read');
     } catch (error: any) {
       return sendError(res, error.message, 500);
@@ -49,9 +51,11 @@ export class NotificationController {
     }
   }
 
-  async deleteNotification(req: Request, res: Response) {
+  async deleteNotification(req: AuthRequest, res: Response) {
     try {
-      await notificationService.deleteNotification(req.params.id as string);
+      const employeeId = req.user?.employeeId;
+      if (!employeeId) return sendError(res, 'Employee not found', 404);
+      await notificationService.deleteNotification(req.params.id as string, employeeId);
       return sendSuccess(res, null, 'Notification deleted successfully');
     } catch (error: any) {
       return sendError(res, error.message, 500);

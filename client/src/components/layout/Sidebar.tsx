@@ -1,128 +1,129 @@
-import React from 'react';
-
+import { useState, useRef, useEffect } from 'react';
+import { Laptop } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from 'next-themes';
 import { 
-  LayoutDashboard, 
-  Users, 
-  Building2, 
-  Clock, 
-  
-  FilePlus,
-  History,
-  CheckSquare,
-  Plane,
-  Monitor,
-  UserSearch,
-  Star,
-  GraduationCap,
-  HelpCircle,
-  FileText,
-  Bell
+  Search, Bell, Settings, LogOut, User, ChevronRight,
+  LayoutDashboard, Users, UserSearch, FileText, BarChart, Shield, History, Plane,
+  Briefcase, Target, ClipboardList, GraduationCap, Files, UserMinus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CommandPalette } from '@/components/ui/CommandPalette';
 
 export function Sidebar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const logoUrl = '/logo.png'; 
   const location = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Employees', path: '/employees', icon: Users, roles: ['ADMIN', 'HR', 'MANAGER'] },
-    { name: 'Departments', path: '/departments', icon: Building2, roles: ['ADMIN', 'HR'] },
-    { name: 'Attendance', path: '/attendance', icon: Clock, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+
+  const workspaceNav = [
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Employees', path: '/employees', icon: Users },
+    { name: 'Assets', path: '/assets', icon: Laptop },
+    { name: 'Travel', path: '/travel', icon: Plane },
+    { name: 'Recruitment', path: '/recruitment', icon: Briefcase },
+    { name: 'Performance', path: '/performance', icon: Target },
+    { name: 'Requests', path: '/requests', icon: ClipboardList },
+    { name: 'Training', path: '/training', icon: GraduationCap },
+    { name: 'Documents', path: '/documents', icon: Files },
+    ...(isAdminOrHR ? [
+      { name: 'Reports', path: '/reports', icon: BarChart },
+      { name: 'Attrition', path: '/attrition', icon: UserMinus },
+    ] : [])
   ];
 
-  const leaveItems = [
-    { name: 'Apply Leave', path: '/leaves/apply', icon: FilePlus, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'My Leaves', path: '/leaves/history', icon: History, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Approvals', path: '/leaves/approvals', icon: CheckSquare, roles: ['ADMIN', 'HR', 'MANAGER'] },
-  ];
-
-  const moduleItems = [
-    { name: 'Travel Allowance', path: '/travel', icon: Plane, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Assets', path: '/assets', icon: Monitor, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Recruitment', path: '/recruitment', icon: UserSearch, roles: ['ADMIN', 'HR'] },
-    { name: 'Performance', path: '/performance', icon: Star, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Training', path: '/training', icon: GraduationCap, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Requests', path: '/requests', icon: HelpCircle, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Policies', path: '/policies', icon: FileText, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Notifications', path: '/notifications', icon: Bell, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-  ];
-
-  const filterRoles = (items: any[]) => items.filter(item => user && item.roles.includes(user.role));
-
-  const filteredNavItems = filterRoles(navItems);
-  const filteredLeaveItems = filterRoles(leaveItems);
-  const filteredModuleItems = filterRoles(moduleItems);
-
-  const renderNavSection = (items: any[], title?: string) => (
-    <>
-      {title && (
-        <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {title}
-        </div>
-      )}
-      <div className="space-y-1">
-        {items.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) => cn(
-              "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors",
-              isActive ? "bg-slate-800 text-indigo-400" : "text-slate-300"
-            )}
-          >
-            <item.icon className={cn(
-              "mr-3 h-5 w-5 flex-shrink-0",
-              location.pathname.startsWith(item.path) ? "text-indigo-400" : "text-slate-400 group-hover:text-white"
-            )} />
-            {item.name}
-          </NavLink>
-        ))}
-      </div>
-    </>
-  );
+  const authNav = isAdminOrHR ? [
+    { name: 'Role Mgt', path: '/roles', icon: Shield },
+    { name: 'Audit Log', path: '/audit', icon: History }
+  ] : [];
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-slate-900 text-slate-300">
-      <div className="flex h-16 items-center px-6 text-xl font-bold text-white border-b border-slate-800">
-        HR Portal
-      </div>
-      
-      <div className="flex-1 overflow-y-auto py-4">
-        <nav className="space-y-1 px-3">
-          {filteredNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => cn(
-                "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors",
-                isActive ? "bg-slate-800 text-indigo-400" : "text-slate-300"
-              )}
-            >
-              <item.icon className={cn(
-                "mr-3 h-5 w-5 flex-shrink-0",
-                location.pathname.startsWith(item.path) ? "text-indigo-400" : "text-slate-400 group-hover:text-white"
-              )} />
-              {item.name}
-            </NavLink>
-          ))}
+    <>
+      <aside className="bg-navy-900 text-white w-64 flex flex-col shadow-xl z-50 h-screen shrink-0">
+        {/* Brand */}
+        <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
+          <NavLink to="/dashboard" className="flex items-center gap-3">
+            <img 
+              src={logoUrl} 
+              alt="Lohitha Logo" 
+              className="h-8 w-8 rounded-full object-contain bg-white dark:bg-gray-900/10 p-0.5"
+            />
+            <span className="text-lg font-bold tracking-tight">HR Management</span>
+          </NavLink>
+        </div>
 
-          {filteredLeaveItems.length > 0 && (
-            <div className="pt-4">
-              {renderNavSection(filteredLeaveItems, 'Leaves')}
+        {/* Navigation */}
+        <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-6">
+          {/* Workspace */}
+          <div>
+            <p className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">Workspace</p>
+            <div className="flex flex-col gap-1">
+              {workspaceNav.map((item) => {
+                const isActive = location.pathname === item.path || 
+                  (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-accent-500/20 text-accent-400"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    <item.icon className={cn("h-5 w-5", isActive ? "text-accent-400" : "text-white/50")} />
+                    {item.name}
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Authorization */}
+          {authNav.length > 0 && (
+            <div>
+              <p className="px-3 text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">Authorization</p>
+              <div className="flex flex-col gap-1">
+                {authNav.map((item) => {
+                  const isActive = location.pathname === item.path || 
+                    (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-accent-500/20 text-accent-400"
+                          : "text-white/70 hover:bg-white/10 hover:text-white"
+                      )}
+                    >
+                      <item.icon className={cn("h-5 w-5", isActive ? "text-accent-400" : "text-white/50")} />
+                      {item.name}
+                    </NavLink>
+                  );
+                })}
+              </div>
             </div>
           )}
+        </div>
 
-          {filteredModuleItems.length > 0 && (
-            <div className="pt-4">
-              {renderNavSection(filteredModuleItems, 'Modules')}
-            </div>
-          )}
-        </nav>
-      </div>
-    </div>
+      </aside>
+    </>
   );
 }
-

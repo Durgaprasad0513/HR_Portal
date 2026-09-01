@@ -1,4 +1,3 @@
-import React from 'react';
 import { createContext, useContext, useState } from 'react';
 import { User, Employee } from '../types';
 import { authApi } from '../api/auth';

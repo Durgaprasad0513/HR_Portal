@@ -1,73 +1,80 @@
 import { Request, Response } from 'express';
+import { trainingService } from './training.service';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuthRequest } from '../../middleware/auth.middleware';
-import { trainingService } from './training.service';
 
 export class TrainingController {
-  async getAllTrainings(req: Request, res: Response) {
+  getMyTrainings = async (req: AuthRequest, res: Response) => {
     try {
-      const trainings = await trainingService.getAllTrainings(req.query);
-      return sendSuccess(res, trainings, 'Trainings retrieved successfully');
+      const result = await trainingService.getMyTrainings(req.user!.employeeId!);
+      return sendSuccess(res, result, 'My trainings retrieved');
     } catch (error: any) {
       return sendError(res, error.message, 500);
     }
-  }
+  };
 
-  async getMyTrainings(req: AuthRequest, res: Response) {
+  getAllTrainings = async (req: AuthRequest, res: Response) => {
     try {
-      const employeeId = req.user?.employeeId;
-      if (!employeeId) return sendError(res, 'Employee not found', 404);
-      const trainings = await trainingService.getMyTrainings(employeeId);
-      return sendSuccess(res, trainings, 'My trainings retrieved successfully');
+      const result = await trainingService.getAllTrainings(req.user!, req.query);
+      return sendSuccess(res, result, 'Trainings retrieved');
     } catch (error: any) {
       return sendError(res, error.message, 500);
     }
-  }
+  };
 
-  async createTraining(req: Request, res: Response) {
+  createTraining = async (req: AuthRequest, res: Response) => {
     try {
-      const training = await trainingService.createTraining(req.body);
-      return sendSuccess(res, training, 'Training created successfully', 201);
+      const result = await trainingService.createTraining(req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Training created');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
-  }
+  };
 
-  async updateTraining(req: Request, res: Response) {
+  updateTraining = async (req: AuthRequest, res: Response) => {
     try {
-      const training = await trainingService.updateTraining(req.params.id as string, req.body);
-      return sendSuccess(res, training, 'Training updated successfully');
+      const result = await trainingService.updateTraining(req.params.id as string, req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Training updated');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
-  }
+  };
 
-  async addParticipant(req: Request, res: Response) {
+  addParticipant = async (req: AuthRequest, res: Response) => {
     try {
-      const participant = await trainingService.addParticipant(req.params.id as string, req.body.employeeId);
-      return sendSuccess(res, participant, 'Participant added successfully', 201);
+      const result = await trainingService.addParticipant(req.params.id as string, req.body.employeeId, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Participant added');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
-  }
+  };
 
-  async removeParticipant(req: Request, res: Response) {
+  removeParticipant = async (req: AuthRequest, res: Response) => {
     try {
-      await trainingService.removeParticipant(req.params.id as string, req.params.employeeId as string);
-      return sendSuccess(res, null, 'Participant removed successfully');
+      await trainingService.removeParticipant(req.params.id as string, req.params.employeeId as string, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, null, 'Participant removed');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
-  }
+  };
 
-  async updateParticipant(req: Request, res: Response) {
+  submitFeedback = async (req: AuthRequest, res: Response) => {
     try {
-      const participant = await trainingService.updateParticipant(req.params.id as string, req.params.employeeId as string, req.body);
-      return sendSuccess(res, participant, 'Participant updated successfully');
+      const result = await trainingService.submitFeedback(req.params.id as string, req.params.employeeId as string, req.body, req.user!, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Feedback submitted');
     } catch (error: any) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, 400);
     }
-  }
+  };
+
+  recordAssessment = async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await trainingService.recordAssessment(req.params.id as string, req.params.employeeId as string, req.body, req.user!, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Assessment recorded');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
+    }
+  };
 }
 
 export const trainingController = new TrainingController();

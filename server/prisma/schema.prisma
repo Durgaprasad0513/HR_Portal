@@ -16,6 +16,7 @@ datasource db {
 enum Role {
   ADMIN
   HR
+  REMOVED_ROLE
   MANAGER
   EMPLOYEE
 }
@@ -265,12 +266,15 @@ model User {
   sessionTimeoutMinutes Int       @default(30)
 
   // New relations
-  loginHistory          LoginHistory[]
+  loginHistory          LoginHistory[] @relation("UserLoginHistory")
   auditLogs             AuditLog[]
   uploadedDocuments     EmployeeDocument[] @relation("DocumentUploader")
   verifiedTravelRequests TravelRequest[]   @relation("TravelVerifier")
   uploadedPolicies      Policy[]           @relation("PolicyUploader")
   assignedRequests      EmployeeRequest[]  @relation("RequestAssignee")
+  createdModulePermissions ModulePermission[] @relation("PermissionCreator")
+  deactivatedAt         DateTime?
+  tokenVersion          Int       @default(0)
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -306,6 +310,8 @@ model Employee {
   designation   String
   salary        Float?
   status        EmployeeStatus @default(ACTIVE)
+  isActive      Boolean        @default(true)
+  deactivatedAt DateTime?
   profilePhoto  String?
 
   // New employment fields
@@ -371,62 +377,62 @@ model Employee {
 }
 
 model Department {
-  id          String     @id @default(cuid())
-  name        String     @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   description String?
-  
-  headId      String?    @unique
-  head        Employee?  @relation("DepartmentHead", fields: [headId], references: [id])
 
-  employees   Employee[] @relation("DepartmentEmployees")
+  headId String?   @unique
+  head   Employee? @relation("DepartmentHead", fields: [headId], references: [id])
+
+  employees Employee[] @relation("DepartmentEmployees")
 
   // New relations
   requisitions Requisition[]
-  trainings    Training[]  @relation("TrainingDepartment")
+  trainings    Training[]    @relation("TrainingDepartment")
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("departments")
 }
 
 model Attendance {
-  id         String           @id @default(cuid())
-  date       DateTime         @db.Date
-  clockIn    DateTime?
-  clockOut   DateTime?
-  workHours  Float?
-  status     AttendanceStatus @default(PRESENT)
-  notes      String?
+  id        String           @id @default(cuid())
+  date      DateTime         @db.Date
+  clockIn   DateTime?
+  clockOut  DateTime?
+  workHours Decimal?
+  status    AttendanceStatus @default(PRESENT)
+  notes     String?
 
   employeeId String
-  employee   Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, date])
   @@map("attendance")
 }
 
 model Leave {
-  id         String      @id @default(cuid())
-  leaveType  LeaveType
-  startDate  DateTime    @db.Date
-  endDate    DateTime    @db.Date
-  totalDays  Float
-  reason     String
-  status     LeaveStatus @default(PENDING)
-  remarks    String?
+  id        String      @id @default(cuid())
+  leaveType LeaveType
+  startDate DateTime    @db.Date
+  endDate   DateTime    @db.Date
+  totalDays Decimal
+  reason    String
+  status    LeaveStatus @default(PENDING)
+  remarks   String?
 
   employeeId String
-  employee   Employee    @relation("EmployeeLeaves", fields: [employeeId], references: [id], onDelete: Cascade)
+  employee   Employee @relation("EmployeeLeaves", fields: [employeeId], references: [id], onDelete: Restrict)
 
   approverId String?
-  approver   Employee?   @relation("ApproverLeaves", fields: [approverId], references: [id])
+  approver   Employee? @relation("ApproverLeaves", fields: [approverId], references: [id])
 
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("leaves")
 }
@@ -435,15 +441,15 @@ model LeaveBalance {
   id            String    @id @default(cuid())
   year          Int
   leaveType     LeaveType
-  totalDays     Float
-  usedDays      Float     @default(0)
-  remainingDays Float
+  totalDays     Decimal
+  usedDays      Decimal   @default(0)
+  remainingDays Decimal
 
-  employeeId    String
-  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, year, leaveType])
   @@map("leave_balances")
@@ -463,15 +469,15 @@ model EmployeeDocument {
   verificationStatus VerificationStatus @default(UNVERIFIED)
   expiryDate         DateTime?
 
-  employeeId         String
-  employee           Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
-  uploadedById       String?
-  uploadedBy         User?              @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  uploadedById String?
+  uploadedBy   User?   @relation("DocumentUploader", fields: [uploadedById], references: [id])
 
-  uploadDate         DateTime           @default(now())
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  uploadDate DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("employee_documents")
 }
@@ -485,31 +491,31 @@ model TravelRequest {
   startDate           DateTime         @db.Date
   endDate             DateTime         @db.Date
   travelMode          TravelMode
-  advanceRequested    Float?
-  advanceApproved     Float?
+  advanceRequested    Decimal?
+  advanceApproved     Decimal?
   approvalStatus      ApprovalStatus   @default(APPROVAL_PENDING)
   approvalDate        DateTime?
-  hotelExpense        Float?
-  foodAllowance       Float?
-  localConveyance     Float?
-  otherExpenses       Float?
-  totalExpenseClaimed Float?
+  hotelExpense        Decimal?
+  foodAllowance       Decimal?
+  localConveyance     Decimal?
+  otherExpenses       Decimal?
+  totalExpenseClaimed Decimal?
   billUpload          String?
-  amountPayable       Float?
+  amountPayable       Decimal?
   settlementStatus    SettlementStatus @default(UNSETTLED)
   settlementDate      DateTime?
 
-  employeeId          String
-  employee            Employee         @relation("EmployeeTravelRequests", fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation("EmployeeTravelRequests", fields: [employeeId], references: [id], onDelete: Restrict)
 
-  approverId          String?
-  approver            Employee?        @relation("TravelApprover", fields: [approverId], references: [id])
+  approverId String?
+  approver   Employee? @relation("TravelApprover", fields: [approverId], references: [id])
 
-  verifiedById        String?
-  verifiedBy          User?            @relation("TravelVerifier", fields: [verifiedById], references: [id])
+  verifiedById String?
+  verifiedBy   User?   @relation("TravelVerifier", fields: [verifiedById], references: [id])
 
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("travel_requests")
 }
@@ -517,28 +523,28 @@ model TravelRequest {
 // --- Asset Management ---
 
 model Asset {
-  id                String         @id @default(cuid())
-  assetType         AssetType
-  assetCategory     AssetCategory
-  brandModel        String?
-  serialNumber      String?        @unique
-  purchaseDate      DateTime?
-  purchaseValue     Float?
-  vendor            String?
+  id                 String                @id @default(cuid())
+  assetType          AssetType
+  assetCategory      AssetCategory
+  brandModel         String?
+  serialNumber       String?               @unique
+  purchaseDate       DateTime?
+  purchaseValue      Decimal?
+  vendor             String?
   warrantyExpiryDate DateTime?
-  issueDate         DateTime?
-  issueCondition    AssetCondition?
-  assetLocation     String?
-  returnDate        DateTime?
-  returnCondition   AssetReturnCondition?
-  status            AssetStatus    @default(IN_USE)
-  remarks           String?
+  issueDate          DateTime?
+  issueCondition     AssetCondition?
+  assetLocation      String?
+  returnDate         DateTime?
+  returnCondition    AssetReturnCondition?
+  status             AssetStatus           @default(IN_USE)
+  remarks            String?
 
   assignedEmployeeId String?
-  assignedEmployee   Employee?     @relation("AssetAssignee", fields: [assignedEmployeeId], references: [id])
+  assignedEmployee   Employee? @relation("AssetAssignee", fields: [assignedEmployeeId], references: [id])
 
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("assets")
 }
@@ -553,56 +559,56 @@ model Requisition {
   requisitionDate   DateTime          @default(now())
   status            RequisitionStatus @default(OPEN)
 
-  departmentId      String?
-  department        Department?       @relation(fields: [departmentId], references: [id])
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
 
-  raisedById        String?
-  raisedBy          Employee?         @relation("RequisitionRaiser", fields: [raisedById], references: [id])
+  raisedById String?
+  raisedBy   Employee? @relation("RequisitionRaiser", fields: [raisedById], references: [id])
 
-  candidates        Candidate[]
+  candidates Candidate[]
 
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("requisitions")
 }
 
 model Candidate {
-  id               String           @id @default(cuid())
-  candidateName    String
-  mobile           String?
-  email            String?
-  qualification    String?
-  totalExperience  Float?
-  currentCompany   String?
-  currentSalary    Float?
-  expectedSalary   Float?
-  noticePeriod     Int?
-  source           String?
-  resumePath       String?
-  screeningStatus  ScreeningStatus  @default(SCREENING_PENDING)
-  screeningNotes   String?
-  interviewRound   String?
-  interviewDate    DateTime?
+  id                String           @id @default(cuid())
+  candidateName     String
+  mobile            String?
+  email             String?
+  qualification     String?
+  totalExperience   Decimal?
+  currentCompany    String?
+  currentSalary     Decimal?
+  expectedSalary    Decimal?
+  noticePeriod      Int?
+  source            String?
+  resumePath        String?
+  screeningStatus   ScreeningStatus  @default(SCREENING_PENDING)
+  screeningNotes    String?
+  interviewRound    String?
+  interviewDate     DateTime?
   interviewFeedback String?
-  interviewScore   Int?
-  selectionStatus  SelectionStatus?
-  offerStatus      OfferStatus?
-  offerDate        DateTime?
-  offeredSalary    Float?
-  joiningDate      DateTime?
-  rejectionStage   String?
-  rejectionReason  String?
-  recruitmentCost  Float?
+  interviewScore    Int?
+  selectionStatus   SelectionStatus?
+  offerStatus       OfferStatus?
+  offerDate         DateTime?
+  offeredSalary     Decimal?
+  joiningDate       DateTime?
+  rejectionStage    String?
+  rejectionReason   String?
+  recruitmentCost   Decimal?
 
-  requisitionId    String
-  requisition      Requisition      @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  requisitionId String
+  requisition   Requisition @relation(fields: [requisitionId], references: [id], onDelete: Restrict)
 
-  interviewerId    String?
-  interviewer      Employee?        @relation("CandidateInterviewer", fields: [interviewerId], references: [id])
+  interviewerId String?
+  interviewer   Employee? @relation("CandidateInterviewer", fields: [interviewerId], references: [id])
 
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("candidates")
 }
@@ -610,36 +616,36 @@ model Candidate {
 // --- Performance Review ---
 
 model PerformanceReview {
-  id                        String       @id @default(cuid())
-  reviewPeriod              ReviewPeriod
-  kraDescription            String?
-  kpiWeightage              Float?
-  goalDescription           String?
-  targetValue               String?
-  achievedValue             String?
-  selfRating                Float?
-  managerRating             Float?
-  hrRating                  Float?
-  finalRating               Float?
-  managerComments           String?
-  employeeComments          String?
-  hrComments                String?
-  strengths                 String?
-  areasOfImprovement        String?
-  trainingRequirement       String?
-  promotionRecommendation   Boolean      @default(false)
+  id                           String         @id @default(cuid())
+  reviewPeriod                 ReviewPeriod
+  kraDescription               String?
+  kpiWeightage                 Decimal?
+  goalDescription              String?
+  targetValue                  String?
+  achievedValue                String?
+  selfRating                   Decimal?
+  managerRating                Decimal?
+  hrRating                     Decimal?
+  finalRating                  Decimal?
+  managerComments              String?
+  employeeComments             String?
+  hrComments                   String?
+  strengths                    String?
+  areasOfImprovement           String?
+  trainingRequirement          String?
+  promotionRecommendation      Boolean        @default(false)
   salaryRevisionRecommendation String?
-  finalApprovalStatus       ApprovalStatus @default(APPROVAL_PENDING)
-  finalApprovalDate         DateTime?
+  finalApprovalStatus          ApprovalStatus @default(APPROVAL_PENDING)
+  finalApprovalDate            DateTime?
 
-  employeeId                String
-  employee                  Employee     @relation("EmployeeReviews", fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation("EmployeeReviews", fields: [employeeId], references: [id], onDelete: Restrict)
 
-  finalApprovedById         String?
-  finalApprovedBy           Employee?    @relation("ReviewApprover", fields: [finalApprovedById], references: [id])
+  finalApprovedById String?
+  finalApprovedBy   Employee? @relation("ReviewApprover", fields: [finalApprovedById], references: [id])
 
-  createdAt                 DateTime     @default(now())
-  updatedAt                 DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("performance_reviews")
 }
@@ -653,37 +659,37 @@ model Training {
   trainerName      String?
   trainingDate     DateTime     @db.Date
   trainingLocation String?
-  trainingCost     Float?
-  trainingHours    Float?
+  trainingCost     Decimal?
+  trainingHours    Decimal?
 
   targetDepartmentId String?
   targetDepartment   Department? @relation("TrainingDepartment", fields: [targetDepartmentId], references: [id])
 
-  participants     TrainingParticipant[]
+  participants TrainingParticipant[]
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("trainings")
 }
 
 model TrainingParticipant {
-  id               String                  @id @default(cuid())
-  attendanceStatus TrainingAttendanceStatus @default(TRAINING_PRESENT)
-  feedbackRating   Float?
-  feedbackComments String?
-  assessmentScore  Float?
-  certificateIssued Boolean               @default(false)
-  certificateFile  String?
+  id                String                   @id @default(cuid())
+  attendanceStatus  TrainingAttendanceStatus @default(TRAINING_PRESENT)
+  feedbackRating    Decimal?
+  feedbackComments  String?
+  assessmentScore   Decimal?
+  certificateIssued Boolean                  @default(false)
+  certificateFile   String?
 
-  trainingId       String
-  training         Training               @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  trainingId String
+  training   Training @relation(fields: [trainingId], references: [id], onDelete: Restrict)
 
-  employeeId       String
-  employee         Employee               @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([trainingId, employeeId])
   @@map("training_participants")
@@ -692,23 +698,23 @@ model TrainingParticipant {
 // --- Employee Requests / Queries ---
 
 model EmployeeRequest {
-  id                String       @id @default(cuid())
-  requestType       RequestType
-  description       String
-  status            TicketStatus @default(SUBMITTED)
-  responseNotes     String?
-  resolutionDate    DateTime?
-  closureDate       DateTime?
-  slaDueDate        DateTime?
+  id             String       @id @default(cuid())
+  requestType    RequestType
+  description    String
+  status         TicketStatus @default(SUBMITTED)
+  responseNotes  String?
+  resolutionDate DateTime?
+  closureDate    DateTime?
+  slaDueDate     DateTime?
 
-  employeeId        String
-  employee          Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
-  assignedToId      String?
-  assignedTo        User?        @relation("RequestAssignee", fields: [assignedToId], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("RequestAssignee", fields: [assignedToId], references: [id])
 
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("employee_requests")
 }
@@ -716,39 +722,39 @@ model EmployeeRequest {
 // --- HR Policies & Documents ---
 
 model Policy {
-  id                     String         @id @default(cuid())
-  policyName             String
-  policyCategory         PolicyCategory
-  versionNumber          String         @default("v1.0")
-  filePath               String
-  applicableTo           String         @default("ALL")
-  acknowledgementRequired Boolean       @default(false)
+  id                      String         @id @default(cuid())
+  policyName              String
+  policyCategory          PolicyCategory
+  versionNumber           String         @default("v1.0")
+  filePath                String
+  applicableTo            String         @default("ALL")
+  acknowledgementRequired Boolean        @default(false)
 
-  uploadedById           String?
-  uploadedBy             User?          @relation("PolicyUploader", fields: [uploadedById], references: [id])
+  uploadedById String?
+  uploadedBy   User?   @relation("PolicyUploader", fields: [uploadedById], references: [id])
 
-  acknowledgements       PolicyAcknowledgement[]
+  acknowledgements PolicyAcknowledgement[]
 
-  uploadDate             DateTime       @default(now())
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
+  uploadDate DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("policies")
 }
 
 model PolicyAcknowledgement {
-  id                   String               @id @default(cuid())
+  id                    String                @id @default(cuid())
   acknowledgementStatus AcknowledgementStatus @default(ACK_PENDING)
-  acknowledgementDate  DateTime?
+  acknowledgementDate   DateTime?
 
-  policyId             String
-  policy               Policy               @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  policyId String
+  policy   Policy @relation(fields: [policyId], references: [id], onDelete: Restrict)
 
-  employeeId           String
-  employee             Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([policyId, employeeId])
   @@map("policy_acknowledgements")
@@ -764,10 +770,10 @@ model Notification {
   isRead           Boolean          @default(false)
   deliveryChannel  String           @default("IN_APP")
 
-  recipientId      String
-  recipient        Employee         @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   Employee @relation(fields: [recipientId], references: [id], onDelete: Restrict)
 
-  createdAt        DateTime         @default(now())
+  createdAt DateTime @default(now())
 
   @@map("notifications")
 }
@@ -775,18 +781,18 @@ model Notification {
 // --- Audit Log ---
 
 model AuditLog {
-  id              String   @id @default(cuid())
-  actionPerformed String
-  moduleAffected  String
+  id               String  @id @default(cuid())
+  actionPerformed  String
+  moduleAffected   String
   recordIdAffected String?
-  oldValue        String?
-  newValue        String?
-  ipAddress       String?
+  oldValue         String?
+  newValue         String?
+  ipAddress        String?
 
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("audit_logs")
 }
@@ -800,8 +806,43 @@ model LoginHistory {
   ipAddress     String?
   deviceBrowser String?
 
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation("UserLoginHistory", fields: [userId], references: [id])
 
   @@map("login_history")
+}
+
+// --- Role module permissions (configurable RBAC matrix) ---
+
+model ModulePermission {
+  id                String  @id @default(cuid())
+  role              Role
+  module            String
+  canView           Boolean @default(false)
+  canAdd            Boolean @default(false)
+  canEdit           Boolean @default(false)
+  canDelete         Boolean @default(false)
+  canApprove        Boolean @default(false)
+  canViewRestricted Boolean @default(false)
+
+  createdById String?
+  createdBy   User?   @relation("PermissionCreator", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([role, module])
+  @@map("module_permissions")
+}
+
+model SystemSettings {
+  id                  String   @id @default(uuid())
+  minPasswordLength   Int      @default(8)
+  requireUppercase    Boolean  @default(true)
+  requireNumbers      Boolean  @default(true)
+  requireSpecialChars Boolean  @default(true)
+  passwordExpiryDays  Int      @default(90)
+  updatedAt           DateTime @updatedAt
+
+  @@map("system_settings")
 }

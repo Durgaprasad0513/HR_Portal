@@ -1,114 +1,106 @@
-import React from 'react';
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { policiesApi } from '@/api/policies';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { DataTable } from '@/components/ui/DataTable';
+import { Search, Plus, FileText, Download } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import toast from 'react-hot-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Check } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { policiesApi } from '@/api/policies';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function PolicyListPage() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
-  const { data: policiesData, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['policies'],
-    queryFn: policiesApi.getAll,
+    queryFn: () => policiesApi.getAll().then(res => res.data),
   });
 
-  const { data: myAcknowledgements } = useQuery({
-    queryKey: ['myAcknowledgements'],
-    queryFn: policiesApi.getMyAcknowledgements,
-    enabled: !isAdminOrHR,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: policiesApi.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policies'] });
-      toast.success('Policy uploaded successfully');
-      setIsModalOpen(false);
+  const columns = [
+    { 
+      header: 'Policy Name', 
+      accessor: (row: any) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
+             <FileText className="w-4 h-4 text-blue-500" />
+          </div>
+          <span className="font-semibold text-navy-900 dark:text-white">{row.policyName}</span>
+        </div>
+      )
     },
-    onError: () => toast.error('Failed to upload policy')
-  });
-
-  const acknowledgeMutation = useMutation({
-    mutationFn: policiesApi.acknowledge,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myAcknowledgements'] });
-      toast.success('Policy acknowledged');
+    { header: 'Category', accessor: 'policyCategory', className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500' },
+    { header: 'Version', accessor: 'versionNumber', className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500' },
+    { 
+      header: 'Created Date', 
+      accessor: (row: any) => new Date(row.createdAt).toLocaleDateString(),
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500' 
     },
-    onError: () => toast.error('Failed to acknowledge policy')
-  });
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    createMutation.mutate(Object.fromEntries(formData.entries()));
-  };
-
-  const isAcknowledged = (policyId: string) => {
-    return myAcknowledgements?.data?.some((ack: any) => ack.policyId === policyId);
-  };
+    { 
+      header: 'Action', 
+      accessor: () => (
+        <div className="flex items-center gap-2">
+          <button className="p-1 text-gray-400 dark:text-gray-500 hover:text-accent-500 transition-colors" title="Download">
+             <Download className="w-4 h-4" />
+          </button>
+        </div>
+      ) 
+    },
+  ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Company Policies</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Policies & Documents</h1>
+        
         {isAdminOrHR && (
-          <Button onClick={() => setIsModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Upload Policy
+          <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+            <Plus className="w-4 h-4" /> Upload Document
           </Button>
         )}
       </div>
 
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {policiesData?.data?.map((policy: any) => (
-            <Card key={policy.id}>
-              <CardHeader>
-                <CardTitle className="text-lg">{policy.name}</CardTitle>
-                <Badge variant="info">{policy.category}</Badge>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500 mb-4">Version: {policy.version}</p>
-                {!isAdminOrHR && (
-                  <Button
-                    variant={isAcknowledged(policy.id) ? "outline" : "default"}
-                    disabled={isAcknowledged(policy.id) || acknowledgeMutation.isPending}
-                    onClick={() => acknowledgeMutation.mutate(policy.id)}
-                    className="w-full"
-                  >
-                    {isAcknowledged(policy.id) ? (
-                      <><Check className="w-4 h-4 mr-2" /> Acknowledged</>
-                    ) : (
-                      'Acknowledge'
-                    )}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex items-center gap-3 animate-in fade-in">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
+          <input 
+            placeholder="Search policies..." 
+            className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
+          />
         </div>
-      )}
+      </div>
+
+      <div className="animate-in fade-in">
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <DataTable 
+            columns={columns} 
+            data={data || []} 
+            keyField="id" 
+            emptyMessage="No policies or documents found."
+          />
+        )}
+      </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Upload Policy">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input name="name" label="Policy Name" required />
-          <Input name="category" label="Category" required />
-          <Input name="version" label="Version" required />
+        <form className="space-y-4">
+          <Input name="policyName" label="Policy Name" required />
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+            <select className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <option value="GENERAL">General</option>
+              <option value="IT">IT</option>
+              <option value="HR">HR</option>
+              <option value="FINANCE">Finance</option>
+            </select>
+          </div>
+          <Input type="file" name="file" label="Attachment" required />
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={createMutation.isPending}>Upload</Button>
+            <Button type="submit">Upload</Button>
           </div>
         </form>
       </Modal>
