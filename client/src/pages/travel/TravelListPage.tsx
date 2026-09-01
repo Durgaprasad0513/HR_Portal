@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { travelApi } from '@/api/travel';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,8 +49,8 @@ export default function TravelListPage() {
              <Plane className="w-4 h-4 text-indigo-500" />
           </div>
           <div>
-            <div className="font-semibold text-navy-900">{row.destination}</div>
-            <div className="text-xs text-gray-500 max-w-[200px] truncate">{row.travelPurpose}</div>
+            <div className="font-semibold text-navy-900 dark:text-white">{row.destination}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 max-w-[200px] truncate">{row.travelPurpose}</div>
           </div>
         </div>
       )
@@ -58,12 +58,12 @@ export default function TravelListPage() {
     { 
       header: 'Employee', 
       accessor: (row: any) => `${row.employee.firstName} ${row.employee.lastName}`,
-      className: 'text-gray-600'
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500'
     },
     { 
       header: 'Dates', 
       accessor: (row: any) => `${new Date(row.startDate).toLocaleDateString()} - ${new Date(row.endDate).toLocaleDateString()}`,
-      className: 'text-gray-600 text-sm'
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500 text-sm'
     },
     { 
       header: 'Approval', 
@@ -86,7 +86,7 @@ export default function TravelListPage() {
         <div className="flex items-center gap-2">
           {row.approvalStatus === 'APPROVAL_PENDING' && row.employee.id !== user?.employeeId && (
             <button 
-              className="p-1 text-gray-400 hover:text-green-500 transition-colors" 
+              className="p-1 text-gray-400 dark:text-gray-500 hover:text-green-500 transition-colors" 
               title="Review"
               onClick={() => {
                 setSelectedRequestId(row.id);
@@ -96,7 +96,7 @@ export default function TravelListPage() {
               <CheckCircle2 className="w-4 h-4" />
             </button>
           )}
-          <button className="p-1 text-gray-400 hover:text-navy-900 transition-colors">
+          <button className="p-1 text-gray-400 dark:text-gray-500 hover:text-navy-900 dark:text-white transition-colors">
             <FileText className="w-4 h-4" />
           </button>
         </div>
@@ -110,19 +110,23 @@ export default function TravelListPage() {
     createMutation.mutate({
       travelPurpose: formData.get('travelPurpose'),
       destination: formData.get('destination'),
-      startDate: formData.get('startDate'),
-      endDate: formData.get('endDate'),
+      startDate: new Date(formData.get('startDate') as string).toISOString(),
+      endDate: new Date(formData.get('endDate') as string).toISOString(),
       travelMode: formData.get('travelMode'),
-      advanceRequested: Number(formData.get('advanceRequested'))
+      advanceRequested: Number(formData.get('advanceRequested')) || 0
+    }, {
+      onError: (error: any) => {
+        alert(error.response?.data?.message || 'Failed to submit travel request');
+      }
     });
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900">Travel Requests</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage travel approvals and expense settlements</p>
+          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Travel Requests</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Manage travel approvals and expense settlements</p>
         </div>
         
         <Button onClick={() => setIsModalOpen(true)} className="gap-2">
@@ -161,16 +165,15 @@ export default function TravelListPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Travel Mode</label>
-              <select name="travelMode" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
-                <option value="FLIGHT">Flight</option>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Travel Mode</label>
+              <select name="travelMode" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+                <option value="AIR">Flight (Air)</option>
                 <option value="TRAIN">Train</option>
-                <option value="BUS">Bus</option>
-                <option value="CAB">Cab / Taxi</option>
-                <option value="PERSONAL_VEHICLE">Personal Vehicle</option>
+                <option value="ROAD">Bus / Cab (Road)</option>
+                <option value="OWN_VEHICLE">Personal Vehicle</option>
               </select>
             </div>
-            <Input name="advanceRequested" label="Advance Required ($)" type="number" step="0.01" />
+            <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" />
           </div>
           
           <div className="flex justify-end space-x-2 pt-4">
@@ -184,8 +187,8 @@ export default function TravelListPage() {
 
       <Modal isOpen={approvalModalOpen} onClose={() => setApprovalModalOpen(false)} title="Review Travel Request">
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">Please review this travel request. Approved requests will proceed to expense settlement after travel is completed.</p>
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">Please review this travel request. Approved requests will proceed to expense settlement after travel is completed.</p>
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-800">
             <Button variant="outline" onClick={() => setApprovalModalOpen(false)}>Cancel</Button>
             <Button 
               className="bg-red-600 hover:bg-red-700 border-red-600 text-white"

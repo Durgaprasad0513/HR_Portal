@@ -18,6 +18,7 @@ export class EmployeeService {
       search?: string;
       departmentId?: string;
       status?: string;
+      location?: string;
     }
   ) {
     const page = query.page || 1;
@@ -56,6 +57,10 @@ export class EmployeeService {
 
     if (query.status) {
       baseWhere.status = query.status as any;
+    }
+
+    if (query.location) {
+      baseWhere.location = query.location;
     }
 
     const [employees, total] = await Promise.all([
@@ -101,6 +106,7 @@ export class EmployeeService {
         manager: { select: { id: true, firstName: true, lastName: true } },
         subordinates: { select: { id: true, firstName: true, lastName: true, designation: true } },
         user: { select: { id: true, email: true, role: true, isActive: true } },
+        documents: true,
       },
     });
 
@@ -131,7 +137,9 @@ export class EmployeeService {
         salary: data.salary,
         departmentId: data.departmentId,
         managerId: data.managerId,
-        status: data.status as any,
+        status: data.status ? (data.status as any) : undefined,
+        employmentType: data.employmentType as any,
+        location: data.location,
       },
       include: {
         department: { select: { id: true, name: true } },
@@ -155,6 +163,24 @@ export class EmployeeService {
   }
 
   async update(currentUser: CurrentUser, id: string, data: UpdateEmployeeInput, reqContext: { ipAddress?: string } = {}) {
+    const scope = getModuleScope(currentUser.role, 'employees');
+    
+    if (scope !== 'ORG') {
+      if (!currentUser.employeeId) throw new Error('Not authorized');
+      
+      if (scope === 'SELF' && id !== currentUser.employeeId) {
+        throw new Error('Not authorized to update this employee');
+      }
+      
+      if (scope === 'TEAM') {
+        const target = await prisma.employee.findUnique({ where: { id } });
+        if (!target) throw new Error('Employee not found');
+        if (target.id !== currentUser.employeeId && target.managerId !== currentUser.employeeId) {
+          throw new Error('Not authorized to update this employee');
+        }
+      }
+    }
+
     const updateData: any = { ...data };
 
     if (data.dateOfBirth) {
@@ -163,9 +189,8 @@ export class EmployeeService {
     if (data.joiningDate) {
       updateData.joiningDate = new Date(data.joiningDate);
     }
-    if (data.managerId) {
-      updateData.managerId = data.managerId;
-      delete updateData.managerId;
+    if (data.managerId !== undefined) {
+      updateData.managerId = data.managerId || null;
     }
 
     const employee = await prisma.employee.update({

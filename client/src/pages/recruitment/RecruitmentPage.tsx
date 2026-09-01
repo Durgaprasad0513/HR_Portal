@@ -46,8 +46,8 @@ export default function RecruitmentPage() {
              <Briefcase className="w-4 h-4 text-emerald-500" />
           </div>
           <div>
-            <div className="font-semibold text-navy-900">{row.positionTitle}</div>
-            <div className="text-xs text-gray-500">{row.location}</div>
+            <div className="font-semibold text-navy-900 dark:text-white">{row.positionTitle}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{row.location}</div>
           </div>
         </div>
       )
@@ -55,17 +55,17 @@ export default function RecruitmentPage() {
     { 
       header: 'Department', 
       accessor: (row: any) => row.department?.name,
-      className: 'text-gray-600'
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500'
     },
     { 
       header: 'Vacancies', 
       accessor: 'numberOfVacancies',
-      className: 'text-gray-600'
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500'
     },
     { 
       header: 'Candidates', 
       accessor: (row: any) => (
-        <div className="flex items-center gap-1 text-gray-600">
+        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 dark:text-gray-500">
            <Users className="w-4 h-4" /> {row._count?.candidates || 0}
         </div>
       )
@@ -95,10 +95,10 @@ export default function RecruitmentPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900">Recruitment Tracker</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage job requisitions and candidate pipelines</p>
+          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Recruitment Tracker</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Manage job requisitions and candidate pipelines</p>
         </div>
         
         {isAdminOrHR && (
@@ -135,8 +135,8 @@ export default function RecruitmentPage() {
         <form onSubmit={handleSubmitReq} className="space-y-4">
           <Input name="positionTitle" label="Job Title" placeholder="e.g. Senior Frontend Engineer" required />
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Department</label>
-            <select name="departmentId" required className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+            <select name="departmentId" required className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
               <option value="">Select Department...</option>
               {deptData?.data?.map((dept: any) => (
                 <option key={dept.id} value={dept.id}>{dept.name}</option>

@@ -17,6 +17,8 @@ export default function EmployeeListPage() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [departmentId, setDepartmentId] = useState('');
+  const [location, setLocation] = useState('');
+  const [status, setStatus] = useState('');
   
   const { data: deptData } = useQuery({
     queryKey: ['departments'],
@@ -24,21 +26,22 @@ export default function EmployeeListPage() {
   });
 
   const { data: empData, isLoading } = useQuery({
-    queryKey: ['employees', { search, departmentId }],
-    queryFn: () => employeesApi.getAll({ search, departmentId }),
+    queryKey: ['employees', { search, departmentId, location, status }],
+    queryFn: () => employeesApi.getAll({ search, departmentId, location, status }),
   });
 
-  const getEmpTypeBadge = (type: string = 'Full time') => {
-    if (type === 'Full time') return <Badge variant="success">Full time</Badge>;
-    if (type === 'Part time') return <Badge variant="warning">Part time</Badge>;
-    return <Badge variant="default">Contractor</Badge>;
+  const getEmpTypeBadge = (type: string) => {
+    if (type === 'PERMANENT') return <Badge variant="success">Full-time</Badge>;
+    if (type === 'CONTRACT') return <Badge variant="warning">Part-time</Badge>;
+    if (type === 'INTERN') return <Badge variant="default">Intern</Badge>;
+    return <Badge variant="default">{type}</Badge>;
   };
 
   const columns = [
     { 
       header: 'Name', 
       accessor: (row: Employee) => (
-        <div className="font-semibold text-navy-900">
+        <div className="font-semibold text-navy-900 dark:text-white">
           {row.firstName} {row.lastName}
         </div>
       )
@@ -51,55 +54,80 @@ export default function EmployeeListPage() {
     },
     { 
       header: 'Employment Type', 
-      accessor: () => getEmpTypeBadge('Full time') // Mocked as full time for now
+      accessor: (row: Employee) => getEmpTypeBadge(row.employmentType || '')
     },
-    { header: 'Office', accessor: () => 'Main Office' },
-    {
-      header: 'Action',
+    { header: 'Office', accessor: (row: Employee) => row.location || '-' },
+    { 
+      header: 'Status', 
       accessor: (row: Employee) => (
-        <button 
-          onClick={(e) => { e.stopPropagation(); navigate(`/employees/${row.id}`); }} 
-          className="text-gray-400 hover:text-navy-900 transition-colors"
-        >
-          <MoreHorizontal className="h-5 w-5" />
-        </button>
-      ),
+        <Badge variant={row.status === 'ACTIVE' ? 'success' : 'default'}>
+          {row.status || 'ACTIVE'}
+        </Badge>
+      )
     },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-navy-900">Employee Management</h1>
+      <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Employee Management</h1>
       </div>
+
+      {/* Station Cards */}
+      {deptData?.data && deptData.data.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {deptData.data.map((dept: any) => (
+            <div 
+              key={dept.id} 
+              className={`p-4 rounded-xl border shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
+                departmentId === dept.id ? 'bg-accent-50 dark:bg-accent-900/20 border-accent-200 dark:border-accent-800' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
+              }`}
+              onClick={() => setDepartmentId(dept.id === departmentId ? '' : dept.id)}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <h3 className={`font-semibold line-clamp-1 ${departmentId === dept.id ? 'text-accent-700 dark:text-accent-400' : 'text-navy-900 dark:text-white'}`} title={dept.name}>{dept.name}</h3>
+                <UsersRound className={`h-5 w-5 ${departmentId === dept.id ? 'text-accent-500' : 'text-gray-400'}`} />
+              </div>
+              <p className={`text-2xl font-bold ${departmentId === dept.id ? 'text-accent-700 dark:text-accent-400' : 'text-gray-700 dark:text-gray-300'}`}>{dept._count?.employees || 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Employees</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Action Bar */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <input 
               placeholder="Search..." 
-              className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           
-          <select className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-500">
-            <option>All Offices</option>
+          <select 
+            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          >
+            <option value="">All Offices</option>
+            <option value="Hyd Office">Hyd Office</option>
+            <option value="Peddapuram Plant">Peddapuram Plant</option>
           </select>
           
           <select 
-            className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-500"
-            value={departmentId}
-            onChange={(e) => setDepartmentId(e.target.value)}
+            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="">All Departments</option>
-            {deptData?.data?.map((dept) => (
-              <option key={dept.id} value={dept.id}>{dept.name}</option>
-            ))}
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="TERMINATED">Terminated</option>
           </select>
 
           <button
@@ -107,9 +135,11 @@ export default function EmployeeListPage() {
             onClick={() => {
               setSearch('');
               setDepartmentId('');
+              setLocation('');
+              setStatus('');
             }}
-            disabled={!search && !departmentId}
-            className="text-sm text-gray-500 hover:text-navy-900 underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline"
+            disabled={!search && !departmentId && !location && !status}
+            className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-navy-900 dark:text-white underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline"
           >
             Clear filters
           </button>
@@ -131,12 +161,14 @@ export default function EmployeeListPage() {
         <EmptyState 
           icon={UsersRound}
           title="No employees found"
-          description={search || departmentId ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
-          actionLabel={search || departmentId ? "Clear Filters" : ((user?.role === 'ADMIN' || user?.role === 'HR') ? "Add Employee" : undefined)}
+          description={search || departmentId || location || status ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
+          actionLabel={search || departmentId || location || status ? "Clear Filters" : ((user?.role === 'ADMIN' || user?.role === 'HR') ? "Add Employee" : undefined)}
           onAction={() => {
-            if (search || departmentId) {
+            if (search || departmentId || location || status) {
               setSearch('');
               setDepartmentId('');
+              setLocation('');
+              setStatus('');
             } else if (user?.role === 'ADMIN' || user?.role === 'HR') {
               navigate('/employees/new');
             }
@@ -147,7 +179,6 @@ export default function EmployeeListPage() {
           columns={columns} 
           data={empData?.data || []} 
           keyField="id" 
-          selectable
           pageSize={10}
           onRowClick={(row) => navigate(`/employees/${row.id}`)}
         />

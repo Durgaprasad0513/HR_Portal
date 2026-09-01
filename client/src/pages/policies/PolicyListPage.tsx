@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { DataTable } from '@/components/ui/DataTable';
@@ -27,22 +27,22 @@ export default function PolicyListPage() {
           <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
              <FileText className="w-4 h-4 text-blue-500" />
           </div>
-          <span className="font-semibold text-navy-900">{row.policyName}</span>
+          <span className="font-semibold text-navy-900 dark:text-white">{row.policyName}</span>
         </div>
       )
     },
-    { header: 'Category', accessor: 'policyCategory', className: 'text-gray-600' },
-    { header: 'Version', accessor: 'versionNumber', className: 'text-gray-600' },
+    { header: 'Category', accessor: 'policyCategory', className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500' },
+    { header: 'Version', accessor: 'versionNumber', className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500' },
     { 
       header: 'Created Date', 
       accessor: (row: any) => new Date(row.createdAt).toLocaleDateString(),
-      className: 'text-gray-600' 
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500' 
     },
     { 
       header: 'Action', 
       accessor: () => (
         <div className="flex items-center gap-2">
-          <button className="p-1 text-gray-400 hover:text-accent-500 transition-colors" title="Download">
+          <button className="p-1 text-gray-400 dark:text-gray-500 hover:text-accent-500 transition-colors" title="Download">
              <Download className="w-4 h-4" />
           </button>
         </div>
@@ -52,8 +52,8 @@ export default function PolicyListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-navy-900">Policies & Documents</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Policies & Documents</h1>
         
         {isAdminOrHR && (
           <Button onClick={() => setIsModalOpen(true)} className="gap-2">
@@ -64,10 +64,10 @@ export default function PolicyListPage() {
 
       <div className="flex items-center gap-3 animate-in fade-in">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
           <input 
             placeholder="Search policies..." 
-            className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
           />
         </div>
       </div>
@@ -89,8 +89,8 @@ export default function PolicyListPage() {
         <form className="space-y-4">
           <Input name="policyName" label="Policy Name" required />
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+            <select className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
               <option value="GENERAL">General</option>
               <option value="IT">IT</option>
               <option value="HR">HR</option>

@@ -23,7 +23,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       approve: "bg-sidebar text-white hover:bg-[#1E293B] hover:-translate-y-0.5 hover:shadow active:translate-y-0 active:scale-[0.98] focus-visible:ring-sidebar",
       
       // 3. Soft Slate (Secondary)
-      secondary: "bg-tint text-text-heading border border-slate-border hover:bg-[#E2E8F0] active:scale-[0.98] focus-visible:ring-slate-border",
+      secondary: "bg-tint text-text-heading border border-slate-border hover:bg-slate-200 dark:hover:bg-slate-800 active:scale-[0.98] focus-visible:ring-slate-border",
       
       // 4. Ghost / Outline
       outline: "bg-transparent border-2 border-slate-border text-text-body hover:bg-tint active:scale-[0.98] focus-visible:ring-slate-border",

@@ -17,7 +17,6 @@ enum Role {
   ADMIN
   HR
   REMOVED_ROLE
-  REMOVED_ROLE
   MANAGER
   EMPLOYEE
 }
@@ -251,19 +250,128 @@ enum NotificationType {
 // Models
 // ============================================================
 
-  deactivatedAt     DateTime?
-  tokenVersion      Int           @default(0)
-createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String
+  role       Role     @default(EMPLOYEE)
+  isActive   Boolean  @default(true)
+  employeeId String?  @unique
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+
+  // New fields from requirements
+  failedLoginAttempts   Int       @default(0)
+  passwordLastChangedAt DateTime?
+  twoFactorEnabled      Boolean   @default(false)
+  sessionTimeoutMinutes Int       @default(30)
+
+  // New relations
+  loginHistory          LoginHistory[] @relation("UserLoginHistory")
+  auditLogs             AuditLog[]
+  uploadedDocuments     EmployeeDocument[] @relation("DocumentUploader")
+  verifiedTravelRequests TravelRequest[]   @relation("TravelVerifier")
+  uploadedPolicies      Policy[]           @relation("PolicyUploader")
+  assignedRequests      EmployeeRequest[]  @relation("RequestAssignee")
+  createdModulePermissions ModulePermission[] @relation("PermissionCreator")
+  deactivatedAt         DateTime?
+  tokenVersion          Int       @default(0)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("users")
 }
 
+model Employee {
+  id            String         @id @default(cuid())
+  employeeCode  String         @unique
+  firstName     String
+  lastName      String
+  email         String         @unique
+  phone         String?
+  dateOfBirth   DateTime?
+  gender        Gender?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  country       String?        @default("India")
 
-  isActive          Boolean       @default(true)
-  deactivatedAt     DateTime?
-createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // New personal fields
+  maritalStatus          MaritalStatus?
+  alternateMobile        String?
+  personalEmail          String?
+  permanentAddress       String?
+  emergencyContactName   String?
+  emergencyContactRelation String?
+  emergencyContactNumber String?
+
+  joiningDate   DateTime
+  designation   String
+  salary        Float?
+  status        EmployeeStatus @default(ACTIVE)
+  isActive      Boolean        @default(true)
+  deactivatedAt DateTime?
+  profilePhoto  String?
+
+  // New employment fields
+  grade            String?
+  location         String?
+  employmentType   EmploymentType   @default(PERMANENT)
+  probationPeriod  Int?
+  confirmationDate DateTime?
+  resignationDate  DateTime?
+  noticePeriod     Int?
+  lastWorkingDate  DateTime?
+  exitType         ExitType?
+  exitReason       String?
+
+  // New payroll / HR fields (restricted)
+  ctc              Float?
+  basicSalary      Float?
+  grossSalary      Float?
+  bankName         String?
+  bankAccountNumber String?
+  ifscCode         String?
+  pfNumber         String?
+  uanNumber        String?
+  esiNumber        String?
+  panNumber        String?
+  aadhaarNumber    String?
+  statutoryRemarks String?
+
+  // Relations
+  departmentId  String?
+  department    Department?    @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+
+  managerId     String?
+  manager       Employee?      @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates  Employee[]     @relation("ManagerSubordinates")
+
+  user          User?
+  attendance    Attendance[]
+  leaveRequests Leave[]        @relation("EmployeeLeaves")
+  approvedLeaves Leave[]       @relation("ApproverLeaves")
+  leaveBalances LeaveBalance[]
+
+  headOfDepartment Department? @relation("DepartmentHead")
+
+  // New relations
+  documents              EmployeeDocument[]
+  travelRequests         TravelRequest[]       @relation("EmployeeTravelRequests")
+  approvedTravelRequests TravelRequest[]       @relation("TravelApprover")
+  assignedAssets         Asset[]               @relation("AssetAssignee")
+  raisedRequisitions     Requisition[]         @relation("RequisitionRaiser")
+  interviewedCandidates  Candidate[]           @relation("CandidateInterviewer")
+  performanceReviews     PerformanceReview[]   @relation("EmployeeReviews")
+  approvedReviews        PerformanceReview[]   @relation("ReviewApprover")
+  trainingParticipations TrainingParticipant[]
+  employeeRequests       EmployeeRequest[]
+  policyAcknowledgements PolicyAcknowledgement[]
+  notifications          Notification[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@map("employees")
 }

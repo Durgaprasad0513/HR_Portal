@@ -32,8 +32,8 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <AlertOctagon className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h2>
-          <p className="text-gray-600 max-w-md mb-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Something went wrong</h2>
+          <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 max-w-md mb-6">
             We encountered an unexpected error while trying to display this content. 
             Our team has been notified.
           </p>

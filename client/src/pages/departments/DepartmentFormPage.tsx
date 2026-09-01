@@ -72,7 +72,7 @@ export default function DepartmentFormPage() {
         <Button variant="ghost" onClick={() => navigate('/departments')}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back
         </Button>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {isEdit ? 'Edit Department' : 'Add New Department'}
         </h1>
       </div>
@@ -86,23 +86,23 @@ export default function DepartmentFormPage() {
             <Input label="Department Name" name="name" value={formData.name} onChange={handleChange} required />
             
             <div className="flex flex-col space-y-1 w-full">
-              <label className="text-sm font-medium text-slate-700">Description</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                className="flex min-h-[100px] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="flex min-h-[100px] w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Optional description"
               />
             </div>
 
             <div className="flex flex-col space-y-1 w-full">
-              <label className="text-sm font-medium text-slate-700">Department Head</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Department Head</label>
               <select 
                 name="headId" 
                 value={formData.headId} 
                 onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">None</option>
                 {empData?.data?.map(emp => (

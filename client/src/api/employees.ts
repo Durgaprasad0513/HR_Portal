@@ -2,7 +2,7 @@ import apiClient from './client';
 import { ApiResponse, Employee } from '../types';
 
 export const employeesApi = {
-  getAll: async (params?: { page?: number; limit?: number; search?: string; departmentId?: string; status?: string }) => {
+  getAll: async (params?: { page?: number; limit?: number; search?: string; departmentId?: string; status?: string; location?: string }) => {
     const { data } = await apiClient.get<ApiResponse<Employee[]>>('/employees', { params });
     return data;
   },
@@ -26,4 +26,14 @@ export const employeesApi = {
     const { data } = await apiClient.get<ApiResponse<any>>('/employees/dashboard-stats');
     return data;
   },
+  uploadDocument: async (formData: FormData) => {
+    const { data } = await apiClient.post<ApiResponse<any>>('/employees/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  },
+  getDocuments: async (employeeId: string) => {
+    const { data } = await apiClient.get<ApiResponse<any[]>>(`/employees/documents/${employeeId}`);
+    return data;
+  }
 };

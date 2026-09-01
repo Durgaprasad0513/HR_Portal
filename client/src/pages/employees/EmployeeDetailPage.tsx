@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import { employeesApi } from '@/api/employees';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -11,14 +12,19 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { MoreHorizontal , ArrowLeft, FileText, CheckCircle2} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const SECTIONS = [
-  { id: 'general', label: 'General Information' },
-  { id: 'job', label: 'Job' },
-  ];
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
+  
+  const SECTIONS = [
+    { id: 'general', label: 'Personal Information' },
+    { id: 'job', label: 'Employment Information' },
+    ...(isHR ? [{ id: 'payroll', label: 'Payroll & HR Information' }] : []),
+    { id: 'education', label: 'Documents' },
+  ];
   const [isDeactivateOpen, setIsDeactivateOpen] = React.useState(false);
   const deactivateMutation = { mutate: (id: string) => {}, isPending: false }; // stub
   const [activeSection, setActiveSection] = useState('general');
@@ -28,15 +34,29 @@ export default function EmployeeDetailPage() {
     queryFn: () => employeesApi.getById(id!),
   });
 
+  const emp = empData?.data;
+
+  // Determine edit permission based on role and ownership
+  const canEdit = 
+    user?.role === 'ADMIN' || 
+    user?.role === 'HR' || 
+    user?.role === 'REMOVED_ROLE' || 
+    (user?.role === 'MANAGER' && (user?.employeeId === id || emp?.managerId === user?.employeeId || (user as any)?.employee?.id === id || emp?.managerId === (user as any)?.employee?.id));
+
   // Intersection observer logic for scroll spy
   useEffect(() => {
+    const mainScrollContainer = document.querySelector('main');
+    
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           setActiveSection(entry.target.id);
         }
       });
-    }, { rootMargin: '-20% 0px -70% 0px' });
+    }, { 
+      root: mainScrollContainer,
+      rootMargin: '-10% 0px -40% 0px' 
+    });
 
     SECTIONS.forEach(section => {
       const el = document.getElementById(section.id);
@@ -47,171 +67,271 @@ export default function EmployeeDetailPage() {
   }, [empData]);
 
   if (isLoading) return <div className="py-12"><LoadingSpinner /></div>;
-  const emp = empData?.data;
-  if (!emp) return <div className="text-gray-500">Employee not found</div>;
+  
+  if (!emp) return <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Employee not found</div>;
 
   const scrollToSection = (id: string) => {
+    setActiveSection(id);
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex items-center border-b border-gray-200 pb-4">
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
         <div className="flex items-center gap-4">
           <button onClick={() => // @ts-ignore
-    navigate('/employees' as any)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
+    navigate('/employees' as any)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-500 dark:text-gray-400 dark:text-gray-500 transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-accent-100 flex items-center justify-center text-accent-700 font-bold text-lg ring-2 ring-white shadow-sm">
-              {emp.firstName[0]}{emp.lastName[0]}
-            </div>
+            {emp.profilePhoto ? (
+              <img src={emp.profilePhoto} alt="Profile" className="h-12 w-12 rounded-full object-cover ring-2 ring-white shadow-sm" />
+            ) : (
+              <div className="h-12 w-12 rounded-full bg-accent-100 flex items-center justify-center text-accent-700 font-bold text-lg ring-2 ring-white shadow-sm">
+                {emp.firstName[0]}{emp.lastName[0]}
+              </div>
+            )}
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-navy-900 flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-navy-900 dark:text-white flex items-center gap-2">
                 {emp.firstName} {emp.lastName}
                 <Badge variant={emp.status === 'ACTIVE' ? 'success' : 'default'}>{emp.status}</Badge>
               </h1>
-              <p className="text-sm text-gray-500">{emp.designation}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{emp.designation}</p>
             </div>
           </div>
+        </div>
+        
+        <div>
+          {canEdit && (
+            <Button onClick={() => navigate(`/employees/${id}/edit`)} variant="outline">
+              Edit Profile
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         {/* Main Content Area */}
-        <div className="lg:col-span-3 space-y-8 pb-32">
-          
-          {/* General Information */}
-          <section id="general" className="space-y-6 scroll-mt-24">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-navy-900">General Information</h2>
-              <button className="text-accent-500 text-sm font-medium hover:underline">Edit</button>
-            </div>
+                  <div className="lg:col-span-3 space-y-8 pb-32">
             
-            <Card>
-              <CardHeader><CardTitle className="text-base">Personal Information</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">First Name</p>
-                    <p className="font-medium text-navy-900">{emp.firstName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Last Name</p>
-                    <p className="font-medium text-navy-900">{emp.lastName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Email Address</p>
-                    <p className="font-medium text-navy-900">{emp.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Phone Number</p>
-                    <p className="font-medium text-navy-900">{emp.phone || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Date of Birth</p>
-                    <p className="font-medium text-navy-900">Jan 15, 1990</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Gender</p>
-                    <p className="font-medium text-navy-900">Male</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle className="text-base">Address Information</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-                  <div className="md:col-span-2">
-                    <p className="text-xs text-gray-500 mb-1">Street Address</p>
-                    <p className="font-medium text-navy-900">123 Business Avenue, Suite 100</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">City</p>
-                    <p className="font-medium text-navy-900">San Francisco</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">State / Province</p>
-                    <p className="font-medium text-navy-900">California</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">ZIP / Postal Code</p>
-                    <p className="font-medium text-navy-900">94107</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Country</p>
-                    <p className="font-medium text-navy-900">United States</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader><CardTitle className="text-base">Education</CardTitle></CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 border border-gray-100 rounded-lg">
-                    <div className="bg-blue-50 p-3 rounded-lg"><FileText className="text-blue-500 w-6 h-6" /></div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-navy-900">Bachelor of Science in Computer Science</h4>
-                      <p className="text-sm text-gray-500">Stanford University • 2012 - 2016</p>
-                      <div className="mt-2 flex items-center gap-2 text-sm text-accent-500 font-medium cursor-pointer">
-                        <CheckCircle2 className="w-4 h-4" /> Degree_Certificate.pdf
-                      </div>
+            {/* General Information */}
+            <section id="general" className="space-y-6 scroll-mt-24">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-navy-900 dark:text-white">Personal Information</h2>
+              </div>
+              
+              <Card>
+                <CardHeader><CardTitle className="text-base">Basic Details</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-8">
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Employee ID</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.employeeCode}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">First Name</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.firstName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Name</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.lastName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date of Birth</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.dateOfBirth ? new Date(emp.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gender</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.gender || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Mobile Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.phone || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email Address</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.email}</p>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
+                </CardContent>
+              </Card>
 
-          {/* Job Section */}
-          <section id="job" className="space-y-6 scroll-mt-24">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-navy-900">Job Information</h2>
-              <button className="text-accent-500 text-sm font-medium hover:underline">Edit</button>
-            </div>
+              <Card>
+                <CardHeader><CardTitle className="text-base">Address & Emergency Contact</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                    <div className="md:col-span-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Full Address</p>
+                      <p className="font-medium text-navy-900 dark:text-white">
+                        {[emp.address, emp.city, emp.state, emp.zipCode, emp.country].filter(Boolean).join(', ') || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Emergency Contact Name</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.emergencyContactName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Emergency Contact Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">
+                        {emp.emergencyContactNumber || 'N/A'} {emp.emergencyContactRelation ? `(${emp.emergencyContactRelation})` : ''}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Employee Code</p>
-                    <p className="font-medium text-navy-900">{emp.employeeCode}</p>
+            {/* Employment Information */}
+            <section id="job" className="space-y-6 scroll-mt-24">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-navy-900 dark:text-white">Employment Information</h2>
+              </div>
+  
+              <Card>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-8">
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Department</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.department?.name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Designation</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.designation || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Location / Plant</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.location || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date of Joining</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Reporting Manager</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.manager ? `${emp.manager.firstName} ${emp.manager.lastName}` : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Employment Type</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.employmentType ? emp.employmentType.replace('_', ' ') : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Employee Status</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.status || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Confirmation Date</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.confirmationDate ? new Date(emp.confirmationDate).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Working Date</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.lastWorkingDate ? new Date(emp.lastWorkingDate).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    {emp.resignationDate && (
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Resignation Date</p>
+                        <p className="font-medium text-navy-900 dark:text-white">{new Date(emp.resignationDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Join Date</p>
-                    <p className="font-medium text-navy-900">{new Date(emp.joiningDate).toLocaleDateString()}</p>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Payroll / HR Information */}
+            {isHR && (
+            <section id="payroll" className="space-y-6 scroll-mt-24">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-navy-900 dark:text-white">Payroll & HR Information</h2>
+              </div>
+  
+              <Card>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-8">
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">CTC (Annual)</p>
+                      <p className="font-medium text-navy-900 dark:text-white">₹{emp.ctc ? emp.ctc.toLocaleString() : '0'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Basic Salary</p>
+                      <p className="font-medium text-navy-900 dark:text-white">₹{emp.basicSalary ? emp.basicSalary.toLocaleString() : '0'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gross Salary</p>
+                      <p className="font-medium text-navy-900 dark:text-white">₹{emp.grossSalary ? emp.grossSalary.toLocaleString() : '0'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Bank Name</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.bankName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Account Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.bankAccountNumber || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">IFSC Code</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.ifscCode || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">PF Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.pfNumber || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">UAN Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.uanNumber || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">ESI Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.esiNumber || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">PAN Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.panNumber || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Aadhaar Number</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.aadhaarNumber || 'N/A'}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Statutory Remarks / Other Info</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.statutoryRemarks || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Department</p>
-                    <p className="font-medium text-navy-900">{emp.department?.name || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Line Manager</p>
-                    <p className="font-medium text-navy-900">David Smith</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Employment Type</p>
-                    <p className="font-medium text-navy-900">Full-time</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Office Location</p>
-                    <p className="font-medium text-navy-900">HQ - San Francisco</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
+                </CardContent>
+              </Card>
+            </section>
+            )}
+
+            <section id="education" className="space-y-6 scroll-mt-24">
+              <h2 className="text-lg font-bold text-navy-900 dark:text-white">Documents</h2>
+              <Card>
+                <CardContent className="pt-6">
+                  {emp.documents && emp.documents.length > 0 ? (
+                    <div className="space-y-4">
+                      {emp.documents.map((doc: any) => (
+                        <div key={doc.id} className="flex items-start gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-lg">
+                          <div className="bg-blue-50 p-3 rounded-lg"><FileText className="text-blue-500 w-6 h-6" /></div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-navy-900 dark:text-white">{doc.documentName}</h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{doc.documentType.replace('_', ' ')} • Uploaded on {new Date(doc.uploadDate).toLocaleDateString()}</p>
+                            <div className="mt-2 flex items-center gap-2 text-sm text-accent-500 font-medium cursor-pointer">
+                              <CheckCircle2 className="w-4 h-4" /> {doc.verificationStatus === 'VERIFIED' ? 'Verified' : 'Pending Verification'}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No documents uploaded yet (e.g., Resume, Aadhaar, PAN, Certificates, Appointment Letter).</p>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
 
           </div>
-
         {/* Right Sticky Navigation */}
         <div className="hidden lg:block lg:col-span-1 sticky top-24">
           <Card>
@@ -224,8 +344,8 @@ export default function EmployeeDetailPage() {
                     className={cn(
                       "px-4 py-2.5 text-sm font-medium rounded-lg text-left transition-colors",
                       activeSection === section.id
-                        ? "bg-accent-50 text-accent-600"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-accent-50 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                     )}
                   >
                     {section.label}

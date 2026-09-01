@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, LogOut, User, Search, Sun, Moon, Bell } from 'lucide-react';
+import { Menu, LogOut, User, Search, Sun, Moon, Bell, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -10,12 +11,25 @@ import { notificationsApi } from '@/api/notifications';
 
 export function Header() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+        setNotifOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const { data: notifs } = useQuery({
     queryKey: ['notifications'],
@@ -40,7 +54,7 @@ export function Header() {
           
           <button 
             onClick={() => setCmdOpen(true)}
-            className="hidden md:flex items-center text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-transparent w-64 justify-between"
+            className="hidden md:flex items-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-transparent w-64 justify-between"
           >
             <div className="flex items-center">
               <Search className="h-4 w-4 mr-2" />
@@ -50,7 +64,7 @@ export function Header() {
           </button>
         </div>
 
-        <div className="flex items-center space-x-4 relative">
+        <div ref={headerRef} className="flex items-center space-x-4 relative">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -90,11 +104,11 @@ export function Header() {
                         }}
                       >
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{n.title || n.notificationType}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{n.message}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1 line-clamp-2">{n.message}</p>
                       </div>
                     ))
                   ) : (
-                    <div className="p-4 text-center text-sm text-gray-500">No notifications</div>
+                    <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">No notifications</div>
                   )}
                 </div>
               </div>
@@ -120,9 +134,27 @@ export function Header() {
               </div>
               <button 
                 className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700"
-                onClick={() => {}} 
+                onClick={() => {
+                  setDropdownOpen(false);
+                  const empId = user?.employeeId || (user as any)?.employee?.id;
+                  if (empId) {
+                    navigate(`/employees/${empId}`);
+                  } else {
+                    // Fallback for users without an employee record (like system admins)
+                    navigate('/settings');
+                  }
+                }} 
               >
                 <User className="mr-2 h-4 w-4" /> Profile
+              </button>
+              <button 
+                className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  navigate('/settings');
+                }} 
+              >
+                <Settings className="mr-2 h-4 w-4" /> Settings
               </button>
               <button 
                 className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-gray-700"

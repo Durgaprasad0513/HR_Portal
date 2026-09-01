@@ -59,6 +59,11 @@ export class DashboardService {
       where: { trainingDate: { gte: firstOfMonth } }
     });
 
+    // Candidates
+    const totalCandidates = isAdmin ? await prisma.candidate.count() : 0;
+    const invitedForInterview = isAdmin ? await prisma.candidate.count({ where: { screeningStatus: 'SHORTLISTED' } }) : 0;
+    const appliedForInterview = isAdmin ? await prisma.candidate.count({ where: { screeningStatus: 'SCREENING_PENDING' } }) : 0;
+
     return {
       totalEmployees,
       pendingTravel,
@@ -67,6 +72,9 @@ export class DashboardService {
       pendingLeaves,
       pendingReviews,
       trainingsThisMonth,
+      totalCandidates,
+      invitedForInterview,
+      appliedForInterview,
     };
   }
 

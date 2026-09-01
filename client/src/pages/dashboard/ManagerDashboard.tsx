@@ -9,7 +9,7 @@ export function ManagerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Team Size</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">Team Size</p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">12</h3>
               </div>
               <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -37,7 +37,7 @@ export function ManagerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Team Performance</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">Team Performance</p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">4.2/5.0</h3>
               </div>
               <div className="h-12 w-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
@@ -51,7 +51,7 @@ export function ManagerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Team on Leave</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">Team on Leave</p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">1</h3>
               </div>
               <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
@@ -74,7 +74,7 @@ export function ManagerDashboard() {
                   <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-semibold">JS</div>
                   <div>
                     <p className="text-sm font-medium dark:text-gray-200">John Smith</p>
-                    <p className="text-xs text-gray-500">Leave Request (Aug 29 - Sep 2)</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Leave Request (Aug 29 - Sep 2)</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -87,7 +87,7 @@ export function ManagerDashboard() {
                   <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-semibold">AD</div>
                   <div>
                     <p className="text-sm font-medium dark:text-gray-200">Alice Doe</p>
-                    <p className="text-xs text-gray-500">Expense Report: ₹340.50</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Expense Report: ₹340.50</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -108,7 +108,7 @@ export function ManagerDashboard() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-gray-700 dark:text-gray-300">Q3 Deliverables</span>
-                    <span className="text-gray-500">75%</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">75%</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '75%' }}></div>
@@ -117,7 +117,7 @@ export function ManagerDashboard() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-gray-700 dark:text-gray-300">Customer Satisfaction</span>
-                    <span className="text-gray-500">92%</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">92%</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '92%' }}></div>
@@ -126,7 +126,7 @@ export function ManagerDashboard() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-gray-700 dark:text-gray-300">Training Completion</span>
-                    <span className="text-gray-500">40%</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">40%</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div className="bg-amber-500 h-2 rounded-full" style={{ width: '40%' }}></div>

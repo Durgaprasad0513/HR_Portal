@@ -36,18 +36,18 @@ export default function ReportsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold tracking-tight text-navy-900 mb-6">Reports & Analytics</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-6">Reports & Analytics</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {reports.map((report) => (
-          <div key={report.type} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+          <div key={report.type} className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col">
             <div className="flex items-center gap-4 mb-4">
               <div className="h-10 w-10 rounded-full bg-accent-50 flex items-center justify-center">
                 <report.icon className="h-5 w-5 text-accent-600" />
               </div>
-              <h3 className="text-lg font-semibold text-navy-900">{report.title}</h3>
+              <h3 className="text-lg font-semibold text-navy-900 dark:text-white">{report.title}</h3>
             </div>
-            <p className="text-sm text-gray-500 mb-6 flex-1">{report.desc}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-6 flex-1">{report.desc}</p>
             <Button 
               onClick={() => handleDownload(report.type)} 
               disabled={downloading === report.type}

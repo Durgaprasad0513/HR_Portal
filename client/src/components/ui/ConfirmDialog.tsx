@@ -33,10 +33,10 @@ export function ConfirmDialog({
               <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
           )}
-          <p className="text-sm text-gray-600 mt-1">{message}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-1">{message}</p>
         </div>
         
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-800">
           <Button variant="outline" onClick={onCancel}>
             {cancelLabel}
           </Button>

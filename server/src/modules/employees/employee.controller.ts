@@ -1,4 +1,4 @@
-﻿import { Response } from 'express';
+import { Response } from 'express';
 import { Role } from '@prisma/client';
 import { employeeService } from './employee.service';
 import { sendSuccess, sendError } from '../../utils/response';
@@ -9,13 +9,14 @@ import { omitRestrictedFromPayload, stripRestrictedFields } from '../../utils/re
 export class EmployeeController {
   async getAll(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { page, limit, search, departmentId, status } = req.query;
+      const { page, limit, search, departmentId, status, location } = req.query;
       const result = await employeeService.getAll(req.user! as any, {
         page: page ? parseInt(page as string) : undefined,
         limit: limit ? parseInt(limit as string) : undefined,
         search: search as string,
         departmentId: departmentId as string,
         status: status as string,
+        location: location as string,
       });
       const canViewRestricted = await permissionService.canViewRestricted(req.user!.role as Role, 'employees');
       sendSuccess(

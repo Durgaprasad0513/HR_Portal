@@ -54,21 +54,21 @@ export default function AssetListPage() {
       header: 'Asset', 
       accessor: (row: any) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center">
-             <Laptop className="w-4 h-4 text-gray-500" />
+          <div className="w-8 h-8 rounded bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+             <Laptop className="w-4 h-4 text-gray-500 dark:text-gray-400 dark:text-gray-500" />
           </div>
           <div>
-            <div className="font-semibold text-navy-900">{row.brandModel || row.assetType}</div>
-            <div className="text-xs text-gray-500">SN: {row.serialNumber}</div>
+            <div className="font-semibold text-navy-900 dark:text-white">{row.brandModel || row.assetType}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">SN: {row.serialNumber}</div>
           </div>
         </div>
       )
     },
-    { header: 'Type', accessor: 'assetType', className: 'text-gray-600' },
+    { header: 'Type', accessor: 'assetType', className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500' },
     { 
       header: 'Assigned To', 
-      accessor: (row: any) => row.assignedEmployee ? `${row.assignedEmployee.firstName} ${row.assignedEmployee.lastName}` : <span className="text-gray-400">Unassigned</span>,
-      className: 'text-gray-600'
+      accessor: (row: any) => row.assignedEmployee ? `${row.assignedEmployee.firstName} ${row.assignedEmployee.lastName}` : <span className="text-gray-400 dark:text-gray-500">Unassigned</span>,
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500'
     },
     { 
       header: 'Status', 
@@ -84,7 +84,7 @@ export default function AssetListPage() {
         <div className="flex items-center gap-2">
           {row.status === 'IN_USE' && row.assignedEmployee?.id === user?.employeeId && (
             <button 
-              className="p-1 text-gray-400 hover:text-amber-500 transition-colors" 
+              className="p-1 text-gray-400 dark:text-gray-500 hover:text-amber-500 transition-colors" 
               title="Return Asset"
               onClick={() => {
                 setSelectedAssetId(row.id);
@@ -95,7 +95,7 @@ export default function AssetListPage() {
             </button>
           )}
           {isAdminOrHR && (
-             <button className="p-1 text-gray-400 hover:text-navy-900 transition-colors">
+             <button className="p-1 text-gray-400 dark:text-gray-500 hover:text-navy-900 dark:text-white transition-colors">
                <Settings2 className="w-4 h-4" />
              </button>
           )}
@@ -120,10 +120,10 @@ export default function AssetListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900">Asset Management</h1>
-          <p className="text-sm text-gray-500 mt-1">{isAdminOrHR ? 'Manage company assets and assignments' : 'View your assigned hardware and equipment'}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Asset Management</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">{isAdminOrHR ? 'Manage company assets and assignments' : 'View your assigned hardware and equipment'}</p>
         </div>
         
         {isAdminOrHR && (
@@ -158,8 +158,8 @@ export default function AssetListPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Asset Type</label>
-              <select name="assetType" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asset Type</label>
+              <select name="assetType" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="LAPTOP">Laptop</option>
                 <option value="DESKTOP">Desktop</option>
                 <option value="MOBILE">Mobile</option>
@@ -167,8 +167,8 @@ export default function AssetListPage() {
               </select>
             </div>
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-1">Category</label>
-              <select name="assetCategory" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+              <select name="assetCategory" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="IT">IT Equipment</option>
                 <option value="NON_IT">Non-IT</option>
               </select>
@@ -177,8 +177,8 @@ export default function AssetListPage() {
           <Input name="brandModel" label="Brand & Model" placeholder="e.g. MacBook Pro 16" required />
           <Input name="serialNumber" label="Serial Number" required />
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Assign To (Optional)</label>
-            <select name="assignedEmployeeId" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign To (Optional)</label>
+            <select name="assignedEmployeeId" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
               <option value="">Unassigned</option>
               {empData?.data?.map((emp: any) => (
                 <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>

@@ -1,20 +1,6 @@
 @import "tailwindcss";
+@theme { --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif; }
 @custom-variant dark (&:where(.dark, .dark *));
-
-.dark {
-  --canvas: #0F172A;
-  --surface: #1E293B;
-  --tint: #334155;
-  --border: #475569;
-  --text-heading: #F8FAFC;
-  --text-body: #CBD5E1;
-  --text-muted: #94A3B8;
-  
-  --status-active-bg: #065F46;
-  --status-standby-bg: #3730A3;
-  --status-warning-bg: #92400E;
-  --status-danger-bg: #991B1B;
-}
 
 :root {
   /* Modern Food-Tech Tokens */
@@ -45,6 +31,23 @@
   --status-danger: #EF4444;
   --status-danger-bg: #FEF2F2;
 }
+
+.dark {
+  --canvas: #0F172A;
+  --surface: #1E293B;
+  --tint: #334155;
+  --border: #475569;
+  --text-heading: #F8FAFC;
+  --text-body: #CBD5E1;
+  --text-muted: #94A3B8;
+  
+  --status-active-bg: #065F46;
+  --status-standby-bg: #3730A3;
+  --status-warning-bg: #92400E;
+  --status-danger-bg: #991B1B;
+}
+
+
 
 @theme {
   --color-canvas: var(--canvas);
@@ -109,5 +112,5 @@
 
 body {
   @apply bg-canvas text-text-body antialiased;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }

@@ -41,7 +41,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white font-sans">
+    <div className="min-h-screen flex bg-white dark:bg-gray-900 font-sans">
       {/* Left Form Panel */}
       <div className="w-full lg:w-2/3 flex flex-col items-center justify-center p-8 lg:p-24 relative z-10">
         <div className="w-full max-w-sm space-y-8">
@@ -50,10 +50,10 @@ export default function LoginPage() {
             <div className="mx-auto bg-accent-500 rounded-lg w-12 h-12 flex items-center justify-center mb-6 shadow-md">
               <Briefcase className="w-7 h-7 text-white" aria-hidden="true" />
             </div>
-            <h1 className="text-3xl font-extrabold text-navy-900 tracking-tight">
+            <h1 className="text-3xl font-extrabold text-navy-900 dark:text-white tracking-tight">
               Welcome back
             </h1>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-2">
               Sign in to your HR Management account
             </p>
           </div>
@@ -98,17 +98,17 @@ export default function LoginPage() {
       <div className="hidden lg:flex w-1/3 bg-[#e0f7fa] relative overflow-hidden flex-col justify-center items-center">
         {/* Top-left Orange Shape */}
         <div className="absolute top-0 left-0 w-80 h-80 bg-[#f97316] rounded-br-[150px] opacity-95 z-10 flex flex-col justify-center items-center text-center p-8">
-            <h3 className="text-navy-900 font-bold text-3xl">Employee</h3>
+            <h3 className="text-navy-900 dark:text-white font-bold text-3xl">Employee</h3>
             <p className="text-navy-800 font-semibold mt-1">Engagement Hub</p>
-            <div className="mt-6 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <div className="mt-6 w-12 h-12 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center shadow-sm">
               <svg className="w-6 h-6 text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </div>
         </div>
         
         {/* Bottom-left Pink Shape */}
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#fce7f3] rounded-tr-[150px] rounded-br-none z-10 opacity-95 flex items-center justify-center p-8">
-             <div className="text-navy-900 text-center mt-12 ml-6 mr-6">
-                <div className="text-xl font-extrabold text-navy-900 leading-tight">Empowering Teams</div>
+             <div className="text-navy-900 dark:text-white text-center mt-12 ml-6 mr-6">
+                <div className="text-xl font-extrabold text-navy-900 dark:text-white leading-tight">Empowering Teams</div>
                 <div className="text-sm font-medium text-navy-800 mt-2">Your all-in-one platform for modern HR management and seamless workflows.</div>
             </div>
         </div>

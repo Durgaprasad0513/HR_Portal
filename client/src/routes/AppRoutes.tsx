@@ -32,7 +32,6 @@ import AuditLogPage from '@/pages/audit/AuditLogPage';
 import LoginHistoryPage from '@/pages/loginHistory/LoginHistoryPage';
 import ReportsPage from '@/pages/reports/ReportsPage';
 import RoleManagementPage from '@/pages/roles/RoleManagementPage';
-import InteractiveShowcase from '@/pages/showcase/InteractiveShowcase';
 
 const AppRoutes = () => {
   return (
@@ -62,8 +61,8 @@ const AppRoutes = () => {
           <Route path="/training" element={<TrainingListPage />} />
           <Route path="/requests" element={<RequestListPage />} />
           <Route path="/policies" element={<Navigate to="/documents" replace />} />
+          <Route path="/profile" element={<Navigate to="/settings" replace />} />
           <Route path="/notifications" element={<NotificationListPage />} />
-          <Route path="/showcase" element={<InteractiveShowcase />} />
 
           <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR']} />}>
             <Route path="/settings" element={<SettingsPage />} />
