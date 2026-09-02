@@ -10,7 +10,6 @@ import { errorHandler } from './middleware/error.middleware';
 import authRoutes from './modules/auth/auth.routes';
 import employeeRoutes from './modules/employees/employee.routes';
 import documentRoutes from './modules/employees/document.routes';
-import documentRoutes from './modules/employees/document.routes';
 import departmentRoutes from './modules/departments/department.routes';
 import travelRoutes from './modules/travel/travel.routes';
 import assetRoutes from './modules/assets/asset.routes';
@@ -62,7 +61,6 @@ app.get('/api/ready', async (_req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/employees/documents', documentRoutes);
 app.use('/api/employees/documents', documentRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/departments', departmentRoutes);

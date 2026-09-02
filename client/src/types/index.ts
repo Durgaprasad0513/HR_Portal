@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'HR' | 'MANAGER' | 'EMPLOYEE';
+export type Role = 'ADMIN' | 'HR' | 'REMOVED_ROLE' | 'MANAGER' | 'EMPLOYEE';
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | 'RESIGNED' | 'TERMINATED';
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 export type LeaveType = 'CASUAL' | 'SICK' | 'EARNED' | 'UNPAID' | 'MATERNITY' | 'PATERNITY';
@@ -87,6 +87,7 @@ export interface Employee {
   manager?: { id: string; firstName: string; lastName: string };
   subordinates?: { id: string; firstName: string; lastName: string; designation: string }[];
   user?: { id: string; email: string; role: Role };
+  documents?: EmployeeDocument[];
   createdAt?: string;
   updatedAt?: string;
 }

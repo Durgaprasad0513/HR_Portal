@@ -31,6 +31,24 @@ export class DocumentController {
       return sendError(res, error.message, 403);
     }
   }
+
+  async deleteDocument(req: AuthRequest, res: Response) {
+    try {
+      await documentService.deleteDocument(req.params.id as string, req.user, { ipAddress: req.ip });
+      return sendSuccess(res, null, 'Document deleted successfully');
+    } catch (error: any) {
+      return sendError(res, error.message, 403);
+    }
+  }
+
+  async verifyDocument(req: AuthRequest, res: Response) {
+    try {
+      const doc = await documentService.verifyDocument(req.params.id as string, req.user, { ipAddress: req.ip });
+      return sendSuccess(res, doc, 'Document verified successfully');
+    } catch (error: any) {
+      return sendError(res, error.message, 403);
+    }
+  }
 }
 
 export const documentController = new DocumentController();
