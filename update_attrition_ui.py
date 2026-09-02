@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+﻿ui_code = """import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { 
@@ -100,8 +100,7 @@ export default function AttritionDashboardPage() {
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={100} />
                 <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} />
-                <Bar dataKey="count"
-                  nameKey="name" name="Separations" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
+                <Bar dataKey="count" name="Separations" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -119,8 +118,7 @@ export default function AttritionDashboardPage() {
                 <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
                 <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} />
-                <Bar dataKey="count"
-                  nameKey="name" name="Separations" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={32} />
+                <Bar dataKey="count" name="Separations" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -140,7 +138,6 @@ export default function AttritionDashboardPage() {
                   outerRadius={90}
                   paddingAngle={2}
                   dataKey="count"
-                  nameKey="name"
                 >
                   {(stats?.locationBreakdown || []).map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -156,3 +153,8 @@ export default function AttritionDashboardPage() {
     </div>
   );
 }
+"""
+
+with open("client/src/pages/attrition/AttritionDashboardPage.tsx", "w", encoding="utf-8") as f:
+    f.write(ui_code)
+print("Updated UI")

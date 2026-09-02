@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+﻿const uiCode = `import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { 
@@ -36,8 +36,8 @@ export default function AttritionDashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-1">Employee Attrition Dashboard</h1>
           <p className="text-sm text-gray-500">Trailing 12-Month Attrition & Headcount Analytics</p>
         </div>
-        <div className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 px-4 py-2 rounded-lg border border-indigo-100 dark:border-indigo-800 flex flex-col items-center">
-          <span className="text-xs uppercase font-bold tracking-wider opacity-80">Avg Employee Strength</span>
+        <div className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 px-4 py-2 rounded-lg border border-indigo-100 dark:border-indigo-800">
+          <span className="text-xs uppercase font-bold tracking-wider opacity-80 block">Avg Employee Strength</span>
           <span className="text-2xl font-black">{stats?.averageStrength || 0}</span>
         </div>
       </div>
@@ -95,13 +95,12 @@ export default function AttritionDashboardPage() {
           <h3 className="text-lg font-semibold text-navy-900 dark:text-white mb-6">Department-wise Attrition</h3>
           <div className="h-72 w-full">
             <ResponsiveContainer>
-              <BarChart layout="vertical" data={stats?.departmentBreakdown || []} margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+              <BarChart layout="vertical" data={stats?.departmentBreakdown || []} margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#eee" />
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={100} />
                 <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} />
-                <Bar dataKey="count"
-                  nameKey="name" name="Separations" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
+                <Bar dataKey="count" name="Separations" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -119,8 +118,7 @@ export default function AttritionDashboardPage() {
                 <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
                 <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} />
-                <Bar dataKey="count"
-                  nameKey="name" name="Separations" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={32} />
+                <Bar dataKey="count" name="Separations" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -140,7 +138,6 @@ export default function AttritionDashboardPage() {
                   outerRadius={90}
                   paddingAngle={2}
                   dataKey="count"
-                  nameKey="name"
                 >
                   {(stats?.locationBreakdown || []).map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -156,3 +153,8 @@ export default function AttritionDashboardPage() {
     </div>
   );
 }
+`;
+
+const fs = require('fs');
+fs.writeFileSync('client/src/pages/attrition/AttritionDashboardPage.tsx', uiCode);
+console.log("Updated AttritionDashboardPage.tsx");
