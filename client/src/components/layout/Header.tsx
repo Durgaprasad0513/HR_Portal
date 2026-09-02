@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, LogOut, User, Search, Sun, Moon, Bell } from 'lucide-react';
+import { Menu, LogOut, User, Search, Sun, Moon, Bell, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
