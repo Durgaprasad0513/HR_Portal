@@ -81,12 +81,15 @@ export class PerformanceService {
   }
 
   async submitSelfAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (!currentUser.employeeId) throw new Error('Only employees can submit a self appraisal');
+    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
     
     const review = await prisma.performanceReview.findUnique({ where: { id } });
     if (!review) throw new Error('Review not found');
-    if (review.employeeId !== currentUser.employeeId) {
-      throw new Error('You can only submit self appraisal for your own review');
+    
+    if (!isOverride) {
+      if (!currentUser.employeeId || review.employeeId !== currentUser.employeeId) {
+        throw new Error('You can only submit self appraisal for your own review');
+      }
     }
 
     return prisma.$transaction(async (tx) => {
@@ -116,7 +119,7 @@ export class PerformanceService {
   }
 
   async submitManagerAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (!currentUser.employeeId) throw new Error('Only managers can submit a manager appraisal');
+    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
     
     const review = await prisma.performanceReview.findUnique({ 
       where: { id },
@@ -124,8 +127,10 @@ export class PerformanceService {
     });
     if (!review) throw new Error('Review not found');
     
-    if (review.employee.managerId !== currentUser.employeeId) {
-      throw new Error('Only the direct manager can submit manager appraisal');
+    if (!isOverride) {
+      if (!currentUser.employeeId || review.employee.managerId !== currentUser.employeeId) {
+        throw new Error('Only the direct manager can submit manager appraisal');
+      }
     }
 
     return prisma.$transaction(async (tx) => {

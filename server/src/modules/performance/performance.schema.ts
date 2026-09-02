@@ -9,6 +9,14 @@ export const createPerformanceReviewSchema = z.object({
   targetValue: z.string().optional()
 });
 
+export const updatePerformanceReviewSchema = z.object({
+  reviewPeriod: z.enum(['QUARTERLY', 'HALF_YEARLY', 'ANNUAL']),
+  kraDescription: z.string().optional(),
+  kpiWeightage: z.number().optional(),
+  goalDescription: z.string().optional(),
+  targetValue: z.string().optional()
+});
+
 export const selfAppraisalSchema = z.object({
   achievedValue: z.string().optional(),
   selfRating: z.number().min(1).max(5).optional(),
