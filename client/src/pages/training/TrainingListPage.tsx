@@ -9,7 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calendar, Users, TrendingUp } from 'lucide-react';
+import { Plus, Download, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calendar, Users, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import apiClient from '@/api/client';
 
@@ -111,6 +111,29 @@ export default function TrainingListPage() {
     onError: () => toast.error('Failed to update participant')
   });
 
+
+  const handleExport = () => {
+    if (!trainingData?.data?.length) return;
+    const escapeCsv = (str: any) => {
+      if (str === null || str === undefined) return '""';
+      const s = String(str).replace(/"/g, '""');
+      return "";
+    };
+    
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "ID,Topic,Type,Status,Trainer,Date,Location,Hours,Cost\n"
+      + trainingData.data.map((t: any) => 
+          ${escapeCsv(t.id)},,,,,,,,
+        ).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "Training_Register.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const columns = [
     { header: 'Topic', accessor: 'trainingTopic' },
     { header: 'Type', accessor: 'trainingType' },
@@ -207,14 +230,19 @@ export default function TrainingListPage() {
             <button onClick={() => setViewMode('list')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500'}`}>List</button>
             <button onClick={() => setViewMode('calendar')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${viewMode === 'calendar' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500'}`}>Calendar</button>
           </div>
-          {isAdminOrHR && (
-            <Button onClick={() => {
-              setSelectedTrainingForEdit(null);
-              setIsModalOpen(true);
-            }}>
-              <Plus className="w-4 h-4 mr-2" /> New Training
-            </Button>
-          )}
+                      {isAdminOrHR && (
+              <>
+                <Button variant="outline" onClick={handleExport} className="gap-2">
+                  <Download className="w-4 h-4" /> Export Register
+                </Button>
+                <Button onClick={() => {
+                  setSelectedTrainingForEdit(null);
+                  setIsModalOpen(true);
+                }}>
+                  <Plus className="w-4 h-4 mr-2" /> New Training
+                </Button>
+              </>
+            )}
         </div>
       </div>
 
