@@ -17,7 +17,7 @@ export function usePermissions() {
   const { data, isLoading } = useQuery<PermissionsMap>({
     queryKey: ['my-permissions'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/roles/my');
+      const { data } = await apiClient.get('/permissions/my');
       return data.data as PermissionsMap;
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes

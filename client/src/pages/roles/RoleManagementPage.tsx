@@ -50,14 +50,14 @@ function PermissionsMatrix() {
   const { data, isLoading } = useQuery({
     queryKey: ['permissions-matrix'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/roles');
+      const { data } = await apiClient.get('/permissions');
       return data.data;
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const { data } = await apiClient.patch('/roles', payload);
+      const { data } = await apiClient.patch('/permissions', payload);
       return data;
     },
     onSuccess: () => {
