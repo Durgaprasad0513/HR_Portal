@@ -19,11 +19,30 @@ export default function PerformanceListPage() {
   const [activeTab, setActiveTab] = useState<Tab>('My Performance');
   const [selectedReview, setSelectedReview] = useState<any>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [statusFilter, setStatusFilter] = useState('All Status');
   
-  const { data: reviews, isLoading } = useQuery({
+  const { data: rawReviews, isLoading } = useQuery({
     queryKey: ['performance', activeTab],
     queryFn: () => activeTab === 'My Performance' ? performanceApi.getMyReviews().then(res => res.data) : performanceApi.getAll().then(res => res.data)
   });
+
+  const reviews = React.useMemo(() => {
+    if (!rawReviews) return [];
+    return rawReviews.filter((review: any) => {
+      const searchStr = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery || 
+        (review.employee?.firstName?.toLowerCase().includes(searchStr)) || 
+        (review.employee?.lastName?.toLowerCase().includes(searchStr)) ||
+        (review.reviewPeriod?.toLowerCase().includes(searchStr));
+      
+      const matchesType = typeFilter === 'All Types' || review.reviewPeriod === typeFilter.toUpperCase().replace(' ', '_');
+      const matchesStatus = statusFilter === 'All Status' || review.status === statusFilter;
+
+      return matchesSearch && matchesType && matchesStatus;
+    });
+  }, [rawReviews, searchQuery, typeFilter, statusFilter]);
 
   const getStatusBadge = (status: string) => {
     switch(status) {
@@ -73,21 +92,48 @@ export default function PerformanceListPage() {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
           <input 
             placeholder="Search reviews..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
           />
         </div>
         
-        <select className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500">
-          <option>All Types</option>
+        <select 
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+        >
+          <option value="All Types">All Types</option>
+          <option value="Quarterly">Quarterly</option>
+          <option value="Half Yearly">Half Yearly</option>
+          <option value="Annual">Annual</option>
         </select>
         
-        <select className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500">
-          <option>All Status</option>
+        <select 
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+        >
+          <option value="All Status">All Status</option>
+          <option value="EMPLOYEE_REVIEW">Self Review Pending</option>
+          <option value="MANAGER_REVIEW">Manager Review Pending</option>
+          <option value="HR_REVIEW">HR Review Pending</option>
+          <option value="FINAL_APPROVAL">Final Approval Pending</option>
+          <option value="COMPLETED">Completed</option>
         </select>
 
-        <button className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-navy-900 dark:text-white underline underline-offset-2">
-          Clear filters
-        </button>
+        {(searchQuery || typeFilter !== 'All Types' || statusFilter !== 'All Status') && (
+          <button 
+            onClick={() => {
+              setSearchQuery('');
+              setTypeFilter('All Types');
+              setStatusFilter('All Status');
+            }}
+            className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-navy-900 dark:text-white underline underline-offset-2"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       {/* Timeline View */}
