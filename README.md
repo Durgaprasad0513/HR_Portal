@@ -1,159 +1,90 @@
 # HR Management System
 
-A full-stack HR Management web application built with React, Node.js, Express, PostgreSQL, and Prisma.
+A comprehensive, full-stack HR Management web application built with React, Node.js, Express, PostgreSQL, and Prisma. 
 
-## 🚀 Features
+This system acts as a centralized HR portal, designed from the ground up with strict **Role-Based and Employee-Level Access Control** to ensure that confidential HR information is strictly protected and never exposed to unauthorized employees.
 
-- **Authentication** — JWT-based login with role-based access control (RBAC)
-- **Dashboard** — Role-specific overview with key metrics and quick actions
-- **Employee Management** — Full CRUD for employee profiles with search, filter, and pagination
-- **Department Management** — Create and manage departments with employee rosters
-- **Attendance Tracking** — Daily clock-in/clock-out with monthly summaries
-- **Leave Management** — Apply for leave, approval workflows, balance tracking
+## 🚀 Key Modules & Features
 
-## 🔐 User Roles
+- **Dashboard**: Role-specific overview with key metrics.
+- **Employee Management**: Full employee directory, profile management, and automatic user account provisioning.
+- **Recruitment Tracker**: Manage job requisitions, track candidates through screening, interviewing, and offering stages.
+- **Asset Management**: Track company laptops and assets, issue/return workflows, and condition monitoring.
+- **Performance Review**: Goal setting, manager evaluations, and continuous feedback tracking.
+- **Training Management**: Schedule training sessions, manage participants, and track completion.
+- **Travel & Expenses**: Manage travel requests, office expenses, and multi-tier approval workflows.
+- **HR Helpdesk**: Centralized ticketing system for employee requests and queries with status tracking.
+- **Policies & Documents**: Upload, categorize, and track employee acknowledgements for HR handbooks and policies.
+- **Attrition Analytics**: Dynamic charts tracking 12-month rolling average employee strength and voluntary/involuntary exit metrics.
+- **Notifications**: Real-time, event-driven system notifications for HR events (resignations, new hires, ticket updates).
+- **Audit & Security**: Comprehensive audit logs capturing old vs. new value diffs, login history tracking, and export restrictions.
 
-| Role | Access |
-|------|--------|
-| **ADMIN** | Full access to all modules and settings |
-| **HR** | Manage employees, departments, approve leaves |
-| **MANAGER** | View team, approve leaves, view attendance |
-| **EMPLOYEE** | Self-service: attendance, leave applications, profile |
+## 🛡️ Security Architecture
+
+The most critical design principle of this application is its multi-layered security model:
+
+1. **Dynamic Role Permissions Matrix**: Instead of hardcoded roles, Admins can dynamically toggle permissions (`View`, `Add`, `Edit`, `Delete`, `Approve`, `Export`) for any role across any module using the UI.
+2. **Employee-Level Data Scoping**: Data is strictly isolated. 
+   - `EMPLOYEE`s (Self Scope) can only fetch and view their own data (e.g., their own travel requests).
+   - `MANAGER`s (Team Scope) can view data for themselves and their direct reports.
+   - `HR/ADMIN` (Org Scope) have unrestricted visibility.
+3. **Data Export Restrictions**: Bulk CSV/PDF downloads are strictly gated behind a `canExport` database permission to prevent unauthorized data exfiltration.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, TanStack Query
-- **Backend**: Node.js, Express, TypeScript
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, TanStack Query, Recharts, Lucide Icons
+- **Backend**: Node.js, Express, TypeScript, Zod Validation
 - **Database**: PostgreSQL with Prisma ORM
-- **Auth**: JWT tokens with bcrypt password hashing
+- **Auth & Security**: JWT tokens (with versioning for forced session invalidation), bcrypt password hashing
 
-## 📋 Prerequisites
+## 📦 Quick Start
 
+### 1. Prerequisites
 - Node.js 18+
-- PostgreSQL 14+ (or Docker)
-- npm or yarn
+- PostgreSQL 14+ 
+- npm
 
-## ⚡ Quick Start
-
-### 1. Clone and Install
-
+### 2. Installation
+Clone the repository and install dependencies for both the frontend and backend:
 ```bash
-git clone <repo-url>
-cd hr-management-app
-
-# Install root dependencies
+# Install backend dependencies
+cd server
 npm install
 
-# Install server dependencies
-cd server && npm install
-
-# Install client dependencies
-cd ../client && npm install
+# Install frontend dependencies
+cd ../client
+npm install
 ```
 
-### 2. Database Setup
-
-**Option A: Using Docker (Recommended)**
-```bash
-# From project root
-docker-compose up -d
+### 3. Environment Variables
+Create a `.env` file in the `server` directory:
+```env
+PORT=5000
+DATABASE_URL="postgresql://user:password@localhost:5432/hr_management?schema=public"
+JWT_SECRET="your_super_secret_jwt_key"
+JWT_EXPIRES_IN="1d"
 ```
 
-**Option B: Local PostgreSQL**
-- Create a database named `hr_management`
-- Update `server/.env` with your connection string
-
-### 3. Configure Environment
-
-```bash
-# Copy and edit environment variables
-cp .env.example server/.env
-# Edit server/.env with your database URL and JWT secret
-```
-
-### 4. Initialize Database
-
+### 4. Database Setup
 ```bash
 cd server
-
-# Generate Prisma client
-npx prisma generate
-
-# Push schema to database
+# Push the schema to the database
 npx prisma db push
 
-# Seed with sample data
-npx prisma db seed
+# Run the seeder to create the default Admin account and permission catalogs
+npm run seed
 ```
 
-### 5. Start Development
-
+### 5. Running the Application
+You can run both servers simultaneously:
 ```bash
-# From project root - starts both server and client
+# Terminal 1 (Backend)
+cd server
 npm run dev
 
-# Or start individually:
-cd server && npm run dev    # Backend at http://localhost:5000
-cd client && npm run dev    # Frontend at http://localhost:5173
+# Terminal 2 (Frontend)
+cd client
+npm run dev
 ```
 
-## 🔑 Default Login Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@hrms.com | password123 |
-| HR | priya.sharma@hrms.com | password123 |
-| Manager | rahul.verma@hrms.com | password123 |
-| Employee | ananya.patel@hrms.com | password123 |
-
-## 📁 Project Structure
-
-```
-hr-management-app/
-├── client/                  # React Frontend
-│   ├── src/
-│   │   ├── api/             # API client and hooks
-│   │   ├── components/      # Reusable UI components
-│   │   ├── contexts/        # React contexts (Auth)
-│   │   ├── pages/           # Page components
-│   │   ├── routes/          # Route definitions
-│   │   ├── types/           # TypeScript types
-│   │   └── lib/             # Utilities
-│   └── ...
-├── server/                  # Node.js Backend
-│   ├── prisma/              # Database schema & seeds
-│   ├── src/
-│   │   ├── config/          # App configuration
-│   │   ├── middleware/      # Auth, RBAC, validation
-│   │   ├── modules/         # Feature modules
-│   │   │   ├── auth/
-│   │   │   ├── employees/
-│   │   │   ├── departments/
-│   │   │   ├── attendance/
-│   │   │   └── leave/
-│   │   └── utils/           # Helper utilities
-│   └── ...
-├── docker-compose.yml       # PostgreSQL + pgAdmin
-└── README.md
-```
-
-## 🗄️ API Endpoints
-
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| POST | /api/auth/login | User login | Public |
-| GET | /api/auth/me | Get current user | Authenticated |
-| GET | /api/employees | List employees | Authenticated |
-| POST | /api/employees | Create employee | Admin, HR |
-| PUT | /api/employees/:id | Update employee | Admin, HR |
-| DELETE | /api/employees/:id | Delete employee | Admin, HR |
-| GET | /api/departments | List departments | Authenticated |
-| POST | /api/departments | Create department | Admin, HR |
-| POST | /api/attendance/clock-in | Clock in | Authenticated |
-| POST | /api/attendance/clock-out | Clock out | Authenticated |
-| POST | /api/leaves/apply | Apply for leave | Authenticated |
-| PATCH | /api/leaves/:id/status | Approve/reject leave | Admin, HR, Manager |
-
-## 📜 License
-
-MIT
+The application will be available at `http://localhost:5173`.

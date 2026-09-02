@@ -1,25 +1,29 @@
 import { LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from './Button';
 
 interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  action?: React.ReactNode;
+  actionLabel?: string;
+  onAction?: () => void;
+  className?: string;
 }
 
-export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({ icon: Icon, title, description, actionLabel, onAction, className }: EmptyStateProps) {
   return (
-    <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 p-8 text-center animate-in fade-in-50">
-      <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-          <Icon className="h-10 w-10 text-slate-600" aria-hidden="true" />
-        </div>
-        <h2 className="mt-6 text-xl font-semibold">{title}</h2>
-        <p className="mb-8 mt-2 text-center text-sm font-normal leading-6 text-slate-500">
-          {description}
-        </p>
-        {action}
+    <div className={cn("flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 border-dashed rounded-xl", className)}>
+      <div className="w-12 h-12 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+        <Icon className="w-6 h-6 text-gray-400 dark:text-gray-500" />
       </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">{title}</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 max-w-sm mb-6">{description}</p>
+      {actionLabel && onAction && (
+        <Button onClick={onAction} variant="outline" className="shadow-sm">
+          {actionLabel}
+        </Button>
+      )}
     </div>
   );
 }

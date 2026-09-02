@@ -1,92 +1,150 @@
-import React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from 'next-themes';
 import { 
-  LayoutDashboard, 
-  Users, 
-  Building2, 
-  Clock, 
-  CalendarDays,
-  FilePlus,
-  History,
-  CheckSquare
+  LayoutDashboard, Users, Laptop, Plane, Briefcase, 
+  Target, ClipboardList, GraduationCap, Files, UserMinus, 
+  BarChart, Shield, History, ChevronRight, ChevronDown, Building2, CreditCard,
+  ClipboardCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
   const { user } = useAuth();
   const location = useLocation();
+  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  
+  // By default, open the section that contains the current path
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    workspace: true,
+    employees: true,
+    expenses: true,
+    auth: true,
+  });
 
-  const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Employees', path: '/employees', icon: Users, roles: ['ADMIN', 'HR', 'MANAGER'] },
-    { name: 'Departments', path: '/departments', icon: Building2, roles: ['ADMIN', 'HR'] },
-    { name: 'Attendance', path: '/attendance', icon: Clock, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
+  const toggleSection = (id: string) => {
+    setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const workspaceNav = [
+    { name: 'Recruitment', path: '/recruitment', icon: Briefcase },
+    { name: 'Assets', path: '/assets', icon: Laptop },
+    ...(isAdminOrHR ? [{ name: 'Attrition', path: '/attrition', icon: UserMinus }] : []),
+    { name: 'Documents', path: '/documents', icon: Files },
+    { name: 'Helpdesk', path: '/requests', icon: ClipboardList },
+    ...(isAdminOrHR ? [{ name: 'Reports', path: '/reports', icon: BarChart }] : [])
   ];
 
-  const leaveItems = [
-    { name: 'Apply Leave', path: '/leaves/apply', icon: FilePlus, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'My Leaves', path: '/leaves/history', icon: History, roles: ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'] },
-    { name: 'Approvals', path: '/leaves/approvals', icon: CheckSquare, roles: ['ADMIN', 'HR', 'MANAGER'] },
+  const employeesNav = [
+    { name: 'Employee', path: '/employees', icon: Users },
+    { name: 'Training', path: '/training', icon: GraduationCap },
+    { name: 'Performance', path: '/performance', icon: Target },
   ];
 
-  const filterRoles = (items: any[]) => items.filter(item => user && item.roles.includes(user.role));
+  const expensesNav = [
+    { name: 'Travel', path: '/travel', icon: Plane },
+    { name: 'Office', path: '/office-expenses', icon: Building2 },
+  ];
 
-  const filteredNavItems = filterRoles(navItems);
-  const filteredLeaveItems = filterRoles(leaveItems);
+  const authNav = isAdminOrHR ? [
+    { name: 'Role Management', path: '/roles', icon: Shield },
+    { name: 'Audit Log', path: '/audit', icon: History }
+  ] : [];
+
+  const sections = [
+    { id: 'employees', title: 'Employees', items: employeesNav, icon: Users },
+    { id: 'workspace', title: 'Workspace', items: workspaceNav, icon: LayoutDashboard },
+    { id: 'expenses', title: 'Expenses', items: expensesNav, icon: CreditCard },
+    ...(authNav.length > 0 ? [{ id: 'auth', title: 'Authorization', items: authNav, icon: Shield }] : []),
+  ];
+
+  // Check if any child item is active
+  const isSectionActive = (items: any[]) => {
+    return items.some(item => 
+      location.pathname === item.path || 
+      (item.path !== '/dashboard' && item.path !== '#' && location.pathname.startsWith(item.path))
+    );
+  };
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-slate-900 text-slate-300">
-      <div className="flex h-16 items-center px-6 text-xl font-bold text-white border-b border-slate-800">
-        HR Portal
+    <aside className="bg-[#3b3f5c] text-white w-64 flex flex-col shadow-xl z-50 h-[calc(100vh-2rem)] m-4 rounded-3xl shrink-0 overflow-hidden">
+      {/* Brand */}
+      <div className="h-20 flex items-center px-6 shrink-0 pt-2">
+        <NavLink to="/dashboard" className="flex items-center gap-3">
+          <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shrink-0">
+            <ClipboardCheck className="h-6 w-6 text-[#3b3f5c]" />
+          </div>
+          <span className="text-xl font-bold tracking-wide">HR Management</span>
+        </NavLink>
       </div>
-      
-      <div className="flex-1 overflow-y-auto py-4">
-        <nav className="space-y-1 px-3">
-          {filteredNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => cn(
-                "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors",
-                isActive ? "bg-slate-800 text-indigo-400" : "text-slate-300"
-              )}
-            >
-              <item.icon className={cn(
-                "mr-3 h-5 w-5 flex-shrink-0",
-                location.pathname.startsWith(item.path) ? "text-indigo-400" : "text-slate-400 group-hover:text-white"
-              )} />
-              {item.name}
-            </NavLink>
-          ))}
 
-          {filteredLeaveItems.length > 0 && (
-            <div className="pt-4">
-              <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Leaves
-              </div>
-              <div className="space-y-1">
-                {filteredLeaveItems.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    className={({ isActive }) => cn(
-                      "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors",
-                      isActive ? "bg-slate-800 text-indigo-400" : "text-slate-300"
-                    )}
-                  >
-                    <item.icon className={cn(
-                      "mr-3 h-5 w-5 flex-shrink-0",
-                      location.pathname === item.path ? "text-indigo-400" : "text-slate-400 group-hover:text-white"
-                    )} />
-                    {item.name}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
+      {/* Navigation */}
+      <div className="flex-1 overflow-y-auto py-2 px-3 flex flex-col gap-2 custom-scrollbar">
+        <NavLink
+          to="/dashboard"
+          className={cn(
+            "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
+            location.pathname === '/dashboard' ? "text-[#f39c12] bg-white/5" : "text-white/80 hover:text-[#f39c12]"
           )}
-        </nav>
+        >
+          <LayoutDashboard className="h-5 w-5" />
+          <span>Dashboard</span>
+        </NavLink>
+
+        {sections.map((section) => {
+          const isOpen = openSections[section.id];
+          const hasActiveChild = isSectionActive(section.items);
+          
+          return (
+            <div key={section.id} className="flex flex-col">
+              <button
+                onClick={() => toggleSection(section.id)}
+                className={cn(
+                  "flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors",
+                  "hover:text-[#f39c12]",
+                  hasActiveChild ? "text-[#f39c12]" : "text-white/80"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <section.icon className="h-5 w-5" />
+                  <span>{section.title}</span>
+                </div>
+                {isOpen ? (
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 opacity-50" />
+                )}
+              </button>
+              
+              {isOpen && (
+                <div className="mt-1 mb-2 ml-4 flex flex-col gap-1 border-l border-white/10 pl-3">
+                  {section.items.map((item) => {
+                    const isActive = location.pathname === item.path || 
+                      (item.path !== '/dashboard' && item.path !== '#' && location.pathname.startsWith(item.path));
+                    return (
+                      <NavLink
+                        key={item.name}
+                        to={item.path}
+                        onClick={(e) => item.path === '#' && e.preventDefault()}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                          isActive
+                            ? "text-[#f39c12] bg-white/5 font-semibold"
+                            : "text-white/60 hover:text-[#f39c12] hover:bg-white/5"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </aside>
   );
 }

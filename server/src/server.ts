@@ -1,14 +1,19 @@
 import app from './app';
 import { config } from './config';
+import prisma from './config/database';
 
 const startServer = async () => {
   try {
+    await prisma.$connect();
     app.listen(config.port, () => {
-      console.log(`\n🚀 HR Management API Server`);
+      console.log(`
+🚀 HR Management API Server`);
       console.log(`   Environment: ${config.nodeEnv}`);
       console.log(`   Port: ${config.port}`);
       console.log(`   URL: http://localhost:${config.port}`);
-      console.log(`   Health: http://localhost:${config.port}/api/health\n`);
+      console.log(`   Liveness: http://localhost:${config.port}/api/live`);
+      console.log(`   Readiness: http://localhost:${config.port}/api/ready
+`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
@@ -28,7 +28,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div 
-        className={cn("bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] flex flex-col", className)}
+        className={cn("bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] flex flex-col", className)}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b">

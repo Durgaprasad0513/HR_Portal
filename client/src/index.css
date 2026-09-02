@@ -1,18 +1,130 @@
 @import "tailwindcss";
+@theme { --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif; }
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Modern Food-Tech Tokens */
+  --canvas: #F8FAFC;
+  --surface: #FFFFFF;
+  --tint: #F1F5F9;
+  --border: #E2E8F0;
+
+  --sidebar-bg: #0F172A;
+  
+  --brand-primary: #EA580C;
+  --brand-primary-hover: #C2410C;
+  --brand-primary-light: #FFEDD5;
+
+  --text-heading: #0F172A;
+  --text-body: #1E293B;
+  --text-muted: #64748B;
+
+  --status-active: #10B981;
+  --status-active-bg: #ECFDF5;
+  
+  --status-standby: #6366F1;
+  --status-standby-bg: #EEF2FF;
+  
+  --status-warning: #F59E0B;
+  --status-warning-bg: #FFFBEB;
+  
+  --status-danger: #EF4444;
+  --status-danger-bg: #FEF2F2;
+}
+
+.dark {
+  --canvas: #0F172A;
+  --surface: #1E293B;
+  --tint: #334155;
+  --border: #475569;
+  --text-heading: #F8FAFC;
+  --text-body: #CBD5E1;
+  --text-muted: #94A3B8;
+  
+  --status-active-bg: #065F46;
+  --status-standby-bg: #3730A3;
+  --status-warning-bg: #92400E;
+  --status-danger-bg: #991B1B;
+}
+
+
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-tint: var(--tint);
+  --color-slate-border: var(--border);
+  --color-sidebar: var(--sidebar-bg);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-hover: var(--brand-primary-hover);
+  --color-brand-light: var(--brand-primary-light);
+
+  --color-text-heading: var(--text-heading);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+
+  --color-status-active: var(--status-active);
+  --color-status-active-bg: var(--status-active-bg);
+  --color-status-standby: var(--status-standby);
+  --color-status-standby-bg: var(--status-standby-bg);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-bg: var(--status-danger-bg);
+  /* Navy scale — top nav, headings, approve buttons */
+  --color-navy-50: #eef2ff;
+  --color-navy-100: #dce4fd;
+  --color-navy-200: #bccafb;
+  --color-navy-300: #8ba5f8;
+  --color-navy-400: #5b7cf3;
+  --color-navy-500: #3553e6;
+  --color-navy-600: #2a3fcf;
+  --color-navy-700: #2433a8;
+  --color-navy-800: #1e2d86;
+  --color-navy-900: #1B2559;
+  --color-navy-950: #111640;
+
+  /* Accent Orange — CTAs, active nav, add buttons, pagination active */
+  --color-accent-50: #fff7ed;
+  --color-accent-100: #ffedd5;
+  --color-accent-200: #fed7aa;
+  --color-accent-300: #fdba74;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #F97316;
+  --color-accent-600: #ea580c;
+  --color-accent-700: #c2410c;
+  --color-accent-800: #9a3412;
+  --color-accent-900: #7c2d12;
+
+  /* Keep primary as navy alias for backward compat */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #dce4fd;
+  --color-primary-200: #bccafb;
+  --color-primary-300: #8ba5f8;
+  --color-primary-400: #5b7cf3;
+  --color-primary-500: #1B2559;
+  --color-primary-600: #1B2559;
+  --color-primary-700: #111640;
+  --color-primary-800: #111640;
+  --color-primary-900: #0a0d26;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-canvas text-text-body antialiased;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

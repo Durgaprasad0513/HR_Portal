@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { departmentsApi } from '@/api/departments';
@@ -21,7 +21,7 @@ export default function DepartmentListPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Departments</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Departments</h1>
         <Button onClick={() => navigate('/departments/new')}>
           <Plus className="mr-2 h-4 w-4" /> Add Department
         </Button>
@@ -32,13 +32,14 @@ export default function DepartmentListPage() {
           icon={Building2}
           title="No Departments found"
           description="Get started by creating a new department."
-          action={<Button onClick={() => navigate('/departments/new')}><Plus className="mr-2 h-4 w-4" /> Add Department</Button>}
+          actionLabel="Add Department"
+          onAction={() => navigate('/departments/new')}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {deptData.data.map((dept) => (
             <Card key={dept.id} className="flex flex-col">
-              <CardHeader className="pb-3 border-b border-slate-100">
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                 <CardTitle className="flex justify-between items-center">
                   <span>{dept.name}</span>
                   <Button variant="ghost" size="sm" onClick={() => navigate(`/departments/${dept.id}/edit`)}>
@@ -47,17 +48,17 @@ export default function DepartmentListPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="py-4 flex-grow">
-                <p className="text-sm text-slate-500 line-clamp-3">
+                <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">
                   {dept.description || 'No description available.'}
                 </p>
                 {dept.head && (
-                  <p className="mt-4 text-sm font-medium text-slate-700">
+                  <p className="mt-4 text-sm font-medium text-slate-700 dark:text-slate-300">
                     Head: {dept.head.firstName} {dept.head.lastName}
                   </p>
                 )}
               </CardContent>
               <CardFooter className="pt-0 pb-4">
-                <div className="flex items-center text-sm text-slate-500">
+                <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                   <Users className="h-4 w-4 mr-2" />
                   {dept._count?.employees || 0} Employees
                 </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Role } from '@/types';
@@ -12,7 +12,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
   const { user, token, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-slate-50"><LoadingSpinner /></div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900"><LoadingSpinner /></div>;
   }
 
   if (!token || !user) {
