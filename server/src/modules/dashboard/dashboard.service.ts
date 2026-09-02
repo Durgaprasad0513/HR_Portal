@@ -64,6 +64,18 @@ export class DashboardService {
     const invitedForInterview = isAdmin ? await prisma.candidate.count({ where: { screeningStatus: 'SHORTLISTED' } }) : 0;
     const appliedForInterview = isAdmin ? await prisma.candidate.count({ where: { screeningStatus: 'SCREENING_PENDING' } }) : 0;
 
+    // Upcoming interviews
+    const upcomingInterviews = isAdmin ? await prisma.candidate.findMany({
+      where: {
+        interviewDate: { gte: now }
+      },
+      orderBy: { interviewDate: 'asc' },
+      take: 5,
+      include: {
+        requisition: { select: { positionTitle: true } }
+      }
+    }) : [];
+
     return {
       totalEmployees,
       pendingTravel,
@@ -75,6 +87,7 @@ export class DashboardService {
       totalCandidates,
       invitedForInterview,
       appliedForInterview,
+      upcomingInterviews,
     };
   }
 

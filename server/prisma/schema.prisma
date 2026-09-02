@@ -670,6 +670,8 @@ model Training {
   targetDepartmentId String?
   targetDepartment   Department? @relation("TrainingDepartment", fields: [targetDepartmentId], references: [id])
 
+  status           String       @default("PENDING") // PENDING, APPROVED, REJECTED
+
   participants TrainingParticipant[]
 
   createdAt DateTime @default(now())

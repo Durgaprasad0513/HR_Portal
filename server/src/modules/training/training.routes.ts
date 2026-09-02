@@ -15,6 +15,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/my-trainings', requirePermission('training', 'view'), trainingController.getMyTrainings);
+router.get('/dashboard', requirePermission('training', 'view'), trainingController.getDashboard);
 router.get('/', requireStaffView('training'), trainingController.getAllTrainings);
 router.post('/', requirePermission('training', 'add'), validateRequest({ body: createTrainingSchema }), trainingController.createTraining);
 router.put('/:id', requirePermission('training', 'edit'), validateRequest({ body: updateTrainingSchema }), trainingController.updateTraining);
