@@ -454,8 +454,8 @@ export default function TrainingListPage() {
                     <tbody className="divide-y dark:divide-gray-800">
                       {selectedTraining.participants.map((p: any) => (
                         <tr key={p.id}>
-                          <td className="px-4 py-3 font-medium">{p.employee.firstName} {p.employee.lastName}</td>
-                          <td className="px-4 py-3 text-gray-500">{p.employee.department?.name || 'N/A'}</td>
+                          <td className="px-4 py-3 font-medium">{p.employee?.firstName} {p.employee?.lastName}</td>
+                          <td className="px-4 py-3 text-gray-500">{p.employee?.department?.name || 'N/A'}</td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${p.attendanceStatus === 'TRAINING_PRESENT' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                               {p.attendanceStatus === 'TRAINING_PRESENT' ? 'Present' : 'Absent'}
@@ -496,7 +496,7 @@ export default function TrainingListPage() {
 
       {/* Participant Edit Modal */}
       {editingParticipant && (
-        <Modal isOpen={true} onClose={() => setEditingParticipant(null)} title={`Update: ${editingParticipant.employee.firstName} ${editingParticipant.employee.lastName}`}>
+        <Modal isOpen={true} onClose={() => setEditingParticipant(null)} title={`Update: ${editingParticipant.employee?.firstName || ''} ${editingParticipant.employee?.lastName || ''}`}>
           <form onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);

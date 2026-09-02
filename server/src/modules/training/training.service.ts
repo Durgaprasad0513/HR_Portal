@@ -100,7 +100,8 @@ export class TrainingService {
 
     return prisma.$transaction(async (tx) => {
       const participant = await tx.trainingParticipant.create({
-        data: { trainingId, employeeId }
+        data: { trainingId, employeeId },
+        include: { employee: { include: { department: true } } }
       });
       await tx.auditLog.create({
         data: {
