@@ -86,6 +86,7 @@ export default function EmployeeFormPage() {
   }, [isEdit, empData]);
 
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [credentialsModal, setCredentialsModal] = useState<{email: string, password: string} | null>(null);
 
   const mutation = useMutation({
     mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data } as any) : employeesApi.create(data as any),
