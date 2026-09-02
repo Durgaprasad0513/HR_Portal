@@ -117,13 +117,13 @@ export default function TrainingListPage() {
     const escapeCsv = (str: any) => {
       if (str === null || str === undefined) return '""';
       const s = String(str).replace(/"/g, '""');
-      return "";
+      return `"${s}"`;
     };
     
     const csvContent = "data:text/csv;charset=utf-8," 
       + "ID,Topic,Type,Status,Trainer,Date,Location,Hours,Cost\n"
       + trainingData.data.map((t: any) => 
-          ${escapeCsv(t.id)},,,,,,,,
+          `${escapeCsv(t.id)},${escapeCsv(t.trainingTopic)},${escapeCsv(t.trainingType)},${escapeCsv(t.status || 'PENDING')},${escapeCsv(t.trainerName)},${escapeCsv(new Date(t.trainingDate).toLocaleDateString())},${escapeCsv(t.trainingLocation)},${t.trainingHours || 0},${t.trainingCost || 0}`
         ).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
