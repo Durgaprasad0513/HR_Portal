@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { expensesApi } from '@/api/expenses';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -15,6 +16,7 @@ import { Wallet, Plus, CheckCircle2, Download, XCircle, IndianRupee } from 'luci
 
 export default function OfficeExpensesPage() {
   const { user } = useAuth();
+  const { canExport } = usePermissions();
   const queryClient = useQueryClient();
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
   
@@ -167,9 +169,9 @@ export default function OfficeExpensesPage() {
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport} className="gap-2">
+          {canExport('reports') && <Button variant="outline" onClick={handleExport} className="gap-2">
             <Download className="w-4 h-4" /> Export Register
-          </Button>
+          </Button>}
           <Button onClick={() => setIsModalOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" /> Submit Expense
           </Button>

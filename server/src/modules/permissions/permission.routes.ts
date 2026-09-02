@@ -9,6 +9,7 @@ const router = Router();
 
 router.use(authenticate);
 
+router.get('/my', permissionController.getMyPermissions);
 router.get('/', permissionController.getMatrix);
 router.patch('/', authorize(Role.ADMIN), validate(updatePermissionSchema), permissionController.updatePermission);
 

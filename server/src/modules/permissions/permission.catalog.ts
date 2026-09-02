@@ -1,4 +1,4 @@
-﻿import { Role } from '@prisma/client';
+import { Role } from '@prisma/client';
 
 export const MODULES = [
   { key: 'dashboard', label: 'Dashboard' },
@@ -21,7 +21,7 @@ export const MODULES = [
 ] as const;
 
 export type ModuleKey = (typeof MODULES)[number]['key'];
-export type PermissionAction = 'view' | 'add' | 'edit' | 'delete' | 'approve';
+export type PermissionAction = 'view' | 'add' | 'edit' | 'delete' | 'approve' | 'export';
 
 export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: 'Super Admin',
@@ -38,6 +38,7 @@ export interface PermissionFlags {
   canDelete: boolean;
   canApprove: boolean;
   canViewRestricted: boolean;
+  canExport: boolean;
 }
 
 const none: PermissionFlags = {
@@ -47,15 +48,17 @@ const none: PermissionFlags = {
   canDelete: false,
   canApprove: false,
   canViewRestricted: false,
+  canExport: false,
 };
 
 const view = (restricted = false): PermissionFlags => ({
   ...none,
   canView: true,
   canViewRestricted: restricted,
+  canExport: false,
 });
 
-const selfService: PermissionFlags = { ...none, canView: true, canAdd: true };
+const selfService: PermissionFlags = { ...none, canView: true, canAdd: true, canExport: false };
 
 const ops = (restricted = false): PermissionFlags => ({
   canView: true,
@@ -64,6 +67,7 @@ const ops = (restricted = false): PermissionFlags => ({
   canDelete: false,
   canApprove: false,
   canViewRestricted: restricted,
+  canExport: true,
 });
 
 const full: PermissionFlags = {
@@ -73,6 +77,7 @@ const full: PermissionFlags = {
   canDelete: true,
   canApprove: true,
   canViewRestricted: true,
+  canExport: true,
 };
 
 const managerApprove = (restricted = false): PermissionFlags => ({
@@ -82,6 +87,7 @@ const managerApprove = (restricted = false): PermissionFlags => ({
   canDelete: false,
   canApprove: true,
   canViewRestricted: restricted,
+  canExport: false,
 });
 
 export const EMPLOYEE_RESTRICTED_FIELDS = [
@@ -199,4 +205,5 @@ export const ACTION_FLAG: Record<PermissionAction, keyof PermissionFlags> = {
   edit: 'canEdit',
   delete: 'canDelete',
   approve: 'canApprove',
+  export: 'canExport',
 };

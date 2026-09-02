@@ -6,6 +6,21 @@ import { permissionService } from './permission.service';
 import { UpdatePermissionInput } from './permission.schema';
 
 export class PermissionController {
+  async getMyPermissions(req: AuthRequest, res: Response) {
+    try {
+      const role = req.user?.role as Role;
+      const perms = await permissionService.getForRole(role);
+      // Convert array to module-keyed map for easy frontend lookup
+      const map: Record<string, any> = {};
+      for (const p of perms) {
+        map[p.module] = p;
+      }
+      sendSuccess(res, map, 'My permissions retrieved');
+    } catch (error: any) {
+      sendError(res, error.message);
+    }
+  }
+
   async getMatrix(_req: AuthRequest, res: Response) {
     try {
       const matrix = await permissionService.getMatrix();

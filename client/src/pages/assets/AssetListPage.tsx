@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from '@/api/assets';
 import { employeesApi } from '@/api/employees';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -17,6 +18,7 @@ import { Laptop, Plus, Settings2, RefreshCcw, Download } from 'lucide-react';
 
 export default function AssetListPage() {
   const { user } = useAuth();
+  const { canExport } = usePermissions();
   const queryClient = useQueryClient();
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
   
