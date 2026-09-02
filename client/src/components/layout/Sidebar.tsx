@@ -28,14 +28,12 @@ export function Sidebar() {
   };
 
   const workspaceNav = [
-    { name: 'Assets', path: '/assets', icon: Laptop },
     { name: 'Recruitment', path: '/recruitment', icon: Briefcase },
-    { name: 'HR Helpdesk', path: '/requests', icon: ClipboardList },
+    { name: 'Assets', path: '/assets', icon: Laptop },
+    ...(isAdminOrHR ? [{ name: 'Attrition', path: '/attrition', icon: UserMinus }] : []),
     { name: 'Documents', path: '/documents', icon: Files },
-    ...(isAdminOrHR ? [
-      { name: 'Reports', path: '/reports', icon: BarChart },
-      { name: 'Attrition', path: '/attrition', icon: UserMinus },
-    ] : [])
+    { name: 'Helpdesk', path: '/requests', icon: ClipboardList },
+    ...(isAdminOrHR ? [{ name: 'Reports', path: '/reports', icon: BarChart }] : [])
   ];
 
   const employeesNav = [
