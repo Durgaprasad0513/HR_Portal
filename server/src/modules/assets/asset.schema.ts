@@ -5,15 +5,16 @@ export const createAssetSchema = z.object({
   assetCategory: z.enum(['IT', 'NON_IT', 'VEHICLE_CAT']),
   brandModel: z.string().optional(),
   serialNumber: z.string().optional(),
+  purchaseDate: z.string().optional(),
   purchaseValue: z.number().optional(),
-  assignedEmployeeId: z.string().optional(),
-  status: z.enum(['IN_USE', 'RETURNED', 'DAMAGED', 'LOST', 'RETIRED']).optional()
+  assignedEmployeeId: z.string().nullable().optional(),
+  issueDate: z.string().optional(),
+  issueCondition: z.enum(['NEW', 'GOOD', 'FAIR']).optional(),
+  assetLocation: z.string().optional(),
+  status: z.enum(['IN_USE', 'RETURN_REQUESTED', 'RETURNED', 'DAMAGED', 'LOST', 'RETIRED']).optional()
 });
 
-export const updateAssetSchema = z.object({
-  assetLocation: z.string().optional(),
-  status: z.enum(['IN_USE', 'RETURNED', 'DAMAGED', 'LOST', 'RETIRED']).optional()
-});
+export const updateAssetSchema = createAssetSchema.partial();
 
 export const assignAssetSchema = z.object({
   assignedEmployeeId: z.string(), // Removed uuid() because it might be CUID from Prisma

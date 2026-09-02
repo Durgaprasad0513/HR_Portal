@@ -5,6 +5,7 @@ import { departmentsApi } from '@/api/departments';
 import { employeesApi } from '@/api/employees';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
 import { ArrowLeft } from 'lucide-react';
@@ -98,7 +99,7 @@ export default function DepartmentFormPage() {
 
             <div className="flex flex-col space-y-1 w-full">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Department Head</label>
-              <select 
+              <Select 
                 name="headId" 
                 value={formData.headId} 
                 onChange={handleChange}
@@ -108,7 +109,7 @@ export default function DepartmentFormPage() {
                 {empData?.data?.map(emp => (
                   <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             
             <div className="flex justify-end pt-4 gap-2">

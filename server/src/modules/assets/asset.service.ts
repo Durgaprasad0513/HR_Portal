@@ -124,15 +124,23 @@ export class AssetService {
     const existing = await prisma.asset.findUnique({ where: { id } });
     if (!existing) throw new Error('Asset not found.');
     if (!existing.assignedEmployeeId) throw new Error('Asset is not currently assigned.');
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const isOwner = user?.employeeId === existing.assignedEmployeeId;
+    const isEditor = user?.role === 'ADMIN' || user?.role === 'HR';
+    if (!isOwner && !isEditor) throw new Error('You do not have permission to modify this asset.');
+
+    const newStatus = isEditor ? AssetStatus.RETURNED : AssetStatus.RETURN_REQUESTED;
+    const newAssignedId = isEditor ? null : existing.assignedEmployeeId;
+    const newReturnDate = isEditor ? (data.returnDate ?? new Date()) : existing.returnDate;
 
     const asset = await prisma.$transaction(async (tx) => {
       return tx.asset.update({
         where: { id },
         data: {
-          assignedEmployeeId: null,
-          returnDate: data.returnDate ?? new Date(),
+          assignedEmployeeId: newAssignedId,
+          returnDate: newReturnDate,
           returnCondition: data.returnCondition,
-          status: AssetStatus.RETURNED
+          status: newStatus
         }
       });
     });
