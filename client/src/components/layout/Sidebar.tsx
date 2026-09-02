@@ -40,7 +40,7 @@ export function Sidebar() {
   ];
 
   const employeesNav = [
-    { name: 'Employee Mgt', path: '/employees', icon: Users },
+    { name: 'Employee', path: '/employees', icon: Users },
     { name: 'Training', path: '/training', icon: GraduationCap },
     { name: 'Performance', path: '/performance', icon: Target },
   ];
@@ -51,7 +51,7 @@ export function Sidebar() {
   ];
 
   const authNav = isAdminOrHR ? [
-    { name: 'Role Mgt', path: '/roles', icon: Shield },
+    { name: 'Role Management', path: '/roles', icon: Shield },
     { name: 'Audit Log', path: '/audit', icon: History }
   ] : [];
 
