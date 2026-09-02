@@ -11,7 +11,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { UserSearch, Plus, Briefcase, Users } from 'lucide-react';
+import { UserSearch, Plus, Briefcase, Users, ChevronLeft } from 'lucide-react';
+import { KanbanBoard } from './KanbanBoard';
 
 export default function RecruitmentPage() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function RecruitmentPage() {
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
   
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
+  const [selectedReq, setSelectedReq] = useState<any>(null);
 
   const { data: deptData } = useQuery({
     queryKey: ['departments'],
@@ -30,6 +32,12 @@ export default function RecruitmentPage() {
     queryFn: () => recruitmentApi.getRequisitions().then(res => res.data),
   });
 
+  const { data: candidatesData, isLoading: isCandidatesLoading } = useQuery({
+    queryKey: ['candidates', selectedReq?.id],
+    queryFn: () => recruitmentApi.getCandidates(selectedReq.id).then(res => res.data),
+    enabled: !!selectedReq,
+  });
+
   const createReqMutation = useMutation({
     mutationFn: (payload: any) => recruitmentApi.createRequisition(payload),
     onSuccess: () => {
@@ -37,6 +45,29 @@ export default function RecruitmentPage() {
       setIsReqModalOpen(false);
     }
   });
+
+  const updateCandidateMutation = useMutation({
+    mutationFn: ({ id, col }: any) => {
+       if (col === 'SCREENING') return recruitmentApi.screenCandidate(id, { screeningStatus: 'SHORTLISTED' });
+       if (col === 'TELEPHONIC') return recruitmentApi.interviewCandidate(id, { selectionStatus: 'SELECTION_ON_HOLD', interviewRound: 'TELEPHONIC', interviewDate: new Date().toISOString() });
+       if (col === 'HR_INTERVIEW') return recruitmentApi.interviewCandidate(id, { selectionStatus: 'SELECTION_ON_HOLD', interviewRound: 'HR', interviewDate: new Date().toISOString() });
+       if (col === 'TECHNICAL') return recruitmentApi.interviewCandidate(id, { selectionStatus: 'SELECTION_ON_HOLD', interviewRound: 'TECHNICAL', interviewDate: new Date().toISOString() });
+       if (col === 'MANAGEMENT') return recruitmentApi.interviewCandidate(id, { selectionStatus: 'SELECTION_ON_HOLD', interviewRound: 'MANAGEMENT', interviewDate: new Date().toISOString() });
+       if (col === 'SELECTED') return recruitmentApi.interviewCandidate(id, { selectionStatus: 'SELECTED', interviewRound: 'MANAGEMENT', interviewDate: new Date().toISOString() });
+       if (col === 'OFFER') return recruitmentApi.offerCandidate(id, { offerStatus: 'RELEASED' });
+       if (col === 'JOINED_REJECTED') return recruitmentApi.offerCandidate(id, { offerStatus: 'OFFER_ACCEPTED' });
+       
+       // Default to SOURCING
+       return recruitmentApi.screenCandidate(id, { screeningStatus: 'SCREENING_PENDING' });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['candidates', selectedReq?.id] });
+    }
+  });
+
+  const handleStatusChange = (id: string, newStatus: string) => {
+    updateCandidateMutation.mutate({ id, col: newStatus });
+  };
 
   const columns = [
     { 
@@ -110,7 +141,33 @@ export default function RecruitmentPage() {
       </div>
 
       <div className="animate-in fade-in">
-        {isLoading ? (
+        {selectedReq ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" onClick={() => setSelectedReq(null)} className="px-2">
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h2 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq.positionTitle}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">HR Funnel Layout Structure</p>
+              </div>
+            </div>
+            {isCandidatesLoading ? (
+              <div className="py-12"><LoadingSpinner /></div>
+            ) : (
+              <KanbanBoard 
+                candidates={candidatesData?.map((c: any) => ({
+                  id: c.id,
+                  name: c.candidateName,
+                  email: c.email,
+                  status: 'APPLIED', // Fallback, KanbanBoard logic parses originalData now
+                  originalData: c
+                })) || []} 
+                onStatusChange={handleStatusChange} 
+              />
+            )}
+          </div>
+        ) : isLoading ? (
           <div className="py-12"><LoadingSpinner /></div>
         ) : !data || data.length === 0 ? (
           <EmptyState 
@@ -127,6 +184,7 @@ export default function RecruitmentPage() {
             columns={columns} 
             data={data} 
             keyField="id" 
+            onRowClick={(row) => setSelectedReq(row)}
             emptyMessage="No requisitions found."
           />
         )}

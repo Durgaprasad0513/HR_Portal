@@ -6,9 +6,10 @@ export const createTrainingSchema = z.object({
   trainerName: z.string().optional(),
   trainingDate: z.string(), // Let string be parsed
   trainingLocation: z.string().optional(),
-  trainingCost: z.number().optional(),
-  trainingHours: z.number().optional(),
-  targetDepartmentId: z.string().optional()
+  trainingCost: z.number().min(0).optional(),
+  trainingHours: z.number().min(0).optional(),
+  targetDepartmentId: z.string().optional(),
+  status: z.string().optional()
 });
 
 export const updateTrainingSchema = createTrainingSchema.partial();
@@ -24,7 +25,7 @@ export const submitFeedbackSchema = z.object({
 
 export const recordAssessmentSchema = z.object({
   attendanceStatus: z.enum(['TRAINING_PRESENT', 'TRAINING_ABSENT']).optional(),
-  assessmentScore: z.number().optional(),
+  assessmentScore: z.number().min(1).max(100).optional(),
   certificateIssued: z.boolean().optional(),
   certificateFile: z.string().optional()
 });
