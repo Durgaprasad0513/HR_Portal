@@ -1,4 +1,6 @@
 import prisma from '../../config/database';
+import crypto from 'crypto';
+import { hashPassword } from '../../utils/password';
 import { notificationService } from '../notifications/notification.service';
 import { CreateEmployeeInput, UpdateEmployeeInput } from './employee.schema';
 import { Prisma, Role } from '@prisma/client';
@@ -168,7 +170,21 @@ export class EmployeeService {
       }
     });
 
-    return employee;
+    // Generate a secure temporary password
+    const temporaryPassword = crypto.randomBytes(4).toString('hex') + 'aA1!'; 
+    const hashedPassword = await hashPassword(temporaryPassword);
+
+    // Create the associated User account
+    await prisma.user.create({
+      data: {
+        email: data.email,
+        password: hashedPassword,
+        role: 'EMPLOYEE', // Default role
+        employeeId: employee.id,
+      }
+    });
+
+    return { employee, temporaryPassword };
   }
 
   async update(currentUser: CurrentUser, id: string, data: UpdateEmployeeInput, reqContext: { ipAddress?: string } = {}) {

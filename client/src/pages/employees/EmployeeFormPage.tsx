@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { employeesApi } from '@/api/employees';
 import { departmentsApi } from '@/api/departments';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { KeyRound, Copy } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -88,23 +90,37 @@ export default function EmployeeFormPage() {
   const mutation = useMutation({
     mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data } as any) : employeesApi.create(data as any),
     onSuccess: async (res) => {
-      if (!isEdit && pendingFiles.length > 0 && res?.data?.id) {
+      // Handle the new response format for creation
+      const employeeObj = !isEdit && res?.data?.employee ? res.data.employee : res?.data;
+      const empId = employeeObj?.id;
+      
+      if (!isEdit && pendingFiles.length > 0 && empId) {
         try {
           await Promise.all(pendingFiles.map(file => {
             const fd = new FormData();
             fd.append('file', file);
             fd.append('documentType', 'EDUCATIONAL_CERTIFICATE');
             fd.append('documentName', file.name);
-            fd.append('employeeId', res.data.id);
+            fd.append('employeeId', empId);
             return employeesApi.uploadDocument(fd);
           }));
         } catch (e) {
           toast.error('Employee created but some document uploads failed');
         }
       }
+      
       toast.success(`Employee ${isEdit ? 'updated' : 'created'} successfully`);
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      navigate('/employees');
+      
+      if (!isEdit && res?.data?.temporaryPassword) {
+        // Show credentials modal instead of navigating immediately
+        setCredentialsModal({
+          email: employeeObj.email,
+          password: res.data.temporaryPassword
+        });
+      } else {
+        navigate('/employees');
+      }
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to save employee');
@@ -505,6 +521,56 @@ export default function EmployeeFormPage() {
           <Button type="submit" isLoading={mutation.isPending}>Save Employee</Button>
         </div>
       </form>
+
+      {/* Credentials Modal */}
+      {credentialsModal && (
+        <Modal 
+          isOpen={!!credentialsModal} 
+          onClose={() => {
+            setCredentialsModal(null);
+            navigate('/employees');
+          }} 
+          title="User Account Created"
+        >
+          <div className="space-y-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-2">
+              <KeyRound className="w-6 h-6" />
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              A login account has been automatically created for this employee. Please share these credentials securely.
+            </p>
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-medium">Email</p>
+                <p className="font-mono text-sm font-semibold">{credentialsModal.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-medium">Temporary Password</p>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <p className="font-mono text-lg font-bold text-primary-600 tracking-wider">{credentialsModal.password}</p>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(credentialsModal.password);
+                      toast.success('Password copied to clipboard');
+                    }}
+                    className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="pt-2">
+              <Button onClick={() => {
+                setCredentialsModal(null);
+                navigate('/employees');
+              }} className="w-full">
+                I've saved these credentials
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
