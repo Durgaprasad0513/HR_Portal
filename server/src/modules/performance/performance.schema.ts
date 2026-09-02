@@ -27,7 +27,10 @@ export const managerAppraisalSchema = z.object({
 
 export const hrAppraisalSchema = z.object({
   hrRating: z.number().min(1).max(5).optional(),
-  hrComments: z.string().optional(),
+  hrComments: z.string().optional()
+});
+
+export const finalAppraisalSchema = z.object({
   finalRating: z.number().min(1).max(5).optional(),
   finalApprovalStatus: z.enum(['APPROVAL_PENDING', 'APPROVAL_APPROVED', 'APPROVAL_REJECTED'])
 });

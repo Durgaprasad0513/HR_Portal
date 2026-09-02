@@ -57,6 +57,15 @@ export class PerformanceController {
       return sendError(res, error.message, 400);
     }
   };
+
+  submitFinalApproval = async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await performanceService.submitFinalApproval(req.params.id as string, req.body, req.user!, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Final approval submitted');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
+    }
+  };
 }
 
 export const performanceController = new PerformanceController();

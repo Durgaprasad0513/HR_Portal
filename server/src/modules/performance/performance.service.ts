@@ -68,6 +68,7 @@ export class PerformanceService {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
+          status: 'MANAGER_REVIEW',
           achievedValue: data.achievedValue,
           selfRating: data.selfRating,
           employeeComments: data.employeeComments,
@@ -106,6 +107,7 @@ export class PerformanceService {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
+          status: 'HR_REVIEW',
           managerRating: data.managerRating,
           managerComments: data.managerComments,
           promotionRecommendation: data.promotionRecommendation,
@@ -137,15 +139,43 @@ export class PerformanceService {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
+          status: 'FINAL_APPROVAL',
           hrRating: data.hrRating,
-          hrComments: data.hrComments,
-          finalRating: data.finalRating,
-          finalApprovalStatus: data.finalApprovalStatus
+          hrComments: data.hrComments
         }
       });
       await tx.auditLog.create({
         data: {
           actionPerformed: 'SUBMIT_HR_APPRAISAL',
+          moduleAffected: 'performance',
+          recordIdAffected: id,
+          userId: currentUser.userId,
+      return updated;
+    });
+  }
+
+  async submitFinalApproval(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
+    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'HR') {
+      throw new Error('Only Admin or HR can perform final approval');
+    }
+
+    const review = await prisma.performanceReview.findUnique({ where: { id } });
+    if (!review) throw new Error('Review not found');
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.performanceReview.update({
+        where: { id },
+        data: {
+          status: 'COMPLETED',
+          finalRating: data.finalRating,
+          finalApprovalStatus: data.finalApprovalStatus,
+          finalApprovalDate: new Date(),
+          finalApprovedById: currentUser.employeeId || undefined
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'SUBMIT_FINAL_APPROVAL',
           moduleAffected: 'performance',
           recordIdAffected: id,
           userId: currentUser.userId,

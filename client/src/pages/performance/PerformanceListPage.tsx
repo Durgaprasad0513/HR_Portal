@@ -11,10 +11,14 @@ type Tab = 'My Performance' | 'Team Performance Summary';
 import { useQuery } from '@tanstack/react-query';
 import { performanceApi } from '@/api/performance';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PerformanceReviewModal } from './PerformanceReviewModal';
+import { PerformanceCreateModal } from './PerformanceCreateModal';
 
 export default function PerformanceListPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('My Performance');
+  const [selectedReview, setSelectedReview] = useState<any>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['performance', activeTab],
@@ -23,10 +27,11 @@ export default function PerformanceListPage() {
 
   const getStatusBadge = (status: string) => {
     switch(status) {
-      case 'DRAFT': return <Badge variant="default">Draft</Badge>;
-      case 'SELF_SUBMITTED': return <Badge variant="info">Self Appraised</Badge>;
-      case 'MANAGER_SUBMITTED': return <Badge variant="warning">Manager Appraised</Badge>;
-      case 'APPROVAL_APPROVED': return <Badge variant="success">Completed</Badge>;
+      case 'EMPLOYEE_REVIEW': return <Badge variant="default">Self Review Pending</Badge>;
+      case 'MANAGER_REVIEW': return <Badge variant="info">Manager Review Pending</Badge>;
+      case 'HR_REVIEW': return <Badge variant="warning">HR Review Pending</Badge>;
+      case 'FINAL_APPROVAL': return <Badge className="bg-purple-500 text-white hover:bg-purple-600">Final Approval Pending</Badge>;
+      case 'COMPLETED': return <Badge variant="success">Completed</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };
@@ -35,7 +40,14 @@ export default function PerformanceListPage() {
     <div className="space-y-6">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Performance</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Performance</h1>
+          {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              Initiate Review
+            </Button>
+          )}
+        </div>
         
         <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-full w-full sm:w-auto">
           {(['My Performance', 'Team Performance Summary'] as Tab[]).map((tab) => (
@@ -87,16 +99,22 @@ export default function PerformanceListPage() {
             <div className="p-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">No performance reviews found.</div>
           ) : (
             reviews.map((review: any) => (
-              <Card key={review.id} className="hover:shadow-md transition-shadow relative">
+              <Card key={review.id} className="hover:shadow-md transition-shadow relative cursor-pointer" onClick={() => setSelectedReview(review)}>
                 <div className="absolute top-8 -left-[3.5rem] w-6 border-t-2 border-gray-100 dark:border-gray-800 border-dashed"></div>
                 <div className="absolute top-7 -left-[3.8rem] h-3 w-3 rounded-full bg-gray-200 ring-4 ring-white"></div>
                 
                 <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-3 flex-1">
+                  <div className="flex flex-col sm:flex-row gap-6">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-accent-50 dark:bg-accent-900/50 text-accent-600 dark:text-accent-400 rounded-xl flex items-center justify-center font-bold text-lg">
+                        {review.reviewPeriod === 'ANNUAL' ? 'A' : review.reviewPeriod === 'HALF_YEARLY' ? 'H' : 'Q'}
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 space-y-4">
                       <div className="flex items-center gap-3">
                         <h3 className="font-bold text-lg text-navy-900 dark:text-white">{review.reviewPeriod} Review</h3>
-                        {getStatusBadge(review.finalApprovalStatus || 'DRAFT')}
+                        {getStatusBadge(review.status)}
                       </div>
                       
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -125,6 +143,19 @@ export default function PerformanceListPage() {
           )}
         </div>
       </div>
+
+      {selectedReview && (
+        <PerformanceReviewModal
+          isOpen={!!selectedReview}
+          onClose={() => setSelectedReview(null)}
+          review={selectedReview}
+        />
+      )}
+
+      <PerformanceCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   );
 }

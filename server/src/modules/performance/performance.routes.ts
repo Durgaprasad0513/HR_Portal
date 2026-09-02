@@ -6,7 +6,8 @@ import {
   createPerformanceReviewSchema, 
   selfAppraisalSchema, 
   managerAppraisalSchema, 
-  hrAppraisalSchema 
+  hrAppraisalSchema,
+  finalAppraisalSchema
 } from './performance.schema';
 
 const router = Router();
@@ -20,5 +21,6 @@ router.get('/', requireStaffView('performance'), performanceController.getReview
 router.put('/:id/self-appraisal', requirePermission('performance', 'edit'), validateRequest({ body: selfAppraisalSchema }), performanceController.submitSelfAppraisal);
 router.put('/:id/manager-appraisal', requirePermission('performance', 'edit'), validateRequest({ body: managerAppraisalSchema }), performanceController.submitManagerAppraisal);
 router.put('/:id/hr-appraisal', requirePermission('performance', 'edit'), validateRequest({ body: hrAppraisalSchema }), performanceController.submitHRAppraisal);
+router.put('/:id/final-approval', requirePermission('performance', 'edit'), validateRequest({ body: finalAppraisalSchema }), performanceController.submitFinalApproval);
 
 export default router;
