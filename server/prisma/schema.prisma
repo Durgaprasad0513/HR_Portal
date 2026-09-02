@@ -147,6 +147,7 @@ enum AssetReturnCondition {
 
 enum AssetStatus {
   IN_USE
+  RETURN_REQUESTED
   RETURNED
   DAMAGED
   LOST

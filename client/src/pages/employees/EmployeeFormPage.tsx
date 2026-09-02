@@ -5,6 +5,7 @@ import { employeesApi } from '@/api/employees';
 import { departmentsApi } from '@/api/departments';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
 import { ArrowLeft, FileText, CheckCircle2, Upload } from 'lucide-react';
@@ -181,19 +182,19 @@ export default function EmployeeFormPage() {
               <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />
               <Input label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required />
               <Input label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} required />
-              <Input label="Phone" name="phone" value={formData.phone} onChange={handleChange} />
+              <Input label="Phone" name="phone" value={formData.phone} onChange={handleChange}  required />
               <Input label="Alternate Mobile" name="alternateMobile" value={formData.alternateMobile} onChange={handleChange} />
               <Input label="Personal Email" type="email" name="personalEmail" value={formData.personalEmail} onChange={handleChange} />
               
-              <Input label="Emergency Contact Name" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} />
-              <Input label="Emergency Contact Number" name="emergencyContactNumber" value={formData.emergencyContactNumber} onChange={handleChange} />
+              <Input label="Emergency Contact Name" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange}  required />
+              <Input label="Emergency Contact Number" name="emergencyContactNumber" value={formData.emergencyContactNumber} onChange={handleChange}  required />
               <Input label="Emergency Contact Relation" name="emergencyContactRelation" value={formData.emergencyContactRelation} onChange={handleChange} />
 
-              <Input label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
+              <Input label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange}  required />
               <div className="flex flex-col space-y-1 w-full">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender</label>
-                <select 
-                  name="gender" 
+                <Select 
+                  name="gender" required 
                   value={formData.gender} 
                   onChange={handleChange}
                   className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -202,7 +203,7 @@ export default function EmployeeFormPage() {
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
                   <option value="OTHER">Other</option>
-                </select>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -215,12 +216,12 @@ export default function EmployeeFormPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <Input label="Street Address" name="address" value={formData.address} onChange={handleChange} />
+                <Input label="Street Address" name="address" value={formData.address} onChange={handleChange}  required />
               </div>
-              <Input label="City" name="city" value={formData.city} onChange={handleChange} />
-              <Input label="State / Province" name="state" value={formData.state} onChange={handleChange} />
-              <Input label="ZIP / Postal Code" name="zipCode" value={formData.zipCode} onChange={handleChange} />
-              <Input label="Country" name="country" value={formData.country} onChange={handleChange} />
+              <Input label="City" name="city" value={formData.city} onChange={handleChange}  required />
+              <Input label="State / Province" name="state" value={formData.state} onChange={handleChange}  required />
+              <Input label="ZIP / Postal Code" name="zipCode" value={formData.zipCode} onChange={handleChange}  required />
+              <Input label="Country" name="country" value={formData.country} onChange={handleChange}  required />
             </div>
           </CardContent>
         </Card>
@@ -233,8 +234,8 @@ export default function EmployeeFormPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col space-y-1 w-full">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
-                <select 
-                  name="departmentId" 
+                <Select 
+                  name="departmentId" required 
                   value={formData.departmentId} 
                   onChange={handleChange}
                   className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -244,7 +245,7 @@ export default function EmployeeFormPage() {
                   {deptData?.data?.map(dept => (
                     <option key={dept.id} value={dept.id}>{dept.name}</option>
                   ))}
-                </select>
+                </Select>
               </div>
               
               <Input label="Designation" name="designation" value={formData.designation} onChange={handleChange} required />
@@ -258,7 +259,7 @@ export default function EmployeeFormPage() {
               
               <div className="flex flex-col space-y-1 w-full">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Employment Type</label>
-                <select 
+                <Select 
                   name="employmentType" 
                   value={formData.employmentType} 
                   onChange={handleChange}
@@ -267,12 +268,12 @@ export default function EmployeeFormPage() {
                   <option value="PERMANENT">Full-time</option>
                   <option value="CONTRACT">Part-time / Contract</option>
                   <option value="INTERN">Intern</option>
-                </select>
+                </Select>
               </div>
 
               <div className="flex flex-col space-y-1 w-full">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Line Manager</label>
-                <select 
+                <Select 
                   name="managerId" 
                   value={formData.managerId} 
                   onChange={handleChange}
@@ -282,12 +283,12 @@ export default function EmployeeFormPage() {
                   {employeesList?.data?.map((emp: any) => (
                     <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div className="flex flex-col space-y-1 w-full">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Office Location</label>
-                <select 
+                <Select 
                   name="location" 
                   value={formData.location} 
                   onChange={handleChange}
@@ -296,12 +297,12 @@ export default function EmployeeFormPage() {
                   <option value="">Select Office</option>
                   <option value="Hyd Office">Hyd Office</option>
                   <option value="Peddapuram Plant">Peddapuram Plant</option>
-                </select>
+                </Select>
               </div>
               
               <div className="flex flex-col space-y-1 w-full">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Employee Status</label>
-                <select 
+                <Select 
                   name="status" 
                   value={formData.status} 
                   onChange={handleChange}
@@ -310,7 +311,7 @@ export default function EmployeeFormPage() {
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
                   <option value="TERMINATED">Terminated</option>
-                </select>
+                </Select>
               </div>
             </div>
           </CardContent>

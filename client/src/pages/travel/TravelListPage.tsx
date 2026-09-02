@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Plane, Plus, FileText, CheckCircle2 } from 'lucide-react';
 
 export default function TravelListPage() {
@@ -166,12 +167,12 @@ export default function TravelListPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Travel Mode</label>
-              <select name="travelMode" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <Select name="travelMode" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="AIR">Flight (Air)</option>
                 <option value="TRAIN">Train</option>
                 <option value="ROAD">Bus / Cab (Road)</option>
                 <option value="OWN_VEHICLE">Personal Vehicle</option>
-              </select>
+              </Select>
             </div>
             <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" />
           </div>

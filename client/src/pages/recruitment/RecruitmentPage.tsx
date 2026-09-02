@@ -10,6 +10,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { UserSearch, Plus, Briefcase, Users } from 'lucide-react';
 
 export default function RecruitmentPage() {
@@ -136,12 +137,12 @@ export default function RecruitmentPage() {
           <Input name="positionTitle" label="Job Title" placeholder="e.g. Senior Frontend Engineer" required />
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-            <select name="departmentId" required className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+            <Select name="departmentId" required className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
               <option value="">Select Department...</option>
               {deptData?.data?.map((dept: any) => (
                 <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Input name="location" label="Location" placeholder="e.g. Remote" required />
