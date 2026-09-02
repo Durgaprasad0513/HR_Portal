@@ -78,6 +78,55 @@ export class DocumentService {
 
     return { downloadUrl: `/api/employees/documents/download/${documentId}?token=${token}` };
   }
+
+  async deleteDocument(documentId: string, currentUser: any, reqContext: { ipAddress?: string }) {
+    const doc = await prisma.employeeDocument.findUnique({ where: { id: documentId } });
+    if (!doc) throw new Error('Document not found');
+
+    if (currentUser.role === 'EMPLOYEE' && currentUser.employeeId !== doc.employeeId) {
+      throw new Error('Not authorized to delete this document');
+    }
+
+    await prisma.employeeDocument.delete({ where: { id: documentId } });
+
+    await prisma.auditLog.create({
+      data: {
+        actionPerformed: 'DELETE_DOCUMENT',
+        moduleAffected: 'employees',
+        recordIdAffected: documentId,
+        userId: currentUser.userId,
+        ipAddress: reqContext.ipAddress,
+      }
+    });
+
+    return true;
+  }
+
+  async verifyDocument(documentId: string, currentUser: any, reqContext: { ipAddress?: string }) {
+    const doc = await prisma.employeeDocument.findUnique({ where: { id: documentId } });
+    if (!doc) throw new Error('Document not found');
+
+    if (currentUser.role !== 'HR' && currentUser.role !== 'ADMIN' && currentUser.role !== 'REMOVED_ROLE') {
+      throw new Error('Not authorized to verify documents');
+    }
+
+    const updatedDoc = await prisma.employeeDocument.update({
+      where: { id: documentId },
+      data: { verificationStatus: 'VERIFIED' }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actionPerformed: 'VERIFY_DOCUMENT',
+        moduleAffected: 'employees',
+        recordIdAffected: documentId,
+        userId: currentUser.userId,
+        ipAddress: reqContext.ipAddress,
+      }
+    });
+
+    return updatedDoc;
+  }
 }
 
 export const documentService = new DocumentService();

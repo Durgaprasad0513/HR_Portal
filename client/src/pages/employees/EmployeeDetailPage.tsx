@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { employeesApi } from '@/api/employees';
 import { Button } from '@/components/ui/Button';
@@ -29,9 +29,18 @@ export default function EmployeeDetailPage() {
   const deactivateMutation = { mutate: (id: string) => {}, isPending: false }; // stub
   const [activeSection, setActiveSection] = useState('general');
 
+  const queryClient = useQueryClient();
+
   const { data: empData, isLoading } = useQuery({
     queryKey: ['employee', id],
     queryFn: () => employeesApi.getById(id!),
+  });
+
+  const verifyDocumentMutation = useMutation({
+    mutationFn: (documentId: string) => employeesApi.verifyDocument(documentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employee', id] });
+    }
   });
 
   const emp = empData?.data;
@@ -317,8 +326,26 @@ export default function EmployeeDetailPage() {
                           <div className="flex-1">
                             <h4 className="font-semibold text-navy-900 dark:text-white">{doc.documentName}</h4>
                             <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{doc.documentType.replace('_', ' ')} • Uploaded on {new Date(doc.uploadDate).toLocaleDateString()}</p>
-                            <div className="mt-2 flex items-center gap-2 text-sm text-accent-500 font-medium cursor-pointer">
-                              <CheckCircle2 className="w-4 h-4" /> {doc.verificationStatus === 'VERIFIED' ? 'Verified' : 'Pending Verification'}
+                            <div className="mt-2 flex items-center gap-2 text-sm text-accent-500 font-medium">
+                              <CheckCircle2 className="w-4 h-4" /> 
+                              {doc.verificationStatus === 'VERIFIED' ? (
+                                'Verified'
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <span>Pending Verification</span>
+                                  {isHR && (
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      className="h-6 px-2 text-xs"
+                                      onClick={() => verifyDocumentMutation.mutate(doc.id)}
+                                      isLoading={verifyDocumentMutation.isPending}
+                                    >
+                                      Verify Now
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>

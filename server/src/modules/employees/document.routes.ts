@@ -13,5 +13,7 @@ const router = Router();
 router.post('/upload', authenticate, upload.single('file'), validate(uploadDocumentSchema), (req, res) => documentController.upload(req, res));
 router.get('/:employeeId', authenticate, (req, res) => documentController.getEmployeeDocuments(req, res));
 router.get('/:id/download-link', authenticate, (req, res) => documentController.generateDownloadLink(req, res));
+router.delete('/:id', authenticate, (req, res) => documentController.deleteDocument(req, res));
+router.put('/:id/verify', authenticate, (req, res) => documentController.verifyDocument(req, res));
 
 export default router;

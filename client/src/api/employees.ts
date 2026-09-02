@@ -35,5 +35,13 @@ export const employeesApi = {
   getDocuments: async (employeeId: string) => {
     const { data } = await apiClient.get<ApiResponse<any[]>>(`/employees/documents/${employeeId}`);
     return data;
+  },
+  deleteDocument: async (documentId: string) => {
+    const { data } = await apiClient.delete<ApiResponse<null>>(`/employees/documents/${documentId}`);
+    return data;
+  },
+  verifyDocument: async (documentId: string) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/employees/documents/${documentId}/verify`);
+    return data;
   }
 };
