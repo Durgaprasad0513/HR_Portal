@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿const uiCode = `import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { DataTable } from '@/components/ui/DataTable';
@@ -171,7 +171,7 @@ export default function PolicyListPage() {
   const filteredData = (policiesData || []).filter((p: any) => p.policyName.toLowerCase().includes(search.toLowerCase()));
 
   const recordsColumns = [
-    { header: 'Employee Name', accessor: (row: any) => `${row.employee?.firstName} ${row.employee?.lastName}` },
+    { header: 'Employee Name', accessor: (row: any) => \`\${row.employee?.firstName} \${row.employee?.lastName}\` },
     { header: 'Date Acknowledged', accessor: (row: any) => row.acknowledgementDate ? new Date(row.acknowledgementDate).toLocaleString() : 'N/A' },
     { header: 'Status', accessor: 'acknowledgementStatus' }
   ];
@@ -245,7 +245,7 @@ export default function PolicyListPage() {
 
       {/* View Records Modal */}
       {selectedPolicy && (
-        <Modal isOpen={recordsModalOpen} onClose={() => setRecordsModalOpen(false)} title={`Acknowledgements: ${selectedPolicy.policyName} (${selectedPolicy.versionNumber})`}>
+        <Modal isOpen={recordsModalOpen} onClose={() => setRecordsModalOpen(false)} title={\`Acknowledgements: \${selectedPolicy.policyName} (\${selectedPolicy.versionNumber})\`}>
           <div className="mb-4">
             <p className="text-sm text-gray-500">Date Published: {new Date(selectedPolicy.uploadDate).toLocaleDateString()}</p>
           </div>
@@ -264,3 +264,8 @@ export default function PolicyListPage() {
     </div>
   );
 }
+`;
+
+const fs = require('fs');
+fs.writeFileSync('client/src/pages/policies/PolicyListPage.tsx', uiCode);
+console.log("Updated PolicyListPage.tsx");

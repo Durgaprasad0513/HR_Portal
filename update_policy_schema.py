@@ -1,4 +1,9 @@
-import { z } from 'zod';
+﻿import re
+
+with open("server/src/modules/policies/policy.schema.ts", "r", encoding="utf-8") as f:
+    content = f.read()
+
+new_content = """import { z } from 'zod';
 
 export const createPolicySchema = z.object({
   policyName: z.string().min(1, 'Policy Name is required'),
@@ -25,3 +30,8 @@ export const updatePolicySchema = z.object({
 export const acknowledgePolicySchema = z.object({
   status: z.enum(['ACKNOWLEDGED'])
 });
+"""
+
+with open("server/src/modules/policies/policy.schema.ts", "w", encoding="utf-8") as f:
+    f.write(new_content)
+print("Updated policy schemas")
