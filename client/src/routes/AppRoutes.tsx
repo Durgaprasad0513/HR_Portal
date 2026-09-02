@@ -28,7 +28,6 @@ import OfficeExpensesPage from '@/pages/expenses/OfficeExpensesPage';
 import RecruitmentPage from '@/pages/recruitment/RecruitmentPage';
 import NotificationListPage from '@/pages/notifications/NotificationListPage';
 import AttritionDashboardPage from '@/pages/attrition/AttritionDashboardPage';
-import SettingsPage from '@/pages/settings/SettingsPage';
 import AuditLogPage from '@/pages/audit/AuditLogPage';
 import LoginHistoryPage from '@/pages/loginHistory/LoginHistoryPage';
 import ReportsPage from '@/pages/reports/ReportsPage';
@@ -67,7 +66,6 @@ const AppRoutes = () => {
           <Route path="/notifications" element={<NotificationListPage />} />
 
           <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR']} />}>
-            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/audit" element={<AuditLogPage />} />
             <Route path="/login-history" element={<LoginHistoryPage />} />
             <Route path="/roles" element={<RoleManagementPage />} />
