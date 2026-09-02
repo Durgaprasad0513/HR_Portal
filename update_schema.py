@@ -1,13 +1,25 @@
 ﻿import re
 
-with open("server/prisma/schema.prisma", "r", encoding="utf-8") as f:
+with open("server/src/modules/requests/request.schema.ts", "r", encoding="utf-8") as f:
     content = f.read()
 
-content = content.replace(
-    "enum SettlementStatus {\n  UNSETTLED\n  SETTLED\n}",
-    "enum SettlementStatus {\n  UNSETTLED\n  SUBMITTED\n  SETTLED\n}"
-)
+new_content = """import { z } from 'zod';
 
-with open("server/prisma/schema.prisma", "w", encoding="utf-8") as f:
-    f.write(content)
-print("Updated schema")
+export const createRequestSchema = z.object({
+  requestType: z.enum(['HR_QUERY', 'LEAVE_QUERY', 'SALARY_QUERY', 'DOCUMENT_REQUEST', 'EXPERIENCE_LETTER', 'PAYSLIP', 'JOINING_DOCUMENTS', 'GENERAL', 'OTHER']),
+  description: z.string().min(1, 'Description is required')
+});
+
+export const assignRequestSchema = z.object({
+  assignedToId: z.string()
+});
+
+export const updateRequestStatusSchema = z.object({
+  status: z.enum(['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'TICKET_CLOSED']),
+  responseNotes: z.string().optional()
+});
+"""
+
+with open("server/src/modules/requests/request.schema.ts", "w", encoding="utf-8") as f:
+    f.write(new_content)
+print("Updated request schemas")

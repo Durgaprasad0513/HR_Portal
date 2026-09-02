@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿const uiCode = `import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { requestsApi } from '@/api/requests';
 import { DataTable } from '@/components/ui/DataTable';
@@ -41,7 +41,7 @@ export default function RequestListPage() {
   const { data: admins } = useQuery({
     queryKey: ['hr-users'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/requests/staff');
+      const { data } = await apiClient.get('/employees');
       return data;
     },
     enabled: isAdminOrHR
@@ -100,7 +100,7 @@ export default function RequestListPage() {
   ];
 
   if (isAdminOrHR) {
-    columns.splice(2, 0, { header: 'Employee', accessor: (row: any) => `${row.employee?.firstName || ''} ${row.employee?.lastName || ''}` });
+    columns.splice(2, 0, { header: 'Employee', accessor: (row: any) => \`\${row.employee?.firstName || ''} \${row.employee?.lastName || ''}\` });
     columns.push({
       header: 'Actions',
       accessor: (row: any) => (
@@ -164,7 +164,7 @@ export default function RequestListPage() {
 
       {/* Manage Request Modal (Admin/HR) */}
       {selectedReq && (
-        <Modal isOpen={manageModalOpen} onClose={() => setManageModalOpen(false)} title={`Manage Ticket: ${selectedReq.id}`}>
+        <Modal isOpen={manageModalOpen} onClose={() => setManageModalOpen(false)} title={\`Manage Ticket: \${selectedReq.id}\`}>
           <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
             <p className="text-sm"><strong>Employee:</strong> {selectedReq.employee?.firstName} {selectedReq.employee?.lastName}</p>
             <p className="text-sm mt-2"><strong>Query:</strong> {selectedReq.description}</p>
@@ -179,8 +179,8 @@ export default function RequestListPage() {
                 className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Unassigned</option>
-                {admins?.data?.map((u: any) => (
-                  <option key={u.id} value={u.id}>{u.employee?.firstName || 'Admin'} {u.employee?.lastName || ''} ({u.email})</option>
+                {admins?.data?.filter((e: any) => e.user?.role === 'ADMIN' || e.user?.role === 'HR').map((e: any) => (
+                  <option key={e.user?.id} value={e.user?.id}>{e.firstName} {e.lastName}</option>
                 ))}
               </select>
             </div>
@@ -209,3 +209,8 @@ export default function RequestListPage() {
     </div>
   );
 }
+`;
+
+const fs = require('fs');
+fs.writeFileSync('client/src/pages/requests/RequestListPage.tsx', uiCode);
+console.log("Updated RequestListPage.tsx");

@@ -198,6 +198,7 @@ enum TrainingAttendanceStatus {
 }
 
 enum RequestType {
+  HR_QUERY
   LEAVE_QUERY
   SALARY_QUERY
   DOCUMENT_REQUEST
@@ -205,6 +206,7 @@ enum RequestType {
   PAYSLIP
   JOINING_DOCUMENTS
   GENERAL
+  OTHER
 }
 
 enum TicketStatus {

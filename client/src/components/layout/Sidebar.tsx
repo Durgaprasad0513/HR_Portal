@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from 'next-themes';
@@ -31,7 +31,7 @@ export function Sidebar() {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Assets', path: '/assets', icon: Laptop },
     { name: 'Recruitment', path: '/recruitment', icon: Briefcase },
-    { name: 'Requests', path: '/requests', icon: ClipboardList },
+    { name: 'HR Helpdesk', path: '/requests', icon: ClipboardList },
     { name: 'Documents', path: '/documents', icon: Files },
     ...(isAdminOrHR ? [
       { name: 'Reports', path: '/reports', icon: BarChart },
