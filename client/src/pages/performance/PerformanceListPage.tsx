@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Tab = 'My Performance' | 'Team Performance Summary';
+type Tab = 'My Performance' | 'Team/Company Reviews';
 
 import { useQuery } from '@tanstack/react-query';
 import { performanceApi } from '@/api/performance';
@@ -16,6 +16,8 @@ import { PerformanceCreateModal } from './PerformanceCreateModal';
 
 export default function PerformanceListPage() {
   const { user } = useAuth();
+  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  const secondTabName: Tab = isAdminOrHR ? 'Team/Company Reviews' : 'Team/Company Reviews'; // Simplified for type matching
   const [activeTab, setActiveTab] = useState<Tab>('My Performance');
   const [selectedReview, setSelectedReview] = useState<any>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -69,7 +71,7 @@ export default function PerformanceListPage() {
         </div>
         
         <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-full w-full sm:w-auto">
-          {(['My Performance', 'Team Performance Summary'] as Tab[]).map((tab) => (
+          {(['My Performance', 'Team/Company Reviews'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
