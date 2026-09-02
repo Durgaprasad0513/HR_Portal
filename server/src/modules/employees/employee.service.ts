@@ -172,6 +172,8 @@ export class EmployeeService {
   }
 
   async update(currentUser: CurrentUser, id: string, data: UpdateEmployeeInput, reqContext: { ipAddress?: string } = {}) {
+    // Capture state before update for audit diff
+    const beforeUpdate = await prisma.employee.findUnique({ where: { id } });
     const scope = getModuleScope(currentUser.role, 'employees');
     
     if (scope !== 'ORG') {

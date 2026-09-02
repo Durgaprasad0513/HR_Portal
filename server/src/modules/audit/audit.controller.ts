@@ -5,8 +5,17 @@ import { auditService } from './audit.service';
 export class AuditController {
   async getAllLogs(req: Request, res: Response) {
     try {
-      const logs = await auditService.getAllLogs(req.query);
-      return sendSuccess(res, logs, 'Audit logs retrieved successfully');
+      const result = await auditService.getAllLogs(req.query);
+      return sendSuccess(res, result, 'Audit logs retrieved successfully');
+    } catch (error: any) {
+      return sendError(res, error.message, 500);
+    }
+  }
+
+  async getSummaryStats(_req: Request, res: Response) {
+    try {
+      const stats = await auditService.getSummaryStats();
+      return sendSuccess(res, stats, 'Audit stats retrieved');
     } catch (error: any) {
       return sendError(res, error.message, 500);
     }
