@@ -55,19 +55,48 @@ export class PerformanceService {
     });
   }
 
+  async updateReview(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
+    return prisma.$transaction(async (tx) => {
+      const review = await tx.performanceReview.update({
+        where: { id },
+        data: {
+          reviewPeriod: data.reviewPeriod,
+          kraDescription: data.kraDescription,
+          kpiWeightage: data.kpiWeightage,
+          goalDescription: data.goalDescription,
+          targetValue: data.targetValue
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'UPDATE_PERFORMANCE_REVIEW',
+          moduleAffected: 'performance',
+          recordIdAffected: review.id,
+          userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      return review;
+    });
+  }
+
   async submitSelfAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (!currentUser.employeeId) throw new Error('Only employees can submit a self appraisal');
+    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
     
     const review = await prisma.performanceReview.findUnique({ where: { id } });
     if (!review) throw new Error('Review not found');
-    if (review.employeeId !== currentUser.employeeId) {
-      throw new Error('You can only submit self appraisal for your own review');
+    
+    if (!isOverride) {
+      if (!currentUser.employeeId || review.employeeId !== currentUser.employeeId) {
+        throw new Error('You can only submit self appraisal for your own review');
+      }
     }
 
     return prisma.$transaction(async (tx) => {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
+          status: 'MANAGER_REVIEW',
           achievedValue: data.achievedValue,
           selfRating: data.selfRating,
           employeeComments: data.employeeComments,
@@ -90,7 +119,7 @@ export class PerformanceService {
   }
 
   async submitManagerAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (!currentUser.employeeId) throw new Error('Only managers can submit a manager appraisal');
+    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
     
     const review = await prisma.performanceReview.findUnique({ 
       where: { id },
@@ -98,14 +127,17 @@ export class PerformanceService {
     });
     if (!review) throw new Error('Review not found');
     
-    if (review.employee.managerId !== currentUser.employeeId) {
-      throw new Error('Only the direct manager can submit manager appraisal');
+    if (!isOverride) {
+      if (!currentUser.employeeId || review.employee.managerId !== currentUser.employeeId) {
+        throw new Error('Only the direct manager can submit manager appraisal');
+      }
     }
 
     return prisma.$transaction(async (tx) => {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
+          status: 'HR_REVIEW',
           managerRating: data.managerRating,
           managerComments: data.managerComments,
           promotionRecommendation: data.promotionRecommendation,
@@ -137,15 +169,46 @@ export class PerformanceService {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
+          status: 'FINAL_APPROVAL',
           hrRating: data.hrRating,
-          hrComments: data.hrComments,
-          finalRating: data.finalRating,
-          finalApprovalStatus: data.finalApprovalStatus
+          hrComments: data.hrComments
         }
       });
       await tx.auditLog.create({
         data: {
           actionPerformed: 'SUBMIT_HR_APPRAISAL',
+          moduleAffected: 'performance',
+          recordIdAffected: id,
+          userId: currentUser.userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      return updated;
+    });
+  }
+
+  async submitFinalApproval(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
+    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'HR') {
+      throw new Error('Only Admin or HR can perform final approval');
+    }
+
+    const review = await prisma.performanceReview.findUnique({ where: { id } });
+    if (!review) throw new Error('Review not found');
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.performanceReview.update({
+        where: { id },
+        data: {
+          status: 'COMPLETED',
+          finalRating: data.finalRating,
+          finalApprovalStatus: data.finalApprovalStatus,
+          finalApprovalDate: new Date(),
+          finalApprovedById: currentUser.employeeId || undefined
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'SUBMIT_FINAL_APPROVAL',
           moduleAffected: 'performance',
           recordIdAffected: id,
           userId: currentUser.userId,

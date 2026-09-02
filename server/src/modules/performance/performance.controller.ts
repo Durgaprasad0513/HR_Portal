@@ -22,6 +22,15 @@ export class PerformanceController {
     }
   };
 
+  updateReview = async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await performanceService.updateReview(req.params.id as string, req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Performance review updated');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
+    }
+  };
+
   getReviews = async (req: AuthRequest, res: Response) => {
     try {
       const result = await performanceService.getReviews(req.user!, req.query);
@@ -53,6 +62,15 @@ export class PerformanceController {
     try {
       const result = await performanceService.submitHRAppraisal(req.params.id as string, req.body, req.user!, { ipAddress: req.ip });
       return sendSuccess(res, result, 'HR appraisal submitted');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
+    }
+  };
+
+  submitFinalApproval = async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await performanceService.submitFinalApproval(req.params.id as string, req.body, req.user!, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Final approval submitted');
     } catch (error: any) {
       return sendError(res, error.message, 400);
     }
