@@ -47,7 +47,7 @@ export function Sidebar() {
 
   const expensesNav = [
     { name: 'Travel', path: '/travel', icon: Plane },
-    { name: 'Office', path: '#', icon: Building2 },
+    { name: 'Office', path: '/office-expenses', icon: Building2 },
   ];
 
   const authNav = isAdminOrHR ? [
@@ -78,7 +78,7 @@ export function Sidebar() {
           <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shrink-0">
             <ClipboardCheck className="h-6 w-6 text-[#3b3f5c]" />
           </div>
-          <span className="text-xl font-bold tracking-wide">My-Task</span>
+          <span className="text-xl font-bold tracking-wide">HR Management</span>
         </NavLink>
       </div>
 
@@ -127,7 +127,7 @@ export function Sidebar() {
                         )}
                       >
                         <item.icon className="h-4 w-4" />
-                        {item.name}
+                        <span>{item.name}</span>
                       </NavLink>
                     );
                   })}

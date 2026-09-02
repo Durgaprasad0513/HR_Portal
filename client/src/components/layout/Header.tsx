@@ -9,7 +9,7 @@ import { useTheme } from 'next-themes';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi } from '@/api/notifications';
 
-export function Header() {
+export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -46,9 +46,9 @@ export function Header() {
 
   return (
     <>
-      <header className="flex h-16 items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 transition-colors">
+      <header className="flex h-20 items-center justify-between bg-transparent px-6 transition-colors">
         <div className="flex items-center flex-1">
-          <Button variant="ghost" size="sm" className="md:hidden mr-2">
+          <Button variant="ghost" size="sm" className="mr-2 text-gray-500 hover:text-navy-900 dark:text-gray-400 dark:hover:text-white" onClick={onMenuClick}>
             <Menu className="h-5 w-5" />
           </Button>
           

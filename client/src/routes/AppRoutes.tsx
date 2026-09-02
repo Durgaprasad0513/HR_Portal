@@ -24,6 +24,7 @@ import RequestListPage from '@/pages/requests/RequestListPage';
 import PolicyListPage from '@/pages/policies/PolicyListPage';
 import AssetListPage from '@/pages/assets/AssetListPage';
 import TravelListPage from '@/pages/travel/TravelListPage';
+import OfficeExpensesPage from '@/pages/expenses/OfficeExpensesPage';
 import RecruitmentPage from '@/pages/recruitment/RecruitmentPage';
 import NotificationListPage from '@/pages/notifications/NotificationListPage';
 import AttritionDashboardPage from '@/pages/attrition/AttritionDashboardPage';
@@ -52,6 +53,7 @@ const AppRoutes = () => {
           <Route path="/documents" element={<PolicyListPage />} />
           <Route path="/assets" element={<AssetListPage />} />
           <Route path="/travel" element={<TravelListPage />} />
+          <Route path="/office-expenses" element={<OfficeExpensesPage />} />
           <Route path="/recruitment" element={<RecruitmentPage />} />
           
           <Route path="/departments" element={<DepartmentListPage />} />

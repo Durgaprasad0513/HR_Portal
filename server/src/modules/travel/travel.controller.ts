@@ -33,16 +33,26 @@ export class TravelController {
 
   async updateApprovalStatus(req: AuthRequest, res: Response) {
     try {
-      const result = await travelService.updateApprovalStatus(req.params.id as string, req.body, req.user!.employeeId!, req.user!.userId, { ipAddress: req.ip });
+      const result = await travelService.updateApprovalStatus(req.user!, req.params.id as string, req.body, { ipAddress: req.ip });
       return sendSuccess(res, result, 'Approval status updated');
     } catch (error: any) {
       return sendError(res, error.message, 400);
     }
   }
 
+  
+  async submitExpenses(req: Request, res: Response) {
+    try {
+      const data = await travelService.submitExpenses(req.user!, req.params.id, req.body, { ipAddress: req.ip });
+      res.json({ success: true, data, message: 'Expenses submitted successfully' });
+    } catch (error: any) {
+      res.status(403).json({ success: false, message: error.message });
+    }
+  }
+
   async updateSettlement(req: AuthRequest, res: Response) {
     try {
-      const result = await travelService.updateSettlement(req.params.id as string, req.body, req.user!.userId, { ipAddress: req.ip });
+      const result = await travelService.updateSettlement(req.user!, req.params.id as string, req.body, { ipAddress: req.ip });
       return sendSuccess(res, result, 'Settlement recorded');
     } catch (error: any) {
       return sendError(res, error.message, 400);

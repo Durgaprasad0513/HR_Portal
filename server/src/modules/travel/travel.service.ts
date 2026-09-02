@@ -101,94 +101,82 @@ export class TravelService {
     return req;
   }
 
-  async updateApprovalStatus(id: string, data: any, approverEmployeeId: string, approverUserId: string, reqContext: { ipAddress?: string } = {}) {
-    const existing = await prisma.travelRequest.findUnique({ where: { id } });
-    if (!existing) throw new Error('Travel request not found.');
+  
+  async updateApprovalStatus(currentUser: CurrentUser, id: string, data: any, reqContext: { ipAddress?: string } = {}) {
+    const scope = getModuleScope(currentUser.role, 'travel');
+    if (scope !== 'ORG') throw new Error('Not authorized');
 
-    const allowed = VALID_TRANSITIONS[existing.approvalStatus] || [];
-    if (!allowed.includes(data.approvalStatus)) {
-      throw new Error(`Invalid transition from ${existing.approvalStatus} to ${data.approvalStatus}.`);
-    }
-
-    // Use transaction to atomically update status and advance amount
-    const req = await prisma.$transaction(async (tx) => {
+    const mappedStatus = data.approvalStatus === 'APPROVED' ? 'APPROVAL_APPROVED' : 'APPROVAL_REJECTED';
+    
+    const request = await prisma.$transaction(async (tx) => {
       return tx.travelRequest.update({
         where: { id },
         data: {
-          approvalStatus: data.approvalStatus,
+          approvalStatus: mappedStatus,
           approvalDate: new Date(),
-          approverId: approverEmployeeId,
-          advanceApproved: data.advanceApproved ?? existing.advanceApproved,
-          
+          advanceApproved: data.advanceApproved
         }
       });
     });
-
-    await prisma.auditLog.create({
-      data: {
-        actionPerformed: data.approvalStatus === 'APPROVAL_APPROVED' ? 'APPROVE_TRAVEL_REQUEST' : 'REJECT_TRAVEL_REQUEST',
-        moduleAffected: 'travel',
-        recordIdAffected: req.id,
-        userId: approverUserId,
-        ipAddress: reqContext.ipAddress,
-      }
-    });
-
-    // Notify the requesting employee
-    const verb = data.approvalStatus === 'APPROVAL_APPROVED' ? 'approved' : 'rejected';
-    notificationDispatcher.dispatch({
-      employeeId: existing.employeeId,
-      notificationType: 'TRAVEL_NOTIF',
-      message: `Your travel request to ${existing.destination} has been ${verb}.`,
-      triggerEvent: data.approvalStatus,
-      channels: ['IN_APP', 'EMAIL']
-    }).catch(() => {});
-
-    return req;
+    return request;
   }
 
-  async updateSettlement(id: string, data: any, verifiedById: string, reqContext: { ipAddress?: string } = {}) {
+  async submitExpenses(currentUser: CurrentUser, id: string, data: any, reqContext: { ipAddress?: string } = {}) {
     const existing = await prisma.travelRequest.findUnique({ where: { id } });
-    if (!existing) throw new Error('Travel request not found.');
-    if (existing.approvalStatus !== ApprovalStatus.APPROVAL_APPROVED) {
-      throw new Error('Only approved travel requests can be settled.');
+    if (!existing) throw new Error('Request not found');
+    
+    // Employee self-service
+    if (existing.employeeId !== currentUser.employeeId) {
+      throw new Error('Not authorized to submit expenses for this request');
     }
 
-    // Auto-compute financial total
-    const hotel = Number(data.hotelExpense ?? existing.hotelExpense ?? 0);
-    const food = Number(data.foodAllowance ?? existing.foodAllowance ?? 0);
-    const conveyance = Number(data.localConveyance ?? existing.localConveyance ?? 0);
-    const other = Number(data.otherExpenses ?? existing.otherExpenses ?? 0);
-    const totalExpenseClaimed = hotel + food + conveyance + other;
+    if (existing.approvalStatus !== 'APPROVAL_APPROVED') {
+      throw new Error('Cannot submit expenses for an unapproved request');
+    }
 
-    const req = await prisma.$transaction(async (tx) => {
+    const totalClaimed = (data.hotelExpense || 0) + (data.foodAllowance || 0) + (data.localConveyance || 0) + (data.otherExpenses || 0);
+
+    const request = await prisma.$transaction(async (tx) => {
       return tx.travelRequest.update({
         where: { id },
         data: {
-          hotelExpense: hotel,
-          foodAllowance: food,
-          localConveyance: conveyance,
-          otherExpenses: other,
-          totalExpenseClaimed,
-          settlementStatus: SettlementStatus.SETTLED,
-          settlementDate: new Date(),
-          verifiedById,
+          hotelExpense: data.hotelExpense,
+          foodAllowance: data.foodAllowance,
+          localConveyance: data.localConveyance,
+          otherExpenses: data.otherExpenses,
+          totalExpenseClaimed: totalClaimed,
+          billUpload: data.billUpload,
+          settlementStatus: 'SUBMITTED'
         }
       });
     });
-
-    await prisma.auditLog.create({
-      data: {
-        actionPerformed: 'SETTLE_TRAVEL_REQUEST',
-        moduleAffected: 'travel',
-        recordIdAffected: req.id,
-        userId: verifiedById,
-        ipAddress: reqContext.ipAddress,
-      }
-    });
-
-    return req;
+    return request;
   }
+
+  async updateSettlement(currentUser: CurrentUser, id: string, data: any, reqContext: { ipAddress?: string } = {}) {
+    const scope = getModuleScope(currentUser.role, 'travel');
+    if (scope !== 'ORG') throw new Error('Not authorized');
+
+    const existing = await prisma.travelRequest.findUnique({ where: { id } });
+    if (!existing) throw new Error('Request not found');
+
+    const totalClaimed = Number(existing.totalExpenseClaimed || 0);
+    const advanceApproved = Number(existing.advanceApproved || 0);
+    const amountPayable = totalClaimed - advanceApproved;
+
+    const request = await prisma.$transaction(async (tx) => {
+      return tx.travelRequest.update({
+        where: { id },
+        data: {
+          settlementStatus: 'SETTLED',
+          amountPayable: amountPayable,
+          settlementDate: new Date()
+        }
+      });
+    });
+    return request;
+  }
+
 }
 
 export const travelService = new TravelService();

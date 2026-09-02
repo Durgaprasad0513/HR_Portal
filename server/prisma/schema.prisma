@@ -111,6 +111,7 @@ enum ApprovalStatus {
 
 enum SettlementStatus {
   UNSETTLED
+  SUBMITTED
   SETTLED
 }
 
@@ -371,6 +372,9 @@ model Employee {
   policyAcknowledgements PolicyAcknowledgement[]
   notifications          Notification[]
 
+  submittedOfficeExpenses OfficeExpense[] @relation("SubmittedOfficeExpenses")
+  approvedOfficeExpenses  OfficeExpense[] @relation("ApprovedOfficeExpenses")
+  
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -846,4 +850,39 @@ model SystemSettings {
   updatedAt           DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+enum ExpenseCategory {
+  STATIONERY
+  FOOD_SNACKS
+  MAINTENANCE
+  UTILITIES
+  IT_SOFTWARE
+  OTHER
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model OfficeExpense {
+  id              String          @id @default(cuid())
+  expenseDate     DateTime        @db.Date
+  category        ExpenseCategory
+  description     String
+  amount          Decimal
+  billUpload      String?
+  status          ExpenseStatus   @default(PENDING)
+  
+  submittedById   String
+  submittedBy     Employee        @relation("SubmittedOfficeExpenses", fields: [submittedById], references: [id])
+  
+  approvedById    String?
+  approvedBy      Employee?       @relation("ApprovedOfficeExpenses", fields: [approvedById], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }
