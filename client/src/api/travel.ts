@@ -15,11 +15,11 @@ export const travelApi = {
     return data;
   },
   updateApproval: async (id: string, payload: any) => {
-    const { data } = await apiClient.patch<ApiResponse<any>>(`/travel/${id}/approve`, payload);
+    const { data } = await apiClient.put<ApiResponse<any>>(`/travel/${id}/approve`, payload);
     return data;
   },
   updateSettlement: async (id: string, payload: any) => {
-    const { data } = await apiClient.patch<ApiResponse<any>>(`/travel/${id}/settle`, payload);
+    const { data } = await apiClient.put<ApiResponse<any>>(`/travel/${id}/settle`, payload);
     return data;
   }
 };

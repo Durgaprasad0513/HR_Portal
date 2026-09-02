@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Plus, Search, MoreHorizontal, UsersRound } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, UsersRound, Download } from 'lucide-react';
 import { Employee } from '@/types';
 
 export default function EmployeeListPage() {
@@ -67,11 +67,31 @@ export default function EmployeeListPage() {
     },
   ];
 
+
+  const handleExport = () => {
+    if (!empData?.data?.length) return;
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "Employee ID,First Name,Last Name,Email,Phone,Department,Job Title,Employment Type,Status\n"
+      + empData.data.map((e: any) => 
+          `${e.employeeCode},${e.firstName},${e.lastName},${e.email},${e.phone || ''},${e.department?.name || ''},${e.designation || ''},${e.employmentType || ''},${e.status}`
+        ).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "Employee_Register.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Employee Management</h1>
-      </div>
+      <div className="border-b border-gray-200 dark:border-gray-700 pb-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Employee Management</h1>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="w-4 h-4 mr-2" /> Export Register
+          </Button>
+        </div>
 
       {/* Station Cards */}
       {deptData?.data && deptData.data.length > 0 && (

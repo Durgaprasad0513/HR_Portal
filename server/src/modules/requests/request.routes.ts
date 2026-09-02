@@ -9,6 +9,7 @@ const router = Router();
 router.use(authenticate);
 
 router.post('/', requirePermission('requests', 'add'), validate(createRequestSchema), requestController.createRequest);
+router.get('/staff', requireStaffView('requests'), requestController.getStaffUsers);
 router.get('/my-requests', requirePermission('requests', 'view'), requestController.getMyRequests);
 router.get('/', requireStaffView('requests'), requestController.getAllRequests);
 router.put('/:id/assign', requirePermission('requests', 'edit'), validate(assignRequestSchema), requestController.assignRequest);

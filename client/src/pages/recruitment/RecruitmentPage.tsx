@@ -27,10 +27,12 @@ export default function RecruitmentPage() {
     queryFn: departmentsApi.getAll,
   });
 
-  const { data, isLoading } = useQuery({
+  const { data: reqResponse, isLoading } = useQuery({
     queryKey: ['requisitions'],
-    queryFn: () => recruitmentApi.getRequisitions().then(res => res.data),
+    queryFn: recruitmentApi.getRequisitions,
   });
+  
+  const data = reqResponse?.data || [];
 
   const { data: candidatesData, isLoading: isCandidatesLoading } = useQuery({
     queryKey: ['candidates', selectedReq?.id],

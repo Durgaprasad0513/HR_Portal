@@ -33,10 +33,10 @@ export class ErrorBoundary extends Component<Props, State> {
             <AlertOctagon className="w-8 h-8 text-red-600" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Something went wrong</h2>
-          <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 max-w-md mb-6">
-            We encountered an unexpected error while trying to display this content. 
-            Our team has been notified.
-          </p>
+          <div className="text-left bg-gray-100 dark:bg-gray-800 p-4 rounded w-full max-w-2xl overflow-auto mb-6 text-sm text-red-600 dark:text-red-400 font-mono">
+            <p><strong>Error:</strong> {this.state.error?.message}</p>
+            <p className="mt-2 text-gray-500 whitespace-pre-wrap">{this.state.error?.stack}</p>
+          </div>
           <div className="space-x-4">
              <Button variant="outline" onClick={() => window.location.reload()}>
                Refresh Page

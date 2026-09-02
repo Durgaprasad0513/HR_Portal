@@ -19,7 +19,11 @@ export const policiesApi = {
     return data;
   },
   acknowledge: async (id: string) => {
-    const { data } = await apiClient.post<ApiResponse<any>>(`/policies/${id}/acknowledge`);
+    const { data } = await apiClient.post<ApiResponse<any>>(`/policies/${id}/acknowledge`, { status: 'ACKNOWLEDGED' });
+    return data;
+  },
+  getAcknowledgements: async (id: string) => {
+    const { data } = await apiClient.get<ApiResponse<any[]>>(`/policies/${id}/acknowledgements`);
     return data;
   },
   getMyAcknowledgements: async () => {
