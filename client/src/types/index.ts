@@ -88,6 +88,7 @@ export interface Employee {
   subordinates?: { id: string; firstName: string; lastName: string; designation: string }[];
   user?: { id: string; email: string; role: Role };
   documents?: EmployeeDocument[];
+  assignedAssets?: Asset[];
   createdAt?: string;
   updatedAt?: string;
 }

@@ -75,6 +75,15 @@ export class TrainingController {
       return sendError(res, error.message, 400);
     }
   };
+
+  getDashboard = async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await trainingService.getTrainingDashboard(req.user!);
+      return sendSuccess(res, result, 'Dashboard metrics retrieved');
+    } catch (error: any) {
+      return sendError(res, error.message, 500);
+    }
+  };
 }
 
 export const trainingController = new TrainingController();

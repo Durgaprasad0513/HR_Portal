@@ -181,35 +181,65 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Attrition */}
-          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col">
-            <h3 className="font-bold text-text-heading mb-4 uppercase tracking-wider text-sm">ATTRITION</h3>
-            
-            <div className="flex-1 flex flex-col gap-4">
-              {/* Attrition Rate */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900/50 shadow-sm relative overflow-hidden flex-1">
-                <h4 className="font-semibold text-xs mb-3 uppercase tracking-wide text-gray-800 dark:text-gray-200">ATTRITION RATE</h4>
-                
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <p className="text-xs text-text-muted mb-0.5">Monthly Attrition Rate</p>
-                    <p className={`text-xl font-bold ${((attritionData?.attritionRate || 0) / 12) < 1.5 ? 'text-green-500' : 'text-orange-500'}`}>
-                      {((attritionData?.attritionRate || 0) / 12).toFixed(2)}%
-                    </p>
-                    <p className="text-[10px] text-text-muted mt-0.5">Target: Below 1.50%</p>
+          <div className="flex flex-col gap-6">
+            {/* Attrition */}
+            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col">
+              <h3 className="font-bold text-text-heading mb-4 uppercase tracking-wider text-sm">ATTRITION</h3>
+              
+              <div className="flex-1 flex flex-col gap-4">
+                {/* Attrition Rate */}
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900/50 shadow-sm relative overflow-hidden flex-1">
+                  <h4 className="font-semibold text-xs mb-3 uppercase tracking-wide text-gray-800 dark:text-gray-200">ATTRITION RATE</h4>
+                  
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="text-xs text-text-muted mb-0.5">Monthly Attrition Rate</p>
+                      <p className={`text-xl font-bold ${((attritionData?.attritionRate || 0) / 12) < 1.5 ? 'text-green-500' : 'text-orange-500'}`}>
+                        {((attritionData?.attritionRate || 0) / 12).toFixed(2)}%
+                      </p>
+                      <p className="text-[10px] text-text-muted mt-0.5">Target: Below 1.50%</p>
+                    </div>
+                    <div className="p-2 border-2 border-blue-600 rounded-lg text-blue-600 flex items-center justify-center">
+                      <UserMinus className="w-6 h-6" />
+                    </div>
                   </div>
-                  <div className="p-2 border-2 border-blue-600 rounded-lg text-blue-600 flex items-center justify-center">
-                    <UserMinus className="w-6 h-6" />
-                  </div>
-                </div>
 
-                <div className="mt-8">
-                  <p className="text-xs text-text-muted mb-0.5">Yearly Attrition Rate</p>
-                  <p className={`text-xl font-bold ${(attritionData?.attritionRate || 0) < 12 ? 'text-green-500' : 'text-red-500'}`}>
-                    {(attritionData?.attritionRate || 0).toFixed(2)}%
-                  </p>
-                  <p className="text-[10px] text-text-muted mt-0.5">Target: Below 12%</p>
+                  <div className="mt-8">
+                    <p className="text-xs text-text-muted mb-0.5">Yearly Attrition Rate</p>
+                    <p className={`text-xl font-bold ${(attritionData?.attritionRate || 0) < 12 ? 'text-green-500' : 'text-red-500'}`}>
+                      {(attritionData?.attritionRate || 0).toFixed(2)}%
+                    </p>
+                    <p className="text-[10px] text-text-muted mt-0.5">Target: Below 12%</p>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Upcoming Interviews */}
+            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              <h3 className="font-bold text-text-heading mb-4 text-lg">Upcoming Interviews</h3>
+              
+              <div className="space-y-4">
+                {stats.upcomingInterviews?.map((interview: any) => (
+                  <div key={interview.id} className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-accent-100 dark:bg-accent-900/50 flex items-center justify-center text-accent-700 font-bold uppercase overflow-hidden">
+                        {interview.candidateName.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-text-heading leading-tight">{interview.candidateName}</h4>
+                        <p className="text-xs text-text-muted mt-0.5">{interview.requisition?.positionTitle || 'Candidate'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-text-muted text-xs font-medium">
+                      <Clock className="w-3.5 h-3.5" />
+                      {new Date(interview.interviewDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                ))}
+                {!stats.upcomingInterviews?.length && (
+                  <div className="text-sm text-text-muted text-center py-4">No upcoming interviews</div>
+                )}
               </div>
             </div>
           </div>

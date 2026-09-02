@@ -248,7 +248,7 @@ export default function EmployeeFormPage() {
               <div className="flex flex-col space-y-1 w-full">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
                 <Select 
-                  name="departmentId" required 
+                  name="departmentId"
                   value={formData.departmentId} 
                   onChange={handleChange}
                   className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"

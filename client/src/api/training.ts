@@ -26,12 +26,16 @@ export const trainingApi = {
     const { data } = await apiClient.get<ApiResponse<any[]>>('/training/my-trainings');
     return data;
   },
-  submitFeedback: async (id: string, payload: any) => {
-    const { data } = await apiClient.post<ApiResponse<any>>(`/training/${id}/feedback`, payload);
+  getDashboardStats: async () => {
+    const { data } = await apiClient.get<ApiResponse<any>>('/training/dashboard');
     return data;
   },
-  recordAssessment: async (id: string, payload: any) => {
-    const { data } = await apiClient.post<ApiResponse<any>>(`/training/${id}/assessments`, payload);
+  submitFeedback: async (trainingId: string, employeeId: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/training/${trainingId}/participants/${employeeId}/feedback`, payload);
+    return data;
+  },
+  recordAssessment: async (trainingId: string, employeeId: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/training/${trainingId}/participants/${employeeId}/assessment`, payload);
     return data;
   }
 };
