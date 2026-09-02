@@ -16,6 +16,17 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<any>(review || {});
+  const [isEditingCore, setIsEditingCore] = useState(false);
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => performanceApi.update(review.id, data),
+    onSuccess: () => {
+      toast.success('Review details updated!');
+      queryClient.invalidateQueries({ queryKey: ['performance'] });
+      setIsEditingCore(false);
+    },
+    onError: (error: any) => toast.error(error.message || 'Failed to update')
+  });
 
   const selfAppraisalMutation = useMutation({
     mutationFn: (data: any) => performanceApi.submitSelfAppraisal(review.id, data),
@@ -69,10 +80,11 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
 
   const status = review.status;
   
-  const canSubmitSelf = status === 'EMPLOYEE_REVIEW' && user?.employeeId === review.employeeId;
+  const canSubmitSelf = status === 'EMPLOYEE_REVIEW' && (user?.employeeId === review.employeeId || user?.role === 'ADMIN' || user?.role === 'HR');
   const canSubmitManager = status === 'MANAGER_REVIEW' && (user?.role === 'MANAGER' || user?.role === 'ADMIN' || user?.role === 'HR'); 
   const canSubmitHR = status === 'HR_REVIEW' && (user?.role === 'HR' || user?.role === 'ADMIN');
   const canSubmitFinal = status === 'FINAL_APPROVAL' && (user?.role === 'HR' || user?.role === 'ADMIN');
+  const canEditCore = user?.role === 'ADMIN' || user?.role === 'HR';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -87,23 +99,67 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
         </div>
 
         <div className="p-6 space-y-6 flex-1">
-          <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-            <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold">Employee</p>
-              <p className="font-medium">{review.employee?.firstName} {review.employee?.lastName}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold">KRA Description</p>
-              <p className="font-medium">{review.kraDescription || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold">Goal Description</p>
-              <p className="font-medium">{review.goalDescription || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold">Target Value</p>
-              <p className="font-medium">{review.targetValue || 'N/A'}</p>
-            </div>
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg relative">
+            {canEditCore && !isEditingCore && (
+              <button 
+                onClick={() => setIsEditingCore(true)} 
+                className="absolute top-4 right-4 text-sm text-accent-600 hover:text-accent-700"
+              >
+                Edit Details
+              </button>
+            )}
+            
+            {isEditingCore ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Review Period</label>
+                    <select name="reviewPeriod" value={formData.reviewPeriod || 'QUARTERLY'} onChange={handleChange} className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 dark:bg-gray-900 text-sm">
+                      <option value="QUARTERLY">Quarterly</option>
+                      <option value="HALF_YEARLY">Half Yearly</option>
+                      <option value="ANNUAL">Annual</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Target Value</label>
+                    <input type="text" name="targetValue" value={formData.targetValue || ''} onChange={handleChange} className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 dark:bg-gray-900 text-sm" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">KRA Description</label>
+                    <textarea name="kraDescription" value={formData.kraDescription || ''} onChange={handleChange} className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 dark:bg-gray-900 text-sm" rows={2} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Goal Description</label>
+                    <textarea name="goalDescription" value={formData.goalDescription || ''} onChange={handleChange} className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 dark:bg-gray-900 text-sm" rows={2} />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button variant="outline" size="sm" onClick={() => setIsEditingCore(false)}>Cancel</Button>
+                  <Button size="sm" onClick={() => updateMutation.mutate(formData)} isLoading={updateMutation.isPending}>Save Changes</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Employee</p>
+                  <p className="font-medium">{review.employee?.firstName} {review.employee?.lastName}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">KRA Description</p>
+                  <p className="font-medium">{review.kraDescription || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Goal Description</p>
+                  <p className="font-medium">{review.goalDescription || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Target Value</p>
+                  <p className="font-medium">{review.targetValue || 'N/A'}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <form className="space-y-6">

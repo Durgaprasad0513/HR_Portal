@@ -14,6 +14,10 @@ export const performanceApi = {
     const { data } = await apiClient.post<ApiResponse<any>>('/performance', payload);
     return data;
   },
+  update: async (id: string, payload: any) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/performance/${id}`, payload);
+    return data;
+  },
   submitSelfAppraisal: async (id: string, payload: any) => {
     const { data } = await apiClient.put<ApiResponse<any>>(`/performance/${id}/self-appraisal`, payload);
     return data;

@@ -55,6 +55,31 @@ export class PerformanceService {
     });
   }
 
+  async updateReview(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
+    return prisma.$transaction(async (tx) => {
+      const review = await tx.performanceReview.update({
+        where: { id },
+        data: {
+          reviewPeriod: data.reviewPeriod,
+          kraDescription: data.kraDescription,
+          kpiWeightage: data.kpiWeightage,
+          goalDescription: data.goalDescription,
+          targetValue: data.targetValue
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'UPDATE_PERFORMANCE_REVIEW',
+          moduleAffected: 'performance',
+          recordIdAffected: review.id,
+          userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      return review;
+    });
+  }
+
   async submitSelfAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
     if (!currentUser.employeeId) throw new Error('Only employees can submit a self appraisal');
     
@@ -150,6 +175,9 @@ export class PerformanceService {
           moduleAffected: 'performance',
           recordIdAffected: id,
           userId: currentUser.userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
       return updated;
     });
   }
