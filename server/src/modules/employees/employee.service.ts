@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { notificationService } from '../notifications/notification.service';
 import { CreateEmployeeInput, UpdateEmployeeInput } from './employee.schema';
 import { Prisma, Role } from '@prisma/client';
 import { getModuleScope, getEmployeeScopeQuery } from '../../utils/authorization';
@@ -114,6 +115,13 @@ export class EmployeeService {
     if (!employee) {
       throw new Error('Employee not found or not accessible');
     }
+
+        // Notify HRs about new joining
+    await notificationService.notifyHRs({
+      notificationType: 'JOINING',
+      message: `New employee joined: ${employee.firstName} ${employee.lastName}`,
+      triggerEvent: employee.id
+    });
 
     return employee;
   }

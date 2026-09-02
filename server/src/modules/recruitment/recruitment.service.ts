@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { notificationService } from '../notifications/notification.service';
 import { Role, Prisma } from '@prisma/client';
 import { getModuleScope } from '../../utils/authorization';
 

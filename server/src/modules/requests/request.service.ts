@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { notificationService } from '../notifications/notification.service';
 
 export class RequestService {
   async createRequest(employeeId: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
@@ -39,6 +40,12 @@ export class RequestService {
         userId: userId,
         ipAddress: reqContext.ipAddress,
       }
+    });
+
+    await notificationService.notifyHRs({
+      notificationType: 'QUERY_NOTIF',
+      message: `New HR Helpdesk query submitted: ${req.id}`,
+      triggerEvent: req.id
     });
 
     return req;
@@ -105,6 +112,15 @@ export class RequestService {
         ipAddress: reqContext.ipAddress,
       }
     });
+
+    if (data.status === 'RESOLVED' || data.status === 'TICKET_CLOSED') {
+      await notificationService.createNotification({
+        notificationType: 'QUERY_NOTIF',
+        message: `Your HR Helpdesk query (${req.id}) has been ${data.status === 'RESOLVED' ? 'resolved' : 'closed'}.`,
+        recipientId: req.employeeId,
+        triggerEvent: req.id
+      });
+    }
 
     return req;
   }
