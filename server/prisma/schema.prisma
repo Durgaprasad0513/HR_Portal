@@ -624,9 +624,18 @@ model Candidate {
 
 // --- Performance Review ---
 
+enum ReviewStatus {
+  EMPLOYEE_REVIEW
+  MANAGER_REVIEW
+  HR_REVIEW
+  FINAL_APPROVAL
+  COMPLETED
+}
+
 model PerformanceReview {
   id                           String         @id @default(cuid())
   reviewPeriod                 ReviewPeriod
+  status                       ReviewStatus   @default(EMPLOYEE_REVIEW)
   kraDescription               String?
   kpiWeightage                 Decimal?
   goalDescription              String?
