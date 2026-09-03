@@ -17,7 +17,6 @@ export const MODULES = [
   { key: 'roles', label: 'Role & Access Control' },
   { key: 'settings', label: 'System Settings' },
   { key: 'loginHistory', label: 'Login History' },
-  { key: 'reports', label: 'Reports' },
 ] as const;
 
 export type ModuleKey = (typeof MODULES)[number]['key'];
@@ -157,7 +156,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
     roles: none,
     settings: none,
     loginHistory: none,
-    reports: view(),
   },
   MANAGER: {
     dashboard: view(),
@@ -176,7 +174,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
     roles: none,
     settings: none,
     loginHistory: none,
-    reports: view(),
   },
   EMPLOYEE: {
     dashboard: view(),
@@ -195,7 +192,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
     roles: none,
     settings: none,
     loginHistory: none,
-    reports: none,
   },
 };
 

@@ -3,17 +3,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '@/api/recruitment';
 import { departmentsApi } from '@/api/departments';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
+import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Plus } from 'lucide-react';
+import { UserSearch, Plus, Briefcase, Users, ChevronLeft, Download } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 
 export default function RecruitmentPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { canExport } = usePermissions();
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
   
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
@@ -52,6 +56,66 @@ export default function RecruitmentPage() {
     updateReqStatusMutation.mutate({ id, col: newStatus });
   };
 
+  const handleExportCandidates = () => {
+    if (!candidatesData?.length) return;
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "Name,Email,Mobile,Qualification,Total Exp (Yrs),Current Co.,Current Salary,Expected Salary,Notice Period (Days),Screening Status,Interview Status,Offer Status\n"
+      + candidatesData.map((c: any) => 
+          `"${c.candidateName}","${c.email}","${c.mobile}","${c.qualification || ''}",${c.totalExperience || 0},"${c.currentCompany || ''}",${c.currentSalary || 0},${c.expectedSalary || 0},${c.noticePeriod || 0},"${c.screeningStatus}","${c.selectionStatus}","${c.offerStatus}"`
+        ).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Candidates_${selectedReq?.positionTitle?.replace(/\s+/g, '_') || 'Pipeline'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const columns = [
+    { 
+      header: 'Position', 
+      accessor: (row: any) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center">
+             <Briefcase className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div>
+            <div className="font-semibold text-navy-900 dark:text-white">{row.positionTitle}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{row.location}</div>
+          </div>
+        </div>
+      )
+    },
+    { 
+      header: 'Department', 
+      accessor: (row: any) => row.department?.name,
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500'
+    },
+    { 
+      header: 'Vacancies', 
+      accessor: 'numberOfVacancies',
+      className: 'text-gray-600 dark:text-gray-400 dark:text-gray-500'
+    },
+    { 
+      header: 'Candidates', 
+      accessor: (row: any) => (
+        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 dark:text-gray-500">
+           <Users className="w-4 h-4" /> {row._count?.candidates || 0}
+        </div>
+      )
+    },
+    { 
+      header: 'Status', 
+      accessor: (row: any) => {
+        if (row.status === 'OPEN') return <Badge variant="success">Open</Badge>;
+        if (row.status === 'CLOSED') return <Badge variant="default">Closed</Badge>;
+        if (row.status === 'ON_HOLD') return <Badge variant="warning">On Hold</Badge>;
+        return <Badge variant="default">{row.status}</Badge>;
+      }
+    },
+  ];
+
   const handleSubmitReq = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -86,6 +150,41 @@ export default function RecruitmentPage() {
 
       <div className="animate-in fade-in flex-1 min-h-0">
         {isLoading ? (
+      <div className="animate-in fade-in">
+        {selectedReq ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={() => setSelectedReq(null)} className="px-2">
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
+                <div>
+                  <h2 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq.positionTitle}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">HR Funnel Layout Structure</p>
+                </div>
+              </div>
+              {canExport('recruitment') && (
+                <Button variant="outline" onClick={handleExportCandidates}>
+                  <Download className="w-4 h-4 mr-2" /> Export Register
+                </Button>
+              )}
+            </div>
+            {isCandidatesLoading ? (
+              <div className="py-12"><LoadingSpinner /></div>
+            ) : (
+              <KanbanBoard 
+                candidates={candidatesData?.map((c: any) => ({
+                  id: c.id,
+                  name: c.candidateName,
+                  email: c.email,
+                  status: 'APPLIED', // Fallback, KanbanBoard logic parses originalData now
+                  originalData: c
+                })) || []} 
+                onStatusChange={handleStatusChange} 
+              />
+            )}
+          </div>
+        ) : isLoading ? (
           <div className="py-12"><LoadingSpinner /></div>
         ) : viewMode === 'list' ? (
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">

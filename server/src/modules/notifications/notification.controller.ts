@@ -51,6 +51,17 @@ export class NotificationController {
     }
   }
 
+  async clearReadNotifications(req: AuthRequest, res: Response) {
+    try {
+      const employeeId = req.user?.employeeId;
+      if (!employeeId) return sendError(res, 'Employee not found', 404);
+      const count = await notificationService.clearReadNotifications(employeeId);
+      return sendSuccess(res, { count }, 'Read notifications cleared successfully');
+    } catch (error: any) {
+      return sendError(res, error.message, 500);
+    }
+  }
+
   async deleteNotification(req: AuthRequest, res: Response) {
     try {
       const employeeId = req.user?.employeeId;
