@@ -35,7 +35,7 @@ export class DashboardService {
 
     // Open Requisitions (HR/Admin only)
     const openRequisitions = isAdmin
-      ? await prisma.requisition.count({ where: { status: 'OPEN' } })
+      ? await prisma.requisition.count({ where: { status: { not: 'JOINED_REJECTED' } } })
       : 0;
 
     // Open Leave requests

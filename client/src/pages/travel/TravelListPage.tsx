@@ -38,6 +38,9 @@ export default function TravelListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['travel'] });
       setIsModalOpen(false);
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Failed to submit travel request');
       toast.success('Travel request submitted');
     },
     onError: (error: any) => {
@@ -192,29 +195,38 @@ export default function TravelListPage() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    createMutation.mutate({
+    const file = formData.get('billUpload') as File;
+    const payload: any = {
       travelPurpose: formData.get('travelPurpose'),
       destination: formData.get('destination'),
       startDate: new Date(formData.get('startDate') as string).toISOString(),
       endDate: new Date(formData.get('endDate') as string).toISOString(),
       travelMode: formData.get('travelMode'),
       advanceRequested: Number(formData.get('advanceRequested')) || 0,
-      billUpload: formData.get('billUpload')
-    });
+    };
+    // Send file name as string for now if present, real implementation would upload to S3
+    if (file && file.size > 0) {
+      payload.billUpload = file.name;
+    }
+    createMutation.mutate(payload);
   };
 
   const handleExpenseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const file = formData.get('billUpload') as File;
+    const payload: any = {
+      hotelExpense: Number(formData.get('hotelExpense')) || 0,
+      foodAllowance: Number(formData.get('foodAllowance')) || 0,
+      localConveyance: Number(formData.get('localConveyance')) || 0,
+      otherExpenses: Number(formData.get('otherExpenses')) || 0,
+    };
+    if (file && file.size > 0) {
+      payload.billUpload = file.name;
+    }
     expenseMutation.mutate({
       id: selectedRequest.id,
-      payload: {
-        hotelExpense: Number(formData.get('hotelExpense')) || 0,
-        foodAllowance: Number(formData.get('foodAllowance')) || 0,
-        localConveyance: Number(formData.get('localConveyance')) || 0,
-        otherExpenses: Number(formData.get('otherExpenses')) || 0,
-        billUpload: formData.get('billUpload')
-      }
+      payload
     });
   };
 
