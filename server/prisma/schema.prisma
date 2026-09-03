@@ -156,10 +156,16 @@ enum AssetStatus {
 }
 
 enum RequisitionStatus {
-  OPEN
-  IN_PROGRESS
-  CLOSED
-  ON_HOLD
+  REQUIREMENT
+  SOURCING
+  SCREENING
+  TELEPHONIC
+  HR_INTERVIEW
+  TECHNICAL
+  MANAGEMENT
+  SELECTED
+  OFFER
+  JOINED_REJECTED
 }
 
 enum ScreeningStatus {
@@ -566,7 +572,7 @@ model Requisition {
   location          String?
   numberOfVacancies Int               @default(1)
   requisitionDate   DateTime          @default(now())
-  status            RequisitionStatus @default(OPEN)
+  status            RequisitionStatus @default(REQUIREMENT)
 
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])

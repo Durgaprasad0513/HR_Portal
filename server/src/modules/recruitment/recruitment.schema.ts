@@ -9,13 +9,13 @@ export const createRequisitionSchema = z.object({
 });
 
 export const updateRequisitionStatusSchema = z.object({
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'CLOSED', 'ON_HOLD'])
+  status: z.enum(['REQUIREMENT', 'SOURCING', 'SCREENING', 'TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT', 'SELECTED', 'OFFER', 'JOINED_REJECTED'])
 });
 
 export const createCandidateSchema = z.object({
   candidateName: z.string().min(1),
-  mobile: z.string().min(1),
-  email: z.string().email(),
+  mobile: z.string().optional(),
+  email: z.string().email().optional(),
   qualification: z.string().optional(),
   totalExperience: z.number().optional(),
   currentCompany: z.string().optional(),
@@ -23,7 +23,9 @@ export const createCandidateSchema = z.object({
   expectedSalary: z.number().optional(),
   noticePeriod: z.number().optional(),
   source: z.string().optional(),
-  requisitionId: z.string()
+  requisitionId: z.string(),
+  interviewDate: z.string().optional(),
+  screeningStatus: z.string().optional(),
 });
 
 export const screenCandidateSchema = z.object({

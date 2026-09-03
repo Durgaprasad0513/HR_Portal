@@ -15,7 +15,7 @@ export class RecruitmentService {
   async createRequisition(data: any, raisedByEmployeeId: string, userId: string, reqContext: { ipAddress?: string } = {}) {
     return prisma.$transaction(async (tx) => {
       const req = await tx.requisition.create({
-        data: { ...data, raisedById: raisedByEmployeeId, status: 'OPEN' }
+        data: { ...data, raisedById: raisedByEmployeeId, status: 'REQUIREMENT' }
       });
       await tx.auditLog.create({
         data: {
@@ -39,7 +39,7 @@ export class RecruitmentService {
       scopeQuery = { 
         OR: [
           { raisedById: currentUser.employeeId! },
-          { status: 'OPEN' }
+          { status: { not: 'JOINED_REJECTED' } }
         ]
       };
     } else if (scope === 'TEAM') {
@@ -47,7 +47,7 @@ export class RecruitmentService {
       scopeQuery = { 
         OR: [
           { departmentId: emp?.departmentId || undefined },
-          { status: 'OPEN' }
+          { status: { not: 'JOINED_REJECTED' } }
         ]
       };
     }
