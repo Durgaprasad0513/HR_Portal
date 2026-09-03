@@ -18,6 +18,10 @@ export const notificationsApi = {
     const { data } = await apiClient.patch<ApiResponse<any>>('/notifications/mark-all-read');
     return data;
   },
+  clearRead: async () => {
+    const { data } = await apiClient.delete<ApiResponse<any>>('/notifications/read/clear');
+    return data;
+  },
   delete: async (id: string) => {
     const { data } = await apiClient.delete<ApiResponse<any>>(`/notifications/${id}`);
     return data;

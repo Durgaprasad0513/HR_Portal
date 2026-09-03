@@ -26,6 +26,11 @@ export default function NotificationListPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
   });
 
+  const clearReadMutation = useMutation({
+    mutationFn: notificationsApi.clearRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  });
+
   const deleteMutation = useMutation({
     mutationFn: notificationsApi.delete,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
@@ -37,9 +42,14 @@ export default function NotificationListPage() {
         <h1 className="text-2xl font-semibold flex items-center">
           Notifications
         </h1>
-        <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending}>
-          <CheckCheck className="w-4 h-4 mr-2" /> Mark All as Read
-        </Button>
+                <div className="flex gap-2">
+          <Button variant="outline" onClick={() => clearReadMutation.mutate()} disabled={clearReadMutation.isPending || !notificationsData?.data?.some((n: any) => n.isRead)}>
+            <Trash2 className="w-4 h-4 mr-2" /> Clear Read
+          </Button>
+          <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending || !notificationsData?.data?.some((n: any) => !n.isRead)}>
+            <CheckCheck className="w-4 h-4 mr-2" /> Mark All as Read
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

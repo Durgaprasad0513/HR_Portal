@@ -92,6 +92,13 @@ export class NotificationService {
     });
   }
 
+  async clearReadNotifications(recipientId: string) {
+    const result = await prisma.notification.deleteMany({
+      where: { recipientId, isRead: true }
+    });
+    return result.count;
+  }
+
   async deleteNotification(id: string, recipientId: string) {
     return prisma.notification.delete({
       where: { id }
