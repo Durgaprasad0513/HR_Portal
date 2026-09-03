@@ -10,7 +10,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Plus } from 'lucide-react';
 import { UserSearch, Plus, Briefcase, Users, ChevronLeft, Download } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 
