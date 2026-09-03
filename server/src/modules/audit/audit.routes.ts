@@ -7,6 +7,7 @@ const router = Router();
 router.use(authenticate);
 router.use(requirePermission('audit', 'view'));
 
+router.get('/stats', auditController.getSummaryStats);
 router.get('/', auditController.getAllLogs);
 router.get('/:module', auditController.getModuleLogs);
 

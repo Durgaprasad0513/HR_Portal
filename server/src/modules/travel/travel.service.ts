@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { notificationService } from '../notifications/notification.service';
 import { ApprovalStatus, SettlementStatus, Role, Prisma } from '@prisma/client';
 import { getModuleScope } from '../../utils/authorization';
 import { notificationDispatcher } from '../../utils/notification.dispatcher';
@@ -50,6 +51,21 @@ export class TravelService {
         ipAddress: reqContext.ipAddress,
       }
     });
+
+    if (req.approverId) {
+      await notificationService.createNotification({
+        notificationType: 'TRAVEL_NOTIF',
+        message: `New travel request pending approval from ${req.employeeId}.`,
+        recipientId: req.approverId,
+        triggerEvent: req.id
+      });
+    } else {
+      await notificationService.notifyHRs({
+        notificationType: 'TRAVEL_NOTIF',
+        message: `New travel request created (ID: ${req.id}).`,
+        triggerEvent: req.id
+      });
+    }
 
     return req;
   }

@@ -844,6 +844,7 @@ model ModulePermission {
   canDelete         Boolean @default(false)
   canApprove        Boolean @default(false)
   canViewRestricted Boolean @default(false)
+  canExport         Boolean @default(false)
 
   createdById String?
   createdBy   User?   @relation("PermissionCreator", fields: [createdById], references: [id])

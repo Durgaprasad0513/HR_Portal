@@ -28,19 +28,16 @@ export function Sidebar() {
   };
 
   const workspaceNav = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Assets', path: '/assets', icon: Laptop },
     { name: 'Recruitment', path: '/recruitment', icon: Briefcase },
-    { name: 'HR Helpdesk', path: '/requests', icon: ClipboardList },
+    { name: 'Assets', path: '/assets', icon: Laptop },
+    ...(isAdminOrHR ? [{ name: 'Attrition', path: '/attrition', icon: UserMinus }] : []),
     { name: 'Documents', path: '/documents', icon: Files },
-    ...(isAdminOrHR ? [
-      { name: 'Reports', path: '/reports', icon: BarChart },
-      { name: 'Attrition', path: '/attrition', icon: UserMinus },
-    ] : [])
+    { name: 'Helpdesk', path: '/requests', icon: ClipboardList },
+    ...(isAdminOrHR ? [{ name: 'Reports', path: '/reports', icon: BarChart }] : [])
   ];
 
   const employeesNav = [
-    { name: 'Employee Mgt', path: '/employees', icon: Users },
+    { name: 'Employee', path: '/employees', icon: Users },
     { name: 'Training', path: '/training', icon: GraduationCap },
     { name: 'Performance', path: '/performance', icon: Target },
   ];
@@ -51,13 +48,13 @@ export function Sidebar() {
   ];
 
   const authNav = isAdminOrHR ? [
-    { name: 'Role Mgt', path: '/roles', icon: Shield },
+    { name: 'Role Management', path: '/roles', icon: Shield },
     { name: 'Audit Log', path: '/audit', icon: History }
   ] : [];
 
   const sections = [
-    { id: 'workspace', title: 'Workspace', items: workspaceNav, icon: LayoutDashboard },
     { id: 'employees', title: 'Employees', items: employeesNav, icon: Users },
+    { id: 'workspace', title: 'Workspace', items: workspaceNav, icon: LayoutDashboard },
     { id: 'expenses', title: 'Expenses', items: expensesNav, icon: CreditCard },
     ...(authNav.length > 0 ? [{ id: 'auth', title: 'Authorization', items: authNav, icon: Shield }] : []),
   ];
@@ -84,6 +81,17 @@ export function Sidebar() {
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-2 px-3 flex flex-col gap-2 custom-scrollbar">
+        <NavLink
+          to="/dashboard"
+          className={cn(
+            "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
+            location.pathname === '/dashboard' ? "text-[#f39c12] bg-white/5" : "text-white/80 hover:text-[#f39c12]"
+          )}
+        >
+          <LayoutDashboard className="h-5 w-5" />
+          <span>Dashboard</span>
+        </NavLink>
+
         {sections.map((section) => {
           const isOpen = openSections[section.id];
           const hasActiveChild = isSectionActive(section.items);

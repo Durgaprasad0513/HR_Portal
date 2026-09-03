@@ -12,6 +12,7 @@ export const updatePermissionSchema = z.object({
   canDelete: z.boolean().optional(),
   canApprove: z.boolean().optional(),
   canViewRestricted: z.boolean().optional(),
+  canExport: z.boolean().optional(),
 });
 
 export type UpdatePermissionInput = z.infer<typeof updatePermissionSchema>;

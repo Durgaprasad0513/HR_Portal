@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { employeesApi } from '@/api/employees';
 import { departmentsApi } from '@/api/departments';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -15,6 +16,7 @@ import { Employee } from '@/types';
 export default function EmployeeListPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canExport } = usePermissions();
   const [search, setSearch] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [location, setLocation] = useState('');
@@ -88,9 +90,9 @@ export default function EmployeeListPage() {
     <div className="space-y-6">
       <div className="border-b border-gray-200 dark:border-gray-700 pb-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Employee Management</h1>
-          <Button variant="outline" onClick={handleExport}>
+          {canExport('employees') && <Button variant="outline" onClick={handleExport}>
             <Download className="w-4 h-4 mr-2" /> Export Register
-          </Button>
+          </Button>}
         </div>
 
       {/* Station Cards */}

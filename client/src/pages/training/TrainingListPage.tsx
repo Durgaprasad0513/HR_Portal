@@ -9,12 +9,14 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Plus, Download, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calendar, Users, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import apiClient from '@/api/client';
 
 export default function TrainingListPage() {
   const { user } = useAuth();
+  const { canExport } = usePermissions();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTraining, setSelectedTraining] = useState<any>(null);
@@ -232,9 +234,9 @@ export default function TrainingListPage() {
           </div>
                       {isAdminOrHR && (
               <>
-                <Button variant="outline" onClick={handleExport} className="gap-2">
+                {canExport('training') && <Button variant="outline" onClick={handleExport} className="gap-2">
                   <Download className="w-4 h-4" /> Export Register
-                </Button>
+                </Button>}
                 <Button onClick={() => {
                   setSelectedTrainingForEdit(null);
                   setIsModalOpen(true);

@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { notificationService } from '../notifications/notification.service';
 
 export class PolicyService {
   async getAllPolicies() {
@@ -25,6 +26,12 @@ export class PolicyService {
         userId: uploadedById,
         ipAddress: reqContext.ipAddress,
       }
+    });
+
+    await notificationService.notifyAllEmployees({
+      notificationType: 'POLICY_UPLOAD',
+      message: `New document published: ${policy.policyName} (${policy.versionNumber})`,
+      triggerEvent: policy.id
     });
 
     return policy;
