@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '@/api/recruitment';
 import { departmentsApi } from '@/api/departments';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -11,12 +12,13 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { UserSearch, Plus, Briefcase, Users, ChevronLeft } from 'lucide-react';
+import { UserSearch, Plus, Briefcase, Users, ChevronLeft, Download } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 
 export default function RecruitmentPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { canExport } = usePermissions();
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
   
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
@@ -69,6 +71,22 @@ export default function RecruitmentPage() {
 
   const handleStatusChange = (id: string, newStatus: string) => {
     updateCandidateMutation.mutate({ id, col: newStatus });
+  };
+
+  const handleExportCandidates = () => {
+    if (!candidatesData?.length) return;
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "Name,Email,Mobile,Qualification,Total Exp (Yrs),Current Co.,Current Salary,Expected Salary,Notice Period (Days),Screening Status,Interview Status,Offer Status\n"
+      + candidatesData.map((c: any) => 
+          `"${c.candidateName}","${c.email}","${c.mobile}","${c.qualification || ''}",${c.totalExperience || 0},"${c.currentCompany || ''}",${c.currentSalary || 0},${c.expectedSalary || 0},${c.noticePeriod || 0},"${c.screeningStatus}","${c.selectionStatus}","${c.offerStatus}"`
+        ).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Candidates_${selectedReq?.positionTitle?.replace(/\s+/g, '_') || 'Pipeline'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const columns = [
