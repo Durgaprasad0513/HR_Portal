@@ -163,14 +163,21 @@ export default function RecruitmentPage() {
       <div className="animate-in fade-in">
         {selectedReq ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => setSelectedReq(null)} className="px-2">
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h2 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq.positionTitle}</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">HR Funnel Layout Structure</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={() => setSelectedReq(null)} className="px-2">
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
+                <div>
+                  <h2 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq.positionTitle}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">HR Funnel Layout Structure</p>
+                </div>
               </div>
+              {canExport('recruitment') && (
+                <Button variant="outline" onClick={handleExportCandidates}>
+                  <Download className="w-4 h-4 mr-2" /> Export Register
+                </Button>
+              )}
             </div>
             {isCandidatesLoading ? (
               <div className="py-12"><LoadingSpinner /></div>
