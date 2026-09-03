@@ -146,12 +146,12 @@ export class RecruitmentService {
   async interviewCandidate(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
     const candidate = await prisma.candidate.findUnique({ where: { id } });
     if (!candidate) throw new Error('Candidate not found.');
-    if (candidate.screeningStatus !== 'SHORTLISTED') throw new Error('Candidate must be shortlisted before interviewing.');
 
     return prisma.$transaction(async (tx) => {
       const updated = await tx.candidate.update({
         where: { id },
         data: {
+          screeningStatus: 'SHORTLISTED', // Auto-shortlist if moving straight to interview
           interviewRound: data.interviewRound,
           interviewDate: data.interviewDate ? new Date(data.interviewDate) : candidate.interviewDate,
           interviewFeedback: data.interviewFeedback ?? candidate.interviewFeedback,
@@ -176,12 +176,13 @@ export class RecruitmentService {
   async offerCandidate(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
     const candidate = await prisma.candidate.findUnique({ where: { id } });
     if (!candidate) throw new Error('Candidate not found.');
-    if (candidate.selectionStatus !== 'SELECTED') throw new Error('Candidate must be selected before making an offer.');
 
     return prisma.$transaction(async (tx) => {
       const updated = await tx.candidate.update({
         where: { id },
         data: {
+          screeningStatus: 'SHORTLISTED',
+          selectionStatus: 'SELECTED', // Auto-select if moving straight to offer
           offerStatus: data.offerStatus,
           offerDate: data.offerDate ? new Date(data.offerDate) : candidate.offerDate,
           offeredSalary: data.offeredSalary ?? candidate.offeredSalary,

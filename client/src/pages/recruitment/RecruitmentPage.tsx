@@ -20,6 +20,7 @@ export default function RecruitmentPage() {
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
   
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
+  const [isAddCandidateModalOpen, setIsAddCandidateModalOpen] = useState(false);
   const [selectedReq, setSelectedReq] = useState<any>(null);
 
   const { data: deptData } = useQuery({
@@ -45,6 +46,14 @@ export default function RecruitmentPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       setIsReqModalOpen(false);
+    }
+  });
+
+  const createCandidateMutation = useMutation({
+    mutationFn: (payload: any) => recruitmentApi.createCandidate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['candidates', selectedReq?.id] });
+      setIsAddCandidateModalOpen(false);
     }
   });
 
@@ -127,6 +136,20 @@ export default function RecruitmentPage() {
     });
   };
 
+  const handleSubmitCandidate = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    createCandidateMutation.mutate({
+      candidateName: formData.get('candidateName'),
+      email: formData.get('email'),
+      mobile: formData.get('mobile'),
+      qualification: formData.get('qualification'),
+      totalExperience: Number(formData.get('totalExperience')),
+      currentCompany: formData.get('currentCompany'),
+      requisitionId: selectedReq?.id
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
@@ -145,14 +168,21 @@ export default function RecruitmentPage() {
       <div className="animate-in fade-in">
         {selectedReq ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => setSelectedReq(null)} className="px-2">
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h2 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq.positionTitle}</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">HR Funnel Layout Structure</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" onClick={() => setSelectedReq(null)} className="px-2">
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
+                <div>
+                  <h2 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq.positionTitle}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">HR Funnel Layout Structure</p>
+                </div>
               </div>
+              {isAdminOrHR && (
+                <Button onClick={() => setIsAddCandidateModalOpen(true)} className="gap-2">
+                  <Plus className="w-4 h-4" /> Add Candidate
+                </Button>
+              )}
             </div>
             {isCandidatesLoading ? (
               <div className="py-12"><LoadingSpinner /></div>
@@ -213,6 +243,28 @@ export default function RecruitmentPage() {
             <Button type="button" variant="outline" onClick={() => setIsReqModalOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={createReqMutation.isPending}>
               {createReqMutation.isPending ? 'Submitting...' : 'Create Requisition'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isAddCandidateModalOpen} onClose={() => setIsAddCandidateModalOpen(false)} title="Add Candidate">
+        <form onSubmit={handleSubmitCandidate} className="space-y-4">
+          <Input name="candidateName" label="Candidate Name" placeholder="e.g. Jane Doe" required />
+          <div className="grid grid-cols-2 gap-4">
+            <Input name="email" type="email" label="Email Address" placeholder="jane@example.com" required />
+            <Input name="mobile" label="Phone Number" placeholder="+1 555-0192" required />
+          </div>
+          <Input name="qualification" label="Qualification" placeholder="e.g. B.Tech Computer Science" />
+          <div className="grid grid-cols-2 gap-4">
+            <Input name="totalExperience" label="Experience (Years)" type="number" min="0" step="0.5" />
+            <Input name="currentCompany" label="Current Company" placeholder="e.g. TechCorp Inc." />
+          </div>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsAddCandidateModalOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={createCandidateMutation.isPending}>
+              {createCandidateMutation.isPending ? 'Submitting...' : 'Add Candidate'}
             </Button>
           </div>
         </form>
