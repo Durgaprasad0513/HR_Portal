@@ -5,7 +5,7 @@ import { useTheme } from 'next-themes';
 import { 
   LayoutDashboard, Users, Laptop, Plane, Briefcase, 
   Target, ClipboardList, GraduationCap, Files, UserMinus, 
-  BarChart, Shield, History, ChevronRight, ChevronDown, Building2, CreditCard,
+  Shield, History, ChevronRight, ChevronDown, Building2, CreditCard,
   ClipboardCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -33,7 +33,6 @@ export function Sidebar() {
     ...(isAdminOrHR ? [{ name: 'Attrition', path: '/attrition', icon: UserMinus }] : []),
     { name: 'Documents', path: '/documents', icon: Files },
     { name: 'Helpdesk', path: '/requests', icon: ClipboardList },
-    ...(isAdminOrHR ? [{ name: 'Reports', path: '/reports', icon: BarChart }] : [])
   ];
 
   const employeesNav = [
