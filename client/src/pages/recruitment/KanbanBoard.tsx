@@ -86,27 +86,27 @@ function KanbanColumn({ col, candidates }: { col: typeof COLUMNS[0]; candidates:
   const Icon = col.icon;
 
   return (
-    <div className="flex flex-col bg-white dark:bg-gray-900 rounded-3xl shadow-sm p-6 min-w-[280px] w-[300px] border border-gray-100 dark:border-gray-800 shrink-0 items-center">
+    <div className="flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 min-w-[240px] w-[260px] border border-gray-100 dark:border-gray-800 shrink-0 items-center">
       
-      {/* Icon Area */}
-      <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${col.colors.bg}`}>
-        <Icon className={`w-8 h-8 ${col.colors.text}`} />
+      {/* Header Row */}
+      <div className="flex flex-col items-center justify-center mb-3">
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${col.colors.bg}`}>
+          <Icon className={`w-6 h-6 ${col.colors.text}`} />
+        </div>
+        <h3 className="font-bold text-base text-navy-900 dark:text-white text-center">{col.title}</h3>
       </div>
       
-      {/* Title */}
-      <h3 className="font-bold text-xl text-navy-900 dark:text-white mb-4 text-center">{col.title}</h3>
-      
       {/* Divider */}
-      <div className="w-full h-px bg-gray-100 dark:bg-gray-800 mb-6" />
+      <div className="w-full h-px bg-gray-100 dark:bg-gray-800 mb-4" />
       
       {/* Candidates Area */}
-      <div ref={setNodeRef} className="flex-1 w-full min-h-[150px] flex flex-col items-center">
+      <div ref={setNodeRef} className="flex-1 w-full min-h-[100px] flex flex-col items-center">
         <SortableContext items={candidates.map(c => c.id)} strategy={verticalListSortingStrategy}>
           {candidates.map(c => (
             <SortableCandidateCard key={c.id} candidate={c} />
           ))}
           {candidates.length === 0 && (
-            <div className="text-gray-400 dark:text-gray-500 text-sm italic py-8 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl w-full text-center">
+            <div className="text-gray-400 dark:text-gray-500 text-xs italic py-6 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl w-full text-center">
               Drop candidates here
             </div>
           )}
@@ -114,13 +114,13 @@ function KanbanColumn({ col, candidates }: { col: typeof COLUMNS[0]; candidates:
       </div>
 
       {/* Footer Pill */}
-      <div className="w-full mt-6 flex items-center justify-between">
-         <div className={`px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 ${col.colors.bg} ${col.colors.text}`}>
-            <span className="w-2 h-2 rounded-full bg-current"></span>
+      <div className="w-full mt-4 flex items-center justify-between">
+         <div className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${col.colors.bg} ${col.colors.text}`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
             {col.statusText}
          </div>
-         <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 ${col.colors.border} ${col.colors.checkBg}`}>
-            <Check className="w-4 h-4 stroke-[3]" />
+         <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${col.colors.border} ${col.colors.checkBg}`}>
+            <Check className="w-3 h-3 stroke-[3]" />
          </div>
       </div>
     </div>
@@ -227,8 +227,8 @@ export function KanbanBoard({ candidates, onStatusChange }: KanbanBoardProps) {
           <React.Fragment key={col.id}>
             <KanbanColumn col={col} candidates={columnsData[col.id]} />
             {index < COLUMNS.length - 1 && (
-              <div className="flex items-center justify-center h-[300px] px-2 text-violet-300 dark:text-violet-900">
-                <ArrowRight className="w-6 h-6 stroke-[2.5]" />
+              <div className="flex items-center justify-center h-[200px] px-2 text-violet-300 dark:text-violet-900">
+                <ArrowRight className="w-5 h-5 stroke-[2.5]" />
               </div>
             )}
           </React.Fragment>
