@@ -111,6 +111,15 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                     <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">No notifications</div>
                   )}
                 </div>
+                <div 
+                  className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 text-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setNotifOpen(false);
+                    navigate('/notifications');
+                  }}
+                >
+                  View All Notifications
+                </div>
               </div>
             )}
           </div>
