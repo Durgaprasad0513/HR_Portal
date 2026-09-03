@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -33,6 +34,13 @@ export default function RecruitmentPage() {
     queryKey: ['requisitions'],
     queryFn: recruitmentApi.getRequisitions,
   });
+  const { data: candidatesResponse, isLoading: isCandidatesLoading } = useQuery({
+    queryKey: ['candidates', selectedReq?.id],
+    queryFn: () => recruitmentApi.getCandidates(selectedReq!.id),
+    enabled: !!selectedReq,
+  });
+  const candidatesData = candidatesResponse?.data || [];
+
   
   const data = reqResponse?.data || [];
 
@@ -147,9 +155,7 @@ export default function RecruitmentPage() {
         </div>
       </div>
 
-      <div className="animate-in fade-in flex-1 min-h-0">
-        {isLoading ? (
-      <div className="animate-in fade-in">
+      <div className="animate-in fade-in flex-1 min-h-0 h-full">
         {selectedReq ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -171,16 +177,29 @@ export default function RecruitmentPage() {
             {isCandidatesLoading ? (
               <div className="py-12"><LoadingSpinner /></div>
             ) : (
-              <KanbanBoard 
-                candidates={candidatesData?.map((c: any) => ({
-                  id: c.id,
-                  name: c.candidateName,
-                  email: c.email,
-                  status: 'APPLIED', // Fallback, KanbanBoard logic parses originalData now
-                  originalData: c
-                })) || []} 
-                onStatusChange={handleStatusChange} 
-              />
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">Candidate Name</th>
+                      <th className="px-6 py-4 font-medium">Email</th>
+                      <th className="px-6 py-4 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {candidatesData?.map((c: any) => (
+                      <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td className="px-6 py-4 font-medium text-navy-900 dark:text-white">{c.candidateName}</td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{c.email}</td>
+                        <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{c.selectionStatus || c.screeningStatus || 'APPLIED'}</td>
+                      </tr>
+                    ))}
+                    {!candidatesData?.length && (
+                      <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-500">No candidates found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         ) : isLoading ? (

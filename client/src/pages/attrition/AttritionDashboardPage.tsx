@@ -144,7 +144,7 @@ export default function AttritionDashboardPage() {
                 <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={100} />
                 <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} />
                 <Bar dataKey="count"
-                  nameKey="name" name="Separations" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
+                   name="Separations" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -165,7 +165,7 @@ export default function AttritionDashboardPage() {
                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
                 <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.02)'}} />
                 <Bar dataKey="count"
-                  nameKey="name" name="Separations" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={32} />
+                   name="Separations" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -187,7 +187,7 @@ export default function AttritionDashboardPage() {
                   outerRadius={90}
                   paddingAngle={2}
                   dataKey="count"
-                  nameKey="name"
+                  
                 >
                   {(stats?.locationBreakdown || []).map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

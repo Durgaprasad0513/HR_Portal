@@ -40,10 +40,6 @@ export default function TravelListPage() {
       setIsModalOpen(false);
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to submit travel request');
-      toast.success('Travel request submitted');
-    },
-    onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to submit travel request');
     }
   });
