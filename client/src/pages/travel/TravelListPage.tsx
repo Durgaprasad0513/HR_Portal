@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { FileUpload } from '@/components/ui/FileUpload';
+import toast from 'react-hot-toast';
 import { Select } from '@/components/ui/Select';
 import { Plane, Plus, FileText, CheckCircle2, Download, IndianRupee, Receipt } from 'lucide-react';
 import apiClient from '@/api/client'; // Need this for custom expense put
@@ -37,6 +38,10 @@ export default function TravelListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['travel'] });
       setIsModalOpen(false);
+      toast.success('Travel request submitted');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to submit travel request');
     }
   });
 
@@ -46,9 +51,10 @@ export default function TravelListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['travel'] });
       setApprovalModalOpen(false);
+      toast.success('Approval updated');
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to update approval');
+      toast.error(error.response?.data?.message || 'Failed to update approval');
     }
   });
 
@@ -58,9 +64,10 @@ export default function TravelListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['travel'] });
       setExpenseModalOpen(false);
+      toast.success('Expenses submitted');
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to submit expenses');
+      toast.error(error.response?.data?.message || 'Failed to submit expenses');
     }
   });
 
@@ -70,9 +77,10 @@ export default function TravelListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['travel'] });
       setSettleModalOpen(false);
+      toast.success('Claim settled');
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to settle claim');
+      toast.error(error.response?.data?.message || 'Failed to settle claim');
     }
   });
 
