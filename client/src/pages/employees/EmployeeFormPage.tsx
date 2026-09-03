@@ -92,7 +92,7 @@ export default function EmployeeFormPage() {
     mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data } as any) : employeesApi.create(data as any),
     onSuccess: async (res) => {
       // Handle the new response format for creation
-      const employeeObj = !isEdit && res?.data?.employee ? res.data.employee : res?.data;
+      const employeeObj = !isEdit && (res?.data as any)?.employee ? (res.data as any).employee : res?.data;
       const empId = employeeObj?.id;
       
       if (!isEdit && pendingFiles.length > 0 && empId) {
@@ -113,11 +113,11 @@ export default function EmployeeFormPage() {
       toast.success(`Employee ${isEdit ? 'updated' : 'created'} successfully`);
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       
-      if (!isEdit && res?.data?.temporaryPassword) {
+      if (!isEdit && (res?.data as any)?.temporaryPassword) {
         // Show credentials modal instead of navigating immediately
         setCredentialsModal({
           email: employeeObj.email,
-          password: res.data.temporaryPassword
+          password: (res.data as any).temporaryPassword
         });
       } else {
         navigate('/employees');

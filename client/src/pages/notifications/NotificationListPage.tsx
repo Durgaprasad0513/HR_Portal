@@ -11,9 +11,9 @@ import { Trash2, CheckCheck } from 'lucide-react';
 export default function NotificationListPage() {
   const queryClient = useQueryClient();
 
-  const { data: notificationsData, isLoading } = useQuery({
+  const { data: notifs, isLoading } = useQuery({
     queryKey: ['notifications'],
-    queryFn: notificationsApi.getAll,
+    queryFn: () => notificationsApi.getAll().then(res => res.data),
   });
 
   const markReadMutation = useMutation({
@@ -23,6 +23,11 @@ export default function NotificationListPage() {
 
   const markAllReadMutation = useMutation({
     mutationFn: notificationsApi.markAllRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  });
+
+  const clearReadMutation = useMutation({
+    mutationFn: notificationsApi.clearRead,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
   });
 
@@ -37,16 +42,21 @@ export default function NotificationListPage() {
         <h1 className="text-2xl font-semibold flex items-center">
           Notifications
         </h1>
-        <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending}>
-          <CheckCheck className="w-4 h-4 mr-2" /> Mark All as Read
-        </Button>
+                <div className="flex gap-2">
+          <Button variant="outline" onClick={() => clearReadMutation.mutate()} disabled={clearReadMutation.isPending || !notifs?.some((n: any) => n.isRead)}>
+            <Trash2 className="w-4 h-4 mr-2" /> Clear Read
+          </Button>
+          <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending || !notifs?.some((n: any) => !n.isRead)}>
+            <CheckCheck className="w-4 h-4 mr-2" /> Mark All as Read
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
         <LoadingSpinner />
       ) : (
         <div className="space-y-4">
-          {notificationsData?.data?.map((notification: any) => (
+          {notifs?.map((notification: any) => (
             <Card key={notification.id} className={!notification.isRead ? 'bg-blue-50/50 border-blue-200' : ''}>
               <CardContent className="p-4 flex justify-between items-start">
                 <div>
@@ -72,7 +82,7 @@ export default function NotificationListPage() {
               </CardContent>
             </Card>
           ))}
-          {(!notificationsData?.data || notificationsData.data.length === 0) && (
+          {(!notifs || notifs.length === 0) && (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">No notifications</div>
           )}
         </div>

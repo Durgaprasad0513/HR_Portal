@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
 import { recruitmentApi } from '@/api/recruitment';
-import { Users, CheckCircle, Clock, UserMinus, Laptop, Briefcase, PhoneCall } from 'lucide-react';
+import { Users, CheckCircle, Clock, UserMinus, Laptop, Briefcase, PhoneCall, Plus } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CountUp } from '@/components/ui/CountUp';
+import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard-stats'],
@@ -162,11 +165,19 @@ export default function DashboardPage() {
                       <td className="px-5 py-4 text-text-muted">{req.numberOfVacancies}</td>
                       <td className="px-5 py-4">
                         <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          req.status === 'OPEN' ? 'bg-green-100 text-green-700' :
-                          req.status === 'ON_HOLD' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                          req.status === 'REQUIREMENT' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400' :
+                          req.status === 'SOURCING' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                          req.status === 'SCREENING' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                          req.status === 'TELEPHONIC' ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400' :
+                          req.status === 'HR_INTERVIEW' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                          req.status === 'TECHNICAL' ? 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-400' :
+                          req.status === 'MANAGEMENT' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400' :
+                          req.status === 'SELECTED' ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' :
+                          req.status === 'OFFER' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
+                          req.status === 'JOINED_REJECTED' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
                         }`}>
-                          {req.status}
+                          {req.status === 'JOINED_REJECTED' ? 'Completed' : req.status?.replace('_', ' ')}
                         </span>
                       </td>
                     </tr>
@@ -217,7 +228,18 @@ export default function DashboardPage() {
 
             {/* Upcoming Interviews */}
             <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-              <h3 className="font-bold text-text-heading mb-4 text-lg">Upcoming Interviews</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-text-heading text-lg">Upcoming Interviews</h3>
+                {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+                  <button 
+                    onClick={() => setIsScheduleModalOpen(true)}
+                    className="p-1.5 bg-accent-50 text-accent-600 rounded-md hover:bg-accent-100 transition-colors"
+                    title="Schedule Interview"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
               
               <div className="space-y-4">
                 {stats.upcomingInterviews?.map((interview: any) => (
@@ -245,6 +267,11 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      
+      <ScheduleInterviewModal 
+        isOpen={isScheduleModalOpen} 
+        onClose={() => setIsScheduleModalOpen(false)} 
+      />
     </div>
   );
 }

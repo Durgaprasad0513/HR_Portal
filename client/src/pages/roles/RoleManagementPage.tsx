@@ -246,7 +246,7 @@ function UserAccountsTab() {
                       {u.isActive ? (
                         <Badge variant="success">Active</Badge>
                       ) : (
-                        <Badge variant="destructive">Inactive</Badge>
+                        <Badge variant="danger">Inactive</Badge>
                       )}
                     </button>
                   </td>

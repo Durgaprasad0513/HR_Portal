@@ -31,7 +31,6 @@ import AttritionDashboardPage from '@/pages/attrition/AttritionDashboardPage';
 import SettingsPage from '@/pages/settings/SettingsPage';
 import AuditLogPage from '@/pages/audit/AuditLogPage';
 import LoginHistoryPage from '@/pages/loginHistory/LoginHistoryPage';
-import ReportsPage from '@/pages/reports/ReportsPage';
 import RoleManagementPage from '@/pages/roles/RoleManagementPage';
 
 const AppRoutes = () => {
@@ -71,7 +70,6 @@ const AppRoutes = () => {
             <Route path="/audit" element={<AuditLogPage />} />
             <Route path="/login-history" element={<LoginHistoryPage />} />
             <Route path="/roles" element={<RoleManagementPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/attrition" element={<AttritionDashboardPage />} />
           </Route>
         </Route>

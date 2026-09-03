@@ -20,18 +20,7 @@ export class TravelService {
   async createTravelRequest(currentUser: CurrentUser, data: any, reqContext: { ipAddress?: string } = {}) {
     if (!currentUser.employeeId) throw new Error('Only employees can create travel requests.');
 
-    // Duplicate submission guard
-    const existing = await prisma.travelRequest.findFirst({
-      where: {
-        employeeId: currentUser.employeeId,
-        approvalStatus: { in: [ApprovalStatus.APPROVAL_PENDING, ApprovalStatus.APPROVAL_APPROVED] },
-        startDate: { lte: new Date(data.endDate) },
-        endDate: { gte: new Date(data.startDate) },
-      }
-    });
-    if (existing) {
-      throw new Error('A travel request for overlapping dates is already pending or approved. Please cancel the existing request first.');
-    }
+
 
     const req = await prisma.travelRequest.create({
       data: {

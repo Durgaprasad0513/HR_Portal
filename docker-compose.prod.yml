@@ -1,0 +1,23 @@
+﻿version: '3.8'
+
+services:
+  hr-backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: hr-backend-prod
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    # Note: Connect this to your company's existing database via the .env file
+
+  hr-frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: hr-frontend-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - hr-backend
