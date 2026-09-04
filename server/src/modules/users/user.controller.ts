@@ -15,7 +15,7 @@ export class UserController {
 
   async getUserById(req: Request, res: Response) {
     try {
-      const user = await userManagementService.getUserById(req.params.id);
+      const user = await userManagementService.getUserById(req.params.id as string);
       if (!user) return sendError(res, 'User not found', 404);
       return sendSuccess(res, user, 'User retrieved');
     } catch (error: any) {
@@ -27,7 +27,7 @@ export class UserController {
     try {
       const { role } = req.body;
       if (!role) return sendError(res, 'Role is required', 400);
-      const user = await userManagementService.changeRole(req.params.id, role, req.user!.userId);
+      const user = await userManagementService.changeRole(req.params.id as string, role, req.user!.userId);
       return sendSuccess(res, user, 'Role updated successfully');
     } catch (error: any) {
       return sendError(res, error.message, 400);
@@ -38,7 +38,7 @@ export class UserController {
     try {
       const { isActive } = req.body;
       if (isActive === undefined) return sendError(res, 'isActive is required', 400);
-      const user = await userManagementService.toggleStatus(req.params.id, Boolean(isActive), req.user!.userId);
+      const user = await userManagementService.toggleStatus(req.params.id as string, Boolean(isActive), req.user!.userId);
       return sendSuccess(res, user, `User ${isActive ? 'activated' : 'deactivated'} successfully`);
     } catch (error: any) {
       return sendError(res, error.message, 400);
@@ -49,7 +49,7 @@ export class UserController {
     try {
       const { newPassword } = req.body;
       if (!newPassword || newPassword.length < 6) return sendError(res, 'Password must be at least 6 characters', 400);
-      await userManagementService.resetPassword(req.params.id, newPassword, req.user!.userId);
+      await userManagementService.resetPassword(req.params.id as string, newPassword, req.user!.userId);
       return sendSuccess(res, null, 'Password reset successfully');
     } catch (error: any) {
       return sendError(res, error.message, 400);

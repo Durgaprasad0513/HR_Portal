@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Search, Download, Eye, Shield, AlertTriangle, Activity, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 const MODULES = [
   'employees', 'travel', 'assets', 'recruitment', 'performance',
@@ -133,17 +134,15 @@ export default function AuditLogPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-1">Audit Trail</h1>
-        </div>
-        {canExport('audit') && (
+      <PageHeader
+        title="Audit Trail"
+        description="Investigate changes, access, and operational events."
+        actions={canExport('audit') && (
           <Button variant="outline" onClick={handleExport} className="gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
         )}
-      </div>
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -193,6 +192,7 @@ export default function AuditLogPage() {
           <div className="relative lg:col-span-2">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <input
+              aria-label="Search audit actions and records"
               placeholder="Search actions, records..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -200,6 +200,7 @@ export default function AuditLogPage() {
             />
           </div>
           <select
+            aria-label="Filter audit logs by module"
             value={module}
             onChange={e => { setModule(e.target.value); setPage(1); }}
             className="py-2 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -209,6 +210,7 @@ export default function AuditLogPage() {
           </select>
           <input
             type="date"
+            aria-label="Audit logs from date"
             value={from}
             onChange={e => { setFrom(e.target.value); setPage(1); }}
             className="py-2 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -216,6 +218,7 @@ export default function AuditLogPage() {
           />
           <input
             type="date"
+            aria-label="Audit logs to date"
             value={to}
             onChange={e => { setTo(e.target.value); setPage(1); }}
             className="py-2 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"

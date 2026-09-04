@@ -10,6 +10,7 @@ interface Column<T> {
 
 interface DataTableProps<T> {
   emptyMessage?: string;
+  caption?: string;
   columns: Column<T>[];
   data: T[];
   keyField: keyof T;
@@ -19,7 +20,7 @@ interface DataTableProps<T> {
   onRowClick?: (row: T) => void;
 }
 
-export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 10, onSelectionChange, onRowClick }: DataTableProps<T>) {
+export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 10, onSelectionChange, onRowClick, emptyMessage = 'No data available', caption = 'Results' }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
@@ -68,13 +69,18 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
 
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900 overflow-hidden">
-      <div className="w-full overflow-auto">
+      <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400 sm:hidden">
+        Scroll horizontally to see all columns.
+      </p>
+      <div className="w-full overflow-auto focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent-500" tabIndex={0} role="region" aria-label={`${caption}. Scroll horizontally for more columns.`}>
         <table className="w-full text-sm text-left">
+          <caption className="sr-only">{caption}</caption>
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">
               {selectable && (
                 <th className="px-4 py-3 w-10">
                   <input
+                    aria-label={`Select all rows on page ${currentPage}`}
                     type="checkbox"
                     checked={allOnPageSelected}
                     onChange={toggleAll}
@@ -102,7 +108,7 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
                   colSpan={columns.length + (selectable ? 1 : 0)}
                   className="px-4 py-12 text-center text-slate-400"
                 >
-                  No data available
+                  {emptyMessage}
                 </td>
               </tr>
             ) : (
@@ -122,6 +128,7 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
                     {selectable && (
                       <td className="px-4 py-3 w-10" onClick={(e) => e.stopPropagation()}>
                         <input
+                          aria-label={`Select row ${key}`}
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleRow(row)}
@@ -152,6 +159,7 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
           </p>
           <div className="flex items-center gap-1">
             <button
+              aria-label="Previous page"
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -171,12 +179,15 @@ export function DataTable<T>({ columns, data, keyField, selectable, pageSize = 1
                       ? "bg-accent-500 text-white"
                       : "border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
                   )}
+                  aria-label={`Page ${num}`}
+                  aria-current={currentPage === num ? 'page' : undefined}
                 >
                   {num}
                 </button>
               )
             )}
             <button
+              aria-label="Next page"
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"

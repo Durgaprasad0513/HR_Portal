@@ -5,10 +5,12 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Search, Plus, FileText, Download, CheckCircle, Eye, Users } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { policiesApi } from '@/api/policies';
 import apiClient from '@/api/client';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
@@ -178,23 +180,21 @@ export default function PolicyListPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-1">Documents & Policies</h1>
-          <p className="text-sm text-gray-500">View, download and acknowledge HR documents</p>
-        </div>
-        
-        {isAdminOrHR && (
+      <PageHeader
+        title="Documents & Policies"
+        description="View, download, and acknowledge HR documents."
+        actions={isAdminOrHR && (
           <Button onClick={() => setIsModalOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" /> Upload Document
           </Button>
         )}
-      </div>
+      />
 
       <div className="flex items-center gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
           <input 
+            aria-label="Search documents"
             placeholder="Search documents..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -207,6 +207,7 @@ export default function PolicyListPage() {
         <LoadingSpinner />
       ) : (
         <DataTable 
+          caption="Documents and policies"
           columns={columns} 
           data={filteredData} 
           keyField="id" 
@@ -218,13 +219,10 @@ export default function PolicyListPage() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Upload HR Document">
         <form onSubmit={handleUpload} className="space-y-4">
           <Input name="policyName" label="Document Name" required />
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-            <select name="policyCategory" required className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <Select name="policyCategory" label="Category" required>
               <option value="">Select Category...</option>
               {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-          </div>
+          </Select>
           <Input name="versionNumber" label="Version (e.g., v1.0)" defaultValue="v1.0" required />
           
           <div className="flex items-center gap-2 py-2">
@@ -253,6 +251,7 @@ export default function PolicyListPage() {
             <LoadingSpinner />
           ) : (
             <DataTable 
+              caption={`Acknowledgements for ${selectedPolicy.policyName}`}
               columns={recordsColumns} 
               data={recordsData || []} 
               keyField="id" 

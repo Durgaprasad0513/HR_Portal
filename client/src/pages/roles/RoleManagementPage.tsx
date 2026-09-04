@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Search, Shield, Users, Lock, CheckCircle, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 const ROLES = ['ADMIN', 'HR', 'REMOVED_ROLE', 'MANAGER', 'EMPLOYEE'];
 const ROLE_LABELS: Record<string, string> = {
@@ -189,6 +190,7 @@ function UserAccountsTab() {
           />
         </div>
         <select
+          aria-label="Filter users by role"
           value={roleFilter}
           onChange={e => setRoleFilter(e.target.value)}
           className="py-2 px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none"
@@ -229,6 +231,7 @@ function UserAccountsTab() {
                   </td>
                   <td className="px-4 py-3">
                     <select
+                      aria-label={`Change role for ${u.email}`}
                       value={u.role}
                       onChange={e => roleMutation.mutate({ id: u.id, role: e.target.value })}
                       disabled={u.role === 'ADMIN'}
@@ -300,9 +303,10 @@ export default function RoleManagementPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-1">User & Role Management</h1>
-      </div>
+      <PageHeader
+        title="User & Role Management"
+        description="Manage accounts and permission boundaries."
+      />
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
@@ -332,7 +336,7 @@ export default function RoleManagementPage() {
         <div className="space-y-4">
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-300 flex items-center gap-2">
             <Lock className="w-4 h-4 flex-shrink-0" />
-            ADMIN role permissions are locked (always full access). Changes to other roles take effect on the user's next page load.
+            ADMIN role permissions are locked (always full access). Changes to other roles take effect on the user&apos;s next page load.
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
             <PermissionsMatrix />

@@ -7,6 +7,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import { Trash2, CheckCheck } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function NotificationListPage() {
   const queryClient = useQueryClient();
@@ -38,19 +39,20 @@ export default function NotificationListPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold flex items-center">
-          Notifications
-        </h1>
-                <div className="flex gap-2">
+      <PageHeader
+        title="Notifications"
+        description="Review alerts and keep important updates moving."
+        actions={(
+          <div className="flex gap-2">
           <Button variant="outline" onClick={() => clearReadMutation.mutate()} disabled={clearReadMutation.isPending || !notifs?.some((n: any) => n.isRead)}>
             <Trash2 className="w-4 h-4 mr-2" /> Clear Read
           </Button>
           <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending || !notifs?.some((n: any) => !n.isRead)}>
             <CheckCheck className="w-4 h-4 mr-2" /> Mark All as Read
           </Button>
-        </div>
-      </div>
+          </div>
+        )}
+      />
 
       {isLoading ? (
         <LoadingSpinner />

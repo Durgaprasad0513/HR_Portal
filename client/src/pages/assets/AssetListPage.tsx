@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -199,13 +200,10 @@ export default function AssetListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Asset Management</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">{isAdminOrHR ? 'Manage company assets and assignments' : 'View your assigned hardware and equipment'}</p>
-        </div>
-        
-        {isAdminOrHR && (
+      <PageHeader
+        title="Asset Management"
+        description={isAdminOrHR ? 'Manage company assets and assignments.' : 'View your assigned hardware and equipment.'}
+        actions={isAdminOrHR && (
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => {
               if (!data) return;
@@ -229,7 +227,7 @@ export default function AssetListPage() {
             </Button>
           </div>
         )}
-      </div>
+      />
 
       <div className="animate-in fade-in">
         {isLoading ? (
@@ -256,8 +254,8 @@ export default function AssetListPage() {
         <form key={editingAsset ? editingAsset.id : 'new'} onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asset Type</label>
-              <Select name="assetType" defaultValue={editingAsset?.assetType || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label htmlFor="asset-type" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asset Type</label>
+              <Select id="asset-type" name="assetType" defaultValue={editingAsset?.assetType || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="LAPTOP">Laptop</option>
                 <option value="DESKTOP">Desktop</option>
                 <option value="MOBILE">Mobile</option>
@@ -271,8 +269,8 @@ export default function AssetListPage() {
               </Select>
             </div>
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-              <Select name="assetCategory" defaultValue={editingAsset?.assetCategory || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label htmlFor="asset-category" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+              <Select id="asset-category" name="assetCategory" defaultValue={editingAsset?.assetCategory || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="IT">IT Equipment</option>
                 <option value="NON_IT">Non-IT</option>
                 <option value="VEHICLE_CAT">Vehicle</option>
@@ -289,8 +287,8 @@ export default function AssetListPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign To (Optional)</label>
-              <Select name="assignedEmployeeId" defaultValue={editingAsset?.assignedEmployeeId || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label htmlFor="asset-assignee" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign To (Optional)</label>
+              <Select id="asset-assignee" name="assignedEmployeeId" defaultValue={editingAsset?.assignedEmployeeId || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="">Unassigned</option>
                 {empData?.data?.map((emp: any) => (
                   <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
@@ -300,8 +298,8 @@ export default function AssetListPage() {
             <Input name="assetLocation" defaultValue={editingAsset?.assetLocation || ""} label="Location" placeholder="e.g. Hyderabad Office" />
             <Input name="issueDate" defaultValue={editingAsset?.issueDate ? new Date(editingAsset.issueDate).toISOString().split('T')[0] : ""} label="Issue Date" type="date" />
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issue Condition</label>
-              <Select name="issueCondition" defaultValue={editingAsset?.issueCondition || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label htmlFor="asset-condition" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issue Condition</label>
+              <Select id="asset-condition" name="issueCondition" defaultValue={editingAsset?.issueCondition || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="">Select Condition</option>
                 <option value="NEW">New</option>
                 <option value="GOOD">Good</option>
@@ -313,8 +311,8 @@ export default function AssetListPage() {
           
           {editingAsset && (
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-              <Select name="status" defaultValue={editingAsset.status} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label htmlFor="asset-status" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+              <Select id="asset-status" name="status" defaultValue={editingAsset.status} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="IN_USE">In Use</option>
                 <option value="RETURN_REQUESTED">Return Requested</option>
                 <option value="RETURNED">Returned</option>

@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 interface CurrentUser {
   id: string;
   role: string;
-  employeeId?: string;
+  employeeId?: string | null;
 }
 
 export class ExpenseService {
