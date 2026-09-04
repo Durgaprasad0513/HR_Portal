@@ -130,6 +130,21 @@ body {
     display: inline-flex;
     align-items: center;
   }
+
+  main [class~="grid-cols-1"][class~="md:grid-cols-2"][class~="lg:grid-cols-4"][class~="gap-6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  main [class~="grid-cols-1"][class~="md:grid-cols-2"][class~="lg:grid-cols-4"][class~="gap-6"] > div {
+    min-width: 0;
+    padding: 0.875rem;
+  }
+
+  main [class~="grid-cols-1"][class~="md:grid-cols-2"][class~="lg:grid-cols-4"][class~="gap-6"] > div > .flex {
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
 }
 
 :focus-visible {
