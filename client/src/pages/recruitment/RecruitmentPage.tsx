@@ -42,6 +42,13 @@ export default function RecruitmentPage() {
   });
   const candidatesData = candidatesResponse?.data || [];
 
+  const { data: candidatesResponse, isLoading: isCandidatesLoading } = useQuery({
+    queryKey: ['candidates', selectedReq?.id],
+    queryFn: () => recruitmentApi.getCandidates(selectedReq!.id),
+    enabled: !!selectedReq,
+  });
+  const candidatesData = candidatesResponse?.data || [];
+
   
   const data = reqResponse?.data || [];
 
