@@ -116,6 +116,22 @@ body {
   min-width: 320px;
 }
 
+@media (max-width: 639px) {
+  header button,
+  #primary-sidebar a,
+  #primary-sidebar button,
+  main button[aria-label="Schedule interview"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  main a[href="/recruitment"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--brand-primary);
   outline-offset: 2px;
