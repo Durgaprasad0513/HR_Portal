@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from 'next-themes';
@@ -36,14 +36,14 @@ export function Sidebar() {
   ];
 
   const employeesNav = [
-    { name: 'Employee', path: '/employees', icon: Users },
+    { name: 'Employees', path: '/employees', icon: Users },
     { name: 'Training', path: '/training', icon: GraduationCap },
     { name: 'Performance', path: '/performance', icon: Target },
   ];
 
   const expensesNav = [
     { name: 'Travel', path: '/travel', icon: Plane },
-    { name: 'Office', path: '/office-expenses', icon: Building2 },
+    { name: 'Office Expenses', path: '/office-expenses', icon: Building2 },
   ];
 
   const authNav = isAdminOrHR ? [
@@ -67,7 +67,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="bg-[#3b3f5c] text-white w-64 flex flex-col shadow-xl z-50 h-[calc(100vh-2rem)] m-4 rounded-3xl shrink-0 overflow-hidden">
+    <aside id="primary-sidebar" aria-label="Primary navigation" className="bg-[#3b3f5c] text-white w-64 flex flex-col shadow-xl z-50 h-[calc(100vh-2rem)] m-4 rounded-3xl shrink-0 overflow-hidden">
       {/* Brand */}
       <div className="h-20 flex items-center px-6 shrink-0 pt-2">
         <NavLink to="/dashboard" className="flex items-center gap-3">
@@ -99,6 +99,8 @@ export function Sidebar() {
             <div key={section.id} className="flex flex-col">
               <button
                 onClick={() => toggleSection(section.id)}
+                aria-expanded={isOpen}
+                aria-controls={`sidebar-section-${section.id}`}
                 className={cn(
                   "flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors",
                   "hover:text-[#f39c12]",
@@ -117,7 +119,7 @@ export function Sidebar() {
               </button>
               
               {isOpen && (
-                <div className="mt-1 mb-2 ml-4 flex flex-col gap-1 border-l border-white/10 pl-3">
+                <div id={`sidebar-section-${section.id}`} className="mt-1 mb-2 ml-4 flex flex-col gap-1 border-l border-white/10 pl-3">
                   {section.items.map((item) => {
                     const isActive = location.pathname === item.path || 
                       (item.path !== '/dashboard' && item.path !== '#' && location.pathname.startsWith(item.path));

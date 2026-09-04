@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Plus, Users, Building2, Edit } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function DepartmentListPage() {
   const navigate = useNavigate();
@@ -20,12 +21,13 @@ export default function DepartmentListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Departments</h1>
-        <Button onClick={() => navigate('/departments/new')}>
+      <PageHeader
+        title="Departments"
+        description="Organize teams, ownership, and reporting structure."
+        actions={<Button onClick={() => navigate('/departments/new')}>
           <Plus className="mr-2 h-4 w-4" /> Add Department
-        </Button>
-      </div>
+        </Button>}
+      />
 
       {!deptData?.data?.length ? (
         <EmptyState 

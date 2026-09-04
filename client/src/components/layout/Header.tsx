@@ -9,7 +9,12 @@ import { useTheme } from 'next-themes';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi } from '@/api/notifications';
 
-export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+interface HeaderProps {
+  onMenuClick?: () => void;
+  menuOpen?: boolean;
+}
+
+export function Header({ onMenuClick, menuOpen = false }: HeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -48,8 +53,16 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     <>
       <header className="flex h-20 items-center justify-between bg-transparent px-6 transition-colors">
         <div className="flex items-center flex-1">
-          <Button variant="ghost" size="sm" className="mr-2 text-gray-500 hover:text-navy-900 dark:text-gray-400 dark:hover:text-white" onClick={onMenuClick}>
-            <Menu className="h-5 w-5" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mr-2 text-gray-500 hover:text-navy-900 dark:text-gray-400 dark:hover:text-white"
+            onClick={onMenuClick}
+            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={menuOpen}
+            aria-controls="primary-sidebar"
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
           
           <button 
@@ -70,8 +83,9 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             size="sm" 
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="text-gray-600 dark:text-gray-300"
+            aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
           >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {theme === 'dark' ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
           </Button>
           
           <div className="relative">
@@ -80,15 +94,18 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               size="sm" 
               onClick={() => { setNotifOpen(!notifOpen); setDropdownOpen(false); }}
               className="text-gray-600 dark:text-gray-300 relative"
+              aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+              aria-expanded={notifOpen}
+              aria-controls="notifications-panel"
             >
-              <Bell className="h-5 w-5" />
+              <Bell className="h-5 w-5" aria-hidden="true" />
               {unreadCount > 0 && (
                 <span className="absolute top-1 right-2 h-2 w-2 rounded-full bg-red-500"></span>
               )}
             </Button>
             
             {notifOpen && (
-              <div className="absolute right-0 top-10 mt-2 w-80 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700">
+              <div id="notifications-panel" className="absolute right-0 top-10 mt-2 w-80 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700">
                 <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-sm text-navy-900 dark:text-white flex justify-between">
                   Notifications
                   <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{unreadCount} new</span>
@@ -111,22 +128,27 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                     <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">No notifications</div>
                   )}
                 </div>
-                <div 
-                  className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 text-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                <button
+                  type="button"
+                  className="w-full px-4 py-2 border-t border-gray-200 dark:border-gray-700 text-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                   onClick={() => {
                     setNotifOpen(false);
                     navigate('/notifications');
                   }}
                 >
                   View All Notifications
-                </div>
+                </button>
               </div>
             )}
           </div>
 
-          <div 
-            className="flex items-center cursor-pointer space-x-2"
+          <button
+            type="button"
+            className="flex items-center cursor-pointer space-x-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
             onClick={() => { setDropdownOpen(!dropdownOpen); setNotifOpen(false); }}
+            aria-label="Open user menu"
+            aria-expanded={dropdownOpen}
+            aria-controls="user-menu"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold">
               {user?.email?.[0].toUpperCase()}
@@ -134,10 +156,10 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:block">
               {user?.employee?.firstName ? `${user.employee.firstName} ${user.employee.lastName}` : user?.email}
             </span>
-          </div>
+          </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 top-10 mt-2 w-48 rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700">
+            <div id="user-menu" className="absolute right-0 top-10 mt-2 w-48 rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700">
               <div className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400 border-b border-gray-200 dark:border-gray-700">
                 Signed in as {user?.role}
               </div>

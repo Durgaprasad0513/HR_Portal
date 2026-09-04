@@ -8,6 +8,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -137,13 +138,10 @@ export default function RecruitmentPage() {
 
   return (
     <div className="space-y-6 flex flex-col h-full h-[calc(100vh-6rem)]">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4 shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Recruitment Tracker</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage job requisitions and candidate pipelines</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
+      <PageHeader
+        title="Recruitment Tracker"
+        description="Manage job requisitions and candidate pipelines."
+        actions={<div className="flex items-center gap-3">
           {viewMode === 'board' && (
              <Button variant="outline" onClick={() => setViewMode('list')}>Back to List</Button>
           )}
@@ -152,8 +150,8 @@ export default function RecruitmentPage() {
               <Plus className="w-4 h-4" /> New Requisition
             </Button>
           )}
-        </div>
-      </div>
+        </div>}
+      />
 
       <div className="animate-in fade-in flex-1 min-h-0 h-full">
         {selectedReq ? (
@@ -292,8 +290,8 @@ export default function RecruitmentPage() {
         <form onSubmit={handleSubmitReq} className="space-y-4">
           <Input name="positionTitle" label="Job Title" placeholder="e.g. Senior Frontend Engineer" required />
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
-            <Select name="departmentId" required className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+            <label htmlFor="requisition-department" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+            <Select id="requisition-department" name="departmentId" required className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
               <option value="">Select Department...</option>
               {deptData?.data?.map((dept: any) => (
                 <option key={dept.id} value={dept.id}>{dept.name}</option>

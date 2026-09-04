@@ -222,8 +222,9 @@ export default function EmployeeFormPage() {
 
               <Input label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange}  required />
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender</label>
+                <label htmlFor="employee-gender" className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender</label>
                 <Select 
+                  id="employee-gender"
                   name="gender" required 
                   value={formData.gender} 
                   onChange={handleChange}
@@ -263,8 +264,9 @@ export default function EmployeeFormPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
+                <label htmlFor="employee-department" className="text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
                 <Select 
+                  id="employee-department"
                   name="departmentId"
                   value={formData.departmentId} 
                   onChange={handleChange}
@@ -288,8 +290,9 @@ export default function EmployeeFormPage() {
               <Input label="Notice Period (Days)" type="number" min="0" name="noticePeriod" value={formData.noticePeriod} onChange={handleChange} />
               
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Employment Type</label>
+                <label htmlFor="employee-type" className="text-sm font-medium text-slate-700 dark:text-slate-300">Employment Type</label>
                 <Select 
+                  id="employee-type"
                   name="employmentType" 
                   value={formData.employmentType} 
                   onChange={handleChange}
@@ -302,8 +305,9 @@ export default function EmployeeFormPage() {
               </div>
 
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Line Manager</label>
+                <label htmlFor="employee-manager" className="text-sm font-medium text-slate-700 dark:text-slate-300">Line Manager</label>
                 <Select 
+                  id="employee-manager"
                   name="managerId" 
                   value={formData.managerId} 
                   onChange={handleChange}
@@ -317,8 +321,9 @@ export default function EmployeeFormPage() {
               </div>
 
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Office Location</label>
+                <label htmlFor="employee-location" className="text-sm font-medium text-slate-700 dark:text-slate-300">Office Location</label>
                 <Select 
+                  id="employee-location"
                   name="location" 
                   value={formData.location} 
                   onChange={handleChange}
@@ -331,8 +336,9 @@ export default function EmployeeFormPage() {
               </div>
               
               <div className="flex flex-col space-y-1 w-full">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Employee Status</label>
+                <label htmlFor="employee-status" className="text-sm font-medium text-slate-700 dark:text-slate-300">Employee Status</label>
                 <Select 
+                  id="employee-status"
                   name="status" 
                   value={formData.status} 
                   onChange={handleChange}
@@ -384,6 +390,7 @@ export default function EmployeeFormPage() {
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
                     <input 
+                      aria-label="Choose employee certificates to upload"
                       key={selectedFiles.length === 0 ? 'empty' : 'filled'}
                       type="file" 
                       multiple
@@ -425,6 +432,7 @@ export default function EmployeeFormPage() {
                             size="sm" 
                             onClick={() => setSelectedFiles(prev => prev.filter((_, idx) => idx !== i))}
                             className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            aria-label={`Remove ${f.name} from selected certificates`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -452,6 +460,7 @@ export default function EmployeeFormPage() {
                           size="sm" 
                           onClick={() => deleteDocumentMutation.mutate(doc.id)}
                           className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          aria-label={`Delete ${doc.documentName}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -465,6 +474,7 @@ export default function EmployeeFormPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Select certificates to upload once the employee is created.</p>
                 <div className="flex items-center gap-4">
                   <input 
+                    aria-label="Choose employee certificates"
                     key={pendingFiles.length === 0 ? 'empty' : 'filled'}
                     type="file" 
                     multiple
@@ -505,6 +515,7 @@ export default function EmployeeFormPage() {
                           size="sm" 
                           onClick={() => setPendingFiles(prev => prev.filter((_, idx) => idx !== i))}
                           className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          aria-label={`Remove ${f.name} from selected certificates`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -550,6 +561,8 @@ export default function EmployeeFormPage() {
                 <div className="flex items-center justify-center gap-2 mt-1">
                   <p className="font-mono text-lg font-bold text-primary-600 tracking-wider">{credentialsModal.password}</p>
                   <button 
+                    type="button"
+                    aria-label="Copy temporary password"
                     onClick={() => {
                       navigator.clipboard.writeText(credentialsModal.password);
                       toast.success('Password copied to clipboard');
@@ -566,7 +579,7 @@ export default function EmployeeFormPage() {
                 setCredentialsModal(null);
                 navigate('/employees');
               }} className="w-full">
-                I've saved these credentials
+                I&apos;ve saved these credentials
               </Button>
             </div>
           </div>

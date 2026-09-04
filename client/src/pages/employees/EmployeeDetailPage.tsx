@@ -19,13 +19,13 @@ export default function EmployeeDetailPage() {
   const { user } = useAuth();
   const isHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
   
-  const SECTIONS = [
+  const SECTIONS = React.useMemo(() => [
     { id: 'general', label: 'Personal Information' },
     { id: 'job', label: 'Employment Information' },
     ...(isHR ? [{ id: 'payroll', label: 'Payroll & HR Information' }] : []),
     { id: 'assets', label: 'Assigned Assets' },
     { id: 'education', label: 'Documents' },
-  ];
+  ], [isHR]);
   const [isDeactivateOpen, setIsDeactivateOpen] = React.useState(false);
   const deactivateMutation = { mutate: (id: string) => {}, isPending: false }; // stub
   const [activeSection, setActiveSection] = useState('general');
@@ -74,7 +74,7 @@ export default function EmployeeDetailPage() {
     });
 
     return () => observer.disconnect();
-  }, [empData]);
+  }, [empData, SECTIONS]);
 
   if (isLoading) return <div className="py-12"><LoadingSpinner /></div>;
   

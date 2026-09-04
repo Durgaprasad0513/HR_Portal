@@ -198,6 +198,7 @@ export class DashboardService {
       departmentBreakdown: Object.entries(deptBreakdown).map(([name, count]) => ({ name, count })),
       locationBreakdown: Object.entries(locBreakdown).map(([name, count]) => ({ name, count })),
       designationBreakdown: Object.entries(desigBreakdown).map(([name, count]) => ({ name, count })),
+      joinTrend: monthlyList.slice(-6),
       joinExitTrend: monthlyList,
     };
   }

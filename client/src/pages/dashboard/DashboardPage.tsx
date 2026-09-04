@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
@@ -7,6 +8,7 @@ import { Users, CheckCircle, Clock, UserMinus, Laptop, Briefcase, PhoneCall, Plu
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CountUp } from '@/components/ui/CountUp';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -32,7 +34,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="p-6 text-red-500">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700" role="alert">
         Failed to load dashboard data. Please try again.
       </div>
     );
@@ -41,13 +43,11 @@ export default function DashboardPage() {
   const stats = data || {};
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-heading">Dashboard</h1>
-        <p className="text-sm text-text-muted mt-1">
-          Welcome back, {user?.employee?.firstName || user?.email}
-        </p>
-      </div>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-0 sm:p-2">
+      <PageHeader
+        title="Dashboard"
+        description={`Welcome back, ${user?.employee?.firstName || user?.email || 'there'}. Here is what needs your attention.`}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
@@ -109,7 +109,7 @@ export default function DashboardPage() {
               Recruitment Process
             </h2>
           </div>
-          <a href="/recruitment" className="text-sm font-medium text-accent-600 hover:text-accent-700">View All {'>'}</a>
+          <Link to="/recruitment" className="text-sm font-medium text-accent-600 hover:text-accent-700">View All {'>'}</Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -149,8 +149,9 @@ export default function DashboardPage() {
             </div>
 
             {/* Jobs Table */}
-            <div className="p-0">
+            <div className="overflow-x-auto p-0" tabIndex={0} aria-label="Recruitment openings table. Scroll horizontally to see all columns.">
               <table className="w-full text-sm text-left">
+                <caption className="sr-only">Open recruitment positions</caption>
                 <thead className="bg-tint text-text-muted">
                   <tr>
                     <th className="px-5 py-3 font-semibold">JOB</th>
@@ -235,6 +236,7 @@ export default function DashboardPage() {
                     onClick={() => setIsScheduleModalOpen(true)}
                     className="p-1.5 bg-accent-50 text-accent-600 rounded-md hover:bg-accent-100 transition-colors"
                     title="Schedule Interview"
+                    aria-label="Schedule interview"
                   >
                     <Plus className="w-4 h-4" />
                   </button>

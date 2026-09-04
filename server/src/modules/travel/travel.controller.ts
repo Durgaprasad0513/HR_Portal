@@ -41,9 +41,9 @@ export class TravelController {
   }
 
   
-  async submitExpenses(req: Request, res: Response) {
+  async submitExpenses(req: AuthRequest, res: Response) {
     try {
-      const data = await travelService.submitExpenses(req.user!, req.params.id, req.body, { ipAddress: req.ip });
+      const data = await travelService.submitExpenses(req.user!, req.params.id as string, req.body, { ipAddress: req.ip });
       res.json({ success: true, data, message: 'Expenses submitted successfully' });
     } catch (error: any) {
       res.status(403).json({ success: false, message: error.message });

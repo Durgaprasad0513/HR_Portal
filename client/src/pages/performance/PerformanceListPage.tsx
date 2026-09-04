@@ -13,6 +13,7 @@ import { performanceApi } from '@/api/performance';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PerformanceReviewModal } from './PerformanceReviewModal';
 import { PerformanceCreateModal } from './PerformanceCreateModal';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function PerformanceListPage() {
   const { user } = useAuth();
@@ -60,17 +61,16 @@ export default function PerformanceListPage() {
   return (
     <div className="space-y-6">
       {/* Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Performance</h1>
+      <PageHeader
+        title="Performance"
+        description="Track review progress, feedback, and next approvals."
+        actions={<>
           {(user?.role === 'ADMIN' || user?.role === 'HR') && (
             <Button onClick={() => setIsCreateModalOpen(true)}>
               Initiate Review
             </Button>
           )}
-        </div>
-        
-        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-full w-full sm:w-auto">
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-full w-full sm:w-auto">
           {(['My Performance', 'Team/Company Reviews'] as Tab[]).map((tab) => (
             <button
               key={tab}
@@ -85,8 +85,9 @@ export default function PerformanceListPage() {
               {tab}
             </button>
           ))}
-        </div>
-      </div>
+          </div>
+        </>}
+      />
 
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-3">

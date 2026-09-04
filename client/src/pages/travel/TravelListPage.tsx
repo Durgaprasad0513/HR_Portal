@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import { Select } from '@/components/ui/Select';
 import { Plane, Plus, FileText, CheckCircle2, Download, IndianRupee, Receipt } from 'lucide-react';
 import apiClient from '@/api/client'; // Need this for custom expense put
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function TravelListPage() {
   const { user } = useAuth();
@@ -228,21 +229,18 @@ export default function TravelListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Travel Requests</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage travel approvals and expense settlements</p>
-        </div>
-        
-        <div className="flex gap-2">
+      <PageHeader
+        title="Travel Requests"
+        description="Manage travel approvals and expense settlements."
+        actions={<div className="flex gap-2">
           {canExport('travel') && <Button variant="outline" onClick={handleExport} className="gap-2">
             <Download className="w-4 h-4" /> Export Register
           </Button>}
           <Button onClick={() => setIsModalOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" /> New Travel Request
           </Button>
-        </div>
-      </div>
+        </div>}
+      />
 
 
       {isAdminOrHR && data && (
@@ -296,8 +294,8 @@ export default function TravelListPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Travel Mode</label>
-              <Select name="travelMode" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <label htmlFor="travel-mode" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Travel Mode</label>
+              <Select id="travel-mode" name="travelMode" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
                 <option value="AIR">Flight (Air)</option>
                 <option value="TRAIN">Train</option>
                 <option value="ROAD">Bus / Cab (Road)</option>

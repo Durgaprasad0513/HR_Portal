@@ -11,7 +11,7 @@ export const createTravelSchema = z.object({
 });
 
 export const updateApprovalSchema = z.object({
-  approvalStatus: z.enum(['APPROVED', 'REJECTED']),
+  approvalStatus: z.enum(['APPROVED', 'REJECTED', 'APPROVAL_APPROVED', 'APPROVAL_REJECTED']),
   advanceApproved: z.number().optional(),
   rejectionReason: z.string().optional()
 });

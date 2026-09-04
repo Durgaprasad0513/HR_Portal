@@ -87,8 +87,9 @@ export default function DepartmentFormPage() {
             <Input label="Department Name" name="name" value={formData.name} onChange={handleChange} required />
             
             <div className="flex flex-col space-y-1 w-full">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+              <label htmlFor="department-description" className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
               <textarea
+                id="department-description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -98,8 +99,9 @@ export default function DepartmentFormPage() {
             </div>
 
             <div className="flex flex-col space-y-1 w-full">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Department Head</label>
+              <label htmlFor="department-head" className="text-sm font-medium text-slate-700 dark:text-slate-300">Department Head</label>
               <Select 
+                id="department-head"
                 name="headId" 
                 value={formData.headId} 
                 onChange={handleChange}
