@@ -113,6 +113,23 @@
 body {
   @apply bg-canvas text-text-body antialiased;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  min-width: 320px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {

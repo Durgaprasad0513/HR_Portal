@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { auditApi } from '@/api/audit';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function LoginHistoryPage() {
   const { data, isLoading } = useQuery({
@@ -10,11 +11,19 @@ export default function LoginHistoryPage() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  const logs = data?.data || [];
+  const responseData = data?.data as unknown;
+  const logs = Array.isArray(responseData)
+    ? responseData
+    : Array.isArray((responseData as { data?: unknown } | undefined)?.data)
+      ? (responseData as { data: unknown[] }).data
+      : [];
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-6">Activity & Login History</h1>
+    <div className="space-y-6 p-6">
+      <PageHeader
+        title="Activity & Login History"
+        description="Review account access and system activity."
+      />
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">

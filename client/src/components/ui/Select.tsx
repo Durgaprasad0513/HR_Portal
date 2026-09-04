@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useImperativeHandle } from 'react';
+﻿import React, { useId, useState, useRef, useImperativeHandle } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -7,10 +7,12 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, error: externalError, required, onBlur, onChange, onInvalid, children, ...props }, ref) => {
+  ({ className, label, error: externalError, required, onBlur, onChange, onInvalid, children, id, 'aria-describedby': ariaDescribedBy, ...props }, ref) => {
     const [touched, setTouched] = useState(false);
     const [internalError, setInternalError] = useState('');
     const innerRef = useRef<HTMLSelectElement>(null);
+    const generatedId = useId();
+    const selectId = id || `select-${generatedId}`;
 
     useImperativeHandle(ref, () => innerRef.current as HTMLSelectElement);
 
@@ -40,15 +42,18 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     };
 
     const displayError = externalError || (touched && internalError ? internalError : '');
+    const errorId = `${selectId}-error`;
+    const describedBy = [ariaDescribedBy, displayError ? errorId : undefined].filter(Boolean).join(' ') || undefined;
 
     return (
       <div className="flex flex-col space-y-1 w-full">
         {label && (
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {label} {required && <span className="text-red-500">*</span>}
+          <label htmlFor={selectId} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {label} {required && <span className="text-red-500" aria-hidden="true">*</span>}
           </label>
         )}
         <select
+          id={selectId}
           className={cn(
             "flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
             displayError && "border-red-500 focus:ring-red-500",
@@ -59,12 +64,14 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           onBlur={handleBlur}
           onChange={handleChange}
           onInvalid={handleInvalid}
+          aria-invalid={Boolean(displayError)}
+          aria-describedby={describedBy}
           {...props}
         >
           {children}
         </select>
         {displayError && (
-          <p className="mt-1 text-sm text-red-500">{displayError}</p>
+          <p id={errorId} className="mt-1 text-sm text-red-500" role="alert">{displayError}</p>
         )}
       </div>
     );

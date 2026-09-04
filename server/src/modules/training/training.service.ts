@@ -149,10 +149,7 @@ export class TrainingService {
   }
 
   async submitFeedback(trainingId: string, employeeId: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const scope = getModuleScope(currentUser.role as Role, 'training');
-    
-    // If scope is SELF, they can only edit their own feedback
-    if (scope === 'SELF' && currentUser.employeeId !== employeeId) {
+    if (currentUser.employeeId !== employeeId) {
       throw new Error('You can only submit feedback for your own participation');
     }
 

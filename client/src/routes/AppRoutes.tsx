@@ -32,6 +32,7 @@ import SettingsPage from '@/pages/settings/SettingsPage';
 import AuditLogPage from '@/pages/audit/AuditLogPage';
 import LoginHistoryPage from '@/pages/loginHistory/LoginHistoryPage';
 import RoleManagementPage from '@/pages/roles/RoleManagementPage';
+import NotFoundPage from '@/pages/NotFoundPage';
 
 const AppRoutes = () => {
   return (
@@ -72,6 +73,8 @@ const AppRoutes = () => {
             <Route path="/roles" element={<RoleManagementPage />} />
             <Route path="/attrition" element={<AttritionDashboardPage />} />
           </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
     </Routes>

@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { requestService } from './request.service';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuthRequest } from '../../middleware/auth.middleware';
+import prisma from '../../config/database';
 
 export class RequestController {
   async createRequest(req: AuthRequest, res: Response) {
@@ -57,8 +58,6 @@ export class RequestController {
 
   getStaffUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
       const staff = await prisma.user.findMany({
         where: { role: { in: ['ADMIN', 'HR'] } },
         select: { id: true, email: true, employee: { select: { firstName: true, lastName: true } } }

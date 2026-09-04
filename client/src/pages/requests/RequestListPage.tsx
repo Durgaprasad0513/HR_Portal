@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Settings } from 'lucide-react';
 import apiClient from '@/api/client';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 const REQUEST_TYPES = [
   { value: 'HR_QUERY', label: 'HR Query' },
@@ -128,32 +130,27 @@ export default function RequestListPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white mb-1">HR Helpdesk</h1>
-          <p className="text-sm text-gray-500">Submit and track your HR queries</p>
-        </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+      <PageHeader
+        title="HR Helpdesk"
+        description="Submit, track, and resolve workplace requests."
+        actions={<Button onClick={() => setIsModalOpen(true)}>
           <Plus className="w-4 h-4 mr-2" /> New Request
-        </Button>
-      </div>
+        </Button>}
+      />
 
       {isLoading ? (
         <LoadingSpinner />
       ) : (
-        <DataTable columns={columns} data={requestsData?.data || []} keyField="id" />
+        <DataTable caption="HR helpdesk requests" columns={columns} data={requestsData?.data || []} keyField="id" />
       )}
 
       {/* New Request Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Submit HR Request">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Request Type</label>
-            <select name="requestType" required className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <Select name="requestType" label="Request Type" required>
               <option value="">Select request type...</option>
               {REQUEST_TYPES.map(rt => <option key={rt.value} value={rt.value}>{rt.label}</option>)}
-            </select>
-          </div>
+          </Select>
           <Input name="description" label="Description" required />
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
@@ -171,31 +168,25 @@ export default function RequestListPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Assign Ticket To</label>
-              <select 
+            <Select
+                label="Assign Ticket To"
                 value={selectedReq.assignedToId || ''} 
                 onChange={(e) => assignMutation.mutate({ id: selectedReq.id, assignedToId: e.target.value })}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Unassigned</option>
                 {admins?.data?.map((u: any) => (
                   <option key={u.id} value={u.id}>{u.employee?.firstName || 'Admin'} {u.employee?.lastName || ''} ({u.email})</option>
                 ))}
-              </select>
-            </div>
+            </Select>
 
             <form onSubmit={handleUpdateStatus} className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Update Status</label>
-                <select name="status" defaultValue={selectedReq.status} required className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <Select name="status" label="Update Status" defaultValue={selectedReq.status} required>
                   <option value="SUBMITTED">Submitted</option>
                   <option value="ASSIGNED">Assigned</option>
                   <option value="IN_PROGRESS">In Progress</option>
                   <option value="RESOLVED">Resolved</option>
                   <option value="TICKET_CLOSED">Closed</option>
-                </select>
-              </div>
+              </Select>
               
               <Input name="responseNotes" label="Response Notes" defaultValue={selectedReq.responseNotes || ''} />
 

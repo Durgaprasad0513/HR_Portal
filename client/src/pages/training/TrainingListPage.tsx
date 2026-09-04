@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -225,9 +227,10 @@ export default function TrainingListPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Training Sessions</h1>
-        <div className="flex gap-2">
+      <PageHeader
+        title="Training Sessions"
+        description="Plan learning, track attendance, and measure outcomes."
+        actions={<div className="flex gap-2">
           <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
             <button onClick={() => setViewMode('list')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500'}`}>List</button>
             <button onClick={() => setViewMode('calendar')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${viewMode === 'calendar' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500'}`}>Calendar</button>
@@ -245,8 +248,8 @@ export default function TrainingListPage() {
                 </Button>
               </>
             )}
-        </div>
-      </div>
+        </div>}
+      />
 
       {!isStatsLoading && statsData?.data && (
         <div className="space-y-4 mb-8">
@@ -346,22 +349,16 @@ export default function TrainingListPage() {
       }} title={selectedTrainingForEdit ? "Edit Training Session" : "New Training Session"}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input name="trainingTopic" label="Training Topic" required defaultValue={selectedTrainingForEdit?.trainingTopic} />
-          <div>
-            <label className="block text-sm font-medium mb-1">Training Type</label>
-            <select name="trainingType" className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700" required defaultValue={selectedTrainingForEdit?.trainingType || "INTERNAL"}>
+          <Select name="trainingType" label="Training Type" required defaultValue={selectedTrainingForEdit?.trainingType || "INTERNAL"}>
               <option value="INTERNAL">Internal</option>
               <option value="EXTERNAL">External</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Target Department</label>
-            <select name="targetDepartmentId" className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700" defaultValue={selectedTrainingForEdit?.targetDepartmentId || ""}>
+          </Select>
+          <Select name="targetDepartmentId" label="Target Department" defaultValue={selectedTrainingForEdit?.targetDepartmentId || ""}>
               <option value="">Any Department</option>
               {departmentsData?.data?.map((d: any) => (
                 <option key={d.id} value={d.id}>{d.name}</option>
               ))}
-            </select>
-          </div>
+          </Select>
           <Input name="trainerName" label="Trainer Name" required defaultValue={selectedTrainingForEdit?.trainerName} />
           <Input type="date" name="trainingDate" label="Training Date" required defaultValue={selectedTrainingForEdit?.trainingDate?.split('T')[0]} />
           <Input name="trainingLocation" label="Location" required defaultValue={selectedTrainingForEdit?.trainingLocation} />
@@ -417,6 +414,7 @@ export default function TrainingListPage() {
                 <h3 className="text-lg font-medium">Participants & Feedback</h3>
                 <div className="flex gap-2">
                   <select 
+                    aria-label="Employee to add to training"
                     className="p-1 border rounded-md text-sm dark:bg-gray-800 dark:border-gray-700" 
                     value={newParticipantId}
                     onChange={(e) => setNewParticipantId(e.target.value)}
@@ -521,13 +519,10 @@ export default function TrainingListPage() {
               feedbackData
             });
           }} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Attendance</label>
-              <select name="attendanceStatus" className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700" defaultValue={editingParticipant.attendanceStatus}>
+            <Select name="attendanceStatus" label="Attendance" defaultValue={editingParticipant.attendanceStatus}>
                 <option value="TRAINING_PRESENT">Present</option>
                 <option value="TRAINING_ABSENT">Absent</option>
-              </select>
-            </div>
+            </Select>
             <Input type="number" name="assessmentScore" label="Assessment Score (%)" min="1" max="100" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={editingParticipant.assessmentScore} />
             <div className="flex items-center gap-2">
               <input type="checkbox" name="certificateIssued" id="certificateIssued" defaultChecked={editingParticipant.certificateIssued} />

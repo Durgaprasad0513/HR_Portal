@@ -12,6 +12,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Plus, Search, MoreHorizontal, UsersRound, Download } from 'lucide-react';
 import { Employee } from '@/types';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function EmployeeListPage() {
   const navigate = useNavigate();
@@ -88,12 +89,13 @@ export default function EmployeeListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 dark:border-gray-700 pb-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">Employee Management</h1>
-          {canExport('employees') && <Button variant="outline" onClick={handleExport}>
+      <PageHeader
+        title="Employee Management"
+        description="Find, review, and manage employee records."
+        actions={canExport('employees') && <Button variant="outline" onClick={handleExport}>
             <Download className="w-4 h-4 mr-2" /> Export Register
           </Button>}
-        </div>
+      />
 
       {/* Station Cards */}
       {deptData?.data && deptData.data.length > 0 && (
@@ -101,10 +103,20 @@ export default function EmployeeListPage() {
           {deptData.data.map((dept: any) => (
             <div 
               key={dept.id} 
+              role="button"
+              tabIndex={0}
+              aria-pressed={departmentId === dept.id}
+              aria-label={`Filter employees by ${dept.name}`}
               className={`p-4 rounded-xl border shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
                 departmentId === dept.id ? 'bg-accent-50 dark:bg-accent-900/20 border-accent-200 dark:border-accent-800' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
               }`}
               onClick={() => setDepartmentId(dept.id === departmentId ? '' : dept.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setDepartmentId(dept.id === departmentId ? '' : dept.id);
+                }
+              }}
             >
               <div className="flex justify-between items-start mb-2">
                 <h3 className={`font-semibold line-clamp-1 ${departmentId === dept.id ? 'text-accent-700 dark:text-accent-400' : 'text-navy-900 dark:text-white'}`} title={dept.name}>{dept.name}</h3>
@@ -124,6 +136,7 @@ export default function EmployeeListPage() {
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <input 
+              aria-label="Search employees"
               placeholder="Search..." 
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
               value={search}
@@ -132,6 +145,7 @@ export default function EmployeeListPage() {
           </div>
           
           <select 
+            aria-label="Filter employees by office"
             className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
@@ -142,6 +156,7 @@ export default function EmployeeListPage() {
           </select>
           
           <select 
+            aria-label="Filter employees by status"
             className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
@@ -198,6 +213,7 @@ export default function EmployeeListPage() {
         />
       ) : (
         <DataTable 
+          caption="Employees"
           columns={columns} 
           data={empData?.data || []} 
           keyField="id" 
