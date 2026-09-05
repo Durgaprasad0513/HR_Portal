@@ -202,11 +202,15 @@ function UserAccountsTab() {
 
       {isLoading ? <div className="py-12"><LoadingSpinner /></div> : (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <p className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400 sm:hidden">
+            Scroll horizontally to reach every account action.
+          </p>
+          <div className="overflow-x-auto focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent-500" tabIndex={0} role="region" aria-label="User role table. Scroll horizontally for more columns.">
+          <table className="min-w-[42rem] divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 {['User', 'Role', 'Status', 'Last Login', 'Actions'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
+                  <th key={h} className={`${h === 'Last Login' ? 'hidden md:table-cell ' : ''}px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider`}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -253,7 +257,7 @@ function UserAccountsTab() {
                       )}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">
+                  <td className="hidden px-4 py-3 text-xs text-gray-500 md:table-cell">
                     {u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}
                   </td>
                   <td className="px-4 py-3">
@@ -268,6 +272,7 @@ function UserAccountsTab() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

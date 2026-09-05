@@ -58,7 +58,7 @@ export function PerformanceCreateModal({ isOpen, onClose }: PerformanceCreateMod
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Initiate Performance Review" className="max-w-lg">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <Select required name="employeeId" label="Employee" value={formData.employeeId} onChange={handleChange}>
               <option value="">Select Employee</option>
               {employees?.map((emp: any) => (
@@ -83,7 +83,7 @@ export function PerformanceCreateModal({ isOpen, onClose }: PerformanceCreateMod
             <Input type="number" name="kpiWeightage" label="KPI Weightage (%)" value={formData.kpiWeightage} onChange={handleChange} />
           </div>
           
-          <div className="pt-4 flex justify-end gap-3">
+          <div className="sticky -bottom-4 z-10 -mx-4 -mb-4 flex justify-end gap-3 border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
             <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
             <Button type="submit" isLoading={createMutation.isPending}>Initiate Review</Button>
           </div>

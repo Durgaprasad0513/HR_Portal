@@ -204,12 +204,15 @@ export default function RecruitmentPage() {
           <div className="py-12"><LoadingSpinner /></div>
         ) : viewMode === 'list' ? (
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <p className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400 sm:hidden">
+              Tap a requisition to open its pipeline. Key status details stay visible on this screen.
+            </p>
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-semibold uppercase text-xs">
                 <tr>
                   <th className="px-6 py-4">Position</th>
-                  <th className="px-6 py-4">Department</th>
-                  <th className="px-6 py-4">Vacancies</th>
+                  <th className="hidden px-6 py-4 sm:table-cell">Department</th>
+                  <th className="hidden px-6 py-4 md:table-cell">Vacancies</th>
                   <th className="px-6 py-4">Candidates</th>
                   <th className="px-6 py-4">Status</th>
                 </tr>
@@ -234,8 +237,8 @@ export default function RecruitmentPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{req.department?.name || 'N/A'}</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{req.numberOfVacancies}</td>
+                    <td className="hidden px-6 py-4 text-gray-600 dark:text-gray-300 sm:table-cell">{req.department?.name || 'N/A'}</td>
+                    <td className="hidden px-6 py-4 text-gray-600 dark:text-gray-300 md:table-cell">{req.numberOfVacancies}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

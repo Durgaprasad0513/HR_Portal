@@ -116,6 +116,42 @@ body {
   min-width: 320px;
 }
 
+@media (max-width: 639px) {
+  header button,
+  #primary-sidebar a,
+  #primary-sidebar button,
+  main button[aria-label="Schedule interview"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  main a[href="/recruitment"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  [role="dialog"] button[aria-label^="Close "] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  main [class~="grid-cols-1"][class~="md:grid-cols-2"][class~="lg:grid-cols-4"][class~="gap-6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  main [class~="grid-cols-1"][class~="md:grid-cols-2"][class~="lg:grid-cols-4"][class~="gap-6"] > div {
+    min-width: 0;
+    padding: 0.875rem;
+  }
+
+  main [class~="grid-cols-1"][class~="md:grid-cols-2"][class~="lg:grid-cols-4"][class~="gap-6"] > div > .flex {
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--brand-primary);
   outline-offset: 2px;
