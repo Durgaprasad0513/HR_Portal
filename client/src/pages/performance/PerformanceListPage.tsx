@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Search } from 'lucide-react';
+import { Search, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Tab = 'My Performance' | 'Team/Company Reviews';
@@ -14,6 +14,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PerformanceReviewModal } from './PerformanceReviewModal';
 import { PerformanceCreateModal } from './PerformanceCreateModal';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function PerformanceListPage() {
   const { user } = useAuth();
@@ -46,6 +47,14 @@ export default function PerformanceListPage() {
       return matchesSearch && matchesType && matchesStatus;
     });
   }, [rawReviews, searchQuery, typeFilter, statusFilter]);
+
+  const hasActiveFilters = Boolean(searchQuery || typeFilter !== 'All Types' || statusFilter !== 'All Status');
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setTypeFilter('All Types');
+    setStatusFilter('All Status');
+  };
 
   const getStatusBadge = (status: string) => {
     switch(status) {
@@ -125,13 +134,9 @@ export default function PerformanceListPage() {
           <option value="COMPLETED">Completed</option>
         </select>
 
-        {(searchQuery || typeFilter !== 'All Types' || statusFilter !== 'All Status') && (
+        {hasActiveFilters && (
           <button 
-            onClick={() => {
-              setSearchQuery('');
-              setTypeFilter('All Types');
-              setStatusFilter('All Status');
-            }}
+            onClick={clearFilters}
             className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-navy-900 dark:text-white underline underline-offset-2"
           >
             Clear filters
@@ -141,13 +146,25 @@ export default function PerformanceListPage() {
 
       {/* Timeline View */}
       <div className="max-w-4xl pt-4 animate-in fade-in">
-        <div className="relative border-l-2 border-gray-100 dark:border-gray-800 ml-4 space-y-6 pl-12">
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : !reviews || reviews.length === 0 ? (
-            <div className="p-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">No performance reviews found.</div>
-          ) : (
-            reviews.map((review: any) => (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : !reviews || reviews.length === 0 ? (
+          <EmptyState
+            icon={Target}
+            title={hasActiveFilters ? 'No reviews match your filters' : 'No performance reviews yet'}
+            description={
+              hasActiveFilters
+                ? 'Adjust or clear the filters to see more review cycles.'
+                : isAdminOrHR
+                  ? 'Start a review cycle to set goals, collect feedback, and track approvals.'
+                  : 'Your assigned review cycles will appear here when they are initiated.'
+            }
+            actionLabel={hasActiveFilters ? 'Clear filters' : isAdminOrHR ? 'Initiate review' : undefined}
+            onAction={hasActiveFilters ? clearFilters : isAdminOrHR ? () => setIsCreateModalOpen(true) : undefined}
+          />
+        ) : (
+          <div className="relative border-l-2 border-gray-100 dark:border-gray-800 ml-4 space-y-6 pl-12">
+            {reviews.map((review: any) => (
               <Card key={review.id} className="hover:shadow-md transition-shadow relative cursor-pointer" onClick={() => setSelectedReview(review)}>
                 <div className="absolute top-8 -left-[3.5rem] w-6 border-t-2 border-gray-100 dark:border-gray-800 border-dashed"></div>
                 <div className="absolute top-7 -left-[3.8rem] h-3 w-3 rounded-full bg-gray-200 ring-4 ring-white"></div>
@@ -188,9 +205,9 @@ export default function PerformanceListPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {selectedReview && (
