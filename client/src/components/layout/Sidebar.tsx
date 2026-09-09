@@ -28,7 +28,7 @@ export function Sidebar() {
   };
 
   const workspaceNav = [
-    { name: 'Recruitment', path: '/recruitment', icon: Briefcase },
+    ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
     { name: 'Assets', path: '/assets', icon: Laptop },
     ...(isAdminOrHR ? [{ name: 'Attrition', path: '/attrition', icon: UserMinus }] : []),
     { name: 'Documents', path: '/documents', icon: Files },
