@@ -144,7 +144,7 @@ export function Header({ onMenuClick, menuOpen = false }: HeaderProps) {
 
           <button
             type="button"
-            className="flex items-center cursor-pointer space-x-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
+            className="flex items-center cursor-pointer space-x-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             onClick={() => { setDropdownOpen(!dropdownOpen); setNotifOpen(false); }}
             aria-label="Open user menu"
             aria-expanded={dropdownOpen}

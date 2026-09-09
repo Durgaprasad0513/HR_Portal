@@ -311,6 +311,9 @@ model Employee {
 
   // New personal fields
   maritalStatus          MaritalStatus?
+  bloodGroup             String?
+  qualification          String?
+  experience             String?
   alternateMobile        String?
   personalEmail          String?
   permanentAddress       String?

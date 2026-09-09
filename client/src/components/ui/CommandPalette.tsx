@@ -64,7 +64,7 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
             value={search}
             onValueChange={setSearch}
             placeholder="Search resources, people, settings..." 
-            className="flex-1 bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 font-medium"
+            className="flex-1 bg-transparent outline-none focus:outline-none focus-visible:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 font-medium"
           />
         </div>
         

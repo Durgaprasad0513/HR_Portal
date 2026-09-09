@@ -138,7 +138,7 @@ export default function EmployeeListPage() {
             <input 
               aria-label="Search employees"
               placeholder="Search..." 
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -146,7 +146,7 @@ export default function EmployeeListPage() {
           
           <select 
             aria-label="Filter employees by office"
-            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           >
@@ -157,7 +157,7 @@ export default function EmployeeListPage() {
           
           <select 
             aria-label="Filter employees by status"
-            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
