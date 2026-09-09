@@ -54,7 +54,6 @@ const AppRoutes = () => {
           <Route path="/assets" element={<AssetListPage />} />
           <Route path="/travel" element={<TravelListPage />} />
           <Route path="/office-expenses" element={<OfficeExpensesPage />} />
-          <Route path="/recruitment" element={<RecruitmentPage />} />
           
           <Route path="/departments" element={<DepartmentListPage />} />
           <Route path="/departments/new" element={<DepartmentFormPage />} />
@@ -67,6 +66,7 @@ const AppRoutes = () => {
           <Route path="/notifications" element={<NotificationListPage />} />
 
           <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR']} />}>
+            <Route path="/recruitment" element={<RecruitmentPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/audit" element={<AuditLogPage />} />
             <Route path="/login-history" element={<LoginHistoryPage />} />
