@@ -14,6 +14,7 @@
   --brand-primary: #EA580C;
   --brand-primary-hover: #C2410C;
   --brand-primary-light: #FFEDD5;
+  --focus-ring: #cbd5e1; /* slate-300 */
 
   --text-heading: #0F172A;
   --text-body: #1E293B;
@@ -153,8 +154,11 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brand-primary);
+  outline: 2px solid var(--focus-ring, #cbd5e1);
   outline-offset: 2px;
+}
+.dark :focus-visible {
+  outline-color: #475569;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -222,7 +222,7 @@ export default function OfficeExpensesPage() {
             <Input name="expenseDate" label="Date incurred" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
             <div className="flex flex-col">
               <label htmlFor="office-expense-category" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-              <Select id="office-expense-category" name="category" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500">
+              <Select id="office-expense-category" name="category" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
                 <option value="STATIONERY">Stationery</option>
                 <option value="FOOD_SNACKS">Food & Snacks</option>
                 <option value="MAINTENANCE">Maintenance</option>
