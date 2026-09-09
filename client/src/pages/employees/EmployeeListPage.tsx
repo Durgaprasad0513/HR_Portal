@@ -98,7 +98,7 @@ export default function EmployeeListPage() {
       />
 
       {/* Station Cards */}
-      {deptData?.data && deptData.data.length > 0 && (
+      {(user?.role === 'ADMIN' || user?.role === 'HR') && deptData?.data && deptData.data.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {deptData.data.map((dept: any) => (
             <div 
