@@ -11,9 +11,9 @@
 
   --sidebar-bg: #0F172A;
   
-  --brand-primary: #EA580C;
-  --brand-primary-hover: #C2410C;
-  --brand-primary-light: #FFEDD5;
+  --brand-primary: #475569; /* slate-600 */
+  --brand-primary-hover: #334155; /* slate-700 */
+  --brand-primary-light: #f1f5f9; /* slate-100 */
   --focus-ring: #cbd5e1; /* slate-300 */
 
   --text-heading: #0F172A;
@@ -86,17 +86,17 @@
   --color-navy-900: #1B2559;
   --color-navy-950: #111640;
 
-  /* Accent Orange — CTAs, active nav, add buttons, pagination active */
-  --color-accent-50: #fff7ed;
-  --color-accent-100: #ffedd5;
-  --color-accent-200: #fed7aa;
-  --color-accent-300: #fdba74;
-  --color-accent-400: #fb923c;
-  --color-accent-500: #F97316;
-  --color-accent-600: #ea580c;
-  --color-accent-700: #c2410c;
-  --color-accent-800: #9a3412;
-  --color-accent-900: #7c2d12;
+  /* Accent Slate ?" CTAs, active nav, add buttons, pagination active */
+  --color-accent-50: #f8fafc;
+  --color-accent-100: #f1f5f9;
+  --color-accent-200: #e2e8f0;
+  --color-accent-300: #cbd5e1;
+  --color-accent-400: #94a3b8;
+  --color-accent-500: #64748b;
+  --color-accent-600: #475569;
+  --color-accent-700: #334155;
+  --color-accent-800: #1e293b;
+  --color-accent-900: #0f172a;
 
   /* Keep primary as navy alias for backward compat */
   --color-primary-50: #eef2ff;

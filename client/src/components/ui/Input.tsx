@@ -31,9 +31,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (props.type === 'number' && props.min !== undefined && Number(props.min) >= 0) {
-        if (Number(e.target.value) < 0) {
-          e.target.value = props.min.toString();
+      if (props.type === 'number') {
+        if (e.target.value.includes('.')) {
+          e.target.value = e.target.value.split('.')[0];
+        }
+        if (props.min !== undefined && Number(props.min) >= 0) {
+          if (Number(e.target.value) < 0) {
+            e.target.value = props.min.toString();
+          }
         }
       }
       if (touched) validate(e.target);
@@ -67,10 +72,17 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={innerRef}
           required={required}
           onBlur={(e) => {
-            if (props.type === 'number' && props.min !== undefined && Number(props.min) >= 0 && Number(e.target.value) < 0) {
-              e.target.value = props.min.toString();
-              if (onChange) {
-                // Trigger change artificially if we corrected the value
+            if (props.type === 'number') {
+              let changed = false;
+              if (e.target.value.includes('.')) {
+                e.target.value = e.target.value.split('.')[0];
+                changed = true;
+              }
+              if (props.min !== undefined && Number(props.min) >= 0 && Number(e.target.value) < 0) {
+                e.target.value = String(props.min);
+                changed = true;
+              }
+              if (changed && onChange) {
                 const event = Object.create(e);
                 event.target = e.target;
                 event.currentTarget = e.currentTarget;
@@ -79,7 +91,24 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             }
             handleBlur(e);
           }}
-          onChange={handleChange}
+          onKeyDown={(e) => {
+            if (props.type === 'number') {
+              if (e.key === '.') e.preventDefault();
+              if (props.min !== undefined && Number(props.min) >= 0 && e.key === '-') e.preventDefault();
+            }
+            if (props.onKeyDown) props.onKeyDown(e);
+          }}
+          onChange={(e) => {
+            if (props.type === 'number') {
+              if (e.target.value.includes('.')) {
+                e.target.value = e.target.value.split('.')[0];
+              }
+              if (props.min !== undefined && Number(props.min) >= 0 && Number(e.target.value) < 0) {
+                e.target.value = String(props.min);
+              }
+            }
+            handleChange(e);
+          }}
           onInvalid={handleInvalid}
           aria-invalid={Boolean(displayError)}
           aria-describedby={describedBy}

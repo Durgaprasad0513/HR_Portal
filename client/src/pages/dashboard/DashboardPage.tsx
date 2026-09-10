@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
 import { recruitmentApi } from '@/api/recruitment';
-import { Users, CheckCircle, Clock, UserMinus, Laptop, Briefcase, PhoneCall, Plus } from 'lucide-react';
+import {  Users, CheckCircle, Clock, UserMinus, Laptop, Briefcase, PhoneCall, Plus , UserCheck, Award } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CountUp } from '@/components/ui/CountUp';
+import { TeamCard } from './components/TeamCard';
+import { EmployeePerformanceCard } from './components/EmployeePerformanceCard';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
 import { PageHeader } from '@/components/ui/PageHeader';
 
@@ -52,8 +54,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-full bg-accent-50 flex items-center justify-center">
-              <Users className="h-5 w-5 text-accent-600" />
+            <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center">
+              <Users className="h-5 w-5 text-orange-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-text-muted">Total Employees</p>
@@ -63,21 +65,21 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-text-muted">Pending travel request</p>
-                <h3 className="text-2xl font-bold text-text-heading"><CountUp end={stats.pendingTravel || 0} /></h3>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-emerald-600" />
             </div>
+            <div>
+              <p className="text-sm font-medium text-text-muted">Pending travel request</p>
+              <h3 className="text-2xl font-bold text-text-heading"><CountUp end={stats.pendingTravel || 0} /></h3>
+            </div>
+          </div>
         </div>
 
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
           <div className="flex items-center gap-4">
             <div className="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 text-amber-600" />
+              <Laptop className="h-5 w-5 text-amber-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-text-muted">Assets Assigned</p>
@@ -85,11 +87,11 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center">
-              <Briefcase className="h-5 w-5 text-indigo-600" />
+            <div className="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center">
+              <Briefcase className="h-5 w-5 text-purple-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-text-muted">Open Requisitions</p>
@@ -98,7 +100,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-
 
       {/* Recruitment Widget */}
       <div className="mt-8 border-t border-slate-border pt-8">
@@ -128,23 +129,23 @@ export default function DashboardPage() {
               <div className="bg-surface p-4 rounded-lg border border-green-100">
                 <div className="text-green-600 font-bold flex items-center gap-2 mb-1">
                   <CheckCircle className="w-4 h-4" />
-                  <CountUp end={stats.appliedForInterview || 0} />
-                </div>
-                <div className="text-xs font-medium text-text-muted">Applied for interview</div>
-              </div>
-              <div className="bg-surface p-4 rounded-lg border border-orange-100">
-                <div className="text-orange-600 font-bold flex items-center gap-2 mb-1">
-                  <PhoneCall className="w-4 h-4" />
                   <CountUp end={stats.invitedForInterview || 0} />
                 </div>
                 <div className="text-xs font-medium text-text-muted">Invited for interview</div>
               </div>
+              <div className="bg-surface p-4 rounded-lg border border-orange-100">
+                <div className="text-orange-600 font-bold flex items-center gap-2 mb-1">
+                  <UserCheck className="w-4 h-4" />
+                  <CountUp end={stats.selectedCandidates || 0} />
+                </div>
+                <div className="text-xs font-medium text-text-muted">Selected Candidates</div>
+              </div>
               <div className="bg-surface p-4 rounded-lg border border-purple-100">
                 <div className="text-purple-600 font-bold flex items-center gap-2 mb-1">
-                  <Users className="w-4 h-4" />
-                  <CountUp end={stats.totalCandidates || 0} />
+                  <Award className="w-4 h-4" />
+                  <CountUp end={stats.offersAccepted || 0} />
                 </div>
-                <div className="text-xs font-medium text-text-muted">Total candidates applied</div>
+                <div className="text-xs font-medium text-text-muted">Offers Accepted</div>
               </div>
             </div>
 
@@ -190,8 +191,8 @@ export default function DashboardPage() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
-          </div>
 
           <div className="flex flex-col gap-6">
             {/* Attrition */}
@@ -267,6 +268,17 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+        </div>
+      </div>
+      
+      {/* New Row: Team and Employee Performance */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <TeamCard />
+        </div>
+        <div className="lg:col-span-2">
+          <EmployeePerformanceCard />
         </div>
       </div>
       
