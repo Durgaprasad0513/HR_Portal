@@ -302,7 +302,7 @@ export default function TravelListPage() {
                 <option value="OWN_VEHICLE">Personal Vehicle</option>
               </Select>
             </div>
-            <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
+            <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
           </div>
           <FileUpload name="billUpload" label="Upload Attachment (Optional)" />
           
