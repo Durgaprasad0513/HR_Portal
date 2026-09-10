@@ -31,6 +31,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (props.type === 'number' && props.min !== undefined && Number(props.min) >= 0) {
+        if (Number(e.target.value) < 0) {
+          e.target.value = props.min.toString();
+        }
+      }
       if (touched) validate(e.target);
       if (onChange) onChange(e);
     };
@@ -61,7 +66,19 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           ref={innerRef}
           required={required}
-          onBlur={handleBlur}
+          onBlur={(e) => {
+            if (props.type === 'number' && props.min !== undefined && Number(props.min) >= 0 && Number(e.target.value) < 0) {
+              e.target.value = props.min.toString();
+              if (onChange) {
+                // Trigger change artificially if we corrected the value
+                const event = Object.create(e);
+                event.target = e.target;
+                event.currentTarget = e.currentTarget;
+                onChange(event as unknown as React.ChangeEvent<HTMLInputElement>);
+              }
+            }
+            handleBlur(e);
+          }}
           onChange={handleChange}
           onInvalid={handleInvalid}
           aria-invalid={Boolean(displayError)}

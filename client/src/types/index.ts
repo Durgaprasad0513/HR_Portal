@@ -48,6 +48,9 @@ export interface Employee {
   zipCode?: string;
   country?: string;
   maritalStatus?: MaritalStatus;
+  bloodGroup?: string;
+  qualification?: string;
+  experience?: string;
   alternateMobile?: string;
   personalEmail?: string;
   permanentAddress?: string;

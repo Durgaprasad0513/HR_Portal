@@ -302,7 +302,7 @@ export default function TravelListPage() {
                 <option value="OWN_VEHICLE">Personal Vehicle</option>
               </Select>
             </div>
-            <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" />
+            <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
           </div>
           <FileUpload name="billUpload" label="Upload Attachment (Optional)" />
           
@@ -328,7 +328,7 @@ export default function TravelListPage() {
             </div>
           </div>
 
-          <Input id="advanceApproved" label="Advance Approved (₹)" type="number" step="0.01" defaultValue={selectedRequest?.advanceRequested || 0} />
+          <Input id="advanceApproved" label="Advance Approved (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={selectedRequest?.advanceRequested || 0} />
           
           <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-800">
             <Button variant="outline" onClick={() => setApprovalModalOpen(false)}>Cancel</Button>
@@ -359,10 +359,10 @@ export default function TravelListPage() {
           <p className="text-sm text-gray-600">Fill in your expenses for this trip. The advance you received (if any) will be automatically deducted during settlement.</p>
           
           <div className="grid grid-cols-2 gap-4">
-            <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="0.01" required defaultValue={0} />
-            <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="0.01" required defaultValue={0} />
-            <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="0.01" required defaultValue={0} />
-            <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="0.01" defaultValue={0} />
+            <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+            <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+            <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+            <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
           </div>
 
           <FileUpload name="billUpload" label="Upload Bills/Receipts" required />
