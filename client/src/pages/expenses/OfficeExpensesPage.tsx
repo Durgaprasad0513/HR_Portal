@@ -234,7 +234,7 @@ export default function OfficeExpensesPage() {
           </div>
           
           <Input name="description" label="Description" placeholder="e.g. Printer ink cartridges" required />
-          <Input name="amount" label="Amount (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required />
+          <Input name="amount" label="Amount (₹)" type="number" step="0.01" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required />
           <FileUpload name="billUpload" label="Upload Receipt" />
           
           <div className="flex justify-end space-x-2 pt-4">
