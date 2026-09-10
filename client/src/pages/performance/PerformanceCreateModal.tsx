@@ -80,7 +80,7 @@ export function PerformanceCreateModal({ isOpen, onClose }: PerformanceCreateMod
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Input name="targetValue" label="Target Value" value={formData.targetValue} onChange={handleChange} />
-            <Input type="number" name="kpiWeightage" label="KPI Weightage (%)" value={formData.kpiWeightage} onChange={handleChange} />
+            <Input type="number" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} name="kpiWeightage" label="KPI Weightage (%)" value={formData.kpiWeightage} onChange={handleChange} />
           </div>
           
           <div className="sticky -bottom-4 z-10 -mx-4 -mb-4 flex justify-end gap-3 border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
