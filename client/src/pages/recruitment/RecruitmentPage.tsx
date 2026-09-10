@@ -146,7 +146,7 @@ export default function RecruitmentPage() {
              <Button variant="outline" onClick={() => setViewMode('list')}>Back to List</Button>
           )}
           {isAdminOrHR && viewMode === 'list' && (
-            <Button onClick={() => setIsReqModalOpen(true)} className="gap-2">
+            <Button onClick={() => setIsReqModalOpen(true)} className="gap-2 bg-orange-600 hover:bg-orange-700 text-white border-none">
               <Plus className="w-4 h-4" /> New Requisition
             </Button>
           )}
