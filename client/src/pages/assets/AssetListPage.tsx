@@ -282,7 +282,7 @@ export default function AssetListPage() {
             <Input name="brandModel" defaultValue={editingAsset?.brandModel || ""} label="Brand & Model" placeholder="e.g. MacBook Pro 16" required />
             <Input name="serialNumber" defaultValue={editingAsset?.serialNumber || ""} label="Serial/ID Number" required />
             <Input name="purchaseDate" defaultValue={editingAsset?.purchaseDate ? new Date(editingAsset.purchaseDate).toISOString().split('T')[0] : ""} label="Purchase Date" type="date" />
-            <Input name="purchaseValue" defaultValue={editingAsset?.purchaseValue || 0} label="Purchase Value" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
+            <Input name="purchaseValue" defaultValue={editingAsset?.purchaseValue || 0} label="Purchase Value" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

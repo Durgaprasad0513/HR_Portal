@@ -106,6 +106,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
                   <div>
                     <label htmlFor="review-period" className="block text-xs font-semibold uppercase text-gray-500 mb-1">Review Period</label>
                     <select id="review-period" name="reviewPeriod" value={formData.reviewPeriod || 'QUARTERLY'} onChange={handleChange} className="w-full rounded-md border border-gray-300 dark:border-gray-700 p-2 dark:bg-gray-900 text-sm">
+                      <option value="MONTHLY">Monthly</option>
                       <option value="QUARTERLY">Quarterly</option>
                       <option value="HALF_YEARLY">Half Yearly</option>
                       <option value="ANNUAL">Annual</option>

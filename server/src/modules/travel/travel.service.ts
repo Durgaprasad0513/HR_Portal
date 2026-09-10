@@ -26,18 +26,7 @@ export class TravelService {
       throw new Error('End date must be on or after the start date.');
     }
 
-    const overlappingRequest = await prisma.travelRequest.findFirst({
-      where: {
-        employeeId: currentUser.employeeId,
-        approvalStatus: { not: ApprovalStatus.APPROVAL_REJECTED },
-        startDate: { lte: endDate },
-        endDate: { gte: startDate },
-      },
-      select: { id: true },
-    });
-    if (overlappingRequest) {
-      throw new Error('Travel request has overlapping dates with an existing request.');
-    }
+    
 
 
     const req = await prisma.travelRequest.create({

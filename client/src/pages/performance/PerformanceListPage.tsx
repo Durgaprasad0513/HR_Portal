@@ -116,6 +116,7 @@ export default function PerformanceListPage() {
           className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
         >
           <option value="All Types">All Types</option>
+          <option value="Monthly">Monthly</option>
           <option value="Quarterly">Quarterly</option>
           <option value="Half Yearly">Half Yearly</option>
           <option value="Annual">Annual</option>
@@ -145,7 +146,7 @@ export default function PerformanceListPage() {
       </div>
 
       {/* Timeline View */}
-      <div className="max-w-4xl pt-4 animate-in fade-in">
+      <div className="w-full pt-4 animate-in fade-in">
         {isLoading ? (
           <LoadingSpinner />
         ) : !reviews || reviews.length === 0 ? (
