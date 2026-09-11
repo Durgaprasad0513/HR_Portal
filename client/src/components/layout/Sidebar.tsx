@@ -84,7 +84,7 @@ export function Sidebar() {
           to="/dashboard"
           className={cn(
             "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors",
-            location.pathname === '/dashboard' ? "text-[#6FD1D7] bg-white/5" : "text-white/80 hover:text-[#6FD1D7]"
+            location.pathname === '/dashboard' ? "text-accent-400 bg-white/5" : "text-white/80 hover:text-accent-400"
           )}
         >
           <LayoutDashboard className="h-5 w-5" />
@@ -103,8 +103,8 @@ export function Sidebar() {
                 aria-controls={`sidebar-section-${section.id}`}
                 className={cn(
                   "flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors",
-                  "hover:text-[#6FD1D7]",
-                  hasActiveChild ? "text-[#6FD1D7]" : "text-white/80"
+                  "hover:text-accent-400",
+                  hasActiveChild ? "text-accent-400" : "text-white/80"
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -131,8 +131,8 @@ export function Sidebar() {
                         className={cn(
                           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
                           isActive
-                            ? "text-[#6FD1D7] bg-white/5 font-semibold"
-                            : "text-white/60 hover:text-[#6FD1D7] hover:bg-white/5"
+                            ? "text-accent-400 bg-white/5 font-semibold"
+                            : "text-white/60 hover:text-accent-400 hover:bg-white/5"
                         )}
                       >
                         <item.icon className="h-4 w-4" />
