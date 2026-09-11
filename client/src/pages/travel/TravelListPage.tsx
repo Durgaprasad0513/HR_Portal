@@ -110,7 +110,7 @@ export default function TravelListPage() {
              <Plane className="w-4 h-4 text-indigo-500" />
           </div>
           <div>
-            <div className="font-semibold text-navy-900 dark:text-white">{row.destination}</div>
+            <div className="font-semibold text-text-heading">{row.destination}</div>
             <div className="text-xs text-gray-500 max-w-[200px] truncate">{row.travelPurpose}</div>
           </div>
         </div>
@@ -245,17 +245,17 @@ export default function TravelListPage() {
 
       {isAdminOrHR && data && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <p className="text-sm text-gray-500 mb-1">Pending Approval</p>
-            <p className="text-2xl font-bold text-navy-900 dark:text-white">{data.filter((d:any) => d.approvalStatus === 'APPROVAL_PENDING').length}</p>
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+            <p className="text-sm text-text-muted mb-1 font-medium">Pending Approval</p>
+            <p className="text-2xl font-bold text-text-heading">{data.filter((d:any) => d.approvalStatus === 'APPROVAL_PENDING').length}</p>
           </div>
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <p className="text-sm text-gray-500 mb-1">Awaiting Settlement</p>
-            <p className="text-2xl font-bold text-navy-900 dark:text-white">{data.filter((d:any) => d.settlementStatus === 'SUBMITTED').length}</p>
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+            <p className="text-sm text-text-muted mb-1 font-medium">Awaiting Settlement</p>
+            <p className="text-2xl font-bold text-text-heading">{data.filter((d:any) => d.settlementStatus === 'SUBMITTED').length}</p>
           </div>
-          <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <p className="text-sm text-gray-500 mb-1">Total Settled Expenses</p>
-            <p className="text-2xl font-bold text-navy-900 dark:text-white">
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+            <p className="text-sm text-text-muted mb-1 font-medium">Total Settled Expenses</p>
+            <p className="text-2xl font-bold text-text-heading">
               ₹{data.filter((d:any) => d.settlementStatus === 'SETTLED').reduce((sum:number, d:any) => sum + Number(d.totalExpenseClaimed || 0), 0)}
             </p>
           </div>
@@ -322,9 +322,9 @@ export default function TravelListPage() {
           
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-gray-500">Employee:</span> <span className="font-medium text-navy-900 dark:text-white">{selectedRequest?.employee?.firstName} {selectedRequest?.employee?.lastName}</span></div>
-              <div><span className="text-gray-500">Destination:</span> <span className="font-medium text-navy-900 dark:text-white">{selectedRequest?.destination}</span></div>
-              <div><span className="text-gray-500">Advance Requested:</span> <span className="font-medium text-navy-900 dark:text-white">₹{selectedRequest?.advanceRequested || 0}</span></div>
+              <div><span className="text-gray-500">Employee:</span> <span className="font-medium text-text-heading">{selectedRequest?.employee?.firstName} {selectedRequest?.employee?.lastName}</span></div>
+              <div><span className="text-gray-500">Destination:</span> <span className="font-medium text-text-heading">{selectedRequest?.destination}</span></div>
+              <div><span className="text-gray-500">Advance Requested:</span> <span className="font-medium text-text-heading">₹{selectedRequest?.advanceRequested || 0}</span></div>
             </div>
           </div>
 
@@ -383,7 +383,7 @@ export default function TravelListPage() {
           
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-3">
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-gray-500">Employee:</span> <span className="font-medium text-navy-900 dark:text-white">{selectedRequest?.employee?.firstName} {selectedRequest?.employee?.lastName}</span></div>
+              <div><span className="text-gray-500">Employee:</span> <span className="font-medium text-text-heading">{selectedRequest?.employee?.firstName} {selectedRequest?.employee?.lastName}</span></div>
               <div><span className="text-gray-500 block mb-1">Attached Files:</span> 
                 <div className="flex flex-col gap-1">
                   {selectedRequest?.billUpload ? selectedRequest.billUpload.split(',').map((url: string, i: number) => (
@@ -398,7 +398,7 @@ export default function TravelListPage() {
             <div className="border-t border-gray-200 dark:border-gray-700 pt-3 grid grid-cols-2 gap-2 text-sm">
               <div className="flex justify-between col-span-2"><span className="text-gray-500">Total Expenses Claimed:</span> <span className="font-medium">₹{selectedRequest?.totalExpenseClaimed || 0}</span></div>
               <div className="flex justify-between col-span-2"><span className="text-gray-500">Advance Approved:</span> <span className="font-medium">₹{selectedRequest?.advanceApproved || 0}</span></div>
-              <div className="flex justify-between col-span-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-base font-bold text-navy-900 dark:text-white">
+              <div className="flex justify-between col-span-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-base font-bold text-text-heading">
                 <span>Net Amount (Payable/Recoverable):</span> 
                 <span>₹{(selectedRequest?.totalExpenseClaimed || 0) - (selectedRequest?.advanceApproved || 0)}</span>
               </div>
