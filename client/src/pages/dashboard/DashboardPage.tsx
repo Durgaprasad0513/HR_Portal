@@ -11,6 +11,8 @@ import { TeamCard } from './components/TeamCard';
 import { EmployeePerformanceCard } from './components/EmployeePerformanceCard';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { RippleButton } from '@/components/ui/ripple-button';
+
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -50,6 +52,17 @@ export default function DashboardPage() {
         title="Dashboard"
         description={`Welcome back, ${user?.employee?.firstName || user?.email || 'there'}. Here is what needs your attention.`}
       />
+
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold">Interactive Components Demo</h3>
+          <p className="text-sm text-gray-500">Try out the new Ripple Button component</p>
+        </div>
+        <RippleButton onClick={() => alert('Ripple Button Clicked!')}>
+          Click for Ripple
+        </RippleButton>
+      </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
