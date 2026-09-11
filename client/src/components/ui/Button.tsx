@@ -16,7 +16,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     const variants = {
       // 1. Brand Primary
-      primary: "bg-brand-primary text-white hover:bg-brand-hover hover:-translate-y-0.5 hover:shadow-[0_4px_6px_-1px_rgba(71,85,105,0.2)] active:translate-y-0 active:scale-[0.98] focus-visible:ring-brand-light",
+      primary: "bg-brand-primary text-white hover:bg-brand-hover hover:-translate-y-0.5 hover:shadow-[0_4px_6px_-1px_rgba(5,150,105,0.2)] active:translate-y-0 active:scale-[0.98] focus-visible:ring-brand-light",
       
       // 2. Dark Slate Navigation (also maps to 'approve' for backward compat)
       dark: "bg-sidebar text-white hover:bg-[#1E293B] hover:-translate-y-0.5 hover:shadow active:translate-y-0 active:scale-[0.98] focus-visible:ring-sidebar",
