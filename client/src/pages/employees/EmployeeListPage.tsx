@@ -123,7 +123,7 @@ export default function EmployeeListPage() {
                     <UsersRound className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-muted truncate" title={dept.name}>{dept.name}</p>
+                    <p className="text-sm font-medium text-text-muted line-clamp-2 break-words" title={dept.name}>{dept.name}</p>
                     <div className="flex items-end gap-2">
                       <h3 className="text-2xl font-bold text-text-heading">{dept._count?.employees || 0}</h3>
                     </div>
