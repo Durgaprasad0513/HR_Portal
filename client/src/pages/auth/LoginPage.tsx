@@ -62,19 +62,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-gray-900 font-sans">
-      <div className="w-full flex flex-col items-center justify-center p-8 lg:p-24 relative z-10">
-        <div className="text-center mb-8">
-          <div className="mx-auto bg-accent-500 rounded-lg w-12 h-12 flex items-center justify-center mb-6 shadow-md">
-            <Briefcase className="w-7 h-7 text-white" aria-hidden="true" />
+    <div className="min-h-screen flex font-sans bg-slate-50 dark:bg-slate-950 relative overflow-hidden">
+      {/* Decorative background blobs to make transparency visible */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 dark:bg-blue-900/30 blur-3xl"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/20 dark:bg-indigo-900/30 blur-3xl"></div>
+      </div>
+
+      <div className="w-full flex flex-col items-center justify-center p-4 lg:p-8 relative z-10">
+        {/* Transparent Glass Card Container */}
+        <div className="w-full max-w-md backdrop-blur-xl bg-white/60 dark:bg-gray-900/60 border border-white/40 dark:border-gray-800/60 shadow-2xl rounded-3xl p-8 lg:p-10 relative overflow-hidden">
+          {/* Subtle inner shine */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent dark:from-white/5 opacity-50 pointer-events-none"></div>
+          
+          <div className="text-center mb-8 relative z-10">
+            <div className="mx-auto bg-accent-500 rounded-lg w-12 h-12 flex items-center justify-center mb-6 shadow-md">
+              <Briefcase className="w-7 h-7 text-white" aria-hidden="true" />
+            </div>
+          </div>
+          <div className="relative z-10">
+            <AnimatedForm
+              {...formFields}
+              fieldPerRow={1}
+              onSubmit={handleLoginSubmit}
+              goTo={(e) => { e.preventDefault(); toast.error('Forgot password flow not implemented'); }}
+            />
           </div>
         </div>
-        <AnimatedForm
-          {...formFields}
-          fieldPerRow={1}
-          onSubmit={handleLoginSubmit}
-          goTo={(e) => { e.preventDefault(); toast.error('Forgot password flow not implemented'); }}
-        />
       </div>
     </div>
   );
