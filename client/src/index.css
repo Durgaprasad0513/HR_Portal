@@ -185,3 +185,25 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+:root {
+  --skeleton: hsl(0, 0%, 90%);
+  --btn-border: hsl(214deg, 31.8%, 91.4%);
+  --input-bg: hsl(220, 20%, 90%);
+}
+
+.dark {
+  --skeleton: hsl(218, 36%, 16%);
+  --btn-border: hsl(217deg, 32.6%, 17.5%);
+  --input-bg: hsl(219, 63%, 16%);
+}
+
+@theme {
+  --color-skeleton: var(--skeleton);
+  --color-btn-border: var(--btn-border);
+  --color-input-bg: var(--input-bg);
+}
+
+.g-button {
+  border-radius: var(--radius);
+  border: 1px solid var(--btn-border);
+}
