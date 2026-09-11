@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { authApi } from '@/api/auth';
 import toast from 'react-hot-toast';
-import { User, Lock, ArrowRight } from 'lucide-react';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Briefcase } from 'lucide-react';
+import { AnimatedForm } from '@/components/ui/modern-animated-sign-in';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -18,15 +18,9 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMsg(null);
     
-    if (!username || !password) {
-      setErrorMsg('Please enter both username and password');
-      return;
-    }
-    
     setIsLoading(true);
     try {
-      // API currently uses 'email' field in payload, map username -> email
-      const response = await authApi.login({ email: username, password });
+      const response = await authApi.login({ email, password });
       if (response.success) {
         login(response.data.token, response.data.user);
         toast.success('Login successful');
@@ -41,82 +35,46 @@ export default function LoginPage() {
     }
   };
 
+  const formFields = {
+    header: 'Welcome back',
+    subHeader: 'Sign in to your HR Management account',
+    fields: [
+      {
+        label: 'Email',
+        required: true,
+        type: 'email' as const,
+        placeholder: 'Enter your email address',
+        onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+          setEmail(event.target.value),
+      },
+      {
+        label: 'Password',
+        required: true,
+        type: 'password' as const,
+        placeholder: 'Enter your password',
+        onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+          setPassword(event.target.value),
+      },
+    ],
+    submitButton: isLoading ? 'Signing in...' : 'Sign in',
+    textVariantButton: 'Forgot password?',
+    errorField: errorMsg || undefined,
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-[#1e3a8a] to-black p-4 overflow-hidden relative">
-      {/* Decorative blurred background blobs */}
-      <div className="absolute top-1/4 left-1/4 w-[30rem] h-[30rem] bg-blue-500 rounded-full mix-blend-screen filter blur-[128px] opacity-40"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-blue-800 rounded-full mix-blend-screen filter blur-[128px] opacity-40"></div>
-
-      <div className="w-full max-w-[420px] backdrop-blur-xl bg-white/[0.08] border border-white/20 rounded-[2rem] p-10 shadow-2xl relative z-10 text-white">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-3 tracking-tight text-white drop-shadow-sm">Welcome Back</h1>
-          <p className="text-white/70 text-sm">Sign in to continue</p>
+    <div className="min-h-screen flex bg-white dark:bg-gray-900 font-sans">
+      <div className="w-full flex flex-col items-center justify-center p-8 lg:p-24 relative z-10">
+        <div className="text-center mb-8">
+          <div className="mx-auto bg-accent-500 rounded-lg w-12 h-12 flex items-center justify-center mb-6 shadow-md">
+            <Briefcase className="w-7 h-7 text-white" aria-hidden="true" />
+          </div>
         </div>
-
-        {errorMsg && (
-          <div className="bg-red-500/20 border border-red-500/50 text-red-100 p-3 rounded-lg text-sm text-center mb-6 backdrop-blur-sm">
-            {errorMsg}
-          </div>
-        )}
-
-        <form onSubmit={handleLoginSubmit} className="space-y-6">
-          <div className="relative">
-            <User className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-transparent border-b border-white/30 text-white placeholder:text-white/60 py-3 pl-9 pr-4 focus:outline-none focus:border-blue-400 transition-colors"
-              required
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="relative">
-            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-transparent border-b border-white/30 text-white placeholder:text-white/60 py-3 pl-9 pr-4 focus:outline-none focus:border-blue-400 transition-colors"
-              required
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="flex justify-between items-center text-sm pt-2">
-            <a href="#" className="text-white/70 hover:text-white transition-colors">Forgot Password?</a>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-95 transition-transform duration-200 shadow-lg hover:shadow-blue-500/30"
-          >
-            {isLoading ? <LoadingSpinner size="sm" /> : 'Sign In'}
-            {!isLoading && <ArrowRight className="w-5 h-5" />}
-          </button>
-        </form>
-
-        <div className="mt-8 flex items-center justify-center gap-4">
-          <div className="h-[1px] bg-white/20 flex-1"></div>
-          <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Or continue with</span>
-          <div className="h-[1px] bg-white/20 flex-1"></div>
-        </div>
-
-        <button
-          type="button"
-          className="mt-8 w-full bg-[#f1f5f9] hover:bg-white text-gray-800 font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:scale-[1.03] active:scale-95 transition-transform duration-200"
-        >
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-          Sign in with Google
-        </button>
-
-        <div className="mt-8 text-center text-white/60 text-sm">
-          Don't have an account? <a href="#" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Sign Up</a>
-        </div>
+        <AnimatedForm
+          {...formFields}
+          fieldPerRow={1}
+          onSubmit={handleLoginSubmit}
+          goTo={(e) => { e.preventDefault(); toast.error('Forgot password flow not implemented'); }}
+        />
       </div>
     </div>
   );
