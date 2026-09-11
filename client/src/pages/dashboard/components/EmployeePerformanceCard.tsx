@@ -81,9 +81,9 @@ const reviews = perfData || [];
   const topReviews = [...filteredReviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col h-full hover:shadow-lg transition-all duration-300">
+    <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col h-full">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Employee Performance</h3>
+        <h3 className="font-bold text-text-heading text-lg">Employee Performance</h3>
         <select 
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -95,10 +95,10 @@ const reviews = perfData || [];
         </select>
       </div>
 
-      <div className="bg-[#f4f7fc] dark:bg-slate-800/50 rounded-lg px-4 py-3 flex items-center justify-between mb-4">
-        <span className="text-sm font-medium text-slate-800 dark:text-slate-200 w-1/2">Name</span>
-        <span className="text-sm font-medium text-slate-800 dark:text-slate-200 w-1/4 text-center">Score</span>
-        <span className="text-sm font-medium text-slate-800 dark:text-slate-200 w-1/4 text-right">Action</span>
+      <div className="bg-tint border-b border-slate-border rounded-lg px-4 py-3 flex items-center justify-between mb-4">
+        <span className="text-sm font-medium text-text-heading w-1/2">Name</span>
+        <span className="text-sm font-medium text-text-heading w-1/4 text-center">Score</span>
+        <span className="text-sm font-medium text-text-heading w-1/4 text-right">Action</span>
       </div>
 
       {isLoading ? (
@@ -112,10 +112,10 @@ const reviews = perfData || [];
               <div key={idx} className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3 w-1/2">
                   <div>
-                    <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
+                    <h4 className="font-semibold text-text-heading text-sm">
                       {review.employee?.firstName} {review.employee?.lastName}
                     </h4>
-                    <p className="text-xs text-slate-400 font-medium">
+                    <p className="text-xs text-text-muted font-medium">
                       {review.employee?.department?.name || 'Employee'}
                     </p>
                   </div>
@@ -126,7 +126,7 @@ const reviews = perfData || [];
                 </div>
 
                 <div className="w-1/4 flex justify-end">
-                  <button onClick={() => navigate('/performance')} className="p-1.5 border border-slate-200 dark:border-slate-700 rounded-md text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" title="View Performance Review">
+                  <button onClick={() => navigate('/performance')} className="p-1.5 border border-slate-200 dark:border-slate-700 rounded-md text-text-muted hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" title="View Performance Review">
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
                 </div>
@@ -134,7 +134,7 @@ const reviews = perfData || [];
             );
           })}
           {topReviews.length === 0 && (
-            <div className="text-sm text-slate-500 text-center py-4">No performance reviews found</div>
+            <div className="text-sm text-text-muted text-center py-4">No performance reviews found</div>
           )}
         </div>
       )}
