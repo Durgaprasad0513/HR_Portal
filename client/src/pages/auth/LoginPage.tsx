@@ -50,7 +50,7 @@ export default function LoginPage() {
       <div className="w-full max-w-[420px] backdrop-blur-xl bg-white/[0.08] border border-white/20 rounded-[2rem] p-10 shadow-2xl relative z-10 text-white">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-3 tracking-tight text-white drop-shadow-sm">Welcome Back</h1>
-          <p className="text-white/70 text-sm">Sign in to your HR Management account</p>
+          <p className="text-white/70 text-sm">Sign in to continue</p>
         </div>
 
         {errorMsg && (
@@ -86,15 +86,37 @@ export default function LoginPage() {
             />
           </div>
 
+          <div className="flex justify-between items-center text-sm pt-2">
+            <a href="#" className="text-white/70 hover:text-white transition-colors">Forgot Password?</a>
+          </div>
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-95 transition-transform duration-200 shadow-lg hover:shadow-blue-500/30"
+            className="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-95 transition-transform duration-200 shadow-lg hover:shadow-blue-500/30"
           >
             {isLoading ? <LoadingSpinner size="sm" /> : 'Sign In'}
             {!isLoading && <ArrowRight className="w-5 h-5" />}
           </button>
         </form>
+
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <div className="h-[1px] bg-white/20 flex-1"></div>
+          <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Or continue with</span>
+          <div className="h-[1px] bg-white/20 flex-1"></div>
+        </div>
+
+        <button
+          type="button"
+          className="mt-8 w-full bg-[#f1f5f9] hover:bg-white text-gray-800 font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:scale-[1.03] active:scale-95 transition-transform duration-200"
+        >
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+          Sign in with Google
+        </button>
+
+        <div className="mt-8 text-center text-white/60 text-sm">
+          Don't have an account? <a href="#" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Sign Up</a>
+        </div>
       </div>
     </div>
   );
