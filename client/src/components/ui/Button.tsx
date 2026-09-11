@@ -1,4 +1,5 @@
 import React from 'react';
+import { RippleButton } from './ripple-button';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
@@ -41,7 +42,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     return (
-      <button
+      <RippleButton rippleColor="rgba(255, 255, 255, 0.4)"
         ref={ref}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         disabled={disabled || isLoading}
@@ -49,7 +50,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {children}
-      </button>
+      </RippleButton>
     );
   }
 );
