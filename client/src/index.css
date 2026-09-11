@@ -11,10 +11,10 @@
 
   --sidebar-bg: #0F172A;
   
-  --brand-primary: #059669; /* emerald-600 (sea green) */
-  --brand-primary-hover: #047857; /* emerald-700 */
-  --brand-primary-light: #d1fae5; /* emerald-100 */
-  --focus-ring: #6ee7b7; /* emerald-300 */
+  --brand-primary: #475569; /* slate-600 */
+  --brand-primary-hover: #334155; /* slate-700 */
+  --brand-primary-light: #f1f5f9; /* slate-100 */
+  --focus-ring: #cbd5e1; /* slate-300 */
 
   --text-heading: #0F172A;
   --text-body: #1E293B;
