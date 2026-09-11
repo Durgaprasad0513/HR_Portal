@@ -238,6 +238,8 @@ export default function DashboardPage() {
                 )}
               </div>
 
+              </div>
+
             {/* Attrition */}
             <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col">
               <h3 className="font-bold text-text-heading mb-4 uppercase tracking-wider text-sm">ATTRITION</h3>
@@ -269,7 +271,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            </div>
             </div>
           </div>
 
