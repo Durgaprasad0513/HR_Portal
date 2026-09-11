@@ -122,7 +122,7 @@ export default function EmployeeListPage() {
                   <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-accent-600 text-white' : 'bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400'}`}>
                     <UsersRound className="h-5 w-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-text-muted truncate" title={dept.name}>{dept.name}</p>
                     <div className="flex items-end gap-2">
                       <h3 className="text-2xl font-bold text-text-heading">{dept._count?.employees || 0}</h3>

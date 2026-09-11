@@ -259,7 +259,7 @@ export default function TrainingListPage() {
                   <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
                     <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-text-muted truncate">Upcoming / Completed</p>
                     <h3 className="text-2xl font-bold text-text-heading">{statsData.data.upcomingTrainings} / {statsData.data.completedTrainings}</h3>
                   </div>
@@ -271,7 +271,7 @@ export default function TrainingListPage() {
                   <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
                     <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-text-muted truncate">Total Participants</p>
                     <h3 className="text-2xl font-bold text-text-heading">{statsData.data.totalParticipants}</h3>
                   </div>
@@ -283,7 +283,7 @@ export default function TrainingListPage() {
                   <div className="h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
                     <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-text-muted truncate">Effectiveness</p>
                     <h3 className="text-2xl font-bold text-text-heading">{statsData.data.averageFeedback.toFixed(1)} / 5.0</h3>
                   </div>
@@ -295,7 +295,7 @@ export default function TrainingListPage() {
                   <div className="h-10 w-10 rounded-full bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
                     <IndianRupee className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-text-muted truncate">Total Hours & Cost</p>
                     <h3 className="text-2xl font-bold text-text-heading leading-tight">{statsData.data.totalTrainingHours}h</h3>
                     <p className="text-sm font-semibold text-text-muted mt-0.5">₹{statsData.data.totalTrainingCost?.toLocaleString?.() ?? statsData.data.totalTrainingCost}</p>
