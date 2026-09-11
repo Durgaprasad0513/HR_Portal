@@ -6,11 +6,12 @@ import { dashboardApi } from '@/api/dashboard';
 import { recruitmentApi } from '@/api/recruitment';
 import {  Users, CheckCircle, Clock, UserMinus, Laptop, Briefcase, PhoneCall, Plus , UserCheck, Award } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { CountUp } from '@/components/ui/CountUp';
 import { TeamCard } from './components/TeamCard';
 import { EmployeePerformanceCard } from './components/EmployeePerformanceCard';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
+
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -46,11 +47,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-0 sm:p-2">
-      <PageHeader
-        title="Dashboard"
-        description={`Welcome back, ${user?.employee?.firstName || user?.email || 'there'}. Here is what needs your attention.`}
-      />
+      <BoxReveal boxColor="var(--skeleton)" duration={0.4} width="100%">
+        <PageHeader
+          title="Dashboard"
+          description={`Welcome back, ${user?.employee?.firstName || user?.email || 'there'}. Here is what needs your attention.`}
+        />
+      </BoxReveal>
 
+      <BoxReveal boxColor="var(--skeleton)" duration={0.5} width="100%">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
           <div className="flex items-center gap-4">
@@ -59,7 +63,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-text-muted">Total Employees</p>
-              <h3 className="text-2xl font-bold text-text-heading"><CountUp end={stats.totalEmployees || 0} /></h3>
+              <h3 className="text-2xl font-bold text-text-heading">{stats.totalEmployees || 0}</h3>
             </div>
           </div>
         </div>
@@ -71,7 +75,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-text-muted">Pending travel request</p>
-              <h3 className="text-2xl font-bold text-text-heading"><CountUp end={stats.pendingTravel || 0} /></h3>
+              <h3 className="text-2xl font-bold text-text-heading">{stats.pendingTravel || 0}</h3>
             </div>
           </div>
         </div>
@@ -83,7 +87,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-text-muted">Assets Assigned</p>
-              <h3 className="text-2xl font-bold text-text-heading"><CountUp end={stats.totalAssets || 0} /></h3>
+              <h3 className="text-2xl font-bold text-text-heading">{stats.totalAssets || 0}</h3>
             </div>
           </div>
         </div>
@@ -95,7 +99,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-text-muted">Open Requisitions</p>
-              <h3 className="text-2xl font-bold text-text-heading"><CountUp end={stats.openRequisitions || 0} /></h3>
+              <h3 className="text-2xl font-bold text-text-heading">{stats.openRequisitions || 0}</h3>
             </div>
           </div>
         </div>
@@ -122,28 +126,28 @@ export default function DashboardPage() {
               <div className="bg-surface p-4 rounded-lg border border-blue-100">
                 <div className="text-blue-600 font-bold flex items-center gap-2 mb-1">
                   <Briefcase className="w-4 h-4" />
-                  <CountUp end={stats.openRequisitions || 0} />
+                  {stats.openRequisitions || 0}
                 </div>
                 <div className="text-xs font-medium text-text-muted">Job Openings</div>
               </div>
               <div className="bg-surface p-4 rounded-lg border border-green-100">
                 <div className="text-green-600 font-bold flex items-center gap-2 mb-1">
                   <CheckCircle className="w-4 h-4" />
-                  <CountUp end={stats.invitedForInterview || 0} />
+                  {stats.invitedForInterview || 0}
                 </div>
                 <div className="text-xs font-medium text-text-muted">Invited for interview</div>
               </div>
               <div className="bg-surface p-4 rounded-lg border border-orange-100">
                 <div className="text-orange-600 font-bold flex items-center gap-2 mb-1">
                   <UserCheck className="w-4 h-4" />
-                  <CountUp end={stats.selectedCandidates || 0} />
+                  {stats.selectedCandidates || 0}
                 </div>
                 <div className="text-xs font-medium text-text-muted">Selected Candidates</div>
               </div>
               <div className="bg-surface p-4 rounded-lg border border-purple-100">
                 <div className="text-purple-600 font-bold flex items-center gap-2 mb-1">
                   <Award className="w-4 h-4" />
-                  <CountUp end={stats.offersAccepted || 0} />
+                  {stats.offersAccepted || 0}
                 </div>
                 <div className="text-xs font-medium text-text-muted">Offers Accepted</div>
               </div>
@@ -286,6 +290,7 @@ export default function DashboardPage() {
         isOpen={isScheduleModalOpen} 
         onClose={() => setIsScheduleModalOpen(false)} 
       />
+      </BoxReveal>
     </div>
   );
 }
