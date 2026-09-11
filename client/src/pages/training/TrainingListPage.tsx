@@ -260,7 +260,7 @@ export default function TrainingListPage() {
                     <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-muted truncate">Upcoming / Completed</p>
+                    <p className="text-sm font-medium text-text-muted line-clamp-2 break-words">Upcoming / Completed</p>
                     <h3 className="text-2xl font-bold text-text-heading">{statsData.data.upcomingTrainings} / {statsData.data.completedTrainings}</h3>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export default function TrainingListPage() {
                     <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-muted truncate">Total Participants</p>
+                    <p className="text-sm font-medium text-text-muted line-clamp-2 break-words">Total Participants</p>
                     <h3 className="text-2xl font-bold text-text-heading">{statsData.data.totalParticipants}</h3>
                   </div>
                 </div>
@@ -284,7 +284,7 @@ export default function TrainingListPage() {
                     <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-muted truncate">Effectiveness</p>
+                    <p className="text-sm font-medium text-text-muted line-clamp-2 break-words">Effectiveness</p>
                     <h3 className="text-2xl font-bold text-text-heading">{statsData.data.averageFeedback.toFixed(1)} / 5.0</h3>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export default function TrainingListPage() {
                     <IndianRupee className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-muted truncate">Total Hours & Cost</p>
+                    <p className="text-sm font-medium text-text-muted line-clamp-2 break-words">Total Hours & Cost</p>
                     <h3 className="text-2xl font-bold text-text-heading leading-tight">{statsData.data.totalTrainingHours}h</h3>
                     <p className="text-sm font-semibold text-text-muted mt-0.5">₹{statsData.data.totalTrainingCost?.toLocaleString?.() ?? statsData.data.totalTrainingCost}</p>
                   </div>
