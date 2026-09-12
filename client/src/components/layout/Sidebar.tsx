@@ -104,7 +104,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors",
                   "hover:text-accent-400",
-                  hasActiveChild ? "text-accent-400" : "text-white/80"
+                  hasActiveChild ? "text-[#F2EFE7]" : "text-white/80"
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -131,7 +131,7 @@ export function Sidebar() {
                         className={cn(
                           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
                           isActive
-                            ? "text-accent-400 bg-white/5 font-semibold"
+                            ? "text-[#F2EFE7] bg-white/5 font-semibold"
                             : "text-white/60 hover:text-accent-400 hover:bg-white/5"
                         )}
                       >
