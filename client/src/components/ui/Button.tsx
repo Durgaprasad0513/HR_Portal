@@ -1,6 +1,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { RippleButton } from './ripple-button';
+
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'dark' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'approve';
@@ -39,6 +41,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       lg: "h-12 px-8 text-base",
       icon: "h-9 w-9 p-0",
     };
+
+    if (variant === 'primary') {
+      return (
+        <RippleButton
+          ref={ref}
+          rippleColor="#ffffff"
+          className={cn(baseStyles, variants[variant], sizes[size], className)}
+          disabled={disabled || isLoading}
+          {...props}
+        >
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {children}
+        </RippleButton>
+      );
+    }
 
     return (
       <button
