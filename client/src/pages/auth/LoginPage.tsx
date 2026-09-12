@@ -37,13 +37,13 @@ export default function LoginPage() {
 
   const formFields = {
     header: 'Welcome back',
-    subHeader: 'Sign in to your HR Management account',
+    subHeader: 'Sign in to your HR Portal',
     fields: [
       {
-        label: 'Email',
+        label: 'Username / Email',
         required: true,
-        type: 'email' as const,
-        placeholder: 'Enter your email address',
+        type: 'text' as const,
+        placeholder: 'Enter your username or email',
         onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
           setEmail(event.target.value),
       },
@@ -57,7 +57,7 @@ export default function LoginPage() {
       },
     ],
     submitButton: isLoading ? 'Signing in...' : 'Sign in',
-    textVariantButton: 'Forgot password?',
+    
     errorField: errorMsg || undefined,
   };
 
