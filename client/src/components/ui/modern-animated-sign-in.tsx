@@ -356,13 +356,14 @@ const AnimatedForm = memo(function AnimatedForm({
           duration={0.3}
           overflow='visible'
         >
-          <button
+          <RippleButton
               className='bg-brand-primary text-white hover:bg-brand-hover hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-150 relative group/btn block w-full rounded-md h-10 font-semibold shadow-sm outline-none hover:cursor-pointer'
-            type='submit'
-          >
-            {submitButton} &rarr;
-            <BottomGradient />
-          </button>
+              type='submit'
+              rippleColor="#ffffff"
+            >
+              {submitButton} &rarr;
+              <BottomGradient />
+            </RippleButton>
         </BoxReveal>
 
         {textVariantButton && goTo && (

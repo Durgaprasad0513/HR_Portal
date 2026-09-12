@@ -54,7 +54,7 @@ const RippleButton = React.forwardRef<HTMLButtonElement, RippleButtonProps>(
     return (
       <button
         className={cn(
-          "relative flex cursor-pointer items-center justify-center overflow-hidden rounded-lg border-none shadow-sm bg-brand-primary text-white hover:bg-brand-hover px-4 py-2 text-center text-white",
+          "relative flex cursor-pointer items-center justify-center overflow-hidden text-center",
           className,
         )}
         onClick={handleClick}
@@ -65,7 +65,7 @@ const RippleButton = React.forwardRef<HTMLButtonElement, RippleButtonProps>(
         <span className="pointer-events-none absolute inset-0">
           {buttonRipples.map((ripple) => (
             <span
-              className="absolute animate-rippling rounded-full bg-brand-primary text-white hover:bg-brand-hover opacity-30"
+              className="absolute animate-rippling rounded-full opacity-30"
               key={ripple.key}
               style={{
                 width: `${ripple.size}px`,
