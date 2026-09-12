@@ -113,6 +113,21 @@ const BoxReveal = memo(function BoxReveal({
     }
   }, [isInView, mainControls, slideControls]);
 
+  if (disabled) {
+    return (
+      <section
+        style={{
+          position: position as any,
+          width,
+          overflow,
+        }}
+        className={className}
+      >
+        {children}
+      </section>
+    );
+  }
+
   return (
     <section
       ref={ref}
