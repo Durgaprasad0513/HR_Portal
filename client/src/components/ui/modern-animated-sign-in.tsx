@@ -1,3 +1,4 @@
+import { RippleButton } from './ripple-button';
 ﻿import React, {
   memo,
   ReactNode,
