@@ -85,6 +85,7 @@ type BoxRevealProps = {
   overflow?: string;
   position?: string;
   className?: string;
+  disabled?: boolean;
 };
 
 const BoxReveal = memo(function BoxReveal({
@@ -95,6 +96,7 @@ const BoxReveal = memo(function BoxReveal({
   overflow = 'hidden',
   position = 'relative',
   className,
+  disabled = false,
 }: BoxRevealProps) {
   const mainControls = useAnimation();
   const slideControls = useAnimation();
