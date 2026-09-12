@@ -11,10 +11,10 @@
 
   --sidebar-bg: #0F172A;
   
-  --brand-primary: #475569; /* slate-600 */
-  --brand-primary-hover: #334155; /* slate-700 */
-  --brand-primary-light: #f1f5f9; /* slate-100 */
-  --focus-ring: #cbd5e1; /* slate-300 */
+  --brand-primary: #0D9488; /* teal-600 */
+  --brand-primary-hover: #0F766E; /* teal-700 */
+  --brand-primary-light: #ccfbf1; /* teal-100 */
+  --focus-ring: #5eead4; /* teal-300 */
 
   --text-heading: #0F172A;
   --text-body: #1E293B;
