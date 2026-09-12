@@ -74,7 +74,7 @@ export function Sidebar() {
           <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shrink-0">
             <ClipboardCheck className="h-6 w-6 text-sidebar" />
           </div>
-          <span className="text-xl font-bold tracking-wide">HR Management</span>
+          <span className="text-xl font-bold tracking-wide">HR Portal</span>
         </NavLink>
       </div>
 
