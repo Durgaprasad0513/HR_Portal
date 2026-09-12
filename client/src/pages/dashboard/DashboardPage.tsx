@@ -16,6 +16,14 @@ import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 export default function DashboardPage() {
   const { user } = useAuth();
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [shouldAnimate] = useState(() => {
+    const hasAnimated = sessionStorage.getItem('dashboard_animated');
+    if (!hasAnimated) {
+      sessionStorage.setItem('dashboard_animated', 'true');
+      return true;
+    }
+    return false;
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard-stats'],
@@ -47,14 +55,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-0 sm:p-2">
-      <BoxReveal boxColor="var(--skeleton)" duration={0.4} width="100%">
+      <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.4} width="100%">
         <PageHeader
           title="Dashboard"
           description={`Welcome back, ${user?.employee?.firstName || user?.email || 'there'}. Here is what needs your attention.`}
         />
       </BoxReveal>
 
-      <BoxReveal boxColor="var(--skeleton)" duration={0.5} width="100%">
+      <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
           <div className="flex items-center gap-4">
@@ -279,7 +287,7 @@ export default function DashboardPage() {
       </BoxReveal>
       
       {/* New Row: Team and Employee Performance */}
-      <BoxReveal boxColor="var(--skeleton)" duration={0.8} width="100%">
+      <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.8} width="100%">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <TeamCard />
