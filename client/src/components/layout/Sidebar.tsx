@@ -7,7 +7,15 @@ import {
   Shield, History, ChevronRight, ChevronDown, Building2, CreditCard,
   ClipboardCheck, Calendar
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+type SidebarNavItem = {
+  name: string;
+  path?: string;
+  icon: LucideIcon;
+  children?: SidebarNavItem[];
+};
 
 export function Sidebar() {
   const { user } = useAuth();
@@ -21,12 +29,19 @@ export function Sidebar() {
     expenses: true,
     auth: true,
   });
+  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
+    'employees-time-off': true,
+  });
 
   const toggleSection = (id: string) => {
     setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const workspaceNav = [
+  const toggleNavGroup = (id: string) => {
+    setOpenNavGroups(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const workspaceNav: SidebarNavItem[] = [
     ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
     { name: 'Assets', path: '/assets', icon: Laptop },
     ...(isAdminOrHR ? [{ name: 'Attrition', path: '/attrition', icon: UserMinus }] : []),
@@ -34,21 +49,27 @@ export function Sidebar() {
     { name: 'Helpdesk', path: '/requests', icon: ClipboardList },
   ];
 
-  const employeesNav = [
+  const employeesNav: SidebarNavItem[] = [
     { name: 'Employees', path: '/employees', icon: Users },
-    { name: 'Time Off', path: '/leaves', icon: Calendar },
-    { name: 'Leave History', path: '/leaves/history', icon: History },
-    ...(isAdminOrHR ? [{ name: 'Leave Approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
+    {
+      name: 'Time Off',
+      icon: Calendar,
+      children: [
+        { name: 'Apply for leave', path: '/leaves', icon: Calendar },
+        { name: 'Leave history', path: '/leaves/history', icon: History },
+        ...(isAdminOrHR ? [{ name: 'Leave approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
+      ],
+    },
     { name: 'Training', path: '/training', icon: GraduationCap },
     { name: 'Performance', path: '/performance', icon: Target },
   ];
 
-  const expensesNav = [
+  const expensesNav: SidebarNavItem[] = [
     { name: 'Travel', path: '/travel', icon: Plane },
     { name: 'Office Expenses', path: '/office-expenses', icon: Building2 },
   ];
 
-  const authNav = isAdminOrHR ? [
+  const authNav: SidebarNavItem[] = isAdminOrHR ? [
     { name: 'Role Management', path: '/roles', icon: Shield },
     { name: 'Audit Log', path: '/audit', icon: History }
   ] : [];
@@ -66,7 +87,12 @@ export function Sidebar() {
     (path !== '/dashboard' && path !== '#' && location.pathname.startsWith(`${path}/`))
   );
 
-  const isSectionActive = (items: any[]) => items.some(item => isNavItemActive(item.path));
+  const isItemActive = (item: SidebarNavItem): boolean => (
+    (item.path ? isNavItemActive(item.path) : false) ||
+    Boolean(item.children?.some(isItemActive))
+  );
+
+  const isSectionActive = (items: SidebarNavItem[]) => items.some(isItemActive);
 
   return (
     <aside id="primary-sidebar" aria-label="Primary navigation" className="bg-sidebar text-white w-64 flex flex-col shadow-xl z-50 h-[calc(100vh-1rem)] m-2 rounded-xl shrink-0 overflow-hidden lg:h-[calc(100vh-2rem)] lg:m-4">
@@ -123,12 +149,73 @@ export function Sidebar() {
               {isOpen && (
                 <div id={`sidebar-section-${section.id}`} className="mt-1 mb-2 ml-4 flex flex-col gap-1 border-l border-white/10 pl-3">
                   {section.items.map((item) => {
-                    const isActive = isNavItemActive(item.path);
+                    const isActive = isItemActive(item);
+
+                    if (item.children) {
+                      const groupId = `${section.id}-${item.name.toLowerCase().replace(/\s+/g, '-')}`;
+                      const isGroupOpen = openNavGroups[groupId] ?? isActive;
+
+                      return (
+                        <div key={item.name}>
+                          <button
+                            type="button"
+                            onClick={() => toggleNavGroup(groupId)}
+                            aria-expanded={isGroupOpen}
+                            aria-controls={`sidebar-nav-group-${groupId}`}
+                            className={cn(
+                              "flex w-full items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                              isActive
+                                ? "text-[#EAE0CF] bg-white/5 font-semibold"
+                                : "text-white/60 hover:text-accent-400 hover:bg-white/5"
+                            )}
+                          >
+                            <span className="flex min-w-0 items-center gap-3">
+                              <item.icon className="h-4 w-4 shrink-0" />
+                              <span>{item.name}</span>
+                            </span>
+                            {isGroupOpen ? (
+                              <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 shrink-0 opacity-50" />
+                            )}
+                          </button>
+
+                          {isGroupOpen && (
+                            <div id={`sidebar-nav-group-${groupId}`} className="ml-4 mt-1 flex flex-col gap-1 border-l border-white/10 pl-3">
+                              {item.children.map((child) => {
+                                const childIsActive = child.path ? isNavItemActive(child.path) : false;
+                                return (
+                                  <NavLink
+                                    key={child.name}
+                                    to={child.path || '#'}
+                                    onClick={(e) => {
+                                      if (!child.path) e.preventDefault();
+                                    }}
+                                    className={cn(
+                                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200",
+                                      childIsActive
+                                        ? "text-[#EAE0CF] bg-white/5 font-semibold"
+                                        : "text-white/60 hover:text-accent-400 hover:bg-white/5"
+                                    )}
+                                  >
+                                    <child.icon className="h-4 w-4 shrink-0" />
+                                    <span>{child.name}</span>
+                                  </NavLink>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
                     return (
                       <NavLink
                         key={item.name}
-                        to={item.path}
-                        onClick={(e) => item.path === '#' && e.preventDefault()}
+                        to={item.path || '#'}
+                        onClick={(e) => {
+                          if (!item.path) e.preventDefault();
+                        }}
                         className={cn(
                           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
                           isActive
