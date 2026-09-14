@@ -6,9 +6,12 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export default function LeaveHistoryPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: leavesData, isLoading } = useQuery({
@@ -67,7 +70,11 @@ export default function LeaveHistoryPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Leave History</h1>
+      <PageHeader
+        title="Leave History"
+        description="Review your submitted, approved, and cancelled time-off requests."
+        actions={<Button onClick={() => navigate('/leaves')}>Apply for leave</Button>}
+      />
       
       {isLoading ? (
         <LoadingSpinner />

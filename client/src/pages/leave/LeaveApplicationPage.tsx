@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
 
 export default function LeaveApplicationPage() {
@@ -47,7 +48,11 @@ export default function LeaveApplicationPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900">Apply for Leave</h1>
+      <PageHeader
+        title="Time Off"
+        description="Request time away and keep track of your remaining leave balance."
+        actions={<Button variant="outline" onClick={() => navigate('/leaves/history')}>View history</Button>}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
