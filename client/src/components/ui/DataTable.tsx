@@ -55,7 +55,7 @@ export function DataTable<T>({
             type="checkbox"
             checked={table.getIsAllPageRowsSelected()}
             onChange={table.getToggleAllPageRowsSelectedHandler()}
-            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:ring-accent-400"
+            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:outline-none"
             aria-label="Select all"
           />
         ),
@@ -65,7 +65,7 @@ export function DataTable<T>({
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
             onClick={(e) => e.stopPropagation()}
-            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:ring-accent-400"
+            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:outline-none"
             aria-label="Select row"
           />
         ),
@@ -171,7 +171,7 @@ export function DataTable<T>({
       <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400 sm:hidden">
         Scroll horizontally to see all columns.
       </p>
-      <div className="w-full overflow-auto focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-300 dark:focus:ring-slate-600" tabIndex={0} role="region" aria-label={`${caption}. Scroll horizontally for more columns.`}>
+      <div className="w-full overflow-auto focus:outline-none" tabIndex={0} role="region" aria-label={`${caption}. Scroll horizontally for more columns.`}>
         <table className="w-full text-sm text-left">
           <caption className="sr-only">{caption}</caption>
           <thead>
