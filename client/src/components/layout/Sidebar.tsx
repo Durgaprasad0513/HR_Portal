@@ -28,6 +28,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
   
   // By default, open the section that contains the current path
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    dashboard: true,
     workspace: true,
     employees: true,
     expenses: true,
@@ -48,9 +49,13 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
   const workspaceNav: SidebarNavItem[] = [
     ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
     { name: 'Assets', path: '/assets', icon: Laptop },
-    ...(isAdminOrHR ? [{ name: 'Attrition', path: '/attrition', icon: UserMinus }] : []),
     { name: 'Documents', path: '/documents', icon: Files },
     { name: 'Helpdesk', path: '/requests', icon: ClipboardList },
+  ];
+
+  const dashboardNav: SidebarNavItem[] = [
+    { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
+    ...(isAdminOrHR ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
   ];
 
   const employeesNav: SidebarNavItem[] = [
@@ -79,6 +84,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
   ] : [];
 
   const sections = [
+    { id: 'dashboard', title: 'Dashboard', items: dashboardNav, icon: LayoutDashboard },
     { id: 'employees', title: 'Employees', items: employeesNav, icon: Users },
     { id: 'workspace', title: 'Workspace', items: workspaceNav, icon: LayoutDashboard },
     { id: 'expenses', title: 'Expenses', items: expensesNav, icon: CreditCard },
@@ -115,19 +121,6 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
 
       {/* Navigation */}
       <div className={cn("flex-1 overflow-y-auto py-2 flex flex-col gap-2 custom-scrollbar", collapsed ? "px-2" : "px-3")}>
-        <NavLink
-          to="/dashboard"
-          title={collapsed ? 'Dashboard' : undefined}
-          className={cn(
-            "flex items-center gap-3 rounded-lg py-3 text-sm font-medium transition-colors",
-            collapsed ? "justify-center px-2" : "px-3",
-            location.pathname === '/dashboard' ? "text-accent-400 bg-white/5" : "text-white/80 hover:text-accent-400"
-          )}
-        >
-          <LayoutDashboard className="h-5 w-5" />
-          <span className={cn(collapsed && "sr-only")}>Dashboard</span>
-        </NavLink>
-
         {sections.map((section) => {
           const isOpen = openSections[section.id];
           const hasActiveChild = isSectionActive(section.items);

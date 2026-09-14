@@ -177,7 +177,7 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
                       Reports
                     </Command.Item>
                     <Command.Item
-                      onSelect={() => runCommand(() => navigate('/attrition'))}
+                      onSelect={() => runCommand(() => navigate('/dashboard/attrition'))}
                       className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
                     >
                       <BarChart className="w-4 h-4 mr-3" />
