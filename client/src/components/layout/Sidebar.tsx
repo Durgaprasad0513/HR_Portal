@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Laptop, Plane, Briefcase, 
   Target, ClipboardList, GraduationCap, Files, UserMinus, 
   Shield, History, ChevronRight, ChevronDown, Building2, CreditCard,
-  ClipboardCheck
+  ClipboardCheck, Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +37,7 @@ export function Sidebar() {
 
   const employeesNav = [
     { name: 'Employees', path: '/employees', icon: Users },
+    { name: 'Leave Requests', path: '/leaves', icon: Calendar },
     { name: 'Training', path: '/training', icon: GraduationCap },
     { name: 'Performance', path: '/performance', icon: Target },
   ];
