@@ -34,7 +34,6 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const LeaveApplicationPage = lazy(() => import('@/pages/leave/LeaveApplicationPage'));
 const LeaveHistoryPage = lazy(() => import('@/pages/leave/LeaveHistoryPage'));
 const LeaveApprovalsPage = lazy(() => import('@/pages/leave/LeaveApprovalsPage'));
-const LeaveRequestPage = lazy(() => import('@/pages/leave/LeaveRequestPage'));
 
 const AppRoutes = () => {
   return (
@@ -64,7 +63,7 @@ const AppRoutes = () => {
           
           <Route path="/training" element={<TrainingListPage />} />
           <Route path="/requests" element={<RequestListPage />} />
-          <Route path="/leaves" element={<LeaveRequestPage />} />
+          <Route path="/leaves" element={<LeaveApplicationPage />} />
           <Route path="/leaves/history" element={<LeaveHistoryPage />} />
           <Route path="/policies" element={<Navigate to="/documents" replace />} />
           <Route path="/profile" element={<Navigate to="/settings" replace />} />

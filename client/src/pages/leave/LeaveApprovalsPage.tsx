@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
 
 export default function LeaveApprovalsPage() {
@@ -73,7 +74,10 @@ export default function LeaveApprovalsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900">Leave Approvals</h1>
+      <PageHeader
+        title="Time Off Approvals"
+        description="Review and action pending leave requests from your team."
+      />
       
       {isLoading ? (
         <LoadingSpinner />

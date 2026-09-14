@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from 'next-themes';
 import { 
   LayoutDashboard, Users, Laptop, Plane, Briefcase, 
   Target, ClipboardList, GraduationCap, Files, UserMinus, 
@@ -37,7 +36,9 @@ export function Sidebar() {
 
   const employeesNav = [
     { name: 'Employees', path: '/employees', icon: Users },
-    { name: 'Leave Requests', path: '/leaves', icon: Calendar },
+    { name: 'Time Off', path: '/leaves', icon: Calendar },
+    { name: 'Leave History', path: '/leaves/history', icon: History },
+    ...(isAdminOrHR ? [{ name: 'Leave Approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
     { name: 'Training', path: '/training', icon: GraduationCap },
     { name: 'Performance', path: '/performance', icon: Target },
   ];
@@ -60,12 +61,12 @@ export function Sidebar() {
   ];
 
   // Check if any child item is active
-  const isSectionActive = (items: any[]) => {
-    return items.some(item => 
-      location.pathname === item.path || 
-      (item.path !== '/dashboard' && item.path !== '#' && location.pathname.startsWith(item.path))
-    );
-  };
+  const isNavItemActive = (path: string) => (
+    location.pathname === path ||
+    (path !== '/dashboard' && path !== '#' && location.pathname.startsWith(`${path}/`))
+  );
+
+  const isSectionActive = (items: any[]) => items.some(item => isNavItemActive(item.path));
 
   return (
     <aside id="primary-sidebar" aria-label="Primary navigation" className="bg-sidebar text-white w-64 flex flex-col shadow-xl z-50 h-[calc(100vh-1rem)] m-2 rounded-xl shrink-0 overflow-hidden lg:h-[calc(100vh-2rem)] lg:m-4">
@@ -122,8 +123,7 @@ export function Sidebar() {
               {isOpen && (
                 <div id={`sidebar-section-${section.id}`} className="mt-1 mb-2 ml-4 flex flex-col gap-1 border-l border-white/10 pl-3">
                   {section.items.map((item) => {
-                    const isActive = location.pathname === item.path || 
-                      (item.path !== '/dashboard' && item.path !== '#' && location.pathname.startsWith(item.path));
+                    const isActive = isNavItemActive(item.path);
                     return (
                       <NavLink
                         key={item.name}

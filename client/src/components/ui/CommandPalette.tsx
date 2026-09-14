@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { Command } from 'cmdk';
 import { 
   Search, User, Settings, LayoutDashboard, Briefcase, 
-  Users, Laptop, Plane, UserSearch, Star, FileText, BarChart, Shield, History 
-, ClipboardList, Building2 } from 'lucide-react';
+  Users, Laptop, Plane, UserSearch, Star, FileText, BarChart, Shield, History,
+  ClipboardList, Building2, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,6 +18,9 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
   const [search, setSearch] = React.useState('');
   
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  const profilePath = user?.employeeId || (user as any)?.employee?.id
+    ? `/employees/${user?.employeeId || (user as any).employee.id}`
+    : '/dashboard';
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -111,13 +114,27 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
                   <Building2 className="w-4 h-4 mr-3" />
                   Office Expenses
                 </Command.Item>
-                <Command.Item 
+                <Command.Item
+                  onSelect={() => runCommand(() => navigate('/leaves'))}
+                  className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
+                >
+                  <Calendar className="w-4 h-4 mr-3" />
+                  Time Off
+                </Command.Item>
+                <Command.Item
+                  onSelect={() => runCommand(() => navigate('/leaves/history'))}
+                  className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
+                >
+                  <History className="w-4 h-4 mr-3" />
+                  Leave History
+                </Command.Item>
+                {isAdminOrHR && <Command.Item
                   onSelect={() => runCommand(() => navigate('/recruitment'))}
                   className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
                 >
                   <UserSearch className="w-4 h-4 mr-3" />
                   Recruitment
-                </Command.Item>
+                </Command.Item>}
                 <Command.Item 
                   onSelect={() => runCommand(() => navigate('/performance'))}
                   className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
@@ -159,12 +176,19 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
                       <BarChart className="w-4 h-4 mr-3" />
                       Reports
                     </Command.Item>
-                    <Command.Item 
+                    <Command.Item
                       onSelect={() => runCommand(() => navigate('/attrition'))}
                       className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
                     >
                       <BarChart className="w-4 h-4 mr-3" />
                       Attrition
+                    </Command.Item>
+                    <Command.Item
+                      onSelect={() => runCommand(() => navigate('/leaves/approvals'))}
+                      className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
+                    >
+                      <ClipboardList className="w-4 h-4 mr-3" />
+                      Time Off Approvals
                     </Command.Item>
                     <Command.Item 
                       onSelect={() => runCommand(() => navigate('/roles'))}
@@ -185,20 +209,20 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
               </Command.Group>
               
               <Command.Group heading="Settings & Actions" className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2 px-2 mt-4">
-                <Command.Item 
-                  onSelect={() => runCommand(() => navigate('/profile'))}
+                <Command.Item
+                  onSelect={() => runCommand(() => navigate(profilePath))}
                   className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
                 >
                   <User className="w-4 h-4 mr-3" />
                   My Profile
                 </Command.Item>
-                <Command.Item 
+                {isAdminOrHR && <Command.Item
                   onSelect={() => runCommand(() => navigate('/settings'))}
                   className="flex items-center px-3 py-2 mt-1 rounded-md cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800 aria-selected:text-primary-600 dark:aria-selected:text-primary-400 transition-colors"
                 >
                   <Settings className="w-4 h-4 mr-3" />
                   Preferences
-                </Command.Item>
+                </Command.Item>}
               </Command.Group>
             </>
           )}
