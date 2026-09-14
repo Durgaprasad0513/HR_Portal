@@ -39,32 +39,29 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const mainNav: SidebarNavItem[] = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     ...(isAdminOrHR ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
-    { name: 'Employees', path: '/employees', icon: Users, badge: 12 },
+    { name: 'Employees', path: '/employees', icon: Users },
+    { name: 'Performance', path: '/performance', icon: Target },
     {
       name: 'Leave Requests',
       icon: Calendar,
-      badge: 3,
       children: [
         { name: 'Apply for leave', path: '/leaves', icon: Calendar },
-        { name: 'Leave history', path: '/leaves/history', icon: History },
         ...(isAdminOrHR ? [{ name: 'Leave approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
       ],
     },
     ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
     { name: 'Training', path: '/training', icon: GraduationCap },
-    { name: 'Performance', path: '/performance', icon: Target },
     { name: 'Assets', path: '/assets', icon: Laptop },
-    { name: 'Documents', path: '/documents', icon: Files },
     { name: 'Travel', path: '/travel', icon: Plane },
     { name: 'Expenses', path: '/office-expenses', icon: CreditCard },
+    { name: 'Documents', path: '/documents', icon: Files },
+    { name: 'Helpdesk', path: '/requests', icon: HelpCircle },
   ];
 
   const accountNav: SidebarNavItem[] = [
-    { name: 'Settings', path: '/settings', icon: Settings },
-    { name: 'Help & Support', path: '/help', icon: HelpCircle },
     ...(isAdminOrHR ? [
       { name: 'Role Management', path: '/roles', icon: Shield },
-      { name: 'Audit Log', path: '/audit', icon: History }
+      { name: 'Audit Log', path: '/audit', icon: History },
     ] : [])
   ];
 
@@ -90,11 +87,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
           </div>
           <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
             <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">HR Portal</span>
-            <span className="text-xs text-slate-500 font-medium truncate">{isAdminOrHR ? 'Admin Plan' : 'Employee Plan'}</span>
           </div>
-          {!collapsed && (
-            <ChevronDown className="h-4 w-4 ml-auto text-slate-400" />
-          )}
         </NavLink>
       </div>
 
@@ -116,22 +109,6 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
         </div>
       </div>
 
-      {/* Bottom Hide Button */}
-      {onToggleCollapse && (
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800 mt-auto shrink-0">
-          <button
-            onClick={onToggleCollapse}
-            className={cn(
-              "w-full flex items-center h-10 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-white",
-              collapsed ? "justify-center" : "px-3 gap-3"
-            )}
-            title={collapsed ? "Expand" : "Hide"}
-          >
-            {collapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
-            {!collapsed && <span>Hide</span>}
-          </button>
-        </div>
-      )}
     </aside>
   );
 }

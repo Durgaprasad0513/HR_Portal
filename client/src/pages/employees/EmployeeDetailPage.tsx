@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/utils/dateFormat';
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -154,7 +155,7 @@ export default function EmployeeDetailPage() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date of Birth</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.dateOfBirth ? new Date(emp.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.dateOfBirth ? formatDate(emp.dateOfBirth) : 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gender</p>
@@ -220,7 +221,7 @@ export default function EmployeeDetailPage() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date of Joining</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : 'N/A'}</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.joiningDate ? formatDate(emp.joiningDate) : 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Reporting Manager</p>
@@ -236,16 +237,16 @@ export default function EmployeeDetailPage() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Confirmation Date</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.confirmationDate ? new Date(emp.confirmationDate).toLocaleDateString() : 'N/A'}</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.confirmationDate ? formatDate(emp.confirmationDate) : 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Working Date</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.lastWorkingDate ? new Date(emp.lastWorkingDate).toLocaleDateString() : 'N/A'}</p>
+                      <p className="font-medium text-navy-900 dark:text-white">{emp.lastWorkingDate ? formatDate(emp.lastWorkingDate) : 'N/A'}</p>
                     </div>
                     {emp.resignationDate && (
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Resignation Date</p>
-                        <p className="font-medium text-navy-900 dark:text-white">{new Date(emp.resignationDate).toLocaleDateString()}</p>
+                        <p className="font-medium text-navy-900 dark:text-white">{formatDate(emp.resignationDate)}</p>
                       </div>
                     )}
                   </div>
@@ -325,7 +326,7 @@ export default function EmployeeDetailPage() {
                   const csvContent = "data:text/csv;charset=utf-8," 
                     + "Asset ID,Type,Brand/Model,Serial Number,Purchase Date,Purchase Value,Issue Date,Condition,Status\n"
                     + emp.assignedAssets.map((a: any) => 
-                        `${a.id},${a.assetType},${a.brandModel || ''},${a.serialNumber || ''},${a.purchaseDate ? new Date(a.purchaseDate).toLocaleDateString() : ''},${a.purchaseValue || ''},${a.issueDate ? new Date(a.issueDate).toLocaleDateString() : ''},${a.issueCondition || ''},${a.status}`
+                        `${a.id},${a.assetType},${a.brandModel || ''},${a.serialNumber || ''},${a.purchaseDate ? formatDate(a.purchaseDate) : ''},${a.purchaseValue || ''},${a.issueDate ? formatDate(a.issueDate) : ''},${a.issueCondition || ''},${a.status}`
                       ).join("\n");
                   const encodedUri = encodeURI(csvContent);
                   const link = document.createElement("a");
@@ -360,7 +361,7 @@ export default function EmployeeDetailPage() {
                               <td className="py-3 text-navy-900 dark:text-white">{asset.assetType}</td>
                               <td className="py-3 text-gray-600 dark:text-gray-400">{asset.brandModel || '-'}</td>
                               <td className="py-3 text-gray-600 dark:text-gray-400">{asset.serialNumber || '-'}</td>
-                              <td className="py-3 text-gray-600 dark:text-gray-400">{asset.issueDate ? new Date(asset.issueDate).toLocaleDateString() : '-'}</td>
+                              <td className="py-3 text-gray-600 dark:text-gray-400">{asset.issueDate ? formatDate(asset.issueDate) : '-'}</td>
                               <td className="py-3">
                                 <Badge variant={asset.status === 'IN_USE' ? 'success' : 'default'}>{asset.status}</Badge>
                               </td>
@@ -385,7 +386,7 @@ export default function EmployeeDetailPage() {
                           <div className="bg-blue-50 p-3 rounded-lg"><FileText className="text-blue-500 w-6 h-6" /></div>
                           <div className="flex-1">
                             <h4 className="font-semibold text-navy-900 dark:text-white">{doc.documentName}</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{doc.documentType.replace('_', ' ')} • Uploaded on {new Date(doc.uploadDate).toLocaleDateString()}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{doc.documentType.replace('_', ' ')} • Uploaded on {formatDate(doc.uploadDate)}</p>
                             <div className="mt-2 flex items-center gap-2 text-sm text-accent-500 font-medium">
                               <CheckCircle2 className="w-4 h-4" /> 
                               {doc.verificationStatus === 'VERIFIED' ? (
@@ -441,7 +442,7 @@ export default function EmployeeDetailPage() {
                             <tr key={part.id}>
                               <td className="py-3 text-navy-900 dark:text-white">{part.training?.trainingTopic}</td>
                               <td className="py-3 text-gray-600 dark:text-gray-400">{part.training?.trainingType}</td>
-                              <td className="py-3 text-gray-600 dark:text-gray-400">{part.training?.trainingDate ? new Date(part.training.trainingDate).toLocaleDateString() : '-'}</td>
+                              <td className="py-3 text-gray-600 dark:text-gray-400">{part.training?.trainingDate ? formatDate(part.training.trainingDate) : '-'}</td>
                               <td className="py-3">
                                 <Badge variant={part.attendanceStatus === 'TRAINING_PRESENT' ? 'success' : 'default'}>{part.attendanceStatus === 'TRAINING_PRESENT' ? 'Present' : 'Absent'}</Badge>
                               </td>
@@ -499,7 +500,7 @@ export default function EmployeeDetailPage() {
           </div>
         {/* Right Sticky Navigation */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24 bg-sidebar text-white p-3 rounded-xl shadow-xl flex flex-col">
+            <div className="sticky top-24 bg-white dark:bg-[#09090b] border border-gray-200 dark:border-gray-800 p-3 rounded-xl shadow-sm flex flex-col">
               <nav className="flex flex-col space-y-1">
                 {SECTIONS.map((section) => (
                   <button
@@ -508,8 +509,8 @@ export default function EmployeeDetailPage() {
                     className={cn(
                       "px-4 py-3 text-sm rounded-lg text-left transition-all duration-200",
                       activeSection === section.id
-                        ? "text-[#EAE0CF] bg-white/5 font-semibold"
-                        : "text-white/70 font-medium hover:text-[#EAE0CF] hover:bg-white/5"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-semibold"
+                        : "text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 hover:text-navy-900 dark:hover:bg-gray-800/50 dark:hover:text-white"
                     )}
                   >
                     {section.label}

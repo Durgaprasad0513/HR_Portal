@@ -88,14 +88,7 @@ export class LeaveService {
 
     // If approved, update leave balance
     if (data.status === 'APPROVED' && leave.leaveType !== 'UNPAID') {
-      await prisma.leaveBalance.update({
-        where: {
-          employeeId_year_leaveType: {
-            employeeId: leave.employeeId,
-            year: currentYear,
-            leaveType: leave.leaveType,
-          },
-        },
+      await prisma.leaveBalance.updateMany({ where: { employeeId: leave.employeeId, year: currentYear, leaveType: leave.leaveType },
         data: {
           usedDays: { increment: leave.totalDays },
           remainingDays: { decrement: leave.totalDays },
@@ -132,7 +125,6 @@ export class LeaveService {
 
   async getPendingApprovals() {
     return prisma.leave.findMany({
-      where: { status: 'PENDING' },
       include: {
         employee: {
           select: {
