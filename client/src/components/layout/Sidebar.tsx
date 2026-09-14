@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Laptop, Plane, Briefcase, 
   Target, ClipboardList, GraduationCap, Files, UserMinus, 
   Shield, History, ChevronRight, ChevronDown, Building2, CreditCard,
-  ClipboardCheck, Calendar
+  ClipboardCheck, Calendar, ChevronsLeft, ChevronsRight, Settings, HelpCircle
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,84 +14,60 @@ type SidebarNavItem = {
   name: string;
   path?: string;
   icon: LucideIcon;
+  badge?: number;
   children?: SidebarNavItem[];
 };
 
 interface SidebarProps {
   collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function Sidebar({ collapsed = false }: SidebarProps) {
+export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
   
-  // By default, open the section that contains the current path
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    dashboard: true,
-    workspace: true,
-    employees: true,
-    expenses: true,
-    auth: true,
-  });
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
-    'employees-time-off': true,
+    'nav-group-leave-requests': true,
   });
-
-  const toggleSection = (id: string) => {
-    setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
-  };
 
   const toggleNavGroup = (id: string) => {
     setOpenNavGroups(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const workspaceNav: SidebarNavItem[] = [
-    ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
-    { name: 'Assets', path: '/assets', icon: Laptop },
-    { name: 'Documents', path: '/documents', icon: Files },
-    { name: 'Helpdesk', path: '/requests', icon: ClipboardList },
-  ];
-
-  const dashboardNav: SidebarNavItem[] = [
-    { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
+  const mainNav: SidebarNavItem[] = [
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     ...(isAdminOrHR ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
-  ];
-
-  const employeesNav: SidebarNavItem[] = [
-    { name: 'Employees', path: '/employees', icon: Users },
+    { name: 'Employees', path: '/employees', icon: Users, badge: 12 },
     {
-      name: 'Time Off',
+      name: 'Leave Requests',
       icon: Calendar,
+      badge: 3,
       children: [
         { name: 'Apply for leave', path: '/leaves', icon: Calendar },
         { name: 'Leave history', path: '/leaves/history', icon: History },
         ...(isAdminOrHR ? [{ name: 'Leave approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
       ],
     },
+    ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
     { name: 'Training', path: '/training', icon: GraduationCap },
     { name: 'Performance', path: '/performance', icon: Target },
-  ];
-
-  const expensesNav: SidebarNavItem[] = [
+    { name: 'Assets', path: '/assets', icon: Laptop },
+    { name: 'Documents', path: '/documents', icon: Files },
     { name: 'Travel', path: '/travel', icon: Plane },
-    { name: 'Office Expenses', path: '/office-expenses', icon: Building2 },
+    { name: 'Expenses', path: '/office-expenses', icon: CreditCard },
   ];
 
-  const authNav: SidebarNavItem[] = isAdminOrHR ? [
-    { name: 'Role Management', path: '/roles', icon: Shield },
-    { name: 'Audit Log', path: '/audit', icon: History }
-  ] : [];
-
-  const sections = [
-    { id: 'dashboard', title: 'Dashboard', items: dashboardNav, icon: LayoutDashboard },
-    { id: 'employees', title: 'Employees', items: employeesNav, icon: Users },
-    { id: 'workspace', title: 'Workspace', items: workspaceNav, icon: LayoutDashboard },
-    { id: 'expenses', title: 'Expenses', items: expensesNav, icon: CreditCard },
-    ...(authNav.length > 0 ? [{ id: 'auth', title: 'Authorization', items: authNav, icon: Shield }] : []),
+  const accountNav: SidebarNavItem[] = [
+    { name: 'Settings', path: '/settings', icon: Settings },
+    { name: 'Help & Support', path: '/help', icon: HelpCircle },
+    ...(isAdminOrHR ? [
+      { name: 'Role Management', path: '/roles', icon: Shield },
+      { name: 'Audit Log', path: '/audit', icon: History }
+    ] : [])
   ];
 
-  // Check if any child item is active
   const isNavItemActive = (path: string) => (
     location.pathname === path ||
     (path !== '/dashboard' && path !== '#' && location.pathname.startsWith(`${path}/`))
@@ -102,151 +78,172 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     Boolean(item.children?.some(isItemActive))
   );
 
-  const isSectionActive = (items: SidebarNavItem[]) => items.some(isItemActive);
-
   return (
-    <aside id="primary-sidebar" aria-label="Primary navigation" className={cn(
-      "bg-sidebar text-white flex flex-col shadow-xl z-50 h-[calc(100vh-1rem)] m-2 rounded-xl shrink-0 overflow-hidden transition-[width] duration-300 ease-in-out lg:h-[calc(100vh-2rem)] lg:m-4",
-      collapsed ? "w-16 lg:m-2" : "w-64"
+    <aside aria-label="Primary navigation" className={cn(
+      "bg-white dark:bg-[#09090b] text-slate-700 dark:text-slate-300 flex flex-col h-full w-full border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out font-sans overflow-hidden"
     )}>
       {/* Brand */}
-      <div className={cn("h-20 flex items-center shrink-0 pt-2", collapsed ? "justify-center px-2" : "px-6")}>
-        <NavLink to="/dashboard" className="flex items-center gap-3" title={collapsed ? 'HR Portal' : undefined}>
-          <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shrink-0">
-            <ClipboardCheck className="h-6 w-6 text-sidebar" />
+      <div className={cn("h-[72px] flex items-center shrink-0 border-b border-slate-100 dark:border-slate-800", collapsed ? "justify-center" : "px-6")}>
+        <NavLink to="/dashboard" className="flex items-center gap-3 w-full" title={collapsed ? 'HR Portal' : undefined}>
+          <div className="h-9 w-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 text-white shadow-sm">
+            <ClipboardCheck className="h-5 w-5" />
           </div>
-          <span className={cn("text-xl font-bold tracking-wide", collapsed && "sr-only")}>HR Portal</span>
+          <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
+            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">HR Portal</span>
+            <span className="text-xs text-slate-500 font-medium truncate">{isAdminOrHR ? 'Admin Plan' : 'Employee Plan'}</span>
+          </div>
+          {!collapsed && (
+            <ChevronDown className="h-4 w-4 ml-auto text-slate-400" />
+          )}
         </NavLink>
       </div>
 
       {/* Navigation */}
-      <div className={cn("flex-1 overflow-y-auto py-2 flex flex-col gap-2 custom-scrollbar", collapsed ? "px-2" : "px-3")}>
-        {sections.map((section) => {
-          const isOpen = openSections[section.id];
-          const hasActiveChild = isSectionActive(section.items);
-          
-          return (
-            <div key={section.id} className="flex flex-col">
-              <button
-                onClick={() => toggleSection(section.id)}
-                aria-expanded={isOpen}
-                aria-controls={`sidebar-section-${section.id}`}
-                title={collapsed ? section.title : undefined}
-                className={cn(
-                  "flex items-center rounded-lg py-3 text-sm font-medium transition-colors",
-                  collapsed ? "justify-center px-2" : "justify-between px-3",
-                  "hover:text-accent-400",
-                  hasActiveChild ? "text-[#EAE0CF]" : "text-white/80"
-                )}
-              >
-                <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-                  <section.icon className="h-5 w-5" />
-                  <span className={cn(collapsed && "sr-only")}>{section.title}</span>
-                </div>
-                {!collapsed && (isOpen ? (
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 opacity-50" />
-                ))}
-              </button>
-              
-              {isOpen && (
-                <div id={`sidebar-section-${section.id}`} className="mt-1 mb-2 ml-4 flex flex-col gap-1 border-l border-white/10 pl-3">
-                  {section.items.map((item) => {
-                    const isActive = isItemActive(item);
+      <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-6 custom-scrollbar px-3">
+        {/* Main Section */}
+        <div className="flex flex-col gap-1">
+          {mainNav.map((item) => renderNavItem(item, collapsed, toggleNavGroup, openNavGroups, isItemActive, isNavItemActive))}
+        </div>
 
-                    if (item.children) {
-                      const groupId = `${section.id}-${item.name.toLowerCase().replace(/\s+/g, '-')}`;
-                      const isGroupOpen = openNavGroups[groupId] ?? isActive;
+        {/* Account Section */}
+        <div className="flex flex-col gap-1 mt-auto">
+          {!collapsed && (
+            <div className="px-3 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Account
+            </div>
+          )}
+          {accountNav.map((item) => renderNavItem(item, collapsed, toggleNavGroup, openNavGroups, isItemActive, isNavItemActive))}
+        </div>
+      </div>
 
-                      return (
-                        <div key={item.name}>
-                          <button
-                            type="button"
-                            onClick={() => toggleNavGroup(groupId)}
-                            aria-expanded={isGroupOpen}
-                            aria-controls={`sidebar-nav-group-${groupId}`}
-                            title={collapsed ? item.name : undefined}
-                            className={cn(
-                              "flex w-full items-center gap-3 rounded-lg py-2 text-sm transition-all duration-200",
-                              collapsed ? "justify-center px-2" : "justify-between px-3",
-                              isActive
-                                ? "text-[#EAE0CF] bg-white/5 font-semibold"
-                                : "text-white/60 hover:text-accent-400 hover:bg-white/5"
-                            )}
-                          >
-                            <span className={cn("flex min-w-0 items-center gap-3", collapsed && "justify-center")}>
-                              <item.icon className="h-4 w-4 shrink-0" />
-                              <span className={cn(collapsed && "sr-only")}>{item.name}</span>
-                            </span>
-                            {!collapsed && (isGroupOpen ? (
-                              <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 shrink-0 opacity-50" />
-                            ))}
-                          </button>
+      {/* Bottom Hide Button */}
+      {onToggleCollapse && (
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 mt-auto shrink-0">
+          <button
+            onClick={onToggleCollapse}
+            className={cn(
+              "w-full flex items-center h-10 rounded-lg text-sm font-medium transition-colors text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-white",
+              collapsed ? "justify-center" : "px-3 gap-3"
+            )}
+            title={collapsed ? "Expand" : "Hide"}
+          >
+            {collapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
+            {!collapsed && <span>Hide</span>}
+          </button>
+        </div>
+      )}
+    </aside>
+  );
+}
 
-                          {isGroupOpen && (
-                            <div id={`sidebar-nav-group-${groupId}`} className={cn(
-                              "mt-1 flex flex-col gap-1",
-                              !collapsed && "ml-4 border-l border-white/10 pl-3"
-                            )}>
-                              {item.children.map((child) => {
-                                const childIsActive = child.path ? isNavItemActive(child.path) : false;
-                                return (
-                                  <NavLink
-                                    key={child.name}
-                                    to={child.path || '#'}
-                                    title={collapsed ? child.name : undefined}
-                                    onClick={(e) => {
-                                      if (!child.path) e.preventDefault();
-                                    }}
-                                    className={cn(
-                                      "flex items-center gap-3 rounded-lg py-2 text-sm transition-all duration-200",
-                                      collapsed ? "justify-center px-2" : "px-3",
-                                      childIsActive
-                                        ? "text-[#EAE0CF] bg-white/5 font-semibold"
-                                        : "text-white/60 hover:text-accent-400 hover:bg-white/5"
-                                    )}
-                                  >
-                                    <child.icon className="h-4 w-4 shrink-0" />
-                                    <span className={cn(collapsed && "sr-only")}>{child.name}</span>
-                                  </NavLink>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
+function renderNavItem(
+  item: SidebarNavItem, 
+  collapsed: boolean, 
+  toggleNavGroup: (id: string) => void, 
+  openNavGroups: Record<string, boolean>, 
+  isItemActive: (item: SidebarNavItem) => boolean, 
+  isNavItemActive: (path: string) => boolean
+) {
+  const isActive = isItemActive(item);
 
-                    return (
-                      <NavLink
-                        key={item.name}
-                        to={item.path || '#'}
-                        title={collapsed ? item.name : undefined}
-                        onClick={(e) => {
-                          if (!item.path) e.preventDefault();
-                        }}
-                        className={cn(
-                          "flex items-center gap-3 rounded-lg py-2 text-sm transition-all duration-200",
-                          collapsed ? "justify-center px-2" : "px-3",
-                          isActive
-                            ? "text-[#EAE0CF] bg-white/5 font-semibold"
-                            : "text-white/60 hover:text-accent-400 hover:bg-white/5"
-                        )}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span className={cn(collapsed && "sr-only")}>{item.name}</span>
-                      </NavLink>
-                    );
-                  })}
-                </div>
+  if (item.children) {
+    const groupId = `nav-group-${item.name.toLowerCase().replace(/\s+/g, '-')}`;
+    const isGroupOpen = openNavGroups[groupId] ?? isActive;
+
+    return (
+      <div key={item.name}>
+        <button
+          type="button"
+          onClick={() => toggleNavGroup(groupId)}
+          title={collapsed ? item.name : undefined}
+          className={cn(
+            "flex w-full items-center rounded-lg h-10 text-sm font-medium transition-all duration-200 group border-l-[3px]",
+            collapsed ? "justify-center px-0" : "px-3",
+            isActive
+              ? "text-blue-600 bg-blue-50 border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500"
+              : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+          )}
+        >
+          <div className={cn("flex min-w-0 items-center gap-3", collapsed && "justify-center")}>
+            <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300")} />
+            {!collapsed && <span className="truncate">{item.name}</span>}
+          </div>
+          {!collapsed && (
+            <div className="ml-auto flex items-center gap-2">
+              {item.badge && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+                  {item.badge}
+                </span>
+              )}
+              {isGroupOpen ? (
+                <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+              ) : (
+                <ChevronRight className="h-4 w-4 shrink-0 opacity-50" />
               )}
             </div>
-          );
-        })}
+          )}
+        </button>
+
+        {isGroupOpen && (
+          <div className={cn(
+            "mt-1 flex flex-col gap-1",
+            !collapsed && "ml-9"
+          )}>
+            {item.children.map((child) => {
+              const childIsActive = child.path ? isNavItemActive(child.path) : false;
+              return (
+                <NavLink
+                  key={child.name}
+                  to={child.path || '#'}
+                  title={collapsed ? child.name : undefined}
+                  onClick={(e) => {
+                    if (!child.path) e.preventDefault();
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg h-9 text-sm transition-all duration-200 border-l-[3px]",
+                    collapsed ? "justify-center px-0" : "px-3",
+                    childIsActive
+                      ? "text-blue-600 font-semibold border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500"
+                      : "text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+                  )}
+                >
+                  {collapsed ? <child.icon className="h-5 w-5 shrink-0" /> : <div className="w-1.5 h-1.5 rounded-full bg-current opacity-40 shrink-0" />}
+                  {!collapsed && <span className="truncate">{child.name}</span>}
+                </NavLink>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </aside>
+    );
+  }
+
+  return (
+    <NavLink
+      key={item.name}
+      to={item.path || '#'}
+      title={collapsed ? item.name : undefined}
+      onClick={(e) => {
+        if (!item.path) e.preventDefault();
+      }}
+      className={cn(
+        "flex items-center rounded-lg h-10 text-sm font-medium transition-all duration-200 group relative border-l-[3px]",
+        collapsed ? "justify-center px-0" : "px-3",
+        isActive
+          ? "text-blue-600 bg-blue-50 border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500"
+          : "text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+      )}
+    >
+      <item.icon className={cn("h-5 w-5 shrink-0", collapsed ? "" : "mr-3", isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300")} />
+      {!collapsed && <span className="truncate">{item.name}</span>}
+      {!collapsed && item.badge && (
+        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+          {item.badge}
+        </span>
+      )}
+      {collapsed && item.badge && (
+        <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-blue-600"></span>
+      )}
+    </NavLink>
   );
 }

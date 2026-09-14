@@ -97,7 +97,7 @@ export default function MainLayout() {
             : '-translate-x-full lg:w-0 lg:opacity-0 lg:-ml-4 overflow-hidden'}`}
       >
         <div className={sidebarCollapsed ? 'w-[18rem] lg:w-20' : 'w-[18rem] lg:w-[18rem]'}>
-          <Sidebar collapsed={isDesktop && sidebarCollapsed} />
+          <Sidebar collapsed={isDesktop && sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(prev => !prev)} />
         </div>
       </div>
 
