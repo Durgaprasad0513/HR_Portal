@@ -74,7 +74,7 @@ export default function MainLayout() {
   }, [isDesktop, sidebarOpen]);
 
   return (
-    <div className="flex h-screen bg-[#f4f7f6] dark:bg-[#0b1120] transition-colors overflow-hidden relative">
+    <div className="flex h-screen bg-[#f4f7f6] dark:bg-[#09090b] transition-colors overflow-hidden relative">
       {/* Mobile overlay */}
       {sidebarOpen && !isDesktop && (
         <button
@@ -96,7 +96,7 @@ export default function MainLayout() {
             ? (sidebarCollapsed ? 'translate-x-0 lg:w-20 lg:opacity-100' : 'translate-x-0 lg:w-[18rem] lg:opacity-100')
             : '-translate-x-full lg:w-0 lg:opacity-0 lg:-ml-4 overflow-hidden'}`}
       >
-        <div className={sidebarCollapsed ? 'w-[18rem] lg:w-20' : 'w-[18rem] lg:w-[18rem]'}>
+        <div className={`h-full ${sidebarCollapsed ? 'w-[18rem] lg:w-20' : 'w-[18rem] lg:w-[18rem]'}`}>
           <Sidebar collapsed={isDesktop && sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(prev => !prev)} />
         </div>
       </div>
