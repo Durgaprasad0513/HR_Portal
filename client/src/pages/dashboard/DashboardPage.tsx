@@ -282,6 +282,12 @@ export default function DashboardPage() {
                     <p className="text-[10px] text-text-muted mt-0.5">Target: Below 12%</p>
                   </div>
                 </div>
+                <Link
+                  to="/dashboard/attrition"
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-border px-3 py-2 text-sm font-semibold text-accent-600 transition-colors hover:bg-accent-50 hover:text-accent-700"
+                >
+                  View attrition dashboard
+                </Link>
               </div>
             </div>
           </div>

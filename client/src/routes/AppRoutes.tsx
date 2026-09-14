@@ -76,7 +76,8 @@ const AppRoutes = () => {
             <Route path="/audit" element={<AuditLogPage />} />
             <Route path="/login-history" element={<LoginHistoryPage />} />
             <Route path="/roles" element={<RoleManagementPage />} />
-            <Route path="/attrition" element={<AttritionDashboardPage />} />
+            <Route path="/dashboard/attrition" element={<AttritionDashboardPage />} />
+            <Route path="/attrition" element={<Navigate to="/dashboard/attrition" replace />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />
