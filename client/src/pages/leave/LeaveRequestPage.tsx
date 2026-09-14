@@ -1,3 +1,4 @@
+import { formatDate } from '@/utils/dateFormat';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { leavesApi } from '@/api/leaves';
@@ -18,15 +19,15 @@ export default function LeaveRequestPage() {
   });
 
   const { data: leavesData, isLoading } = useQuery({
-    queryKey: ['leaves', 'pending'],
-    queryFn: leavesApi.getPending,
+    queryKey: ['leaves', 'all'],
+    queryFn: leavesApi.getAll,
   });
 
   const applyMutation = useMutation({
     mutationFn: leavesApi.apply,
     onSuccess: () => {
       toast.success('Leave application submitted');
-      queryClient.invalidateQueries({ queryKey: ['leaves', 'pending'] });
+      queryClient.invalidateQueries({ queryKey: ['leaves', 'all'] });
       setIsAddLeaveModalOpen(false);
       setFormData({ leaveType: 'Medical Leave', startDate: '', endDate: '', reason: '' });
     },
@@ -37,7 +38,7 @@ export default function LeaveRequestPage() {
     mutationFn: leavesApi.updateStatus,
     onSuccess: (_, variables) => {
       toast.success(`Leave request ${variables.status.toLowerCase()}`);
-      queryClient.invalidateQueries({ queryKey: ['leaves', 'pending'] });
+      queryClient.invalidateQueries({ queryKey: ['leaves', 'all'] });
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Action failed'),
   });
@@ -58,22 +59,13 @@ export default function LeaveRequestPage() {
     else if (formData.leaveType === 'Casual Leave') mappedType = 'CASUAL';
     else if (formData.leaveType === 'Earned Leave') mappedType = 'EARNED';
     else if (formData.leaveType === 'Unpaid Leave') mappedType = 'UNPAID';
-    
+
     applyMutation.mutate({
       leaveType: mappedType as any,
       startDate: formData.startDate,
       endDate: formData.endDate,
-      reason: formData.reason
+      reason: formData.reason,
     });
-  };
-
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
   };
 
   const displayLeaveType = (type: string) => {
@@ -88,7 +80,7 @@ export default function LeaveRequestPage() {
     <div className="space-y-6 max-w-[1200px] mx-auto p-4 bg-[#f8f9fc] min-h-screen">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white">Leave Request</h1>
-        <button 
+        <button
           onClick={() => setIsAddLeaveModalOpen(true)}
           className="bg-[#4b4e7c] hover:bg-[#3d3f66] text-white px-4 py-2 rounded-md flex items-center gap-2 font-medium transition-colors"
         >
