@@ -177,16 +177,16 @@ export default function PolicyListPage() {
           )}
         </div>
       ) : (
-        <section aria-label="Documents and policies" className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section aria-label="Documents and policies" className="space-y-3">
           {filteredData.map((policy: any) => {
             const acknowledged = hasAcknowledged(policy.id);
 
             return (
               <article
                 key={policy.id}
-                className="group flex min-h-64 flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-gray-900 dark:hover:border-slate-600"
+                className="group flex flex-col gap-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-gray-900 dark:hover:border-slate-600 md:grid md:grid-cols-[minmax(0,1fr)_15rem_auto] md:items-center md:gap-6 md:p-5"
               >
-                <div className="flex items-start gap-4">
+                <div className="flex min-w-0 items-start gap-4">
                   <div className="flex h-14 w-12 shrink-0 flex-col items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
                     <FileText className="h-5 w-5" aria-hidden="true" />
                     <span className="mt-0.5 text-[10px] font-bold tracking-wide">{getFileExtension(policy.filePath)}</span>
@@ -203,7 +203,7 @@ export default function PolicyListPage() {
                   </div>
                 </div>
 
-                <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+                <dl className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 dark:border-slate-800 md:border-l md:border-t-0 md:py-1 md:pl-6">
                   <div>
                     <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Version</dt>
                     <dd className="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">{policy.versionNumber}</dd>
@@ -216,18 +216,18 @@ export default function PolicyListPage() {
                   </div>
                 </dl>
 
-                {policy.acknowledgementRequired && acknowledged && (
-                  <div className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1.5 text-xs font-semibold text-green-700 dark:bg-green-950/40 dark:text-green-300">
-                    <CheckCircle className="h-3.5 w-3.5" aria-hidden="true" /> Acknowledged
-                  </div>
-                )}
+                <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800 md:justify-end md:border-l md:border-t-0 md:py-1 md:pl-6">
+                  {policy.acknowledgementRequired && acknowledged && (
+                    <div className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1.5 text-xs font-semibold text-green-700 dark:bg-green-950/40 dark:text-green-300">
+                      <CheckCircle className="h-3.5 w-3.5" aria-hidden="true" /> Acknowledged
+                    </div>
+                  )}
 
-                <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
                   <a
                     href={policy.filePath}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-navy-900 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:bg-white dark:text-navy-900 dark:hover:bg-gray-100"
+                    className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-navy-900 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:bg-white dark:text-navy-900 dark:hover:bg-gray-100 md:flex-none"
                     aria-label={`View ${policy.policyName}`}
                   >
                     <Eye className="h-4 w-4" aria-hidden="true" /> View
@@ -238,7 +238,7 @@ export default function PolicyListPage() {
                       type="button"
                       onClick={() => ackMutation.mutate(policy.id)}
                       disabled={ackMutation.isPending}
-                      className="inline-flex min-h-10 flex-1 items-center justify-center rounded-lg border border-primary-200 bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-300"
+                      className="inline-flex min-h-10 flex-1 items-center justify-center rounded-lg border border-primary-200 bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-300 md:flex-none"
                       aria-label={`Acknowledge ${policy.policyName}`}
                     >
                       Acknowledge
