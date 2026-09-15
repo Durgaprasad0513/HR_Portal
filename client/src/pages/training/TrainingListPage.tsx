@@ -14,7 +14,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { Plus, Download, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calendar, Users, TrendingUp } from 'lucide-react';
+import { Plus, Download, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calendar, Users, TrendingUp, Search, SlidersHorizontal, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import apiClient from '@/api/client';
 
@@ -27,7 +27,10 @@ export default function TrainingListPage() {
   const [selectedTrainingForEdit, setSelectedTrainingForEdit] = useState<any>(null);
   const [editingParticipant, setEditingParticipant] = useState<any>(null);
   const [newParticipantId, setNewParticipantId] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'timeline'>('list');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [typeFilter, setTypeFilter] = useState('ALL');
+  const [departmentFilter, setDepartmentFilter] = useState('ALL');
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
   const { data: trainingData, isLoading } = useQuery({
@@ -198,9 +201,22 @@ export default function TrainingListPage() {
     }
   };
 
+  const trainingRows = trainingData?.data || [];
+  const filteredTrainings = trainingRows.filter((t: any) => {
+    const matchesSearch = !searchTerm || 
+                          t.trainingTopic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          t.trainerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          t.trainingLocation?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || t.status === statusFilter;
+    const matchesType = typeFilter === 'ALL' || t.trainingType === typeFilter;
+    const matchesDepartment = departmentFilter === 'ALL' || t.targetDepartmentId === departmentFilter;
+    return matchesSearch && matchesStatus && matchesType && matchesDepartment;
+  });
+
   const renderCalendarView = () => {
     const sorted = [...(trainingData?.data || [])].sort((a, b) => new Date(a.trainingDate).getTime() - new Date(b.trainingDate).getTime());
-    return (
+  
+  return (
       <div className="space-y-4">
          {sorted.map((t: any) => (
            <div key={t.id} className="flex gap-6 items-start p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
@@ -228,7 +244,7 @@ export default function TrainingListPage() {
   };
 
   const renderTimelineView = () => {
-    const sorted = [...(trainingData?.data || [])].sort((a, b) => new Date(b.trainingDate).getTime() - new Date(a.trainingDate).getTime());
+    const sorted = [...(filteredTrainings || [])].sort((a, b) => new Date(a.trainingDate).getTime() - new Date(b.trainingDate).getTime());
     const timelineItems: TimelineItem[] = sorted.map((t: any) => {
       const date = new Date(t.trainingDate);
       const isPast = date.getTime() < Date.now();
@@ -266,11 +282,6 @@ export default function TrainingListPage() {
         title="Training Sessions"
         description="Plan learning, track attendance, and measure outcomes."
         actions={<div className="flex gap-2">
-          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-            <button onClick={() => setViewMode('list')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500'}`}>List</button>
-            <button onClick={() => setViewMode('calendar')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${viewMode === 'calendar' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500'}`}>Calendar</button>
-            <button onClick={() => setViewMode('timeline')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${viewMode === 'timeline' ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-500'}`}>Timeline</button>
-          </div>
                       {isAdminOrHR && (
               <>
                 {canExport('training') && <Button variant="outline" onClick={handleExport} className="gap-2">
@@ -286,6 +297,58 @@ export default function TrainingListPage() {
             )}
         </div>}
       />
+
+      <div className="mt-5 rounded-xl border border-slate-border bg-surface p-4 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+          <label className="min-w-0 flex-1">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Search training</span>
+            <span className="relative block">
+              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-text-muted" aria-hidden="true" />
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Topic, trainer, location..."
+                className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 dark:border-slate-600 dark:bg-gray-900"
+                aria-label="Search training sessions"
+              />
+            </span>
+          </label>
+          <label className="w-full lg:w-44">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Status</span>
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-gray-900" aria-label="Filter by status">
+              <option value="ALL">All statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </label>
+          <label className="w-full lg:w-44">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Type</span>
+            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-gray-900" aria-label="Filter by training type">
+              <option value="ALL">All types</option>
+              <option value="INTERNAL">Internal</option>
+              <option value="EXTERNAL">External</option>
+            </select>
+          </label>
+          {isAdminOrHR && <label className="w-full lg:w-52">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Department</span>
+            <select value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-gray-900" aria-label="Filter by department">
+              <option value="ALL">All departments</option>
+              {departmentsData?.data?.map((department: any) => <option key={department.id} value={department.id}>{department.name}</option>)}
+            </select>
+          </label>}
+          {(searchTerm || statusFilter !== 'ALL' || typeFilter !== 'ALL' || departmentFilter !== 'ALL') && (
+            <Button variant="ghost" onClick={() => {
+              setSearchTerm('');
+              setStatusFilter('ALL');
+              setTypeFilter('ALL');
+              setDepartmentFilter('ALL');
+            }} className="h-10 gap-2">
+              <X className="h-4 w-4" /> Clear
+            </Button>
+          )}
+        </div>
+      </div>
 
       {!isStatsLoading && statsData?.data && (
         <div className="space-y-8 mb-8">
@@ -339,47 +402,78 @@ export default function TrainingListPage() {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-             <Card>
-               <CardContent className="p-4">
-                  <h3 className="text-sm font-bold text-gray-500 mb-3">Department-wise Training</h3>
-                  <div className="space-y-2">
-                    {statsData.data.departmentWise?.length === 0 ? <p className="text-sm text-gray-400">No data</p> : null}
-                    {statsData.data.departmentWise?.map((d: any) => (
-                      <div key={d.name} className="flex justify-between items-center text-sm">
-                        <span className="font-medium">{d.name}</span>
-                        <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{d.value} Trainings</span>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+              <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-5 py-4">
+                <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-accent-600" />
+                  Department-wise Training
+                </h3>
+              </div>
+              <CardContent className="p-0">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 h-64 overflow-y-auto custom-scrollbar">
+                  {statsData.data.departmentWise?.length === 0 ? (
+                    <div className="p-5 text-center text-sm text-slate-500">No data available</div>
+                  ) : (
+                    statsData.data.departmentWise?.map((d: any, i: number) => (
+                      <div key={d.name} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                            ['bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-purple-100 text-purple-700', 'bg-amber-100 text-amber-700'][i % 4]
+                          }`}>
+                            {d.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <span className="font-medium text-slate-700 dark:text-slate-300">{d.name}</span>
+                        </div>
+                        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          {d.value} {d.value === 1 ? 'Training' : 'Trainings'}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-               </CardContent>
-             </Card>
-             <Card>
-               <CardContent className="p-4">
-                  <h3 className="text-sm font-bold text-gray-500 mb-3">Employee-wise Training</h3>
-                  <div className="space-y-2">
-                    {statsData.data.employeeWise?.length === 0 ? <p className="text-sm text-gray-400">No data</p> : null}
-                    {statsData.data.employeeWise?.map((e: any) => (
-                      <div key={e.name} className="flex justify-between items-center text-sm">
-                        <span className="font-medium">{e.name}</span>
-                        <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{e.value} Sessions</span>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+              <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-5 py-4">
+                <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-accent-600" />
+                  Employee-wise Training
+                </h3>
+              </div>
+              <CardContent className="p-0">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 h-64 overflow-y-auto custom-scrollbar">
+                  {statsData.data.employeeWise?.length === 0 ? (
+                    <div className="p-5 text-center text-sm text-slate-500">No data available</div>
+                  ) : (
+                    statsData.data.employeeWise?.map((e: any, i: number) => (
+                      <div key={e.name} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                            ['bg-indigo-100 text-indigo-700', 'bg-rose-100 text-rose-700', 'bg-teal-100 text-teal-700', 'bg-cyan-100 text-cyan-700'][i % 4]
+                          }`}>
+                            {e.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <span className="font-medium text-slate-700 dark:text-slate-300">{e.name}</span>
+                        </div>
+                        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          {e.value} {e.value === 1 ? 'Session' : 'Sessions'}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-               </CardContent>
-             </Card>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
 
       {isLoading ? (
         <LoadingSpinner />
-      ) : viewMode === 'timeline' ? (
-        renderTimelineView()
-      ) : viewMode === 'calendar' ? (
-        renderCalendarView()
       ) : (
-        <DataTable columns={columns} data={trainingData?.data || []} keyField="id" />
+        renderCalendarView()
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => {
