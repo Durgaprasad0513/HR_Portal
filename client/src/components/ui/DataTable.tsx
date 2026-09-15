@@ -167,7 +167,7 @@ export function DataTable<T>({
   }, [pageIndex, pageCount]);
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900 overflow-hidden">
+    <div className="rounded-xl border border-slate-border bg-surface overflow-hidden">
       <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400 sm:hidden">
         Scroll horizontally to see all columns.
       </p>
@@ -176,7 +176,7 @@ export function DataTable<T>({
           <caption className="sr-only">{caption}</caption>
           <thead>
             {table.getHeaderGroups().map((headerGroup: any) => (
-              <tr key={headerGroup.id} className="border-b border-slate-200 dark:border-slate-700">
+              <tr key={headerGroup.id} className="border-b border-slate-border">
                 {headerGroup.headers.map((header: any) => (
                   <th
                     key={header.id}
@@ -191,7 +191,7 @@ export function DataTable<T>({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+          <tbody className="divide-y divide-slate-border">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td
@@ -226,7 +226,7 @@ export function DataTable<T>({
 
       {/* Pagination */}
       {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-border">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Show {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)} of {data.length} results
           </p>
@@ -235,7 +235,7 @@ export function DataTable<T>({
               aria-label="Previous page"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -250,7 +250,7 @@ export function DataTable<T>({
                     "h-8 w-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors",
                     table.getState().pagination.pageIndex === (num as number) - 1
                       ? "bg-accent-500 text-white"
-                      : "border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      : "border border-slate-border text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                   )}
                   aria-label={`Page ${num}`}
                   aria-current={table.getState().pagination.pageIndex === (num as number) - 1 ? 'page' : undefined}
@@ -263,7 +263,7 @@ export function DataTable<T>({
               aria-label="Next page"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -273,3 +273,8 @@ export function DataTable<T>({
     </div>
   );
 }
+
+
+
+
+

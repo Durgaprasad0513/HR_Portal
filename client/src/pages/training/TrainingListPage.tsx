@@ -152,7 +152,7 @@ export default function TrainingListPage() {
       </span>
     ) },
     { header: 'Trainer', accessor: 'trainerName' },
-    { header: 'Date', accessor: (row: any) => formatDate(row.trainingDate) },
+    { header: 'Date', accessor: (row: any) => row.trainingEndDate ? formatDate(row.trainingDate) + ' - ' + formatDate(row.trainingEndDate) : formatDate(row.trainingDate) },
     { header: 'Location', accessor: 'trainingLocation' },
     { header: 'Hours', accessor: 'trainingHours' },
     {
@@ -190,9 +190,9 @@ export default function TrainingListPage() {
       delete payload.trainingCost;
     }
 
-    if (!payload.targetDepartmentId) {
-      delete payload.targetDepartmentId;
-    }
+    if (!payload.targetDepartmentId) { delete payload.targetDepartmentId; }
+
+    if (!payload.trainingEndDate) { delete payload.trainingEndDate; }
 
     if (selectedTrainingForEdit) {
       updateMutation.mutate({ id: selectedTrainingForEdit.id, data: payload });
@@ -219,7 +219,7 @@ export default function TrainingListPage() {
   return (
       <div className="space-y-4">
          {sorted.map((t: any) => (
-           <div key={t.id} className="flex gap-6 items-start p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+           <div key={t.id} className="flex gap-6 items-start p-6 bg-surface rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
              <div className="w-24 text-center shrink-0 border-r border-gray-100 dark:border-gray-800 pr-6">
                <div className="text-sm text-gray-500 font-bold uppercase">{formatDateTime(t.trainingDate)}</div>
                <div className="text-4xl font-black text-primary-600">{new Date(t.trainingDate).getDate()}</div>
@@ -234,7 +234,7 @@ export default function TrainingListPage() {
                  <span className="flex items-center gap-1.5"><Users className="w-4 h-4"/> {t.trainerName || 'TBD'}</span>
                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4"/> {t.trainingHours} Hrs</span>
                  <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4"/> {t.trainingLocation || 'Remote'}</span>
-                 <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-semibold">{t.trainingType}</span>
+                 <span className="px-2 py-0.5 bg-surface rounded-full text-xs font-semibold">{t.trainingType}</span>
                </div>
              </div>
            </div>
@@ -265,7 +265,7 @@ export default function TrainingListPage() {
     });
 
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+      <div className="bg-surface rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800">
         <h2 className="text-2xl font-bold mb-8 text-center">Training Journey</h2>
         {timelineItems.length > 0 ? (
           <Timeline items={timelineItems} className="max-w-4xl mx-auto" />
@@ -308,23 +308,14 @@ export default function TrainingListPage() {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Topic, trainer, location..."
-                className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 dark:border-slate-600 dark:bg-gray-900"
+                className="h-10 w-full rounded-lg border border-slate-300 bg-surface pl-9 pr-3 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 dark:border-slate-600 "
                 aria-label="Search training sessions"
               />
             </span>
           </label>
           <label className="w-full lg:w-44">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Status</span>
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-gray-900" aria-label="Filter by status">
-              <option value="ALL">All statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
-          </label>
-          <label className="w-full lg:w-44">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Type</span>
-            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-gray-900" aria-label="Filter by training type">
+            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 text-sm dark:border-slate-600 " aria-label="Filter by training type">
               <option value="ALL">All types</option>
               <option value="INTERNAL">Internal</option>
               <option value="EXTERNAL">External</option>
@@ -332,7 +323,7 @@ export default function TrainingListPage() {
           </label>
           {isAdminOrHR && <label className="w-full lg:w-52">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Department</span>
-            <select value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm dark:border-slate-600 dark:bg-gray-900" aria-label="Filter by department">
+            <select value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 text-sm dark:border-slate-600 " aria-label="Filter by department">
               <option value="ALL">All departments</option>
               {departmentsData?.data?.map((department: any) => <option key={department.id} value={department.id}>{department.name}</option>)}
             </select>
@@ -351,7 +342,7 @@ export default function TrainingListPage() {
       </div>
 
       {!isStatsLoading && statsData?.data && (
-        <div className="space-y-8 mb-8">
+        <div className="space-y-8 my-6 lg:my-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
                 <div className="flex items-center gap-4">
@@ -404,7 +395,7 @@ export default function TrainingListPage() {
             </div>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
-              <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-5 py-4">
+              <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 bg-surface/50 px-5 py-4">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-accent-600" />
                   Department-wise Training
@@ -425,7 +416,7 @@ export default function TrainingListPage() {
                           </div>
                           <span className="font-medium text-slate-700 dark:text-slate-300">{d.name}</span>
                         </div>
-                        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                           {d.value} {d.value === 1 ? 'Training' : 'Trainings'}
                         </span>
                       </div>
@@ -436,7 +427,7 @@ export default function TrainingListPage() {
             </Card>
 
             <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
-              <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-5 py-4">
+              <div className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 bg-surface/50 px-5 py-4">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Users className="w-4 h-4 text-accent-600" />
                   Employee-wise Training
@@ -457,7 +448,7 @@ export default function TrainingListPage() {
                           </div>
                           <span className="font-medium text-slate-700 dark:text-slate-300">{e.name}</span>
                         </div>
-                        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <span className="inline-flex items-center rounded-full bg-surface px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                           {e.value} {e.value === 1 ? 'Session' : 'Sessions'}
                         </span>
                       </div>
@@ -493,7 +484,10 @@ export default function TrainingListPage() {
               ))}
           </Select>
           <Input name="trainerName" label="Trainer Name" required defaultValue={selectedTrainingForEdit?.trainerName} />
-          <Input type="date" name="trainingDate" label="Training Date" required defaultValue={selectedTrainingForEdit?.trainingDate?.split('T')[0]} />
+          <div className="grid grid-cols-2 gap-4">
+              <Input type="date" name="trainingDate" label="Start Date *" required defaultValue={selectedTrainingForEdit?.trainingDate?.split('T')[0]} />
+              <Input type="date" name="trainingEndDate" label="End Date" defaultValue={selectedTrainingForEdit?.trainingEndDate?.split('T')[0]} />
+            </div>
           <Input name="trainingLocation" label="Location" required defaultValue={selectedTrainingForEdit?.trainingLocation} />
           <Input type="number" name="trainingHours" label="Duration (Hours)" required min="0" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={selectedTrainingForEdit?.trainingHours} />
           <Input type="number" name="trainingCost" label="Cost (₹)" min="0" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={selectedTrainingForEdit?.trainingCost} />
@@ -509,7 +503,12 @@ export default function TrainingListPage() {
 
       {/* Manage Training Details Modal */}
       {selectedTraining && (
-        <Modal isOpen={true} onClose={() => setSelectedTraining(null)} title={`Manage: ${selectedTraining.trainingTopic}`}>
+        <Modal 
+          isOpen={true} 
+          onClose={() => setSelectedTraining(null)} 
+          title={`Manage: ${selectedTraining.trainingTopic}`}
+          className="max-w-4xl w-full"
+        >
           <div className="space-y-6">
             <div className="flex justify-between items-center border-b dark:border-gray-800 pb-4">
               <div className="flex gap-4">
@@ -519,27 +518,15 @@ export default function TrainingListPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Date</p>
-                  <p className="font-medium">{formatDate(selectedTraining.trainingDate)}</p>
+                  <p className="font-medium">{selectedTraining.trainingEndDate ? formatDate(selectedTraining.trainingDate) + ' - ' + formatDate(selectedTraining.trainingEndDate) : formatDate(selectedTraining.trainingDate)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Type</p>
                   <p className="font-medium">{selectedTraining.trainingType}</p>
                 </div>
               </div>
-              {isAdminOrHR && selectedTraining.status === 'PENDING' && (
-                <div className="flex gap-2">
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" disabled={approveMutation.isPending} onClick={() => approveMutation.mutate({ id: selectedTraining.id, status: 'APPROVED' })}>Approve</Button>
-                  <Button size="sm" variant="danger" disabled={approveMutation.isPending} onClick={() => approveMutation.mutate({ id: selectedTraining.id, status: 'REJECTED' })}>Reject</Button>
-                </div>
-              )}
-              {selectedTraining.status !== 'PENDING' && (
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedTraining.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {selectedTraining.status}
-                  </span>
-                </div>
-              )}
+              
+              
             </div>
 
             <div>
@@ -548,7 +535,7 @@ export default function TrainingListPage() {
                 <div className="flex gap-2">
                   <select
                     aria-label="Employee to add to training"
-                    className="p-1 border rounded-md text-sm dark:bg-gray-800 dark:border-gray-700"
+                    className="p-1 border rounded-md text-sm bg-surface dark:border-gray-700"
                     value={newParticipantId}
                     onChange={(e) => setNewParticipantId(e.target.value)}
                   >
@@ -573,14 +560,13 @@ export default function TrainingListPage() {
               {selectedTraining.participants?.length > 0 ? (
                 <div className="overflow-x-auto border dark:border-gray-800 rounded-lg">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 uppercase">
+                    <thead className="bg-surface text-gray-500 uppercase">
                       <tr>
                         <th className="px-4 py-3">Employee</th>
                         <th className="px-4 py-3">Department</th>
-                        <th className="px-4 py-3">Attendance</th>
-                        <th className="px-4 py-3">Assessment</th>
+                        
                         <th className="px-4 py-3">Feedback</th>
-                        <th className="px-4 py-3 text-center">Certificate</th>
+                        
                         <th className="px-4 py-3"></th>
                       </tr>
                     </thead>
@@ -589,12 +575,7 @@ export default function TrainingListPage() {
                         <tr key={p.id}>
                           <td className="px-4 py-3 font-medium">{p.employee?.firstName} {p.employee?.lastName}</td>
                           <td className="px-4 py-3 text-gray-500">{p.employee?.department?.name || 'N/A'}</td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${p.attendanceStatus === 'TRAINING_PRESENT' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                              {p.attendanceStatus === 'TRAINING_PRESENT' ? 'Present' : 'Absent'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">{p.assessmentScore ? `${p.assessmentScore}%` : '-'}</td>
+                          
                           <td className="px-4 py-3">
                             {p.feedbackRating ? (
                               <div className="flex items-center text-amber-500 text-xs">
@@ -602,9 +583,7 @@ export default function TrainingListPage() {
                               </div>
                             ) : '-'}
                           </td>
-                          <td className="px-4 py-3 text-center">
-                            {p.certificateIssued ? <CheckCircle className="w-4 h-4 text-green-500 mx-auto" /> : '-'}
-                          </td>
+                          
                           <td className="px-4 py-3">
                              <Button variant="ghost" size="sm" onClick={() => setEditingParticipant(p)}>Edit</Button>
                           </td>
@@ -614,7 +593,7 @@ export default function TrainingListPage() {
                   </table>
                 </div>
               ) : (
-                <div className="text-sm text-gray-500 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-center">
+                <div className="text-sm text-gray-500 bg-surface p-4 rounded-lg text-center">
                   No participants enrolled in this training yet.
                 </div>
               )}
@@ -631,47 +610,81 @@ export default function TrainingListPage() {
       {editingParticipant && (
         <Modal isOpen={true} onClose={() => setEditingParticipant(null)} title={`Update: ${editingParticipant.employee?.firstName || ''} ${editingParticipant.employee?.lastName || ''}`}>
           <form onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-
-            const assessmentData = {
-              attendanceStatus: formData.get('attendanceStatus'),
-              assessmentScore: formData.get('assessmentScore') ? Number(formData.get('assessmentScore')) : undefined,
-              certificateIssued: formData.get('certificateIssued') === 'on'
-            };
-
-            const feedbackData = {
-              feedbackRating: formData.get('feedbackRating') ? Number(formData.get('feedbackRating')) : undefined,
-              feedbackComments: formData.get('feedbackComments') || undefined
-            };
-
-            updateParticipantMutation.mutate({
-              trainingId: selectedTraining.id,
-              employeeId: editingParticipant.employeeId,
-              assessmentData,
-              feedbackData
-            });
-          }} className="space-y-4">
-            <Select name="attendanceStatus" label="Attendance" defaultValue={editingParticipant.attendanceStatus}>
-                <option value="TRAINING_PRESENT">Present</option>
-                <option value="TRAINING_ABSENT">Absent</option>
-            </Select>
-            <Input type="number" name="assessmentScore" label="Assessment Score (%)" min="1" max="100" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={editingParticipant.assessmentScore} />
-            <div className="flex items-center gap-2">
-              <input type="checkbox" name="certificateIssued" id="certificateIssued" defaultChecked={editingParticipant.certificateIssued} />
-              <label htmlFor="certificateIssued" className="text-sm">Certificate Issued</label>
-            </div>
-            <hr className="my-4 dark:border-gray-800" />
-            <Input type="number" name="feedbackRating" label="Feedback Rating (1-5)" min="1" max="5" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={editingParticipant.feedbackRating} />
-            <Input name="feedbackComments" label="Feedback Comments" defaultValue={editingParticipant.feedbackComments} />
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setEditingParticipant(null)}>Cancel</Button>
-              <Button type="submit" disabled={updateParticipantMutation.isPending}>Save Changes</Button>
-            </div>
-          </form>
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const feedbackData: any = {};
+              
+              if (isAdminOrHR) {
+                const tr = formData.get('trainerFeedbackRating');
+                if (tr) feedbackData.trainerFeedbackRating = Number(tr);
+                feedbackData.trainerFeedbackComments = formData.get('trainerFeedbackComments') || undefined;
+              } else {
+                const fr = formData.get('feedbackRating');
+                if (fr) feedbackData.feedbackRating = Number(fr);
+                feedbackData.feedbackComments = formData.get('feedbackComments') || undefined;
+              }
+  
+              updateParticipantMutation.mutate({
+                trainingId: selectedTraining.id,
+                employeeId: editingParticipant.employeeId,
+                assessmentData: undefined,
+                feedbackData
+              });
+            }} className="space-y-4">
+              
+              {isAdminOrHR ? (
+                <>
+                  <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg space-y-4 mb-6">
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">Trainer Feedback (You)</h4>
+                    <Input type="number" name="trainerFeedbackRating" label="Trainer Feedback Rating (1-5)" min="1" max="5" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={editingParticipant.trainerFeedbackRating} />
+                    <Input name="trainerFeedbackComments" label="Trainer Feedback Comments" defaultValue={editingParticipant.trainerFeedbackComments} />
+                  </div>
+                  
+                  <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg space-y-4 opacity-70">
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">Trainee Feedback</h4>
+                    <Input type="number" disabled label="Trainee Feedback Rating (1-5)" defaultValue={editingParticipant.feedbackRating} />
+                    <Input disabled label="Trainee Feedback Comments" defaultValue={editingParticipant.feedbackComments} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg space-y-4 mb-6">
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">Trainee Feedback (You)</h4>
+                    <Input type="number" name="feedbackRating" label="Feedback Rating (1-5)" min="1" max="5" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={editingParticipant.feedbackRating} />
+                    <Input name="feedbackComments" label="Feedback Comments" defaultValue={editingParticipant.feedbackComments} />
+                  </div>
+                  
+                  <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg space-y-4 opacity-70">
+                    <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-200">Trainer Feedback</h4>
+                    <Input type="number" disabled label="Trainer Feedback Rating (1-5)" defaultValue={editingParticipant.trainerFeedbackRating} />
+                    <Input disabled label="Trainer Feedback Comments" defaultValue={editingParticipant.trainerFeedbackComments} />
+                  </div>
+                </>
+              )}
+  
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setEditingParticipant(null)}>Cancel</Button>
+                <Button type="submit" disabled={updateParticipantMutation.isPending}>Save Changes</Button>
+              </div>
+            </form>
         </Modal>
       )}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

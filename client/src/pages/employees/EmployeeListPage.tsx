@@ -41,6 +41,16 @@ export default function EmployeeListPage() {
 
   const displayedEmployees = empData?.data?.slice((page - 1) * pageSize, page * pageSize) || [];
   const totalPages = Math.ceil((empData?.data?.length || 0) / pageSize);
+  const customOrder = ['HR&ADMIN-IT', 'HR & ADMIN', 'COMMERCIAL', 'ACCOUNTS', 'PROCUREMENT'];
+  const sortedDepts = [...(deptData?.data || [])].sort((a, b) => {
+    const indexA = customOrder.indexOf(a.name);
+    const indexB = customOrder.indexOf(b.name);
+    if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+
 
   const getEmpTypeBadge = (type: string) => {
     if (type === 'PERMANENT') return <Badge variant="success">Full-time</Badge>;
@@ -84,8 +94,8 @@ export default function EmployeeListPage() {
 
       {/* Station Cards */}
       {(user?.role === 'ADMIN' || user?.role === 'HR') && deptData?.data && deptData.data.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {deptData.data.map((dept: any) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 xl:gap-6">
+          {sortedDepts.map((dept: any) => {
             const isSelected = departmentId === dept.id;
             return (
               <div
@@ -94,7 +104,7 @@ export default function EmployeeListPage() {
                 tabIndex={0}
                 aria-pressed={isSelected}
                 aria-label={`Filter employees by ${dept.name}`}
-                className={`bg-surface rounded-xl shadow-sm border ${isSelected ? 'border-accent-500 ring-1 ring-accent-500' : 'border-slate-border'} p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer`}
+                className={`bg-surface rounded-xl shadow-sm border ${isSelected ? 'border-accent-500 ring-1 ring-accent-500' : 'border-slate-border'} p-3 xl:p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer`}
                 onClick={() => setDepartmentId(dept.id === departmentId ? '' : dept.id)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
@@ -103,12 +113,12 @@ export default function EmployeeListPage() {
                   }
                 }}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 xl:gap-4">
                   <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-accent-600 text-white' : 'bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400'}`}>
                     <UsersRound className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-muted line-clamp-2 break-words" title={dept.name}>{dept.name}</p>
+                    <p className="text-xs xl:text-sm font-medium text-text-muted line-clamp-2" title={dept.name}>{dept.name}</p>
                     <div className="flex items-end gap-2">
                       <h3 className="text-2xl font-bold text-text-heading">{dept._count?.employees || 0}</h3>
                     </div>
@@ -121,7 +131,7 @@ export default function EmployeeListPage() {
       )}
 
       {/* Action Bar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 xl:gap-4">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative w-full sm:w-64">
@@ -129,7 +139,7 @@ export default function EmployeeListPage() {
             <input 
               aria-label="Search employees"
               placeholder="Search..." 
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-900 border border-slate-300 dark:border-slate-600 shadow-sm rounded-lg text-sm focus:outline-none transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-surface border border-slate-300 dark:border-slate-600 shadow-sm rounded-lg text-sm focus:outline-none transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -137,7 +147,7 @@ export default function EmployeeListPage() {
           
           <select 
             aria-label="Filter employees by office"
-            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+            className="px-3 py-2 bg-surface border border-slate-border rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           >
@@ -148,7 +158,7 @@ export default function EmployeeListPage() {
           
           <select 
             aria-label="Filter employees by status"
-            className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+            className="px-3 py-2 bg-surface border border-slate-border rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
@@ -191,22 +201,22 @@ export default function EmployeeListPage() {
         <div className="flex flex-wrap items-center gap-2" aria-label="Active employee filters">
           <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Active filters:</span>
           {search && (
-            <button type="button" onClick={() => setSearch('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700">
+            <button type="button" onClick={() => setSearch('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 bg-surface dark:text-gray-300 dark:hover:bg-slate-700">
               Search: {search} ×
             </button>
           )}
           {departmentId && (
-            <button type="button" onClick={() => setDepartmentId('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700">
+            <button type="button" onClick={() => setDepartmentId('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 bg-surface dark:text-gray-300 dark:hover:bg-slate-700">
               Department: {deptData?.data?.find((dept: any) => dept.id === departmentId)?.name || 'Selected'} ×
             </button>
           )}
           {location && (
-            <button type="button" onClick={() => setLocation('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700">
+            <button type="button" onClick={() => setLocation('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 bg-surface dark:text-gray-300 dark:hover:bg-slate-700">
               Office: {location} ×
             </button>
           )}
           {status && (
-            <button type="button" onClick={() => setStatus('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700">
+            <button type="button" onClick={() => setStatus('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 bg-surface dark:text-gray-300 dark:hover:bg-slate-700">
               Status: {status} ×
             </button>
           )}
@@ -235,10 +245,10 @@ export default function EmployeeListPage() {
         />
       ) : (
         <div className="space-y-6">
-          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-gray-900 md:block">
+          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-sm dark:border-slate-700  md:block">
             <table className="w-full text-left">
               <caption className="sr-only">Employee directory</caption>
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-gray-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-gray-400">
+              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-gray-600 dark:border-slate-700 bg-transparent dark:text-gray-400">
                 <tr>
                   <th scope="col" className="px-5 py-4 font-semibold">Employee</th>
                   <th scope="col" className="px-5 py-4 font-semibold">Role & department</th>
@@ -268,7 +278,7 @@ export default function EmployeeListPage() {
                         {emp.profilePhoto ? (
                           <img src={emp.profilePhoto} alt="" className="h-10 w-10 rounded-full border border-slate-100 object-cover dark:border-slate-700" />
                         ) : (
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 font-semibold text-slate-600 bg-surface dark:text-slate-300">
                             {emp.firstName?.[0]}{emp.lastName?.[0]}
                           </div>
                         )}
@@ -294,7 +304,7 @@ export default function EmployeeListPage() {
             </table>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:hidden">
+          <div className="grid grid-cols-1 gap-2 xl:gap-4 md:hidden">
             {displayedEmployees.map((emp: any) => (
               <div
                 key={emp.id}
@@ -308,14 +318,14 @@ export default function EmployeeListPage() {
                     navigate(`/employees/${emp.id}`);
                   }
                 }}
-                className="group relative flex cursor-pointer flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:border-slate-700 dark:bg-gray-900 dark:hover:border-slate-600"
+                className="group relative flex cursor-pointer flex-col gap-2 xl:gap-4 rounded-xl border border-slate-200 bg-surface p-5 transition-all hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:border-slate-700  dark:hover:border-slate-600"
               >
                  <div className="flex justify-between items-start">
-                   <div className="flex gap-4 items-center min-w-0">
+                   <div className="flex gap-2 xl:gap-4 items-center min-w-0">
                       {emp.profilePhoto ? (
                          <img src={emp.profilePhoto} alt={`${emp.firstName}`} className="w-12 h-12 rounded-full object-cover border border-slate-100 flex-shrink-0" />
                       ) : (
-                         <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 flex-shrink-0">
+                         <div className="w-12 h-12 rounded-full bg-surface flex items-center justify-center font-bold text-slate-500 flex-shrink-0">
                            {emp.firstName?.[0]}{emp.lastName?.[0]}
                          </div>
                       )}
@@ -362,7 +372,7 @@ export default function EmployeeListPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-4">
+            <div className="flex items-center justify-between border-t border-slate-border pt-4">
               <p className="text-sm text-slate-500">
                 Showing <span className="font-medium">{((page - 1) * pageSize) + 1}</span> to <span className="font-medium">{Math.min(page * pageSize, empData?.data?.length || 0)}</span> of <span className="font-medium">{empData?.data?.length}</span> results
               </p>
@@ -404,3 +414,17 @@ export default function EmployeeListPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

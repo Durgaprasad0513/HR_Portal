@@ -177,7 +177,7 @@ export default function DashboardPage() {
                     <th className="px-5 py-3 font-semibold">STATUS</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                <tbody className="divide-y divide-slate-border">
                   {reqData?.data?.slice(0, 4).map((req: any) => (
                     <tr key={req.id} className="hover:bg-tint cursor-pointer" onClick={() => window.location.href='/recruitment'}>
                       <td className="px-5 py-4 font-medium text-text-heading">{req.positionTitle}</td>
@@ -194,7 +194,7 @@ export default function DashboardPage() {
                           req.status === 'SELECTED' ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' :
                           req.status === 'OFFER' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
                           req.status === 'JOINED_REJECTED' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                          'bg-gray-100 text-gray-800 bg-surface dark:text-gray-300'
                         }`}>
                           {req.status === 'JOINED_REJECTED' ? 'Completed' : req.status?.replace('_', ' ')}
                         </span>
@@ -259,7 +259,7 @@ export default function DashboardPage() {
               
               <div className="flex-1 flex flex-col gap-4">
                 {/* Attrition Rate */}
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900/50 shadow-sm relative overflow-hidden flex-1">
+                <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-surface/50 shadow-sm relative overflow-hidden flex-1">
                   <h4 className="font-semibold text-xs mb-3 uppercase tracking-wide text-gray-800 dark:text-gray-200">ATTRITION RATE</h4>
                   
                   <div className="flex justify-between items-start mb-3">
@@ -316,3 +316,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
+

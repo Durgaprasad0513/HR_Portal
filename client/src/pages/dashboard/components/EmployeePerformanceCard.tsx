@@ -87,7 +87,7 @@ const reviews = perfData || [];
         <select 
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="bg-surface border border-slate-border text-slate-700 dark:text-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option>This Month</option>
           <option>Last Month</option>
@@ -126,7 +126,7 @@ const reviews = perfData || [];
                 </div>
 
                 <div className="w-1/4 flex justify-end">
-                  <button onClick={() => navigate('/performance')} className="p-1.5 border border-slate-200 dark:border-slate-700 rounded-md text-text-muted hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" title="View Performance Review">
+                  <button onClick={() => navigate('/performance')} className="p-1.5 border border-slate-border rounded-md text-text-muted hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" title="View Performance Review">
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
                 </div>
@@ -141,3 +141,7 @@ const reviews = perfData || [];
     </div>
   );
 }
+
+
+
+
