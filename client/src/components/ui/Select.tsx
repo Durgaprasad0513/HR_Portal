@@ -55,7 +55,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           id={selectId}
           className={cn(
-            "flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none",
+            "flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none",
             displayError && "border-red-500",
             className
           )}
@@ -78,3 +78,4 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   }
 );
 Select.displayName = "Select";
+

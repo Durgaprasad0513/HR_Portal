@@ -246,7 +246,7 @@ export default function EmployeeFormPage() {
                   name="gender" required 
                   value={formData.gender} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
                 >
                   <option value="">Select Gender</option>
                   <option value="MALE">Male</option>
@@ -288,7 +288,7 @@ export default function EmployeeFormPage() {
                   name="departmentId"
                   value={formData.departmentId} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
                   required
                 >
                   <option value="">Select Department</option>
@@ -315,7 +315,7 @@ export default function EmployeeFormPage() {
                   name="employmentType" required 
                   value={formData.employmentType} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
                 >
                   <option value="PERMANENT">Full-time</option>
                   <option value="CONTRACT">Part-time / Contract</option>
@@ -330,7 +330,7 @@ export default function EmployeeFormPage() {
                   name="managerId" 
                   value={formData.managerId} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
                 >
                   <option value="">Select Manager</option>
                   {employeesList?.data?.map((emp: any) => (
@@ -346,7 +346,7 @@ export default function EmployeeFormPage() {
                   name="location" 
                   value={formData.location} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
                 >
                   <option value="">Select Office</option>
                   <option value="Hyd Office">Hyd Office</option>
@@ -361,13 +361,14 @@ export default function EmployeeFormPage() {
                   name="status" required 
                   value={formData.status} 
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
+                  className="flex h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-300 dark:focus:border-slate-600"
                 >
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
                   <option value="TERMINATED">Terminated</option>
                 </Select>
               </div>
+
             </div>
           </CardContent>
         </Card>
@@ -443,7 +444,7 @@ export default function EmployeeFormPage() {
                           <div className="bg-blue-50 p-3 rounded-lg"><FileText className="text-blue-500 w-6 h-6" /></div>
                           <div className="flex-1">
                             <h4 className="font-semibold text-navy-900 dark:text-white">{f.name}</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Will be uploaded upon click</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Will be uploaded upon click</p>
                           </div>
                           <Button 
                             type="button"
@@ -469,7 +470,7 @@ export default function EmployeeFormPage() {
                         <div className="bg-blue-50 p-3 rounded-lg"><FileText className="text-blue-500 w-6 h-6" /></div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-navy-900 dark:text-white">{doc.documentName}</h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{doc.documentType.replace('_', ' ')} • {formatDate(doc.uploadDate)}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{doc.documentType.replace('_', ' ')} • {formatDate(doc.uploadDate)}</p>
                           <div className="mt-2 flex items-center gap-2 text-sm text-accent-500 font-medium cursor-pointer">
                             <CheckCircle2 className="w-4 h-4" /> Verified
                           </div>
@@ -526,7 +527,7 @@ export default function EmployeeFormPage() {
                         <div className="bg-blue-50 p-3 rounded-lg"><FileText className="text-blue-500 w-6 h-6" /></div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-navy-900 dark:text-white">{f.name}</h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Will be uploaded upon saving</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Will be uploaded upon saving</p>
                         </div>
                         <Button 
                           type="button"
@@ -570,7 +571,7 @@ export default function EmployeeFormPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               A login account has been automatically created for this employee. Please share these credentials securely.
             </p>
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
+            <div className="bg-surface p-4 rounded-lg border border-slate-border space-y-3">
               <div>
                 <p className="text-xs text-gray-500 uppercase font-medium">Email</p>
                 <p className="font-mono text-sm font-semibold">{credentialsModal.email}</p>

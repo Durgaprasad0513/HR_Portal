@@ -22,7 +22,7 @@ export function HRDashboard() {
                   <Briefcase className="w-5 h-5" />
                 </div>
                 <h3 className="text-xl font-bold text-navy-900 dark:text-white">{stat.value}</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1 font-medium">{stat.label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">{stat.label}</p>
               </CardContent>
             </Card>
           ))}
@@ -50,7 +50,7 @@ export function HRDashboard() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                  <span className="text-2xl font-bold text-navy-900 dark:text-white">720</span>
-                 <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">/ 1000</span>
+                 <span className="text-xs text-gray-500 dark:text-gray-400">/ 1000</span>
               </div>
             </div>
             
@@ -58,14 +58,14 @@ export function HRDashboard() {
                <div className="flex flex-col items-start gap-1 text-xs xl:flex-row xl:justify-between xl:items-center xl:text-sm">
                  <div className="flex items-center gap-2">
                    <div className="w-2 h-2 rounded-full bg-accent-500"></div>
-                   <span className="text-gray-600 dark:text-gray-400 dark:text-gray-500">Onboarding</span>
+                   <span className="text-gray-600 dark:text-gray-400">Onboarding</span>
                  </div>
                  <span className="font-semibold pl-4 xl:pl-0">32%</span>
                </div>
                <div className="flex flex-col items-start gap-1 text-xs xl:flex-row xl:justify-between xl:items-center xl:text-sm">
                  <div className="flex items-center gap-2">
                    <div className="w-2 h-2 rounded-full bg-navy-300"></div>
-                   <span className="text-gray-600 dark:text-gray-400 dark:text-gray-500">Offboarding</span>
+                   <span className="text-gray-600 dark:text-gray-400">Offboarding</span>
                  </div>
                  <span className="font-semibold pl-4 xl:pl-0">18%</span>
                </div>
@@ -86,7 +86,7 @@ export function HRDashboard() {
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-800 text-xs uppercase">
+                  <thead className="bg-surface text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800 text-xs uppercase">
                     <tr>
                       <th className="px-6 py-3 font-semibold">Job</th>
                       <th className="px-6 py-3 font-semibold">Total candidates</th>
@@ -94,10 +94,10 @@ export function HRDashboard() {
                       <th className="px-6 py-3 font-semibold">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-slate-border">
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="px-6 py-4 font-medium text-navy-900 dark:text-white">Senior Designer</td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400 dark:text-gray-500">30</td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">30</td>
                       <td className="px-6 py-4">
                          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                             <div className="bg-accent-500 h-1.5 rounded-full" style={{ width: '45%' }}></div>
@@ -107,7 +107,7 @@ export function HRDashboard() {
                     </tr>
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="px-6 py-4 font-medium text-navy-900 dark:text-white">Developer</td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400 dark:text-gray-500">45</td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">45</td>
                       <td className="px-6 py-4">
                          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                             <div className="bg-accent-500 h-1.5 rounded-full" style={{ width: '70%' }}></div>
@@ -134,7 +134,7 @@ export function HRDashboard() {
                    <div className="w-8 h-8 rounded-full bg-[#E0F2FE] text-blue-600 flex items-center justify-center font-bold text-xs">SM</div>
                    <div>
                      <p className="text-sm font-semibold text-navy-900 dark:text-white">Sarah Miller</p>
-                     <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Annual Leave</p>
+                     <p className="text-xs text-gray-500 dark:text-gray-400">Annual Leave</p>
                    </div>
                  </div>
                  <Badge variant="warning">Pending</Badge>
@@ -144,7 +144,7 @@ export function HRDashboard() {
                    <div className="w-8 h-8 rounded-full bg-[#FEE2E2] text-red-600 flex items-center justify-center font-bold text-xs">AJ</div>
                    <div>
                      <p className="text-sm font-semibold text-navy-900 dark:text-white">Alex Johnson</p>
-                     <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Expense Report</p>
+                     <p className="text-xs text-gray-500 dark:text-gray-400">Expense Report</p>
                    </div>
                  </div>
                  <Badge variant="warning">Pending</Badge>
@@ -156,3 +156,7 @@ export function HRDashboard() {
     </div>
   );
 }
+
+
+
+
