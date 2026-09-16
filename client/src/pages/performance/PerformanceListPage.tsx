@@ -16,6 +16,7 @@ import { PerformanceCreateModal } from './PerformanceCreateModal';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { DataTable } from '@/components/ui/DataTable';
+import { Select } from '@/components/ui/Select';
 
 export default function PerformanceListPage() {
   const { user } = useAuth();
@@ -185,8 +186,8 @@ export default function PerformanceListPage() {
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <div className="relative w-full sm:w-64"><Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" /><input aria-label="Search reviews" placeholder="Search reviews..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-surface py-2 pl-9 pr-4 text-sm shadow-sm transition-all focus:outline-none dark:border-slate-600" /></div>
-            <select aria-label="Filter by review cycle" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-lg border border-slate-border bg-surface px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:text-gray-400 dark:focus:ring-slate-600"><option value="All Types">All cycles</option><option value="Monthly">Monthly</option><option value="Quarterly">Quarterly</option><option value="Half Yearly">Half-yearly</option><option value="Annual">Annual</option></select>
-            <select aria-label="Filter by review status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-slate-border bg-surface px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:text-gray-400 dark:focus:ring-slate-600"><option value="All Status">All stages</option><option value="EMPLOYEE_REVIEW">Self-review pending</option><option value="MANAGER_REVIEW">Manager review pending</option><option value="HR_REVIEW">HR review pending</option><option value="FINAL_APPROVAL">Final approval pending</option><option value="COMPLETED">Completed</option></select>
+            <Select aria-label="Filter by review cycle" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-lg border border-slate-border bg-surface px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:text-gray-400 dark:focus:ring-slate-600"><option value="All Types">All cycles</option><option value="Monthly">Monthly</option><option value="Quarterly">Quarterly</option><option value="Half Yearly">Half-yearly</option><option value="Annual">Annual</option></Select>
+            <Select aria-label="Filter by review status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-slate-border bg-surface px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:text-gray-400 dark:focus:ring-slate-600"><option value="All Status">All stages</option><option value="EMPLOYEE_REVIEW">Self-review pending</option><option value="MANAGER_REVIEW">Manager review pending</option><option value="HR_REVIEW">HR review pending</option><option value="FINAL_APPROVAL">Final approval pending</option><option value="COMPLETED">Completed</option></Select>
             {hasActiveFilters && <button onClick={clearFilters} className="text-sm text-gray-500 underline underline-offset-2 hover:text-navy-900 dark:text-gray-400 dark:hover:text-white">Clear filters</button>}
           </div>
         </div>

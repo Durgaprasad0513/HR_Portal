@@ -313,18 +313,18 @@ export default function TrainingListPage() {
           </label>
           <label className="w-full lg:w-44">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Type</span>
-            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 text-sm dark:border-slate-600 " aria-label="Filter by training type">
+            <Select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 text-sm dark:border-slate-600 " aria-label="Filter by training type">
               <option value="ALL">All types</option>
               <option value="INTERNAL">Internal</option>
               <option value="EXTERNAL">External</option>
-            </select>
+            </Select>
           </label>
           {isAdminOrHR && <label className="w-full lg:w-52">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Department</span>
-            <select value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 text-sm dark:border-slate-600 " aria-label="Filter by department">
+            <Select value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 text-sm dark:border-slate-600 " aria-label="Filter by department">
               <option value="ALL">All departments</option>
               {departmentsData?.data?.map((department: any) => <option key={department.id} value={department.id}>{department.name}</option>)}
-            </select>
+            </Select>
           </label>}
           {(searchTerm || statusFilter !== 'ALL' || typeFilter !== 'ALL' || departmentFilter !== 'ALL') && (
             <Button variant="ghost" onClick={() => {
@@ -531,7 +531,7 @@ export default function TrainingListPage() {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">Participants & Feedback</h3>
                 <div className="flex gap-2">
-                  <select
+                  <Select
                     aria-label="Employee to add to training"
                     className="p-1 border rounded-md text-sm bg-surface dark:border-gray-700"
                     value={newParticipantId}
@@ -541,7 +541,7 @@ export default function TrainingListPage() {
                     {employeesData?.data?.map((emp: any) => (
                       <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
                     ))}
-                  </select>
+                  </Select>
                   <Button
                     size="sm"
                     disabled={!newParticipantId || addParticipantMutation.isPending}

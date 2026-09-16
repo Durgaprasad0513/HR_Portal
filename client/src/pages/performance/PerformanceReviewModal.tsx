@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { performanceApi } from '@/api/performance';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { Select } from '@/components/ui/Select';
 
 interface PerformanceReviewModalProps {
   isOpen: boolean;
@@ -191,12 +192,12 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="review-period" className="mb-1 block text-xs font-semibold uppercase text-gray-500">Review period</label>
-                  <select id="review-period" name="reviewPeriod" value={formData.reviewPeriod || 'QUARTERLY'} onChange={handleChange} className="w-full rounded-md border border-gray-300 bg-surface p-2 text-sm dark:border-gray-700">
+                  <Select id="review-period" name="reviewPeriod" value={formData.reviewPeriod || 'QUARTERLY'} onChange={handleChange} className="w-full rounded-md border border-gray-300 bg-surface p-2 text-sm dark:border-gray-700">
                     <option value="MONTHLY">Monthly</option>
                     <option value="QUARTERLY">Quarterly</option>
                     <option value="HALF_YEARLY">Half-yearly</option>
                     <option value="ANNUAL">Annual</option>
-                  </select>
+                  </Select>
                 </div>
                 <div>
                   <label htmlFor="review-target" className="mb-1 block text-xs font-semibold uppercase text-gray-500">Target value</label>
@@ -271,7 +272,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
           {canViewHr && (status === 'FINAL_APPROVAL' || status === 'COMPLETED') && (
             <section className="space-y-4">
               <div className="border-b pb-2"><h3 className="text-lg font-semibold">Final approval</h3><p className="text-sm text-gray-500">Calculated from self 20%, manager 60%, and HR 20%. This score cannot be entered manually.</p></div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="finalRating" label="Calculated final rating (out of 5)" value={review.finalRating || 'Calculated after approval'} disabled /><div><label htmlFor="final-approval-status" className="mb-1 block text-sm font-medium">Approval status</label><select id="final-approval-status" name="finalApprovalStatus" value={formData.finalApprovalStatus || 'APPROVAL_PENDING'} onChange={handleChange} disabled={!canSubmitFinal} className="flex h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 py-2 text-sm dark:border-slate-600"><option value="APPROVAL_PENDING">Pending</option><option value="APPROVAL_APPROVED">Approved</option><option value="APPROVAL_REJECTED">Rejected</option></select></div></div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="finalRating" label="Calculated final rating (out of 5)" value={review.finalRating || 'Calculated after approval'} disabled /><div><label htmlFor="final-approval-status" className="mb-1 block text-sm font-medium">Approval status</label><Select id="final-approval-status" name="finalApprovalStatus" value={formData.finalApprovalStatus || 'APPROVAL_PENDING'} onChange={handleChange} disabled={!canSubmitFinal} className="flex h-10 w-full rounded-lg border border-slate-300 bg-surface px-3 py-2 text-sm dark:border-slate-600"><option value="APPROVAL_PENDING">Pending</option><option value="APPROVAL_APPROVED">Approved</option><option value="APPROVAL_REJECTED">Rejected</option></Select></div></div>
               {canSubmitFinal && <Button type="button" onClick={() => finalApprovalMutation.mutate(formData)} isLoading={finalApprovalMutation.isPending}>Finalize review</Button>}
             </section>
           )}

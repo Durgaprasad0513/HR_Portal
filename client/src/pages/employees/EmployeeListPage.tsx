@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Select } from '@/components/ui/Select';
 
 export default function EmployeeListPage() {
   const navigate = useNavigate();
@@ -145,7 +146,7 @@ export default function EmployeeListPage() {
             />
           </div>
           
-          <select 
+          <Select 
             aria-label="Filter employees by office"
             className="px-3 py-2 bg-surface border border-slate-border rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={location}
@@ -154,9 +155,9 @@ export default function EmployeeListPage() {
             <option value="">All Offices</option>
             <option value="Hyd Office">Hyd Office</option>
             <option value="Peddapuram Plant">Peddapuram Plant</option>
-          </select>
+          </Select>
           
-          <select 
+          <Select 
             aria-label="Filter employees by status"
             className="px-3 py-2 bg-surface border border-slate-border rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={status}
@@ -166,7 +167,7 @@ export default function EmployeeListPage() {
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
             <option value="TERMINATED">Terminated</option>
-          </select>
+          </Select>
 
           <button
             type="button"

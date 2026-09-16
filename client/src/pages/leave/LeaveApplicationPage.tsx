@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
+import { Select } from '@/components/ui/Select';
 
 export default function LeaveApplicationPage() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function LeaveApplicationPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col space-y-1 w-full">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Leave Type</label>
-                <select
+                <Select
                   name="leaveType"
                   value={formData.leaveType}
                   onChange={handleChange}
@@ -64,7 +65,7 @@ export default function LeaveApplicationPage() {
                   <option value="PERSONAL">Personal Leave</option>
                   <option value="SICK">Sick Leave</option>
                   <option value="ON_DUTY">On Duty</option>
-                </select>
+                </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -11,6 +11,7 @@ import { Search, Shield, Users, Lock, CheckCircle, XCircle } from 'lucide-react'
 import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Select } from '@/components/ui/Select';
 
 const ROLES = ['ADMIN', 'HR', 'HR_EXECUTIVE', 'MANAGER', 'EMPLOYEE'];
 const ROLE_LABELS: Record<string, string> = {
@@ -192,7 +193,7 @@ function UserAccountsTab() {
             className="w-full pl-9 pr-4 py-2 bg-surface border border-slate-300 dark:border-slate-600 shadow-sm rounded-lg text-sm focus:outline-none"
           />
         </div>
-        <select
+        <Select
           aria-label="Filter users by role"
           value={roleFilter}
           onChange={e => setRoleFilter(e.target.value)}
@@ -200,7 +201,7 @@ function UserAccountsTab() {
         >
           <option value="">All Roles</option>
           {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
-        </select>
+        </Select>
       </div>
 
       {isLoading ? <div className="py-12"><LoadingSpinner /></div> : (
@@ -237,7 +238,7 @@ function UserAccountsTab() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <select
+                    <Select
                       aria-label={`Change role for ${u.email}`}
                       value={u.role}
                       onChange={e => roleMutation.mutate({ id: u.id, role: e.target.value })}
@@ -245,7 +246,7 @@ function UserAccountsTab() {
                       className="text-xs py-1 px-2 rounded border border-gray-300 dark:border-gray-600 bg-surface focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
-                    </select>
+                    </Select>
                   </td>
                   <td className="px-4 py-3">
                     <button
