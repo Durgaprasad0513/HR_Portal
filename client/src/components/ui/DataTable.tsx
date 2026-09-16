@@ -55,7 +55,7 @@ export function DataTable<T>({
             type="checkbox"
             checked={table.getIsAllPageRowsSelected()}
             onChange={table.getToggleAllPageRowsSelectedHandler()}
-            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:outline-none"
+            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 
             aria-label="Select all"
           />
         ),
@@ -65,7 +65,7 @@ export function DataTable<T>({
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
             onClick={(e) => e.stopPropagation()}
-            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 focus:outline-none"
+            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-accent-500 
             aria-label="Select row"
           />
         ),
@@ -88,7 +88,7 @@ export function DataTable<T>({
             <button
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
               className={cn(
-                "-ml-3 flex h-8 items-center rounded-md px-3 text-xs font-semibold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-gray-500 dark:text-gray-400 outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
+                "-ml-3 flex h-8 items-center rounded-md px-3 text-xs font-semibold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-gray-500 dark:text-gray-400 outline-none  
                 col.className
               )}
             >
@@ -167,16 +167,16 @@ export function DataTable<T>({
   }, [pageIndex, pageCount]);
 
   return (
-    <div className="rounded-xl border border-slate-border bg-surface overflow-hidden">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900 overflow-hidden">
       <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400 sm:hidden">
         Scroll horizontally to see all columns.
       </p>
-      <div className="w-full overflow-auto focus:outline-none" tabIndex={0} role="region" aria-label={`${caption}. Scroll horizontally for more columns.`}>
+      <div className="w-full overflow-auto focus:outline-none    dark: tabIndex={0} role="region" aria-label={`${caption}. Scroll horizontally for more columns.`}>
         <table className="w-full text-sm text-left">
           <caption className="sr-only">{caption}</caption>
           <thead>
             {table.getHeaderGroups().map((headerGroup: any) => (
-              <tr key={headerGroup.id} className="border-b border-slate-border">
+              <tr key={headerGroup.id} className="border-b border-slate-200 dark:border-slate-700">
                 {headerGroup.headers.map((header: any) => (
                   <th
                     key={header.id}
@@ -191,7 +191,7 @@ export function DataTable<T>({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-slate-border">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td
@@ -226,7 +226,7 @@ export function DataTable<T>({
 
       {/* Pagination */}
       {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-border">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Show {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)} of {data.length} results
           </p>
@@ -235,7 +235,7 @@ export function DataTable<T>({
               aria-label="Previous page"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -250,7 +250,7 @@ export function DataTable<T>({
                     "h-8 w-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors",
                     table.getState().pagination.pageIndex === (num as number) - 1
                       ? "bg-accent-500 text-white"
-                      : "border border-slate-border text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      : "border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                   )}
                   aria-label={`Page ${num}`}
                   aria-current={table.getState().pagination.pageIndex === (num as number) - 1 ? 'page' : undefined}
@@ -263,7 +263,7 @@ export function DataTable<T>({
               aria-label="Next page"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-border text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -273,8 +273,3 @@ export function DataTable<T>({
     </div>
   );
 }
-
-
-
-
-
