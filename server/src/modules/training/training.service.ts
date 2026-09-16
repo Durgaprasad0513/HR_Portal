@@ -150,8 +150,15 @@ export class TrainingService {
   }
 
   async submitFeedback(trainingId: string, employeeId: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (currentUser.employeeId !== employeeId && currentUser.role !== 'ADMIN' && currentUser.role !== 'HR') {
+    const isAdminOrHR = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
+    const includesTraineeFeedback = data.feedbackRating !== undefined || data.feedbackComments !== undefined;
+    const includesTrainerFeedback = data.trainerFeedbackRating !== undefined || data.trainerFeedbackComments !== undefined;
+
+    if (includesTraineeFeedback && currentUser.employeeId !== employeeId) {
       throw new Error('You can only submit feedback for your own participation');
+    }
+    if (includesTrainerFeedback && !isAdminOrHR) {
+      throw new Error('Only HR or Admin can submit trainer feedback');
     }
 
     const participant = await prisma.trainingParticipant.findUnique({
