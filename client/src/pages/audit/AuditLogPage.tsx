@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Select } from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 const MODULES = [
   'employees', 'travel', 'assets', 'recruitment', 'performance',
@@ -212,16 +213,14 @@ export default function AuditLogPage() {
             <option value="">All Modules</option>
             {MODULES.map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>)}
           </Select>
-          <input
-            type="date"
+          <DatePicker type="date"
             aria-label="Audit logs from date"
             value={from}
             onChange={e => { setFrom(e.target.value); setPage(1); }}
             className="py-2 px-3 bg-surface border border-slate-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="From date"
           />
-          <input
-            type="date"
+          <DatePicker type="date"
             aria-label="Audit logs to date"
             value={to}
             onChange={e => { setTo(e.target.value); setPage(1); }}

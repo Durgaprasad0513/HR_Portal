@@ -17,6 +17,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { Plus, Download, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calendar, Users, TrendingUp, Search, SlidersHorizontal, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import apiClient from '@/api/client';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function TrainingListPage() {
   const { user } = useAuth();
@@ -483,8 +484,8 @@ export default function TrainingListPage() {
           </Select>
           <Input name="trainerName" label="Trainer Name" required defaultValue={selectedTrainingForEdit?.trainerName} />
           <div className="grid grid-cols-2 gap-4">
-              <Input type="date" name="trainingDate" label="Start Date *" required defaultValue={selectedTrainingForEdit?.trainingDate?.split('T')[0]} />
-              <Input type="date" name="trainingEndDate" label="End Date" defaultValue={selectedTrainingForEdit?.trainingEndDate?.split('T')[0]} />
+              <DatePicker type="date" name="trainingDate" label="Start Date *" required defaultValue={selectedTrainingForEdit?.trainingDate?.split('T')[0]} />
+              <DatePicker type="date" name="trainingEndDate" label="End Date" defaultValue={selectedTrainingForEdit?.trainingEndDate?.split('T')[0]} />
             </div>
           <Input name="trainingLocation" label="Location" required defaultValue={selectedTrainingForEdit?.trainingLocation} />
           <Input type="number" name="trainingHours" label="Duration (Hours)" required min="0" onKeyDown={(e) => e.key === '-' && e.preventDefault()} defaultValue={selectedTrainingForEdit?.trainingHours} />

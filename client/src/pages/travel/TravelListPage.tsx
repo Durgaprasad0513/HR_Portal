@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/Select';
 import { Plane, Plus, FileText, CheckCircle2, Download, IndianRupee, Receipt } from 'lucide-react';
 import apiClient from '@/api/client'; // Need this for custom expense put
 import { PageHeader } from '@/components/ui/PageHeader';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function TravelListPage() {
   const { user } = useAuth();
@@ -290,8 +291,8 @@ export default function TravelListPage() {
           <Input name="destination" label="Destination" placeholder="e.g. New York, NY" required />
           <Input name="travelPurpose" label="Business Purpose" required />
           <div className="grid grid-cols-2 gap-4">
-            <Input name="startDate" label="Start Date" type="date" required />
-            <Input name="endDate" label="End Date" type="date" required />
+            <DatePicker name="startDate" label="Start Date" type="date" required />
+            <DatePicker name="endDate" label="End Date" type="date" required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">

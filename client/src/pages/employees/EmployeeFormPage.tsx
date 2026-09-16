@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
 import { ArrowLeft, FileText, CheckCircle2, Upload, Trash2 } from 'lucide-react';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function EmployeeFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -238,7 +239,7 @@ export default function EmployeeFormPage() {
               <Input label="Emergency Contact Number" name="emergencyContactNumber" value={formData.emergencyContactNumber} onChange={handleChange} pattern="[0-9]{10}" minLength={10} maxLength={10} title="Contact number must be exactly 10 digits" />
               <Input label="Emergency Contact Relation" name="emergencyContactRelation" value={formData.emergencyContactRelation} onChange={handleChange} />
 
-              <Input label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange}  required />
+              <DatePicker label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange}  required />
               <div className="flex flex-col space-y-1 w-full">
                 <label htmlFor="employee-gender" className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender <span className="text-red-500">*</span></label>
                 <Select 
@@ -300,11 +301,11 @@ export default function EmployeeFormPage() {
               
               <Input label="Designation" name="designation" value={formData.designation} onChange={handleChange} required />
                 <Input label="Experience" name="experience" value={formData.experience} onChange={handleChange} />
-              <Input label="Joining Date" type="date" name="joiningDate" value={formData.joiningDate} onChange={handleChange} required />
+              <DatePicker label="Joining Date" type="date" name="joiningDate" value={formData.joiningDate} onChange={handleChange} required />
               
-              <Input label="Confirmation Date" type="date" name="confirmationDate" value={formData.confirmationDate} onChange={handleChange} />
-              <Input label="Last Working Date" type="date" name="lastWorkingDate" value={formData.lastWorkingDate} onChange={handleChange} />
-              <Input label="Resignation Date" type="date" name="resignationDate" value={formData.resignationDate} onChange={handleChange} />
+              <DatePicker label="Confirmation Date" type="date" name="confirmationDate" value={formData.confirmationDate} onChange={handleChange} />
+              <DatePicker label="Last Working Date" type="date" name="lastWorkingDate" value={formData.lastWorkingDate} onChange={handleChange} />
+              <DatePicker label="Resignation Date" type="date" name="resignationDate" value={formData.resignationDate} onChange={handleChange} />
               <Input label="Probation Period (Days)" type="number" min="0" name="probationPeriod" value={formData.probationPeriod} onChange={handleChange} />
               <Input label="Notice Period (Days)" type="number" min="0" name="noticePeriod" value={formData.noticePeriod} onChange={handleChange} />
               

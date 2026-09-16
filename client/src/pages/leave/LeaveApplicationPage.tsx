@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
 import { Select } from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function LeaveApplicationPage() {
   const navigate = useNavigate();
@@ -69,8 +70,8 @@ export default function LeaveApplicationPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Start Date" type="date" name="startDate" value={formData.startDate} onChange={handleChange} required />
-              <Input label="End Date" type="date" name="endDate" value={formData.endDate} onChange={handleChange} required />
+              <DatePicker label="Start Date" type="date" name="startDate" value={formData.startDate} onChange={handleChange} required />
+              <DatePicker label="End Date" type="date" name="endDate" value={formData.endDate} onChange={handleChange} required />
             </div>
 
             <div className="flex flex-col space-y-1 w-full">

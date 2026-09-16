@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Check, X, Plus, X as CloseIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Select } from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function LeaveRequestPage() {
   const queryClient = useQueryClient();
@@ -206,8 +207,7 @@ export default function LeaveRequestPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Leave From Date</label>
-                  <input 
-                    type="date" 
+                  <DatePicker type="date" 
                     name="startDate" 
                     value={formData.startDate} 
                     onChange={handleApplyChange}
@@ -217,8 +217,7 @@ export default function LeaveRequestPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Leave to Date</label>
-                  <input 
-                    type="date" 
+                  <DatePicker type="date" 
                     name="endDate" 
                     value={formData.endDate} 
                     onChange={handleApplyChange}
