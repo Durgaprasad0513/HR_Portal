@@ -107,7 +107,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     };
 
     return (
-      <div className="flex flex-col space-y-1 w-full" ref={containerRef}>
+      <div className={cn("flex flex-col", label ? "space-y-1 w-full" : (className && className.includes("w-") ? "" : "w-full sm:w-auto min-w-[140px]"))} ref={containerRef}>
         {label && (
           <label htmlFor={selectId} className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {label} {required && <span className="text-red-500" aria-hidden="true">*</span>}
@@ -118,10 +118,11 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           {/* Custom Trigger */}
           <div
             className={cn(
-              "flex items-center justify-between h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm cursor-pointer select-none",
+              "h-10 w-full rounded-md border border-slate-300 dark:border-slate-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm cursor-pointer select-none transition-colors",
               displayError && "border-red-500",
               disabled && "opacity-50 cursor-not-allowed",
-              className
+              className,
+              "flex items-center justify-between"
             )}
             onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
             tabIndex={disabled ? -1 : 0}
