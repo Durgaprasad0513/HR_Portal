@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Check, X, Plus, X as CloseIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Select } from '@/components/ui/Select';
 
 export default function LeaveRequestPage() {
   const queryClient = useQueryClient();
@@ -190,7 +191,7 @@ export default function LeaveRequestPage() {
             <form onSubmit={handleApplySubmit} className="p-6 space-y-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Select Leave type</label>
-                <select 
+                <Select 
                   name="leaveType" 
                   value={formData.leaveType} 
                   onChange={handleApplyChange}
@@ -199,7 +200,7 @@ export default function LeaveRequestPage() {
                 >
                   <option value="Medical Leave">Medical Leave</option>
                   <option value="Personal Leave">Personal Leave</option>
-                  <option value="On Duty">On Duty</option>                </select>
+                  <option value="On Duty">On Duty</option>                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

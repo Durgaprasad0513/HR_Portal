@@ -9,6 +9,7 @@ import { Search, Download, Eye, Shield, AlertTriangle, Activity, TrendingUp } fr
 import { Button } from '@/components/ui/Button';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Select } from '@/components/ui/Select';
 
 const MODULES = [
   'employees', 'travel', 'assets', 'recruitment', 'performance',
@@ -202,7 +203,7 @@ export default function AuditLogPage() {
               className="w-full pl-9 pr-4 py-2 bg-surface border border-slate-300 dark:border-slate-600 shadow-sm rounded-lg text-sm focus:outline-none"
             />
           </div>
-          <select
+          <Select
             aria-label="Filter audit logs by module"
             value={module}
             onChange={e => { setModule(e.target.value); setPage(1); }}
@@ -210,7 +211,7 @@ export default function AuditLogPage() {
           >
             <option value="">All Modules</option>
             {MODULES.map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>)}
-          </select>
+          </Select>
           <input
             type="date"
             aria-label="Audit logs from date"

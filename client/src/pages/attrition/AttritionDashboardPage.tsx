@@ -1,3 +1,4 @@
+import { Select } from '@/components/ui/Select';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
@@ -170,7 +171,7 @@ export default function AttritionDashboardPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <label className="text-xs font-medium text-text-muted">
               Reporting period
-              <select
+              <Select
                 aria-label="Filter by reporting period"
                 value={filters.periodMonths}
                 onChange={(event) => updateFilter('periodMonths', event.target.value)}
@@ -179,11 +180,11 @@ export default function AttritionDashboardPage() {
                 <option value={12}>Last 12 months</option>
                 <option value={6}>Last 6 months</option>
                 <option value={3}>Last 3 months</option>
-              </select>
+              </Select>
             </label>
             <label className="text-xs font-medium text-text-muted">
               Department
-              <select
+              <Select
                 aria-label="Filter by department"
                 value={filters.department}
                 onChange={(event) => updateFilter('department', event.target.value)}
@@ -191,11 +192,11 @@ export default function AttritionDashboardPage() {
               >
                 <option value="">All departments</option>
                 {filterOptions.departments.map((option: string) => <option key={option} value={option}>{option}</option>)}
-              </select>
+              </Select>
             </label>
             <label className="text-xs font-medium text-text-muted">
               Location
-              <select
+              <Select
                 aria-label="Filter by location"
                 value={filters.location}
                 onChange={(event) => updateFilter('location', event.target.value)}
@@ -203,11 +204,11 @@ export default function AttritionDashboardPage() {
               >
                 <option value="">All locations</option>
                 {filterOptions.locations.map((option: string) => <option key={option} value={option}>{option}</option>)}
-              </select>
+              </Select>
             </label>
             <label className="text-xs font-medium text-text-muted">
               Employment type
-              <select
+              <Select
                 aria-label="Filter by employment type"
                 value={filters.employmentType}
                 onChange={(event) => updateFilter('employmentType', event.target.value)}
@@ -215,7 +216,7 @@ export default function AttritionDashboardPage() {
               >
                 <option value="">All employment types</option>
                 {filterOptions.employmentTypes.map((option: string) => <option key={option} value={option}>{option}</option>)}
-              </select>
+              </Select>
             </label>
           </div>
         </div>
