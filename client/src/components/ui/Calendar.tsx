@@ -60,7 +60,7 @@ export function Calendar({ value, onChange, className }: CalendarProps) {
   const renderDays = () => {
     const dateFormat = 'EEEEEE';
     const days = [];
-    let startDate = startOfWeek(currentMonth);
+    const startDate = startOfWeek(currentMonth);
     for (let i = 0; i < 7; i++) {
       days.push(
         <div className="text-center text-xs font-medium text-slate-500 dark:text-slate-400 py-1" key={i}>
