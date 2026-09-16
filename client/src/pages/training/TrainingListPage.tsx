@@ -219,15 +219,14 @@ export default function TrainingListPage() {
   return (
       <div className="space-y-4">
          {sorted.map((t: any) => (
-           <div key={t.id} className="flex gap-6 items-start p-6 bg-surface rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
-             <div className="w-24 text-center shrink-0 border-r border-gray-100 dark:border-gray-800 pr-6">
-               <div className="text-sm text-gray-500 font-bold uppercase">{formatDateTime(t.trainingDate)}</div>
-               <div className="text-4xl font-black text-primary-600">{new Date(t.trainingDate).getDate()}</div>
-               <div className="text-xs text-gray-400 mt-1">{new Date(t.trainingDate).getFullYear()}</div>
-             </div>
-             <div className="flex-1">
+           <div key={t.id} className="flex flex-col p-6 bg-surface rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
                <div className="flex justify-between items-start">
-                 <h4 className="text-xl font-bold">{t.trainingTopic}</h4>
+                 <div>
+                   <h4 className="text-xl font-bold text-navy-900 dark:text-white">{t.trainingTopic}</h4>
+                   <p className="text-sm text-gray-500 mt-1">
+                     {t.trainingEndDate ? `${formatDate(t.trainingDate)} to ${formatDate(t.trainingEndDate)}` : formatDateTime(t.trainingDate)}
+                   </p>
+                 </div>
                  <Button variant="outline" size="sm" onClick={() => setSelectedTraining(t)}>Manage</Button>
                </div>
                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 dark:text-gray-400 mt-4">
@@ -237,8 +236,7 @@ export default function TrainingListPage() {
                  <span className="px-2 py-0.5 bg-surface rounded-full text-xs font-semibold">{t.trainingType}</span>
                </div>
              </div>
-           </div>
-         ))}
+           ))}
       </div>
     );
   };

@@ -10,7 +10,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, Search, PhoneCall, UserCheck, Award, TrendingUp, Calendar, Clock, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 
 export default function RecruitmentPage() {
@@ -23,7 +23,7 @@ export default function RecruitmentPage() {
   const [selectedReq, setSelectedReq] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
   const [selectedBoardReqId, setSelectedBoardReqId] = useState<string | null>(null);
-
+  
   const { data: deptData } = useQuery({
     queryKey: ['departments'],
     queryFn: departmentsApi.getAll,
@@ -128,6 +128,7 @@ export default function RecruitmentPage() {
 
       <div className="animate-in fade-in flex-1 min-h-0 h-full">
         {selectedReq ? (
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -293,6 +294,8 @@ export default function RecruitmentPage() {
             </div>
          </div>
       </Modal>
+
+      
     </div>
   );
 }
