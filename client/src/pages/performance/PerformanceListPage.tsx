@@ -27,9 +27,7 @@ export default function PerformanceListPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [statusFilter, setStatusFilter] = useState('All Status');
-  const [viewMode, setViewMode] = useState<'list' | 'timeline' | 'calendar'>('list');
-  
-  const { data: rawReviews, isLoading } = useQuery({
+    const { data: rawReviews, isLoading } = useQuery({
     queryKey: ['performance', activeTab],
     queryFn: () => activeTab === 'My Performance' ? performanceApi.getMyReviews().then(res => res.data) : performanceApi.getAll().then(res => res.data)
   });
@@ -123,55 +121,6 @@ export default function PerformanceListPage() {
     />
   );
 
-  const renderReviewTimeline = () => (
-    <div className="relative ml-4 space-y-6 border-l-2 border-gray-100 pl-12 dark:border-gray-800">
-      {reviews.map((review: any) => (
-        <Card key={review.id} className="relative cursor-pointer transition-shadow hover:shadow-md" onClick={() => setSelectedReview(review)}>
-          <div className="absolute -left-[3.5rem] top-8 w-6 border-t-2 border-dashed border-gray-100 dark:border-gray-800" />
-          <div className="absolute -left-[3.8rem] top-7 h-3 w-3 rounded-full bg-gray-200 ring-4 ring-white dark:ring-slate-900" />
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-6 sm:flex-row">
-              <div className="flex-shrink-0"><div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-50 text-lg font-bold text-accent-600 dark:bg-accent-900/50 dark:text-accent-400">{review.reviewPeriod === 'ANNUAL' ? 'A' : review.reviewPeriod === 'HALF_YEARLY' ? 'H' : review.reviewPeriod === 'MONTHLY' ? 'M' : 'Q'}</div></div>
-              <div className="flex-1 space-y-4">
-                <div className="flex flex-wrap items-center gap-3"><h3 className="text-lg font-bold text-navy-900 dark:text-white">{formatReviewPeriod(review.reviewPeriod)} review</h3>{getStatusBadge(review.status)}</div>
-                <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                  <div><p className="mb-0.5 text-gray-500 dark:text-gray-400">Employee</p><p className="font-medium text-navy-900 dark:text-white">{getReviewEmployee(review)}</p></div>
-                  <div><p className="mb-0.5 text-gray-500 dark:text-gray-400">Self rating</p><p className="font-medium text-navy-900 dark:text-white">{review.selfRating != null ? `${review.selfRating}/5` : 'Not rated'}</p></div>
-                  <div><p className="mb-0.5 text-gray-500 dark:text-gray-400">Manager rating</p><p className="font-medium text-navy-900 dark:text-white">{review.managerRating != null ? `${review.managerRating}/5` : 'Not rated'}</p></div>
-                  <div><p className="mb-0.5 text-gray-500 dark:text-gray-400">Final score</p><p className="font-medium text-navy-900 dark:text-white">{review.finalRating != null ? `${review.finalRating}/5` : 'Not finalized'}</p></div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-
-  const renderReviewCalendar = () => {
-    const groupedReviews = reviews.reduce((groups: Record<string, any[]>, review: any) => {
-      const date = review.createdAt ? new Date(review.createdAt) : null;
-      const key = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : 'unknown';
-      groups[key] = [...(groups[key] || []), review];
-      return groups;
-    }, {});
-
-    return (
-      <div className="space-y-3">
-        <p className="text-sm text-gray-500 dark:text-gray-400">Review dates are based on when each cycle was initiated.</p>
-        {Object.entries(groupedReviews).map(([dateKey, dateReviews]) => {
-          const date = dateKey === 'unknown' ? null : new Date(`${dateKey}T00:00:00`);
-          return (
-            <div key={dateKey} className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-start dark:border-slate-700">
-              <div className="w-28 shrink-0"><p className="text-xs font-semibold uppercase text-gray-500">{date ? date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Date unknown'}</p><p className="text-xs text-gray-400">{date?.getFullYear() || ''}</p></div>
-              <div className="grid flex-1 gap-2 md:grid-cols-2">{dateReviews.map((review: any) => <button key={review.id} type="button" onClick={() => setSelectedReview(review)} className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2 text-left hover:bg-accent-50 dark:bg-slate-800/60 dark:hover:bg-slate-800"><span><span className="block font-medium text-navy-900 dark:text-white">{getReviewEmployee(review)}</span><span className="text-xs text-gray-500">{formatReviewPeriod(review.reviewPeriod)} · {actionLabel(review.status)}</span></span>{getStatusBadge(review.status)}</button>)}</div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-6">
       {/* Header & Tabs */}
@@ -232,9 +181,7 @@ export default function PerformanceListPage() {
         <div className="border-b border-slate-200 p-5 dark:border-slate-700">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div><h2 id="review-register-heading" className="text-lg font-semibold text-navy-900 dark:text-white">Review register</h2><p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Browse review progress and open a record to take action.</p></div>
-            <div className="flex rounded-lg border border-slate-200 p-1 dark:border-slate-700" role="tablist" aria-label="Review display mode">
-              {[{ value: 'list', label: 'List', icon: List }, { value: 'timeline', label: 'Timeline', icon: Milestone }, { value: 'calendar', label: 'Calendar', icon: CalendarDays }].map(({ value, label, icon: Icon }) => <button key={value} type="button" role="tab" aria-selected={viewMode === value} onClick={() => setViewMode(value as 'list' | 'timeline' | 'calendar')} className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors', viewMode === value ? 'bg-accent-600 text-white' : 'text-gray-500 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-slate-800')}><Icon className="h-4 w-4" />{label}</button>)}
-            </div>
+            
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <div className="relative w-full sm:w-64"><Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" /><input aria-label="Search reviews" placeholder="Search reviews..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-surface py-2 pl-9 pr-4 text-sm shadow-sm transition-all focus:outline-none dark:border-slate-600" /></div>
@@ -261,7 +208,7 @@ export default function PerformanceListPage() {
             actionLabel={hasActiveFilters ? 'Clear filters' : isAdminOrHR ? 'Initiate review' : undefined}
             onAction={hasActiveFilters ? clearFilters : isAdminOrHR ? () => setIsCreateModalOpen(true) : undefined}
           />
-        ) : viewMode === 'list' ? renderReviewList() : viewMode === 'timeline' ? renderReviewTimeline() : renderReviewCalendar()}
+        ) : renderReviewList()}
         </div>
       </section>
 
