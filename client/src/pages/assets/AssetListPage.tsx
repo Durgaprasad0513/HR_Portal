@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Laptop, Plus, Settings2, RefreshCcw, Download, Search } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function AssetListPage() {
   const { user } = useAuth();
@@ -314,7 +315,7 @@ export default function AssetListPage() {
           <div className="grid grid-cols-2 gap-4">
             <Input name="brandModel" defaultValue={editingAsset?.brandModel || ""} label="Brand & Model" placeholder="e.g. MacBook Pro 16" required />
             <Input name="serialNumber" defaultValue={editingAsset?.serialNumber || ""} label="Serial/ID Number" required />
-            <Input name="purchaseDate" defaultValue={editingAsset?.purchaseDate ? new Date(editingAsset.purchaseDate).toISOString().split('T')[0] : ""} label="Purchase Date" type="date" />
+            <DatePicker name="purchaseDate" defaultValue={editingAsset?.purchaseDate ? new Date(editingAsset.purchaseDate).toISOString().split('T')[0] : ""} label="Purchase Date" type="date" />
             <Input name="purchaseValue" defaultValue={editingAsset?.purchaseValue || 0} label="Purchase Value" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
           </div>
 
@@ -329,7 +330,7 @@ export default function AssetListPage() {
               </Select>
             </div>
             <Input name="assetLocation" defaultValue={editingAsset?.assetLocation || ""} label="Location" placeholder="e.g. Hyderabad Office" />
-            <Input name="issueDate" defaultValue={editingAsset?.issueDate ? new Date(editingAsset.issueDate).toISOString().split('T')[0] : ""} label="Issue Date" type="date" />
+            <DatePicker name="issueDate" defaultValue={editingAsset?.issueDate ? new Date(editingAsset.issueDate).toISOString().split('T')[0] : ""} label="Issue Date" type="date" />
             <div className="flex flex-col">
               <label htmlFor="asset-condition" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issue Condition</label>
               <Select id="asset-condition" name="issueCondition" defaultValue={editingAsset?.issueCondition || ""} className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">

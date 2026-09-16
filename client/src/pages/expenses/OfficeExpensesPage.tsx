@@ -15,6 +15,7 @@ import { FileUpload } from '@/components/ui/FileUpload';
 import { Select } from '@/components/ui/Select';
 import { Wallet, Plus, CheckCircle2, Download, XCircle, IndianRupee } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function OfficeExpensesPage() {
   const { user } = useAuth();
@@ -220,7 +221,7 @@ export default function OfficeExpensesPage() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Submit Office Expense">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Input name="expenseDate" label="Date incurred" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
+            <DatePicker name="expenseDate" label="Date incurred" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
             <div className="flex flex-col">
               <label htmlFor="office-expense-category" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
               <Select id="office-expense-category" name="category" className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
