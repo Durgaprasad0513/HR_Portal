@@ -28,6 +28,8 @@ const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const AuditLogPage = lazy(() => import('@/pages/audit/AuditLogPage'));
 const LoginHistoryPage = lazy(() => import('@/pages/loginHistory/LoginHistoryPage'));
 const RoleManagementPage = lazy(() => import('@/pages/roles/RoleManagementPage'));
+const DesignSystemPage = lazy(() => import('@/pages/design/DesignSystemPage'));
+
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Leaves
