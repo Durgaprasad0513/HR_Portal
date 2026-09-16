@@ -149,7 +149,7 @@ export default function AuditLogPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex items-center gap-3">
+        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
             <Activity className="w-5 h-5 text-blue-500" />
           </div>
@@ -158,7 +158,7 @@ export default function AuditLogPage() {
             <p className="text-xl font-bold text-text-heading">{statsData?.totalToday ?? '—'}</p>
           </div>
         </div>
-        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex items-center gap-3">
+        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
@@ -167,7 +167,7 @@ export default function AuditLogPage() {
             <p className="text-xl font-bold text-text-heading">{statsData?.totalMonth ?? '—'}</p>
           </div>
         </div>
-        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex items-center gap-3">
+        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
           </div>
@@ -176,7 +176,7 @@ export default function AuditLogPage() {
             <p className="text-xl font-bold text-text-heading">{statsData?.failedLogins ?? '—'}</p>
           </div>
         </div>
-        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out flex items-center gap-3">
+        <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
             <Shield className="w-5 h-5 text-purple-500" />
           </div>
@@ -190,7 +190,7 @@ export default function AuditLogPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+      <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="relative lg:col-span-2">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />

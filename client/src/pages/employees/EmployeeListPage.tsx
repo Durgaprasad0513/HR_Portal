@@ -104,7 +104,7 @@ export default function EmployeeListPage() {
                 tabIndex={0}
                 aria-pressed={isSelected}
                 aria-label={`Filter employees by ${dept.name}`}
-                className={`bg-surface rounded-xl shadow-sm border ${isSelected ? 'border-accent-500 ring-1 ring-accent-500' : 'border-slate-border'} p-3 xl:p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer`}
+                className={`bg-surface rounded-xl shadow-sm border ${isSelected ? 'border-accent-500 ring-1 ring-accent-500' : 'border-slate-border'} p-3 xl:p-5 cursor-pointer`}
                 onClick={() => setDepartmentId(dept.id === departmentId ? '' : dept.id)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {

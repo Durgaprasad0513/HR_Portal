@@ -246,15 +246,15 @@ export default function TravelListPage() {
 
       {isAdminOrHR && data && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
             <p className="text-sm text-text-muted mb-1 font-medium">Pending Approval</p>
             <p className="text-2xl font-bold text-text-heading">{data.filter((d:any) => d.approvalStatus === 'APPROVAL_PENDING').length}</p>
           </div>
-          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
             <p className="text-sm text-text-muted mb-1 font-medium">Awaiting Settlement</p>
             <p className="text-2xl font-bold text-text-heading">{data.filter((d:any) => d.settlementStatus === 'SUBMITTED').length}</p>
           </div>
-          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
             <p className="text-sm text-text-muted mb-1 font-medium">Total Settled Expenses</p>
             <p className="text-2xl font-bold text-text-heading">
               ₹{data.filter((d:any) => d.settlementStatus === 'SETTLED').reduce((sum:number, d:any) => sum + Number(d.totalExpenseClaimed || 0), 0)}

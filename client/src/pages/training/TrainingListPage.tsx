@@ -342,7 +342,7 @@ export default function TrainingListPage() {
       {!isStatsLoading && statsData?.data && (
         <div className="space-y-8 my-6 lg:my-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
                     <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -354,7 +354,7 @@ export default function TrainingListPage() {
                 </div>
               </div>
 
-              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
                     <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
@@ -366,7 +366,7 @@ export default function TrainingListPage() {
                 </div>
               </div>
 
-              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
                     <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -378,7 +378,7 @@ export default function TrainingListPage() {
                 </div>
               </div>
 
-              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out">
+              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
                     <IndianRupee className="h-5 w-5 text-orange-600 dark:text-orange-400" />
