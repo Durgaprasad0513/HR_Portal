@@ -60,15 +60,25 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
       const isoDate = format(date, 'yyyy-MM-dd');
       
       // Update hidden input explicitly
-      if (hiddenInputRef.current) {
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-        if (nativeInputValueSetter) {
-          nativeInputValueSetter.call(hiddenInputRef.current, isoDate);
-        } else {
-          hiddenInputRef.current.value = isoDate;
+              if (hiddenInputRef.current) {
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (nativeInputValueSetter) {
+            nativeInputValueSetter.call(hiddenInputRef.current, isoDate);
+          } else {
+            hiddenInputRef.current.value = isoDate;
+          }
+          hiddenInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        hiddenInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
-      }
+        
+        // Explicitly call onChange to guarantee state updates for controlled components
+        if (onChange) {
+          onChange({
+            target: { name: name || '', value: isoDate, id: inputId },
+            currentTarget: { name: name || '', value: isoDate, id: inputId },
+            preventDefault: () => {},
+            stopPropagation: () => {}
+          } as any);
+        }
       
       
     };
