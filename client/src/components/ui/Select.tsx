@@ -87,22 +87,30 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     const selectedOption = options.find(opt => String(opt.value) === String(internalValue));
     const displayLabel = selectedOption ? selectedOption.label : 'Select...';
 
-    const handleOptionSelect = (optValue: string) => {
+        const handleOptionSelect = (optValue: string) => {
       setInternalValue(optValue);
       setIsOpen(false);
       setTouched(true);
       
       // Update hidden select and trigger native change event so React forms catch it
       if (innerRef.current) {
-        innerRef.current.value = optValue;
-        // Trigger React change event
-        const event = new Event('change', { bubbles: true });
-        innerRef.current.dispatchEvent(event);
-        // Call explicit onChange if provided
-        if (onChange) {
-           // We forge a synthetic event-like object for standard compatibility if needed, 
-           // but dispatchEvent usually triggers the React synthetic event natively in React 16+.
+        const nativeSelectValueSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value')?.set;
+        if (nativeSelectValueSetter) {
+          nativeSelectValueSetter.call(innerRef.current, optValue);
+        } else {
+          innerRef.current.value = optValue;
         }
+        innerRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      
+      // Explicitly call onChange to guarantee state updates for controlled components
+      if (onChange) {
+        onChange({
+          target: { name, value: optValue, id: selectId },
+          currentTarget: { name, value: optValue, id: selectId },
+          preventDefault: () => {},
+          stopPropagation: () => {}
+        } as any);
       }
     };
 
