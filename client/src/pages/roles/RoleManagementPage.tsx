@@ -318,12 +318,12 @@ export default function RoleManagementPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-surface rounded-lg p-1 w-fit">
+      <div className="flex gap-1 bg-surface rounded-lg p-1 w-full overflow-x-auto whitespace-nowrap custom-scrollbar sm:w-fit">
         <button
           onClick={() => setActiveTab('users')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeTab === 'users'
-              ? 'bg-surface text-navy-900 dark:text-white shadow-sm'
+              ? 'bg-accent-600 text-white shadow-md dark:bg-accent-500'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
@@ -333,7 +333,7 @@ export default function RoleManagementPage() {
           onClick={() => setActiveTab('permissions')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeTab === 'permissions'
-              ? 'bg-surface text-navy-900 dark:text-white shadow-sm'
+              ? 'bg-accent-600 text-white shadow-md dark:bg-accent-500'
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >

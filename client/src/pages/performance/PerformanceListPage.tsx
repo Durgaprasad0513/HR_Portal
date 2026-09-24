@@ -134,16 +134,16 @@ export default function PerformanceListPage() {
               Initiate Review
             </Button>
           )}
-          <div className="flex bg-surface p-1 rounded-full w-full sm:w-auto">
+          <div className="flex gap-1 bg-surface p-1 rounded-full w-full overflow-x-auto whitespace-nowrap custom-scrollbar sm:w-auto">
           {(['My Performance', 'Team/Company Reviews'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "px-4 py-1.5 text-sm font-medium rounded-full transition-colors flex-1 sm:flex-none text-center",
+                "px-4 py-1.5 text-sm font-medium rounded-full transition-all flex-1 sm:flex-none text-center",
                 activeTab === tab 
-                  ? "bg-surface text-navy-900 dark:text-white shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
+                  ? "bg-accent-600 text-white shadow-md dark:bg-accent-500"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"
               )}
             >
               {tab}

@@ -11,7 +11,7 @@ import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
   Users, UserMinus, Briefcase, FileText, CheckCircle, Clock, 
-  ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight
+  ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, Receipt
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 
@@ -481,15 +481,30 @@ export default function DashboardPage() {
                     </td>
                   </tr>
 
-                  {/* Travel and expenses */}
+                  {/* Travel */}
                   <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/travel')}>
-                    <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Clock className="w-4 h-4 text-cyan-500"/> Travel & Expenses</td>
+                    <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Plane className="w-4 h-4 text-cyan-500"/> Travel</td>
                     <td className="px-5 py-4 text-text-muted">
                       <span className="font-medium text-text-heading">{stats.pendingTravel || 0}</span> pending overall requests
                     </td>
                     <td className="px-5 py-4 text-text-muted text-xs">
                       {moduleOverview.travel?.pendingApprovals > 0 ? (
                         <span className="text-rose-600 font-medium">{moduleOverview.travel.pendingApprovals} awaiting your approval</span>
+                      ) : (
+                        '&mdash;'
+                      )}
+                    </td>
+                  </tr>
+
+                  {/* Office Expenses */}
+                  <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/expenses')}>
+                    <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Receipt className="w-4 h-4 text-emerald-600"/> Office Expenses</td>
+                    <td className="px-5 py-4 text-text-muted">
+                      <span className="font-medium text-text-heading">{stats.pendingExpenses || 0}</span> pending overall requests
+                    </td>
+                    <td className="px-5 py-4 text-text-muted text-xs">
+                      {moduleOverview.expenses?.pendingApprovals > 0 ? (
+                        <span className="text-rose-600 font-medium">{moduleOverview.expenses.pendingApprovals} awaiting your approval</span>
                       ) : (
                         '&mdash;'
                       )}
