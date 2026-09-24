@@ -16,7 +16,6 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-dialog": "^1.1.23",
-    "@rollup/rollup-win32-x64-msvc": "^4.63.1",
     "@tailwindcss/vite": "^4.0.0",
     "@tanstack/react-query": "^5.0.0",
     "@tanstack/react-table": "^8.21.3",
