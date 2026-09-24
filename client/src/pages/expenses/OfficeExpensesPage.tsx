@@ -119,31 +119,34 @@ export default function OfficeExpensesPage() {
           {row.status === 'PENDING' && isAdminOrHR && (
             <>
               <button 
-                className="p-1 text-gray-400 hover:text-green-500 transition-colors" 
+                className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-28" 
                 title="Approve"
                 onClick={() => statusMutation.mutate({ id: row.id, status: 'APPROVED' })}
                 disabled={statusMutation.isPending}
               >
-                <CheckCircle2 className="w-4 h-4" />
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Approve</span>
               </button>
               <button 
-                className="p-1 text-gray-400 hover:text-red-500 transition-colors" 
+                className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-24" 
                 title="Reject"
                 onClick={() => statusMutation.mutate({ id: row.id, status: 'REJECTED' })}
                 disabled={statusMutation.isPending}
               >
-                <XCircle className="w-4 h-4" />
+                <XCircle className="w-4 h-4 shrink-0" />
+                <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Reject</span>
               </button>
             </>
           )}
           {row.status === 'APPROVED' && isAdminOrHR && (
             <button 
-              className="p-1 text-gray-400 hover:text-blue-500 transition-colors" 
+              className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[100px]" 
               title="Mark as Paid"
               onClick={() => statusMutation.mutate({ id: row.id, status: 'PAID' })}
               disabled={statusMutation.isPending}
             >
-              <IndianRupee className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4 shrink-0" />
+              <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Pay Now</span>
             </button>
           )}
         </div>

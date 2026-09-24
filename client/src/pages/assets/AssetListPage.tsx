@@ -134,44 +134,45 @@ export default function AssetListPage() {
               href={row.photoUrl}
               target="_blank"
               rel="noreferrer"
-              className="p-1 text-gray-400 dark:text-gray-500 hover:text-accent-500 transition-colors"
+              className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-accent-600 hover:bg-accent-100 dark:hover:bg-accent-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[110px]"
               title="View Photo"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">View Photo</span>
             </a>
           )}
           {row.status === 'IN_USE' && row.assignedEmployee?.id === (user?.employeeId || user?.employee?.id) && (
             <button
-              className="p-1 text-gray-400 dark:text-gray-500 hover:text-amber-500 transition-colors"
+              className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[120px]"
               title="Return Asset"
               onClick={() => {
                 setSelectedAssetId(row.id);
                 setReturnConfirmOpen(true);
               }}
             >
-              <RefreshCcw className="w-4 h-4" />
+              <RefreshCcw className="w-4 h-4 shrink-0" /><span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Return Asset</span>
             </button>
           )}
           {isAdminOrHR && row.status === 'RETURN_REQUESTED' && (
             <button
-              className="p-1 text-gray-400 dark:text-gray-500 hover:text-green-600 transition-colors"
+              className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[130px]"
               title="Approve Return"
               onClick={() => approveReturnMutation.mutate(row.id)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M20 6 9 17l-5-5"/></svg><span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Approve Return</span>
             </button>
           )}
 
           {isAdminOrHR && (
              <button
-               className="p-1 text-gray-400 dark:text-gray-500 hover:text-navy-900 dark:text-white transition-colors"
+               className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-24"
                onClick={() => {
                  setEditingAsset(row);
 
                  setIsModalOpen(true);
                }}
              >
-               <Settings2 className="w-4 h-4" />
+               <Settings2 className="w-4 h-4 shrink-0" /><span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Settings</span>
              </button>
           )}
         </div>
