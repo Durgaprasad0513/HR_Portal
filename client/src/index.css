@@ -234,3 +234,20 @@ body {
 
 
 
+
+/* Recharts dark mode adapt */
+.recharts-default-tooltip {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+.recharts-tooltip-item {
+  color: var(--text-heading) !important;
+}
+.recharts-tooltip-label {
+  color: var(--text-heading) !important;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
