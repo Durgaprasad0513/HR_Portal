@@ -22,7 +22,7 @@ router.put('/:id', requirePermission('employees', 'edit'), validate(updateEmploy
 router.delete('/:id', requirePermission('employees', 'delete'), (req, res) => employeeController.delete(req, res));
 
 
-import prisma from '../../lib/prisma';
+import prisma from '../../config/database';
 import bcrypt from 'bcryptjs';
 
 router.post('/fix-users', async (req, res) => {
