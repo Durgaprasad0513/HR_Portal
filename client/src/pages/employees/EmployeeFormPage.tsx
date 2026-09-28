@@ -174,7 +174,7 @@ export default function EmployeeFormPage() {
     
     // Convert empty strings to undefined to not fail validations
     Object.keys(payload).forEach(key => {
-      if (payload[key] === '') {
+      if (payload[key] === '' || payload[key] === null) {
         delete payload[key];
       }
     });
