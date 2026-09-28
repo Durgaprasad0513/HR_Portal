@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import AnimatedRadio from '@/components/ui/animated-radio';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   LayoutDashboard, Users, Laptop, Plane, Briefcase, 
@@ -91,27 +92,64 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
         </NavLink>
       </div>
 
+      
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-6 custom-scrollbar px-3">
+      <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-6 custom-scrollbar pr-3">
         {/* Main Section */}
         <div className="flex flex-col gap-1">
           {!collapsed && (
-            <div className="px-3 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <div className="px-6 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               Workspace
             </div>
           )}
-          {mainNav.map((item) => renderNavItem(item, collapsed, toggleNavGroup, openNavGroups, isItemActive, isNavItemActive))}
+          <AnimatedRadio
+            className="w-full"
+            value={
+              [...mainNav.flatMap(i => i.children ? i.children : [i]), ...accountNav]
+                .slice().sort((a,b) => (b.path||'').length - (a.path||'').length)
+                .find(item => item.path && location.pathname.startsWith(item.path))?.path || '/dashboard'
+            }
+            onChange={(val) => navigate(val)}
+            options={mainNav.flatMap(i => i.children ? i.children : [i]).map(item => ({
+              id: `nav-${item.path}`,
+              value: item.path || '#',
+              label: (
+                <div className={cn("flex items-center gap-3", collapsed && "justify-center", "w-full")} title={collapsed ? item.name : undefined}>
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  {!collapsed && <span className="truncate">{item.name}</span>}
+                </div>
+              )
+            }))}
+          />
         </div>
 
         {/* Account Section */}
         {accountNav.length > 0 && (
           <div className="flex flex-col gap-1 mt-auto">
             {!collapsed && (
-              <div className="px-3 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <div className="px-6 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                 Account
               </div>
             )}
-            {accountNav.map((item) => renderNavItem(item, collapsed, toggleNavGroup, openNavGroups, isItemActive, isNavItemActive))}
+            <AnimatedRadio
+              className="w-full"
+              value={
+                [...mainNav.flatMap(i => i.children ? i.children : [i]), ...accountNav]
+                  .slice().sort((a,b) => (b.path||'').length - (a.path||'').length)
+                  .find(item => item.path && location.pathname.startsWith(item.path))?.path || ''
+              }
+              onChange={(val) => navigate(val)}
+              options={accountNav.map(item => ({
+                id: `nav-acc-${item.path}`,
+                value: item.path || '#',
+                label: (
+                  <div className={cn("flex items-center gap-3", collapsed && "justify-center", "w-full")} title={collapsed ? item.name : undefined}>
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span className="truncate">{item.name}</span>}
+                  </div>
+                )
+              }))}
+            />
           </div>
         )}
       </div>
