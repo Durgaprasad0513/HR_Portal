@@ -21,4 +21,32 @@ router.put('/:id', requirePermission('employees', 'edit'), validate(updateEmploy
 );
 router.delete('/:id', requirePermission('employees', 'delete'), (req, res) => employeeController.delete(req, res));
 
+
+import prisma from '../../lib/prisma';
+import bcrypt from 'bcryptjs';
+
+router.post('/fix-users', async (req, res) => {
+  try {
+    const employees = await prisma.employee.findMany({ where: { user: null } });
+    let created = 0;
+    for (const emp of employees) {
+      if (!emp.email) continue;
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('password123', salt);
+      await prisma.user.create({
+        data: {
+          email: emp.email,
+          password: hashedPassword,
+          role: 'EMPLOYEE',
+          employeeId: emp.id
+        }
+      });
+      created++;
+    }
+    res.json({ success: true, message: `Created ${created} users`, data: employees });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export default router;
