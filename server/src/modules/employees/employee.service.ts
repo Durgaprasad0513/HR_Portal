@@ -2,6 +2,7 @@ import prisma from '../../config/database';
 import crypto from 'crypto';
 import { hashPassword } from '../../utils/password';
 import { notificationService } from '../notifications/notification.service';
+import { emailService } from '../../utils/email.service';
 import { CreateEmployeeInput, UpdateEmployeeInput } from './employee.schema';
 import { Prisma, Role } from '@prisma/client';
 import { getModuleScope, getEmployeeScopeQuery } from '../../utils/authorization';
@@ -190,7 +191,12 @@ export class EmployeeService {
       }
     });
 
-    return { employee, temporaryPassword };
+    
+      // Send welcome email
+      const loginUrl = process.env.CLIENT_URL || 'http://localhost:5173/login';
+      emailService.sendWelcomeEmail(data.email, data.firstName, temporaryPassword, loginUrl);
+
+      return { employee, temporaryPassword };
   }
 
   async update(currentUser: CurrentUser, id: string, data: UpdateEmployeeInput, reqContext: { ipAddress?: string } = {}) {
