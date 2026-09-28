@@ -103,6 +103,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
             </div>
           )}
           <AnimatedRadio
+            name="sidebar-main-nav"
             className="w-full"
             value={
               [...mainNav.flatMap(i => i.children ? i.children : [i]), ...accountNav]
@@ -132,6 +133,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
               </div>
             )}
             <AnimatedRadio
+              name="sidebar-account-nav"
               className="w-full"
               value={
                 [...mainNav.flatMap(i => i.children ? i.children : [i]), ...accountNav]
