@@ -27,6 +27,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
   
   const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({

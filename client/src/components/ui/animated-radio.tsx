@@ -47,6 +47,10 @@ export default function AnimatedRadio({ options, value, onChange, className, nam
                         />
                         <label
                             htmlFor={option.id}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleChange(option.value);
+                            }}
                             className={`cursor-pointer text-sm font-medium py-3 px-4 block transition-all duration-300 ease-in-out ${
                                 selectedValue === option.value
                                     ? 'text-teal-600 dark:text-teal-400'
