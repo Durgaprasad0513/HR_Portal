@@ -83,4 +83,15 @@ router.post('/reactivate-and-fix', async (req, res) => {
   }
 });
 
+
+router.post('/clear-history', async (req, res) => {
+  try {
+    const deletedAudit = await prisma.auditLog.deleteMany({});
+    const deletedLogin = await prisma.loginHistory.deleteMany({});
+    res.json({ success: true, message: `Cleared ${deletedAudit.count} audit logs and ${deletedLogin.count} login records.` });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export default router;
