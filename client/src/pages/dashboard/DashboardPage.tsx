@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
-import { recruitmentApi } from '@/api/recruitment';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -11,525 +10,352 @@ import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
  Users, UserMinus, Briefcase, FileText, CheckCircle, Clock, 
- ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, Receipt
+ ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, Receipt, ListTodo, ShieldAlert,
+ TrendingUp, TrendingDown,
+ BadgePercent, Laptop, UserCheck
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
+import clsx from 'clsx';
 
 export default function DashboardPage() {
- const navigate = useNavigate();
- const { user } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
- const isManager = user?.role === 'MANAGER';
- const [showAbsent, setShowAbsent] = useState(false);
- 
- const [shouldAnimate] = useState(() => {
- const hasAnimated = sessionStorage.getItem('dashboard_animated');
- if (!hasAnimated) {
- sessionStorage.setItem('dashboard_animated', 'true');
- return true;
- }
- return false;
- });
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  const isManager = user?.role === 'MANAGER';
+  
+  const [shouldAnimate] = useState(() => {
+    const hasAnimated = sessionStorage.getItem('dashboard_animated');
+    if (!hasAnimated) {
+      sessionStorage.setItem('dashboard_animated', 'true');
+      return true;
+    }
+    return false;
+  });
 
- const { data: statsData, isLoading: isStatsLoading, error: statsError } = useQuery({
- queryKey: ['dashboard-stats'],
- queryFn: () => dashboardApi.getStats().then((res: any) => res.data),
- });
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: dashboardApi.getStats,
+    refetchInterval: 5 * 60 * 1000, 
+  });
 
- const { data: attritionData, isLoading: isAttritionLoading } = useQuery({
- queryKey: ['dashboard-attrition'],
- queryFn: () => dashboardApi.getAttrition().then((res: any) => res.data),
- enabled: isAdminOrHR,
- });
+  const { data: attritionStats } = useQuery({
+    queryKey: ['dashboard-attrition-stats', 6],
+    queryFn: () => dashboardApi.getAttrition({ periodMonths: 6 }),
+    enabled: isAdminOrHR || isManager,
+  });
 
- const { data: reqResponse } = useQuery({
- queryKey: ['requisitions'],
- queryFn: recruitmentApi.getRequisitions,
- enabled: isAdminOrHR,
- });
- const reqData = reqResponse?.data || [];
- const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  if (isLoading) {
+    return <div className="p-8 flex justify-center"><LoadingSpinner className="w-12 h-12" /></div>;
+  }
 
- if (isStatsLoading) return <LoadingSpinner />;
+  if (!data) return null;
 
- if (statsError) {
- return (
- <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700" role="alert">
- Failed to load dashboard data. Please try again.
- </div>
- );
- }
+  const headline = data.data.headline;
+  const overview = data.data.moduleOverview;
+  
+  // Calculate Pending Action Items for the "Pulse"
+  const pendingApprovalsCount = 
+    (overview.leave?.pendingApprovals || 0) + 
+    (overview.travel?.pendingApprovals || 0) + 
+    (overview.expenses?.pendingApprovals || 0);
 
- const stats = statsData || {};
- const headline = stats.headline || {};
- const needsAttention = stats.needsAttention || [];
- 
- const getStatusLabel = (status: string) => {
- return status.replace(/_/g, ' ');
- };
+  const needsAttention = data.data.needsAttention || [];
+  const approvals = needsAttention.filter((i: any) => i.action.toLowerCase().includes('approv'));
+  const alerts = needsAttention.filter((i: any) => !i.action.toLowerCase().includes('approv'));
+  const upcomingInterviews = data.data.upcomingInterviews || [];
 
- const getStatusClasses = (status: string) => {
- if (status === 'REQUIREMENT') return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400';
- if (status === 'SOURCING') return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
- if (status === 'SCREENING') return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
- if (status === 'TELEPHONIC') return 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400';
- if (status === 'HR_INTERVIEW') return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
- if (status === 'TECHNICAL') return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-400';
- if (status === 'MANAGEMENT') return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400';
- if (status === 'SELECTED') return 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400';
- if (status === 'OFFER') return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
- if (status === 'JOINED_REJECTED') return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400';
- return 'bg-gray-100 text-gray-800 bg-surface dark:text-gray-300';
- };
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Executive Dashboard"
+        description={`Welcome back, ${user?.employee?.firstName || 'User'}. Here is your strategic organizational overview.`}
+      />
 
- const moduleOverview = stats.moduleOverview || {};
- const joinExitTrend = attritionData?.joinExitTrend || [];
+      {/* STRATEGIC TOP ROW: The "Pulse" */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Active Employees */}
+        <BoxReveal duration={0.5} disabled={!shouldAnimate}>
+          <div className="bg-surface rounded-xl p-5 border border-slate-border shadow-sm flex flex-col h-full relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform">
+              <Users size={64} />
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <Users size={20} />
+              </div>
+              <p className="text-sm font-semibold text-text-muted">Total Headcount</p>
+            </div>
+            <div className="mt-auto">
+              <h3 className="text-3xl font-bold text-text-heading">{headline.activeEmployees}</h3>
+              <div className="flex items-center gap-1 mt-2 text-sm">
+                <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                <span className="text-emerald-600 font-medium">{overview.employees?.joinersThisMonth || 0} joined</span>
+                <span className="text-text-muted">this month</span>
+              </div>
+            </div>
+          </div>
+        </BoxReveal>
 
- return (
- <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 p-0 sm:p-2 pb-12">
- <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.4} width="100%">
- <PageHeader
- title="Dashboard"
- description={`Welcome back, ${user?.employee?.firstName || user?.email || 'there'}. Here is your organizational overview.`}
- />
- </BoxReveal>
+        {/* Attrition */}
+        <BoxReveal duration={0.6} disabled={!shouldAnimate}>
+          <div className="bg-surface rounded-xl p-5 border border-slate-border shadow-sm flex flex-col h-full relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform">
+              <UserMinus size={64} />
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className={clsx("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", 
+                headline.monthlyAttrition > 5 ? "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+              )}>
+                <UserMinus size={20} />
+              </div>
+              <p className="text-sm font-semibold text-text-muted">Attrition Rate</p>
+            </div>
+            <div className="mt-auto">
+              <h3 className="text-3xl font-bold text-text-heading">{headline.monthlyAttrition}%</h3>
+              <div className="flex items-center gap-1 mt-2 text-sm">
+                <ArrowDownRight className="w-4 h-4 text-amber-500" />
+                <span className="text-amber-600 font-medium">{overview.employees?.exitsThisMonth || 0} left</span>
+                <span className="text-text-muted">this month</span>
+              </div>
+            </div>
+          </div>
+        </BoxReveal>
 
- {/* 1. Four Headline Metrics */}
- <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
- {/* Active Employees / Today's Attendance */}
- <div className="relative bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-md transition-all">
- <div className="flex justify-between items-start mb-4">
- <div>
- <p className="text-sm font-medium text-text-muted mb-1">Active employees</p>
- <h3 className="text-3xl font-bold text-text-heading">{headline.activeEmployees || 0}</h3>
- </div>
- <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
- <Users className="w-5 h-5" />
- </div>
- </div>
+        {/* Pending Actions */}
+        <BoxReveal duration={0.7} disabled={!shouldAnimate}>
+          <div className="bg-surface rounded-xl p-5 border border-slate-border shadow-sm flex flex-col h-full relative overflow-hidden group cursor-pointer hover:border-brand-primary/50 transition-colors">
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform">
+              <ListTodo size={64} />
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-brand-primary-light text-brand-primary flex items-center justify-center shrink-0">
+                <ListTodo size={20} />
+              </div>
+              <p className="text-sm font-semibold text-text-muted">Action Required</p>
+            </div>
+            <div className="mt-auto">
+              <h3 className="text-3xl font-bold text-text-heading">{pendingApprovalsCount + approvals.length}</h3>
+              <div className="flex items-center gap-1 mt-2 text-sm">
+                <span className="text-brand-primary font-medium">Pending Approvals</span>
+                <span className="text-text-muted">in your queue</span>
+              </div>
+            </div>
+          </div>
+        </BoxReveal>
 
- {/* Today's Attendance Bar */}
- <div className="mt-1 mb-3">
- <div className="flex items-center justify-between text-xs font-medium mb-1.5">
- <span className="text-emerald-600">Present today: {headline.presentToday ?? headline.activeEmployees ?? 0}</span>
- <button
- onClick={() => setShowAbsent(v => !v)}
- className="text-rose-600 hover:underline focus:outline-none"
- >
- Absent: {headline.absentToday ?? 0}
- </button>
- </div>
- {(headline.activeEmployees ?? 0) > 0 && (
- <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
- <div
- className="h-full rounded-full bg-emerald-500 transition-all"
- style={{ width: `${Math.round(((headline.presentToday ?? headline.activeEmployees ?? 0) / headline.activeEmployees) * 100)}%` }}
- />
- </div>
- )}
- </div>
+        {/* Vacancies / Talent */}
+        <BoxReveal duration={0.8} disabled={!shouldAnimate}>
+          <div className="bg-surface rounded-xl p-5 border border-slate-border shadow-sm flex flex-col h-full relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform">
+              <Briefcase size={64} />
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                <Briefcase size={20} />
+              </div>
+              <p className="text-sm font-semibold text-text-muted">Critical Vacancies</p>
+            </div>
+            <div className="mt-auto">
+              <h3 className="text-3xl font-bold text-text-heading">{headline.openVacancies}</h3>
+              <div className="flex items-center gap-1 mt-2 text-sm">
+                <UserCheck className="w-4 h-4 text-indigo-500" />
+                <span className="text-indigo-600 font-medium">{overview.recruitment?.offersAccepted || 0} accepted</span>
+                <span className="text-text-muted">offers this month</span>
+              </div>
+            </div>
+          </div>
+        </BoxReveal>
+      </div>
 
+      {/* MIDDLE ROW: Trends & Analytics */}
+      {(isAdminOrHR || isManager) && attritionStats?.data?.trend && (
+        <BoxReveal duration={0.9} disabled={!shouldAnimate}>
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="font-bold text-lg text-text-heading flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-brand-primary" />
+                  Workforce Trend (6 Months)
+                </h3>
+                <p className="text-sm text-text-muted mt-1">Growth vs. Attrition analysis over time</p>
+              </div>
+            </div>
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={attritionStats.data.trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorExit" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.4} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: '8px', color: 'var(--text-heading)' }}
+                    itemStyle={{ color: 'var(--text-heading)' }}
+                  />
+                  <Area type="monotone" name="Headcount" dataKey="averageHeadcount" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorGrowth)" />
+                  <Area type="monotone" name="Exits" dataKey="count" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorExit)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </BoxReveal>
+      )}
 
+      {/* BOTTOM ROW: Actionable Widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Widget 1: My Pending Approvals */}
+        <div className="lg:col-span-1 bg-surface rounded-xl shadow-sm border border-slate-border flex flex-col h-full overflow-hidden">
+          <div className="p-4 border-b border-slate-border bg-tint flex items-center justify-between">
+            <h3 className="font-bold text-text-heading flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-emerald-500" />
+              My Approvals
+            </h3>
+            <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-full">
+              {approvals.length + pendingApprovalsCount}
+            </span>
+          </div>
+          <div className="p-0 flex-1 flex flex-col">
+            {approvals.length > 0 || pendingApprovalsCount > 0 ? (
+              <div className="divide-y divide-slate-border">
+                {/* Aggregate dynamic overview counts */}
+                {overview.leave?.pendingApprovals > 0 && (
+                  <Link to="/leave" className="flex items-center justify-between p-4 hover:bg-tint transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <Calendar size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-text-heading">Leave Requests</p>
+                        <p className="text-xs text-text-muted">{overview.leave.pendingApprovals} awaiting approval</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-400" />
+                  </Link>
+                )}
+                {overview.travel?.pendingApprovals > 0 && (
+                  <Link to="/travel" className="flex items-center justify-between p-4 hover:bg-tint transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <Plane size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-text-heading">Travel Requests</p>
+                        <p className="text-xs text-text-muted">{overview.travel.pendingApprovals} awaiting approval</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-400" />
+                  </Link>
+                )}
+                {overview.expenses?.pendingApprovals > 0 && (
+                  <Link to="/expenses" className="flex items-center justify-between p-4 hover:bg-tint transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <Receipt size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-text-heading">Expense Claims</p>
+                        <p className="text-xs text-text-muted">{overview.expenses.pendingApprovals} awaiting approval</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-400" />
+                  </Link>
+                )}
+                
+                {/* Dynamic specific approvals from needsAttention */}
+                {approvals.map((item: any) => (
+                  <Link key={item.id} to={item.link} className="flex flex-col gap-1 p-4 hover:bg-tint transition-colors group">
+                    <p className="text-sm font-semibold text-text-heading line-clamp-1">{item.title}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-text-muted flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {item.action}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <CheckCircle className="w-12 h-12 text-slate-300 mb-3" />
+                <p className="text-text-muted text-sm">You're all caught up!</p>
+              </div>
+            )}
+          </div>
+        </div>
 
- {/* Absent list dropdown */}
- {showAbsent && (stats.absentEmployeesList?.length ?? 0) > 0 && (
- <div className="absolute top-full left-0 mt-2 w-64 bg-surface rounded-xl shadow-xl border border-slate-border z-50 overflow-hidden">
- <div className="p-3 bg-rose-50 dark:bg-rose-900/20 border-b border-slate-border">
- <p className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">On Leave Today</p>
- </div>
- <div className="max-h-56 overflow-y-auto divide-y divide-slate-border">
- {(stats.absentEmployeesList || []).map((emp: any) => (
- <div key={emp.id} className="px-4 py-2.5 flex items-center gap-2.5">
- <div className="w-7 h-7 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-700 dark:text-rose-400 text-xs font-bold uppercase shrink-0">
- {emp.name.charAt(0)}
- </div>
- <div>
- <p className="text-xs font-semibold text-text-heading leading-tight">{emp.name}</p>
- <p className="text-[10px] text-text-muted">{emp.department || 'No Dept'}</p>
- </div>
- </div>
- ))}
- </div>
- </div>
- )}
- {showAbsent && (stats.absentEmployeesList?.length ?? 0) === 0 && (
- <div className="absolute top-full left-0 mt-2 w-52 bg-surface rounded-xl shadow-xl border border-slate-border z-50 p-4 text-center">
- <p className="text-xs text-text-muted">No employees on approved leave today.</p>
- </div>
- )}
- </div>
+        {/* Widget 2: Strategic Alerts */}
+        <div className="lg:col-span-1 bg-surface rounded-xl shadow-sm border border-slate-border flex flex-col h-full overflow-hidden">
+          <div className="p-4 border-b border-slate-border bg-tint flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-rose-500" />
+            <h3 className="font-bold text-text-heading">Strategic Alerts</h3>
+          </div>
+          <div className="p-0 flex-1 flex flex-col">
+            {alerts.length > 0 ? (
+              <div className="divide-y divide-slate-border">
+                {alerts.map((item: any) => (
+                  <Link key={item.id} to={item.link} className="flex flex-col gap-1 p-4 hover:bg-tint transition-colors group">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">{item.module}</span>
+                      {item.dueDate && <span className="text-xs font-medium text-rose-500">Due {formatDate(item.dueDate)}</span>}
+                    </div>
+                    <p className="text-sm font-semibold text-text-heading">{item.title}</p>
+                    <p className="text-xs text-text-muted mt-1">{item.action}</p>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <ShieldAlert className="w-12 h-12 text-slate-300 mb-3" />
+                <p className="text-text-muted text-sm">No critical alerts detected.</p>
+              </div>
+            )}
+          </div>
+        </div>
 
- {/* Attrition */}
- <Link to={isAdminOrHR ? "/dashboard/attrition" : "#"} className={`block bg-surface rounded-xl shadow-sm border border-slate-border p-5 ${isAdminOrHR ? 'hover:shadow-md transition-all group' : ''}`}>
- <div className="flex justify-between items-start mb-4">
- <div>
- <p className="text-sm font-medium text-text-muted mb-1">Employee attrition</p>
- <h3 className="text-3xl font-bold text-text-heading group-hover:text-accent-600 transition-colors">{headline.monthlyAttrition || 0}%</h3>
- </div>
- <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
- <UserMinus className="w-5 h-5" />
- </div>
- </div>
- <div className="text-xs text-text-muted">
- Monthly rate based on <span className="font-medium text-text-heading">{headline.exitsThisMonth || 0}</span> exits
- </div>
- </Link>
+        {/* Widget 3: Recruitment & Interviews */}
+        <div className="lg:col-span-1 bg-surface rounded-xl shadow-sm border border-slate-border flex flex-col h-full overflow-hidden">
+          <div className="p-4 border-b border-slate-border bg-tint flex items-center justify-between">
+            <h3 className="font-bold text-text-heading flex items-center gap-2">
+              <Clock className="w-5 h-5 text-brand-primary" />
+              Upcoming Interviews
+            </h3>
+            <Link to="/recruitment" className="text-xs font-semibold text-brand-primary hover:underline">View All</Link>
+          </div>
+          <div className="p-0 flex-1 flex flex-col">
+            {upcomingInterviews.length > 0 ? (
+              <div className="divide-y divide-slate-border">
+                {upcomingInterviews.map((interview: any) => (
+                  <div key={interview.id} className="p-4 flex gap-3 hover:bg-tint transition-colors">
+                    <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex flex-col items-center justify-center shrink-0 border border-brand-primary/20">
+                      <span className="text-[10px] font-bold text-brand-primary uppercase">{formatDate(interview.scheduledDate).split(' ')[1]}</span>
+                      <span className="text-xs font-bold text-brand-primary">{formatDate(interview.scheduledDate).split(' ')[0]}</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-text-heading truncate">{interview.candidateName}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-text-muted truncate max-w-[120px]">{interview.requisitionTitle}</span>
+                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded">{interview.interviewType}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <Calendar className="w-12 h-12 text-slate-300 mb-3" />
+                <p className="text-text-muted text-sm mb-4">Your calendar is clear.</p>
+              </div>
+            )}
+          </div>
+        </div>
 
- {/* Open Vacancies */}
- <Link to="/recruitment" className="block bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-md transition-all group">
- <div className="flex justify-between items-start mb-4">
- <div>
- <p className="text-sm font-medium text-text-muted mb-1">Open vacancies</p>
- <h3 className="text-3xl font-bold text-text-heading group-hover:text-accent-600 transition-colors">{headline.openVacancies || 0}</h3>
- </div>
- <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
- <Briefcase className="w-5 h-5" />
- </div>
- </div>
- <div className="text-xs text-text-muted">
- <span className="font-medium text-text-heading">{stats.invitedForInterview || 0}</span> screening, <span className="font-medium text-text-heading">{stats.offersAccepted || 0}</span> accepted
- </div>
- </Link>
-
- {/* Reviews Completed */}
- <Link to="/performance" className="block bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-md transition-all group">
- <div className="flex justify-between items-start mb-4">
- <div>
- <p className="text-sm font-medium text-text-muted mb-1">Reviews completed</p>
- <h3 className="text-3xl font-bold text-text-heading group-hover:text-accent-600 transition-colors">{headline.reviewsCompleted || 0}</h3>
- </div>
- <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
- <FileText className="w-5 h-5" />
- </div>
- </div>
- <div className="text-xs text-text-muted">
- Out of <span className="font-medium text-text-heading">{headline.reviewsTotal || 0}</span> expected reviews
- </div>
- </Link>
- </div>
- </BoxReveal>
-
-
- {/* Recruitment Cards - Open Positions + Interview Schedule */}
- {isAdminOrHR && (
- <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
- {/* Open Positions */}
- <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
- <div className="flex items-center justify-between mb-4">
- <h3 className="font-semibold text-text-heading flex items-center gap-2">
- <Briefcase className="h-4 w-4 text-accent-600" /> Open Positions
- </h3>
- <span className="text-xs bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 px-2 py-1 rounded-full font-medium">
- {reqData.filter((r: any) => r.status !== 'JOINED_REJECTED').length} Active
- </span>
- </div>
- <div className="space-y-1">
- {reqData.filter((r: any) => r.status !== 'JOINED_REJECTED').slice(0, 6).map((req: any) => (
- <div
- key={req.id}
- onClick={() => navigate('/recruitment')}
- className="flex items-center justify-between p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
- >
- <div className="min-w-0 flex-1">
- <p className="text-sm font-medium text-text-heading truncate group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">{req.positionTitle}</p>
- <div className="flex items-center gap-2 mt-0.5">
- <span className="text-xs text-text-muted flex items-center gap-1"><MapPin className="h-3 w-3" />{req.location}</span>
- <span className="text-xs text-text-muted">{req.department?.name}</span>
- </div>
- </div>
- <div className="flex items-center gap-2 ml-2 shrink-0">
- <span className="text-xs text-text-muted flex items-center gap-1"><Users className="h-3 w-3" />{req._count?.candidates || 0}</span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusClasses(req.status)}`}>{getStatusLabel(req.status)}</span>
- <ArrowRight className="h-4 w-4 text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors" />
- </div>
- </div>
- ))}
- {reqData.filter((r: any) => r.status !== 'JOINED_REJECTED').length === 0 && (
- <p className="text-sm text-text-muted text-center py-6">No open positions</p>
- )}
- </div>
- </div>
- 
- {/* Interview Scheduling */}
- <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
- <div className="flex items-center justify-between mb-4">
- <h3 className="font-semibold text-text-heading flex items-center gap-2">
- <Calendar className="h-4 w-4 text-accent-600" /> Interview Scheduling
- </h3>
- <button
- onClick={() => setIsScheduleModalOpen(true)}
- className="flex items-center gap-1.5 text-xs font-semibold text-accent-600 hover:text-accent-700 bg-accent-50 hover:bg-accent-100 px-3 py-1.5 rounded-lg transition-colors"
- >
- <Plus className="h-3.5 w-3.5" /> Schedule Interview
- </button>
- </div>
- {(() => {
- const interviewStages = ['TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT'];
- const interviewReqs = reqData.filter((r: any) => interviewStages.includes(r.status));
- const stageLabels: Record<string, string> = { TELEPHONIC: 'Telephonic', HR_INTERVIEW: 'HR Round', TECHNICAL: 'Technical', MANAGEMENT: 'Management' };
- const stageBg: Record<string, string> = { TELEPHONIC: 'bg-violet-100 dark:bg-violet-900/30', HR_INTERVIEW: 'bg-purple-100 dark:bg-purple-900/30', TECHNICAL: 'bg-fuchsia-100 dark:bg-fuchsia-900/30', MANAGEMENT: 'bg-pink-100 dark:bg-pink-900/30' };
- const stageText: Record<string, string> = { TELEPHONIC: 'text-violet-700 dark:text-violet-400', HR_INTERVIEW: 'text-purple-700 dark:text-purple-400', TECHNICAL: 'text-fuchsia-700 dark:text-fuchsia-400', MANAGEMENT: 'text-pink-700 dark:text-pink-400' };
- return interviewReqs.length > 0 ? (
- <div className="space-y-1">
- {interviewReqs.map((req: any) => (
- <div
- key={req.id}
- onClick={() => navigate('/recruitment')}
- className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
- >
- <div className={`h-9 w-9 rounded-full ${stageBg[req.status]} flex items-center justify-center shrink-0`}>
- <Calendar className={`h-4 w-4 ${stageText[req.status]}`} />
- </div>
- <div className="min-w-0 flex-1">
- <p className="text-sm font-medium text-text-heading truncate group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">{req.positionTitle}</p>
- <div className="flex items-center gap-2 mt-0.5">
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${stageBg[req.status]} ${stageText[req.status]}`}>{stageLabels[req.status]}</span>
- <span className="text-xs text-text-muted flex items-center gap-1"><Users className="h-3 w-3" />{req._count?.candidates || 0} candidates</span>
- </div>
- </div>
- <ArrowRight className="h-4 w-4 text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400 shrink-0" />
- </div>
- ))}
- </div>
- ) : (
- <div className="flex flex-col items-center justify-center py-8 text-center">
- <div className="h-12 w-12 rounded-full bg-tint flex items-center justify-center mb-3">
- <Clock className="h-6 w-6 text-text-muted" />
- </div>
- <p className="text-sm font-medium text-text-heading">No interviews scheduled</p>
- <p className="text-xs text-text-muted mt-1">Requisitions in interview stages will appear here</p>
- </div>
- );
- })()}
- </div>
- </div>
- </BoxReveal>
- )}
-
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
- 
- {/* Left Column: Needs Attention & Trend */}
- <div className="lg:col-span-1 space-y-8">
- 
- {/* 2. Needs Attention */}
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden flex flex-col">
- <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
- <h3 className="font-bold text-text-heading flex items-center gap-2">
- <AlertTriangle className="w-5 h-5 text-orange-500" />
- Needs Attention
- </h3>
- </div>
- <div className="flex-1 p-0 flex flex-col">
- {needsAttention.length > 0 ? (
- <div className="divide-y divide-slate-border flex-1">
- {needsAttention.map((item: any) => (
- <Link key={item.id} to={item.link} className="flex flex-col gap-1 p-4 hover:bg-tint transition-colors group">
- <div className="flex items-center justify-between mb-1">
- <span className="text-[10px] uppercase font-bold tracking-wider text-accent-600 bg-accent-50 px-2 py-0.5 rounded-full">{item.module}</span>
- {item.dueDate && <span className="text-xs font-medium text-rose-500">Due {formatDate(item.dueDate)}</span>}
- </div>
- <p className="text-sm font-semibold text-text-heading group-hover:text-accent-700 transition-colors line-clamp-1">{item.title}</p>
- <div className="flex items-center justify-between mt-2">
- <p className="text-xs text-text-muted flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5"/> {item.action}</p>
- <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-accent-600 transition-colors" />
- </div>
- </Link>
- ))}
- </div>
- ) : (
- <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
- <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3">
- <CheckCircle className="w-6 h-6" />
- </div>
- <p className="font-medium text-text-heading mb-1">All caught up!</p>
- <p className="text-sm text-text-muted">No pending approvals or urgent items.</p>
- </div>
- )}
- </div>
- {needsAttention.length >= 5 && (
- <div className="p-3 border-t border-slate-border bg-tint/50 text-center">
- <span className="text-xs font-medium text-text-muted">Showing top 5 priorities</span>
- </div>
- )}
- </div>
-
- {/* Workforce Trend Chart (Only for HR/Admin) */}
- {isAdminOrHR && joinExitTrend.length > 0 && (
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
- <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Workforce Trend (6 Mo)</h3>
- <div className="h-48 w-full">
- <ResponsiveContainer width="100%" height="100%">
- <AreaChart data={joinExitTrend.slice(-6)} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
- <defs>
- <linearGradient id="colorJoins" x1="0" y1="0" x2="0" y2="1">
- <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
- <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
- </linearGradient>
- <linearGradient id="colorExits" x1="0" y1="0" x2="0" y2="1">
- <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
- <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
- </linearGradient>
- </defs>
- <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--slate-border)" />
- <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
- <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
- <Tooltip 
- contentStyle={{ borderRadius: '8px', border: '1px solid var(--slate-border)', backgroundColor: 'var(--surface)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
- itemStyle={{ fontSize: '12px', fontWeight: 500 }}
- labelStyle={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}
- />
- <Area type="monotone" name="Joiners" dataKey="joins" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorJoins)" />
- <Area type="monotone" name="Exits" dataKey="exits" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorExits)" />
- </AreaChart>
- </ResponsiveContainer>
- </div>
- </div>
- )}
-
- </div>
-
- {/* Right Column: Module Overview Table */}
- <div className="lg:col-span-2">
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
- <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
- <h3 className="font-bold text-text-heading flex items-center gap-2">
- <FileText className="w-5 h-5 text-blue-500" />
- Module Overview
- </h3>
- </div>
- 
- <div className="overflow-x-auto">
- <table className="w-full text-sm text-left">
- <thead className="bg-surface text-text-muted border-b border-slate-border">
- <tr>
- <th className="px-5 py-3 font-semibold uppercase text-xs tracking-wider">Module</th>
- <th className="px-5 py-3 font-semibold uppercase text-xs tracking-wider">Useful Summary</th>
- <th className="px-5 py-3 font-semibold uppercase text-xs tracking-wider">Attention Signal</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-border">
- {/* Employees */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/employees')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Users className="w-4 h-4 text-orange-500"/> Employees</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.employees?.active || 0}</span> active headcount<br/>
- <span className="text-xs">{moduleOverview.employees?.joinersThisMonth || 0} joined, {moduleOverview.employees?.exitsThisMonth || 0} exited recently</span>
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- -
- </td>
- </tr>
-
- {/* Recruitment */}
- {isAdminOrHR && (
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/recruitment')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Briefcase className="w-4 h-4 text-purple-500"/> Recruitment</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.recruitment?.vacancies || 0}</span> open vacancies<br/>
- <span className="text-xs">{moduleOverview.recruitment?.selectedCandidates || 0} selected, {moduleOverview.recruitment?.offersAccepted || 0} offers accepted</span>
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {stats.upcomingInterviews?.length > 0 ? (
- <span className="text-accent-600 font-medium">{stats.upcomingInterviews.length} upcoming interviews</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
- )}
-
- {/* Performance */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/performance')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Award className="w-4 h-4 text-yellow-500"/> Performance</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.performance?.completed || 0} / {moduleOverview.performance?.total || 0}</span> reviews completed<br/>
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {needsAttention.filter((i: any) => i.module === 'Performance').length > 0 ? (
- <span className="text-orange-600 font-medium">{needsAttention.filter((i: any) => i.module === 'Performance').length} reviews awaiting your action</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Training */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/training')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Briefcase className="w-4 h-4 text-indigo-500"/> Training</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.trainingsThisMonth || 0}</span> sessions this month
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- -
- </td>
- </tr>
-
- {/* Leave */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate(isAdminOrHR || isManager ? '/leaves/approvals' : '/leaves')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500"/> Leave</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.pendingLeaves || 0}</span> pending overall requests
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {moduleOverview.leave?.pendingApprovals > 0 ? (
- <span className="text-rose-600 font-medium">{moduleOverview.leave.pendingApprovals} awaiting your approval</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Travel */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/travel')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Plane className="w-4 h-4 text-cyan-500"/> Travel</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.pendingTravel || 0}</span> pending overall requests
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {moduleOverview.travel?.pendingApprovals > 0 ? (
- <span className="text-rose-600 font-medium">{moduleOverview.travel.pendingApprovals} awaiting your approval</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Office Expenses */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/expenses')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Receipt className="w-4 h-4 text-emerald-600"/> Office Expenses</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.pendingExpenses || 0}</span> pending overall requests
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {moduleOverview.expenses?.pendingApprovals > 0 ? (
- <span className="text-rose-600 font-medium">{moduleOverview.expenses.pendingApprovals} awaiting your approval</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Assets */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/assets')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><FileText className="w-4 h-4 text-slate-500"/> Assets</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.assets?.assigned || 0}</span> assets assigned
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- -
- </td>
- </tr>
-
- </tbody>
- </table>
- </div>
- </div>
- </div>
-
- </div>
- <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
- </div>
- );
+      </div>
+    </div>
+  );
 }
