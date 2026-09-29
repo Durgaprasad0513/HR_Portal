@@ -63,12 +63,6 @@ export default function LoginPage() {
 
  return (
  <div className="min-h-screen flex font-sans bg-slate-50 dark:bg-slate-950 relative overflow-hidden">
- {/* Decorative background blobs to make transparency visible */}
- <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
- <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 dark:bg-blue-900/30 blur-3xl"></div>
- <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/20 dark:bg-indigo-900/30 blur-3xl"></div>
- </div>
-
  <div className="w-full flex flex-col items-center justify-center p-4 lg:p-8 relative z-10">
  {/* Transparent Glass Card Container */}
  <div className="w-full max-w-md backdrop-blur-xl bg-surface/60 border border-white/40 dark:border-slate-border/60 shadow-2xl rounded-3xl p-8 lg:p-10 relative overflow-hidden">
