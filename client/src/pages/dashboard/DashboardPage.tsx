@@ -418,7 +418,7 @@ export default function DashboardPage() {
                       <span className="text-xs">{moduleOverview.employees?.joinersThisMonth || 0} joined, {moduleOverview.employees?.exitsThisMonth || 0} exited recently</span>
                     </td>
                     <td className="px-5 py-4 text-text-muted text-xs">
-                       &mdash;
+                       -
                     </td>
                   </tr>
 
@@ -434,7 +434,7 @@ export default function DashboardPage() {
                       {stats.upcomingInterviews?.length > 0 ? (
                         <span className="text-accent-600 font-medium">{stats.upcomingInterviews.length} upcoming interviews</span>
                       ) : (
-                        '&mdash;'
+                        "-"
                       )}
                     </td>
                   </tr>
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                       {needsAttention.filter((i: any) => i.module === 'Performance').length > 0 ? (
                         <span className="text-orange-600 font-medium">{needsAttention.filter((i: any) => i.module === 'Performance').length} reviews awaiting your action</span>
                       ) : (
-                        '&mdash;'
+                        "-"
                       )}
                     </td>
                   </tr>
@@ -462,7 +462,7 @@ export default function DashboardPage() {
                       <span className="font-medium text-text-heading">{stats.trainingsThisMonth || 0}</span> sessions this month
                     </td>
                     <td className="px-5 py-4 text-text-muted text-xs">
-                      &mdash;
+                      -
                     </td>
                   </tr>
 
@@ -476,7 +476,7 @@ export default function DashboardPage() {
                       {moduleOverview.leave?.pendingApprovals > 0 ? (
                         <span className="text-rose-600 font-medium">{moduleOverview.leave.pendingApprovals} awaiting your approval</span>
                       ) : (
-                        '&mdash;'
+                        "-"
                       )}
                     </td>
                   </tr>
@@ -491,7 +491,7 @@ export default function DashboardPage() {
                       {moduleOverview.travel?.pendingApprovals > 0 ? (
                         <span className="text-rose-600 font-medium">{moduleOverview.travel.pendingApprovals} awaiting your approval</span>
                       ) : (
-                        '&mdash;'
+                        "-"
                       )}
                     </td>
                   </tr>
@@ -506,7 +506,7 @@ export default function DashboardPage() {
                       {moduleOverview.expenses?.pendingApprovals > 0 ? (
                         <span className="text-rose-600 font-medium">{moduleOverview.expenses.pendingApprovals} awaiting your approval</span>
                       ) : (
-                        '&mdash;'
+                        "-"
                       )}
                     </td>
                   </tr>
@@ -518,7 +518,7 @@ export default function DashboardPage() {
                       <span className="font-medium text-text-heading">{moduleOverview.assets?.assigned || 0}</span> assets assigned
                     </td>
                     <td className="px-5 py-4 text-text-muted text-xs">
-                      &mdash;
+                      -
                     </td>
                   </tr>
 
