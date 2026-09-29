@@ -25,7 +25,7 @@ export function StationCard({
 }: StationCardProps) {
   return (
     <div className={cn(
-      "bg-surface rounded-xl border border-slate-800 p-5",
+      "bg-surface rounded-xl border border-slate-border p-5",
       "",
       className
     )}>

@@ -44,9 +44,9 @@ export default function DesignSystemPage() {
           <div className="flex flex-wrap gap-4">
             <div className="w-24 h-24 rounded-xl bg-brand-primary text-white flex items-end p-2 text-xs font-medium shadow-sm">Brand Primary</div>
             <div className="w-24 h-24 rounded-xl bg-sidebar text-white flex items-end p-2 text-xs font-medium shadow-sm">Sidebar Dark</div>
-            <div className="w-24 h-24 rounded-xl bg-surface border border-slate-800 text-text-heading flex items-end p-2 text-xs font-medium shadow-sm">Surface</div>
-            <div className="w-24 h-24 rounded-xl bg-canvas border border-slate-800 text-text-heading flex items-end p-2 text-xs font-medium shadow-sm">Canvas</div>
-            <div className="w-24 h-24 rounded-xl bg-tint border border-slate-800 text-text-heading flex items-end p-2 text-xs font-medium shadow-sm">Tint</div>
+            <div className="w-24 h-24 rounded-xl bg-surface border border-slate-border text-text-heading flex items-end p-2 text-xs font-medium shadow-sm">Surface</div>
+            <div className="w-24 h-24 rounded-xl bg-canvas border border-slate-border text-text-heading flex items-end p-2 text-xs font-medium shadow-sm">Canvas</div>
+            <div className="w-24 h-24 rounded-xl bg-tint border border-slate-border text-text-heading flex items-end p-2 text-xs font-medium shadow-sm">Tint</div>
           </div>
           
           <div className="flex flex-wrap gap-4 mt-4">
@@ -60,7 +60,7 @@ export default function DesignSystemPage() {
         {/* Typography */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-text-heading border-b border-slate-border pb-2">Typography</h2>
-          <div className="space-y-4 bg-surface p-6 rounded-xl border border-slate-800">
+          <div className="space-y-4 bg-surface p-6 rounded-xl border border-slate-border">
             <h1 className="text-4xl font-bold text-text-heading">Heading 1</h1>
             <h2 className="text-3xl font-semibold text-text-heading">Heading 2</h2>
             <h3 className="text-2xl font-semibold text-text-heading">Heading 3</h3>
@@ -76,7 +76,7 @@ export default function DesignSystemPage() {
         {/* Buttons */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-text-heading border-b border-slate-border pb-2">Buttons</h2>
-          <div className="bg-surface p-6 rounded-xl border border-slate-800 flex flex-wrap gap-4 items-center">
+          <div className="bg-surface p-6 rounded-xl border border-slate-border flex flex-wrap gap-4 items-center">
             <Button variant="primary">Primary</Button>
             <Button variant="dark">Dark / Approve</Button>
             <Button variant="secondary">Secondary</Button>
@@ -90,7 +90,7 @@ export default function DesignSystemPage() {
         {/* Forms */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-text-heading border-b border-slate-border pb-2">Form Elements</h2>
-          <div className="bg-surface p-6 rounded-xl border border-slate-800 space-y-4">
+          <div className="bg-surface p-6 rounded-xl border border-slate-border space-y-4">
             <Input label="Standard Input" placeholder="Type here..." />
             <Select label="Standard Select">
               <option value="1">Option 1</option>
@@ -123,7 +123,7 @@ export default function DesignSystemPage() {
             </div>
             
             <div className="lg:col-span-2">
-              <div className="bg-surface rounded-xl border border-slate-800 p-4">
+              <div className="bg-surface rounded-xl border border-slate-border p-4">
                 <h3 className="font-semibold text-text-heading mb-4">Stable Table Example</h3>
                 <DataTable
                   data={dummyData}

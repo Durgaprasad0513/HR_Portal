@@ -149,7 +149,7 @@ export default function RecruitmentPage() {
             {isCandidatesLoading ? (
               <div className="py-12"><LoadingSpinner /></div>
             ) : (
-              <div className="bg-surface rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+              <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-surface text-gray-500">
                     <tr>

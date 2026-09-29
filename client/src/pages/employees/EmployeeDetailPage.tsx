@@ -500,7 +500,7 @@ export default function EmployeeDetailPage() {
           </div>
         {/* Right Sticky Navigation */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24 bg-surface border border-slate-800 p-3 rounded-xl shadow-sm flex flex-col">
+            <div className="sticky top-24 bg-surface border border-slate-border p-3 rounded-xl shadow-sm flex flex-col">
               <nav className="flex flex-col space-y-1">
                 {SECTIONS.map((section) => (
                   <button
