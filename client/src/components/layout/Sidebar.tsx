@@ -84,13 +84,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  {/* Brand */}
  <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
  <NavLink to="/dashboard" className="flex items-center gap-3 w-full" title={collapsed ? 'HR Portal' : undefined}>
- <div className="h-9 w-9 bg-accent-700 rounded-lg flex items-center justify-center shrink-0 text-white shadow-sm">
- <ClipboardCheck className="h-5 w-5" />
- </div>
- <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
- <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">HR Portal</span>
- </div>
- </NavLink>
+          <div className={cn("flex items-center justify-center shrink-0 transition-all", collapsed ? "h-10 w-10" : "h-12 w-12")}>
+            <img src="/lohitha-logo.png" alt="Sri Lohitha Logo" className="w-full h-full object-contain drop-shadow-sm" />
+          </div>
+          <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
+            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">HR Portal</span>
+          </div>
+        </NavLink>
  </div>
 
  
