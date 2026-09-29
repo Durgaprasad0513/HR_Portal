@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { authApi } from '@/api/auth';
 import toast from 'react-hot-toast';
-import { Briefcase } from 'lucide-react';
+
 import { AnimatedForm } from '@/components/ui/modern-animated-sign-in';
 
 export default function LoginPage() {
@@ -70,9 +70,9 @@ export default function LoginPage() {
  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent dark:from-white/5 opacity-50 pointer-events-none"></div>
  
  <div className="text-center mb-8 relative z-10">
- <div className="mx-auto bg-accent-500 rounded-lg w-12 h-12 flex items-center justify-center mb-6 shadow-md">
- <Briefcase className="w-7 h-7 text-white" aria-hidden="true" />
- </div>
+ <div className="mx-auto w-16 h-16 flex items-center justify-center mb-6">
+              <img src="/lohitha-logo.png" alt="Sri Lohitha Logo" className="w-full h-full object-contain drop-shadow-md" />
+            </div>
  </div>
  <div className="relative z-10">
  <AnimatedForm
