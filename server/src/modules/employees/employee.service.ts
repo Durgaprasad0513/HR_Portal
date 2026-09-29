@@ -217,12 +217,24 @@ export class EmployeeService {
       updateData.managerId = data.managerId || null;
     }
 
-    const employee = await prisma.employee.update({
-      where: { id },
-      data: updateData,
-      include: {
-        department: { select: { id: true, name: true } },
-      },
+    const employee = await prisma.$transaction(async (tx) => {
+      const updatedEmp = await tx.employee.update({
+        where: { id },
+        data: updateData,
+        include: {
+          department: { select: { id: true, name: true } },
+        },
+      });
+
+      // Sync email to user account if it was changed
+      if (data.email && beforeUpdate?.email !== data.email) {
+        await tx.user.updateMany({
+          where: { employeeId: id },
+          data: { email: data.email }
+        });
+      }
+
+      return updatedEmp;
     });
 
     
