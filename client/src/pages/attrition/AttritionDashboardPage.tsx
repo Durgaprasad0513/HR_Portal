@@ -38,7 +38,7 @@ const initialFilters: AttritionFilters = {
   employmentType: '',
 };
 
-const chartCardClass = 'rounded-2xl border border-slate-border bg-surface p-5 shadow-sm sm:p-6';
+const chartCardClass = 'rounded-2xl border border-slate-800 bg-surface p-5 shadow-sm sm:p-6';
 
 function formatPeriodDate(value?: string) {
   if (!value) return '';
@@ -65,7 +65,7 @@ function InsightCard({
   footer?: ReactNode;
 }) {
   return (
-    <article className="min-w-0 rounded-2xl border border-slate-border bg-surface p-5 shadow-sm">
+    <article className="min-w-0 rounded-2xl border border-slate-800 bg-surface p-5 shadow-sm">
       <div className="flex items-start gap-3">
         <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
           {icon}
@@ -154,7 +154,7 @@ export default function AttritionDashboardPage() {
         </div>
       </header>
 
-      <section className="rounded-2xl border border-slate-border bg-surface p-4 shadow-sm sm:p-5" aria-label="Attrition filters">
+      <section className="rounded-2xl border border-slate-800 bg-surface p-4 shadow-sm sm:p-5" aria-label="Attrition filters">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-300">
@@ -172,7 +172,7 @@ export default function AttritionDashboardPage() {
                 aria-label="Filter by reporting period"
                 value={filters.periodMonths}
                 onChange={(event) => updateFilter('periodMonths', event.target.value)}
-                className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                className="mt-1 block h-10 w-full rounded-lg border border-slate-800 bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
               >
                 <option value={12}>Last 12 months</option>
                 <option value={6}>Last 6 months</option>
@@ -185,7 +185,7 @@ export default function AttritionDashboardPage() {
                 aria-label="Filter by department"
                 value={filters.department}
                 onChange={(event) => updateFilter('department', event.target.value)}
-                className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                className="mt-1 block h-10 w-full rounded-lg border border-slate-800 bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
               >
                 <option value="">All departments</option>
                 {filterOptions.departments.map((option: string) => <option key={option} value={option}>{option}</option>)}
@@ -197,7 +197,7 @@ export default function AttritionDashboardPage() {
                 aria-label="Filter by location"
                 value={filters.location}
                 onChange={(event) => updateFilter('location', event.target.value)}
-                className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                className="mt-1 block h-10 w-full rounded-lg border border-slate-800 bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
               >
                 <option value="">All locations</option>
                 {filterOptions.locations.map((option: string) => <option key={option} value={option}>{option}</option>)}
@@ -209,7 +209,7 @@ export default function AttritionDashboardPage() {
                 aria-label="Filter by employment type"
                 value={filters.employmentType}
                 onChange={(event) => updateFilter('employmentType', event.target.value)}
-                className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                className="mt-1 block h-10 w-full rounded-lg border border-slate-800 bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
               >
                 <option value="">All employment types</option>
                 {filterOptions.employmentTypes.map((option: string) => <option key={option} value={option}>{option}</option>)}

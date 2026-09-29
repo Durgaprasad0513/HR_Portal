@@ -197,7 +197,7 @@ function UserAccountsTab() {
           aria-label="Filter users by role"
           value={roleFilter}
           onChange={e => setRoleFilter(e.target.value)}
-          className="py-2 px-3 bg-surface border border-slate-border rounded-lg text-sm focus:outline-none"
+          className="py-2 px-3 bg-surface border border-slate-800 rounded-lg text-sm focus:outline-none"
         >
           <option value="">All Roles</option>
           {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
@@ -205,7 +205,7 @@ function UserAccountsTab() {
       </div>
 
       {isLoading ? <div className="py-12"><LoadingSpinner /></div> : (
-        <div className="bg-surface rounded-xl border border-slate-border overflow-hidden">
+        <div className="bg-surface rounded-xl border border-slate-800 overflow-hidden">
           <p className="border-b border-gray-100 px-4 py-2 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400 sm:hidden">
             Scroll horizontally to reach every account action.
           </p>
@@ -347,7 +347,7 @@ export default function RoleManagementPage() {
             <Lock className="w-4 h-4 flex-shrink-0" />
             ADMIN role permissions are locked (always full access). Changes to other roles take effect on the user&apos;s next page load.
           </div>
-          <div className="bg-surface rounded-xl border border-slate-border overflow-hidden">
+          <div className="bg-surface rounded-xl border border-slate-800 overflow-hidden">
               <PermissionsMatrix />
           </div>
         </div>

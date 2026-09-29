@@ -616,7 +616,7 @@ export default function EmployeeFormPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               A login account has been automatically created for this employee. Please share these credentials securely.
             </p>
-            <div className="bg-surface p-4 rounded-lg border border-slate-border space-y-3">
+            <div className="bg-surface p-4 rounded-lg border border-slate-800 space-y-3">
               <div>
                 <p className="text-xs text-gray-500 uppercase font-medium">Email</p>
                 <p className="font-mono text-sm font-semibold">{credentialsModal.email}</p>
