@@ -147,7 +147,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 
           {/* Custom Dropdown Menu */}
           {isOpen && (
-            <div className="absolute z-50 w-full mt-1 bg-surface border border-slate-800 rounded-md shadow-lg max-h-60 overflow-auto py-1 ring-1 ring-black ring-opacity-5">
+            <div className="absolute z-50 w-full mt-1 bg-surface border border-slate-border rounded-md shadow-lg max-h-60 overflow-auto py-1 ring-1 ring-black ring-opacity-5">
               {options.map((opt, i) => (
                 <div
                   key={i}

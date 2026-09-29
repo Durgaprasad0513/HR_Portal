@@ -114,7 +114,7 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
 
           {/* Calendar Popover */}
           {isOpen && !disabled && (
-            <div className="absolute z-50 mt-1 left-0 shadow-xl border border-slate-800 rounded-xl overflow-hidden bg-surface animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute z-50 mt-1 left-0 shadow-xl border border-slate-border rounded-xl overflow-hidden bg-surface animate-in fade-in zoom-in-95 duration-100">
               <Calendar
                 value={selectedDate}
                 onChange={handleDateSelect}

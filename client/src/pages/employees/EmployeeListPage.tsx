@@ -105,7 +105,7 @@ export default function EmployeeListPage() {
                 tabIndex={0}
                 aria-pressed={isSelected}
                 aria-label={`Filter employees by ${dept.name}`}
-                className={`bg-surface rounded-xl shadow-sm border ${isSelected ? 'border-accent-500 ring-1 ring-accent-500' : 'border-slate-800'} p-3 xl:p-5 cursor-pointer`}
+                className={`bg-surface rounded-xl shadow-sm border ${isSelected ? 'border-accent-500 ring-1 ring-accent-500' : 'border-slate-border'} p-3 xl:p-5 cursor-pointer`}
                 onClick={() => setDepartmentId(dept.id === departmentId ? '' : dept.id)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
@@ -148,7 +148,7 @@ export default function EmployeeListPage() {
           
           <Select 
             aria-label="Filter employees by office"
-            className="px-3 py-2 bg-surface border border-slate-800 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+            className="px-3 py-2 bg-surface border border-slate-border rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           >
@@ -159,7 +159,7 @@ export default function EmployeeListPage() {
           
           <Select 
             aria-label="Filter employees by status"
-            className="px-3 py-2 bg-surface border border-slate-800 rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+            className="px-3 py-2 bg-surface border border-slate-border rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >

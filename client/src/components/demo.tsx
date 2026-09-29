@@ -49,7 +49,7 @@ export default function SidebarDemo() {
   ];
 
   return (
-    <div className="p-8 max-w-sm bg-surface rounded-xl border border-slate-800 shadow-sm m-4">
+    <div className="p-8 max-w-sm bg-surface rounded-xl border border-slate-border shadow-sm m-4">
       <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 pl-4">Menu</h3>
       <AnimatedRadio
         options={sidebarOptions}
