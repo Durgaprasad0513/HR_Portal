@@ -138,16 +138,30 @@ export class EmployeeService {
   async create(currentUser: CurrentUser, data: CreateEmployeeInput, reqContext: { ipAddress?: string } = {}) {
     const { dateOfBirth, joiningDate, ...restData } = data;
     
-    const employee = await prisma.employee.create({
-      data: {
-        ...restData as any,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-        joiningDate: new Date(joiningDate),
-      },
-      include: {
-        department: { select: { id: true, name: true } },
-      },
-    });
+    let employee;
+    try {
+      employee = await prisma.employee.create({
+        data: {
+          ...restData as any,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+          joiningDate: new Date(joiningDate),
+        },
+        include: {
+          department: { select: { id: true, name: true } },
+        },
+      });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        const target = Array.isArray(error.meta?.target) ? error.meta.target.join(',') : (error.meta?.target || '');
+        if (target.includes('email')) {
+          throw new Error('This email address is already in use by another employee.');
+        }
+        if (target.includes('employeeCode')) {
+          throw new Error('This Employee ID is already in use.');
+        }
+      }
+      throw error;
+    }
 
 
     
