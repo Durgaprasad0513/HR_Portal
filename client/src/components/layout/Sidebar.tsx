@@ -186,7 +186,7 @@ function renderNavItem(
             "flex w-full items-center rounded-lg h-10 text-sm font-medium transition-all duration-200 group border-l-[3px]",
             collapsed ? "justify-center px-0" : "px-3",
             isActive
-              ? "text-accent-700 bg-accent-50 border-accent-700 dark:bg-accent-900/20 dark:text-accent-300 dark:border-accent-400"
+              ? "text-accent-700 bg-accent-500/10 border-accent-700 dark:bg-accent-400/10 dark:text-accent-300 dark:border-accent-400"
               : "text-slate-700 dark:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
           )}
         >
@@ -229,7 +229,7 @@ function renderNavItem(
                     "flex items-center gap-3 rounded-lg h-9 text-sm transition-all duration-200 border-l-[3px]",
                     collapsed ? "justify-center px-0" : "px-3",
                     childIsActive
-                      ? "text-accent-700 font-semibold border-accent-700 bg-accent-50 dark:bg-accent-900/20 dark:text-accent-300 dark:border-accent-400"
+                      ? "text-accent-700 font-semibold border-accent-700 bg-accent-500/10 dark:bg-accent-400/10 dark:text-accent-300 dark:border-accent-400"
                       : "text-slate-700 dark:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                   )}
                 >
@@ -256,7 +256,7 @@ function renderNavItem(
         "flex items-center rounded-lg h-10 text-sm font-medium transition-all duration-200 group relative border-l-[3px]",
         collapsed ? "justify-center px-0" : "px-3",
         isActive
-          ? "text-accent-700 bg-accent-50 border-accent-700 dark:bg-accent-900/20 dark:text-accent-300 dark:border-accent-400"
+          ? "text-accent-700 bg-accent-500/10 border-accent-700 dark:bg-accent-400/10 dark:text-accent-300 dark:border-accent-400"
           : "text-slate-700 dark:text-slate-200 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
       )}
     >
