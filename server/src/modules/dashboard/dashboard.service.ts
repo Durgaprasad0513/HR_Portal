@@ -168,6 +168,9 @@ export class DashboardService {
       travel: {
         pendingApprovals: await prisma.travelRequest.count({ where: { approvalStatus: 'APPROVAL_PENDING', ...(isAdmin ? {} : isManager ? { employee: { managerId: currentUser.employeeId! } } : { employeeId: currentUser.employeeId! }) } })
       },
+      expenses: {
+        pendingApprovals: await prisma.officeExpense.count({ where: { status: 'PENDING', ...(isAdmin ? {} : isManager ? { submittedBy: { managerId: currentUser.employeeId! } } : { submittedById: currentUser.employeeId! }) } })
+      },
       assets: {
         assigned: isAdmin ? await prisma.asset.count({ where: { assignedEmployeeId: { not: null } } }) : await prisma.asset.count({ where: { assignedEmployeeId: currentUser.employeeId! } }),
         total: isAdmin ? await prisma.asset.count() : 0

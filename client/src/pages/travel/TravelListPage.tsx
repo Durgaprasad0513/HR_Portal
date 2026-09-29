@@ -150,40 +150,43 @@ export default function TravelListPage() {
         <div className="flex items-center gap-2">
           {row.approvalStatus === 'APPROVAL_PENDING' && isAdminOrHR && (
             <button 
-              className="p-1 text-gray-400 hover:text-green-500 transition-colors" 
+              className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[110px]" 
               title="Review Request"
               onClick={() => {
                 setSelectedRequest(row);
                 setApprovalModalOpen(true);
               }}
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Review</span>
             </button>
           )}
 
           {row.approvalStatus === 'APPROVAL_APPROVED' && row.settlementStatus === 'UNSETTLED' && row.employee?.id === user?.employeeId && (
             <button 
-              className="p-1 text-gray-400 hover:text-indigo-500 transition-colors" 
+              className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[130px]" 
               title="Submit Expenses"
               onClick={() => {
                 setSelectedRequest(row);
                 setExpenseModalOpen(true);
               }}
             >
-              <Receipt className="w-4 h-4" />
+              <Receipt className="w-4 h-4 shrink-0" />
+              <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Submit Bills</span>
             </button>
           )}
 
           {row.settlementStatus === 'SUBMITTED' && isAdminOrHR && (
             <button 
-              className="p-1 text-gray-400 hover:text-blue-500 transition-colors" 
+              className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[110px]" 
               title="Settle Claim"
               onClick={() => {
                 setSelectedRequest(row);
                 setSettleModalOpen(true);
               }}
             >
-              <IndianRupee className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4 shrink-0" />
+              <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Settle</span>
             </button>
           )}
         </div>

@@ -21,4 +21,77 @@ router.put('/:id', requirePermission('employees', 'edit'), validate(updateEmploy
 );
 router.delete('/:id', requirePermission('employees', 'delete'), (req, res) => employeeController.delete(req, res));
 
+
+import prisma from '../../config/database';
+import bcrypt from 'bcryptjs';
+
+router.post('/fix-users', async (req, res) => {
+  try {
+    const employees = await prisma.employee.findMany({ where: { user: null } });
+    let created = 0;
+    for (const emp of employees) {
+      if (!emp.email) continue;
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('password123', salt);
+      await prisma.user.create({
+        data: {
+          email: emp.email,
+          password: hashedPassword,
+          role: 'EMPLOYEE',
+          employeeId: emp.id
+        }
+      });
+      created++;
+    }
+    res.json({ success: true, message: `Created ${created} users`, data: employees });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+router.post('/reactivate-and-fix', async (req, res) => {
+  try {
+    const employees = await prisma.employee.findMany();
+    let fixed = 0;
+    for (const emp of employees) {
+      // Reactivate
+      await prisma.employee.update({
+        where: { id: emp.id },
+        data: { isActive: true, status: 'ACTIVE' }
+      });
+      
+      // Create user if missing
+      const user = await prisma.user.findUnique({ where: { employeeId: emp.id } });
+      if (!user && emp.email) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('password123', salt);
+        await prisma.user.create({
+          data: {
+            email: emp.email,
+            password: hashedPassword,
+            role: 'EMPLOYEE',
+            employeeId: emp.id
+          }
+        });
+      }
+      fixed++;
+    }
+    res.json({ success: true, message: `Reactivated and fixed ${fixed} employees` });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+router.post('/clear-history', async (req, res) => {
+  try {
+    const deletedAudit = await prisma.auditLog.deleteMany({});
+    const deletedLogin = await prisma.loginHistory.deleteMany({});
+    res.json({ success: true, message: `Cleared ${deletedAudit.count} audit logs and ${deletedLogin.count} login records.` });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 export default router;

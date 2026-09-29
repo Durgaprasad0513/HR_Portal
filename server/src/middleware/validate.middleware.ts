@@ -14,6 +14,7 @@ export const validate = (schema: ZodSchema) => {
           field: e.path.join('.'),
           message: e.message,
         }));
+        console.error('Validation Error:', errors);
         sendError(res, 'Validation failed', 400, errors);
       } else {
         sendError(res, 'Validation failed', 400, [{ field: 'unknown', message: error.message }]);
@@ -35,6 +36,7 @@ export const validateRequest = (schemas: { body?: ZodSchema; query?: ZodSchema; 
           field: e.path.join('.'),
           message: e.message,
         }));
+        console.error('Validation Error:', errors);
         sendError(res, 'Validation failed', 400, errors);
       } else {
         sendError(res, 'Validation failed', 400, [{ field: 'unknown', message: error.message }]);
