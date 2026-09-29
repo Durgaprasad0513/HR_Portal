@@ -243,6 +243,14 @@ export default function EmployeeDetailPage() {
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Working Date</p>
                       <p className="font-medium text-navy-900 dark:text-white">{emp.lastWorkingDate ? formatDate(emp.lastWorkingDate) : 'N/A'}</p>
                     </div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Grade</p><p className="font-medium text-navy-900 dark:text-white">{emp.grade || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Qualification</p><p className="font-medium text-navy-900 dark:text-white">{emp.qualification || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Experience (Years)</p><p className="font-medium text-navy-900 dark:text-white">{emp.experience || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Probation Period (Months)</p><p className="font-medium text-navy-900 dark:text-white">{emp.probationPeriod || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Notice Period (Days)</p><p className="font-medium text-navy-900 dark:text-white">{emp.noticePeriod || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Resignation Date</p><p className="font-medium text-navy-900 dark:text-white">{emp.resignationDate ? formatDate(emp.resignationDate) : 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Exit Type</p><p className="font-medium text-navy-900 dark:text-white">{emp.exitType || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Exit Reason</p><p className="font-medium text-navy-900 dark:text-white">{emp.exitReason || 'N/A'}</p></div>
                     {emp.resignationDate && (
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Resignation Date</p>
@@ -288,6 +296,12 @@ export default function EmployeeDetailPage() {
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">IFSC Code</p>
                       <p className="font-medium text-navy-900 dark:text-white">{emp.ifscCode || 'N/A'}</p>
                     </div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">PAN Number</p><p className="font-medium text-navy-900 dark:text-white">{emp.panNumber || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Aadhaar Number</p><p className="font-medium text-navy-900 dark:text-white">{emp.aadhaarNumber || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">PF Number</p><p className="font-medium text-navy-900 dark:text-white">{emp.pfNumber || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">UAN Number</p><p className="font-medium text-navy-900 dark:text-white">{emp.uanNumber || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">ESI Number</p><p className="font-medium text-navy-900 dark:text-white">{emp.esiNumber || 'N/A'}</p></div>
+                    <div className="md:col-span-3"><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Statutory Remarks</p><p className="font-medium text-navy-900 dark:text-white">{emp.statutoryRemarks || 'N/A'}</p></div>
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">PF Number</p>
                       <p className="font-medium text-navy-900 dark:text-white">{emp.pfNumber || 'N/A'}</p>

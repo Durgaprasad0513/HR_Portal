@@ -26,7 +26,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single('photo'), async (req, res) => {
   try {
-    const employeeId = req.params.id;
+    const employeeId = req.params.id as string;
     const file = req.file;
     if (!file) {
       return res.status(400).json({ success: false, message: 'No photo uploaded' });
