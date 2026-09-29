@@ -136,28 +136,13 @@ export class EmployeeService {
   }
 
   async create(currentUser: CurrentUser, data: CreateEmployeeInput, reqContext: { ipAddress?: string } = {}) {
+    const { dateOfBirth, joiningDate, ...restData } = data;
+    
     const employee = await prisma.employee.create({
       data: {
-        employeeCode: data.employeeCode,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-        gender: data.gender as any,
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        zipCode: data.zipCode,
-        country: data.country,
-        joiningDate: new Date(data.joiningDate),
-        designation: data.designation,
-        salary: data.salary,
-        departmentId: data.departmentId,
-        managerId: data.managerId,
-        status: data.status ? (data.status as any) : undefined,
-        employmentType: data.employmentType as any,
-        location: data.location,
+        ...restData as any,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+        joiningDate: new Date(joiningDate),
       },
       include: {
         department: { select: { id: true, name: true } },
