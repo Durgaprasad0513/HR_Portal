@@ -228,7 +228,7 @@ export default function EmployeeFormPage() {
                     onChange={handleChange}
                   >
                     <option value="">Select Status</option>
-                    <option value="UNMARRIED">Unmarried</option>
+                    <option value="SINGLE">Unmarried</option>
                     <option value="MARRIED">Married</option>
                     <option value="DIVORCED">Divorced</option>
                     <option value="WIDOWED">Widowed</option>
