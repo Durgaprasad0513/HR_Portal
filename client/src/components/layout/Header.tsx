@@ -127,7 +127,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
             </Button>
             
             {notifOpen && (
-              <div id="notifications-panel" className="absolute right-0 top-10 mt-2 w-80 rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-border">
+              <div id="notifications-panel" className="absolute right-0 top-10 mt-2 w-80 rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-800">
                 <div className="px-4 py-3 border-b border-slate-border font-semibold text-sm text-navy-900 dark:text-white flex justify-between">
                   Notifications
                   <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{unreadCount} new</span>
@@ -181,7 +181,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
           </button>
 
           {dropdownOpen && (
-            <div id="user-menu" className="absolute right-0 top-10 mt-2 w-48 rounded-md bg-surface py-1 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-border">
+            <div id="user-menu" className="absolute right-0 top-10 mt-2 w-48 rounded-md bg-surface py-1 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-800">
               <div className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400 border-b border-slate-border">
                 Signed in as {user?.role}
               </div>

@@ -98,7 +98,7 @@ export default function DashboardPage() {
       <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Active Employees / Today's Attendance */}
-          <div className="relative bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-md transition-all">
+          <div className="relative bg-surface rounded-xl shadow-sm border border-slate-800 p-5 hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-sm font-medium text-text-muted mb-1">Active employees</p>
@@ -134,7 +134,7 @@ export default function DashboardPage() {
 
             {/* Absent list dropdown */}
             {showAbsent && (stats.absentEmployeesList?.length ?? 0) > 0 && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-surface rounded-xl shadow-xl border border-slate-border z-50 overflow-hidden">
+              <div className="absolute top-full left-0 mt-2 w-64 bg-surface rounded-xl shadow-xl border border-slate-800 z-50 overflow-hidden">
                 <div className="p-3 bg-rose-50 dark:bg-rose-900/20 border-b border-slate-border">
                   <p className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">On Leave Today</p>
                 </div>
@@ -154,14 +154,14 @@ export default function DashboardPage() {
               </div>
             )}
             {showAbsent && (stats.absentEmployeesList?.length ?? 0) === 0 && (
-              <div className="absolute top-full left-0 mt-2 w-52 bg-surface rounded-xl shadow-xl border border-slate-border z-50 p-4 text-center">
+              <div className="absolute top-full left-0 mt-2 w-52 bg-surface rounded-xl shadow-xl border border-slate-800 z-50 p-4 text-center">
                 <p className="text-xs text-text-muted">No employees on approved leave today.</p>
               </div>
             )}
           </div>
 
           {/* Attrition */}
-          <Link to={isAdminOrHR ? "/dashboard/attrition" : "#"} className={`block bg-surface rounded-xl shadow-sm border border-slate-border p-5 ${isAdminOrHR ? 'hover:shadow-md transition-all group' : ''}`}>
+          <Link to={isAdminOrHR ? "/dashboard/attrition" : "#"} className={`block bg-surface rounded-xl shadow-sm border border-slate-800 p-5 ${isAdminOrHR ? 'hover:shadow-md transition-all group' : ''}`}>
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-sm font-medium text-text-muted mb-1">Employee attrition</p>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
           </Link>
 
           {/* Open Vacancies */}
-          <Link to="/recruitment" className="block bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-md transition-all group">
+          <Link to="/recruitment" className="block bg-surface rounded-xl shadow-sm border border-slate-800 p-5 hover:shadow-md transition-all group">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-sm font-medium text-text-muted mb-1">Open vacancies</p>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
           </Link>
 
           {/* Reviews Completed */}
-          <Link to="/performance" className="block bg-surface rounded-xl shadow-sm border border-slate-border p-5 hover:shadow-md transition-all group">
+          <Link to="/performance" className="block bg-surface rounded-xl shadow-sm border border-slate-800 p-5 hover:shadow-md transition-all group">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-sm font-medium text-text-muted mb-1">Reviews completed</p>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
           <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
               {/* Open Positions */}
-              <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
+              <div className="bg-surface rounded-xl border border-slate-800 p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-text-heading flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-accent-600" /> Open Positions
@@ -253,7 +253,7 @@ export default function DashboardPage() {
               </div>
   
               {/* Interview Scheduling */}
-              <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
+              <div className="bg-surface rounded-xl border border-slate-800 p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-text-heading flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-accent-600" /> Interview Scheduling
@@ -314,7 +314,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-1 space-y-8">
           
           {/* 2. Needs Attention */}
-          <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden flex flex-col">
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-800 overflow-hidden flex flex-col">
             <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
               <h3 className="font-bold text-text-heading flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-orange-500" />
@@ -357,7 +357,7 @@ export default function DashboardPage() {
 
           {/* Workforce Trend Chart (Only for HR/Admin) */}
           {isAdminOrHR && joinExitTrend.length > 0 && (
-            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
+            <div className="bg-surface rounded-xl shadow-sm border border-slate-800 p-5">
               <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Workforce Trend (6 Mo)</h3>
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -392,7 +392,7 @@ export default function DashboardPage() {
 
         {/* Right Column: Module Overview Table */}
         <div className="lg:col-span-2">
-          <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
+          <div className="bg-surface rounded-xl shadow-sm border border-slate-800 overflow-hidden">
             <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
               <h3 className="font-bold text-text-heading flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-500" />

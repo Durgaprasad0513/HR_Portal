@@ -16,7 +16,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
   const titleId = useId();
 
   return (
-    <div className={cn("flex flex-col items-center justify-center p-8 text-center bg-surface border border-slate-border border-dashed rounded-xl", className)} role="status" aria-labelledby={titleId}>
+    <div className={cn("flex flex-col items-center justify-center p-8 text-center bg-surface border border-slate-800 border-dashed rounded-xl", className)} role="status" aria-labelledby={titleId}>
       <div className="w-12 h-12 bg-surface rounded-full flex items-center justify-center mb-4" aria-hidden="true">
         <Icon className="w-6 h-6 text-gray-400 dark:text-gray-500" />
       </div>

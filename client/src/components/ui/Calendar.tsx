@@ -120,7 +120,7 @@ export function Calendar({ value, onChange, className }: CalendarProps) {
   };
 
   return (
-    <div className={cn("p-4 bg-surface border border-slate-border rounded-xl shadow-sm inline-block select-none", className)}>
+    <div className={cn("p-4 bg-surface border border-slate-800 rounded-xl shadow-sm inline-block select-none", className)}>
       {renderHeader()}
       {renderDays()}
       {renderCells()}
