@@ -79,10 +79,10 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
  return (
  <aside aria-label="Primary navigation" className={cn(
- "bg-canvas text-slate-700 dark:text-slate-300 flex flex-col h-full w-full border-r border-slate-border dark:border-slate-border transition-all duration-300 ease-in-out font-sans overflow-hidden"
+ "bg-canvas text-slate-700 dark:text-slate-300 flex flex-col h-full w-full  transition-all duration-300 ease-in-out font-sans overflow-hidden"
  )}>
  {/* Brand */}
- <div className={cn("h-[72px] flex items-center shrink-0 border-b border-slate-border dark:border-slate-border", collapsed ? "justify-center" : "px-6")}>
+ <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
  <NavLink to="/dashboard" className="flex items-center gap-3 w-full" title={collapsed ? 'HR Portal' : undefined}>
  <div className="h-9 w-9 bg-accent-700 rounded-lg flex items-center justify-center shrink-0 text-white shadow-sm">
  <ClipboardCheck className="h-5 w-5" />

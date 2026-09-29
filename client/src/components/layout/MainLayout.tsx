@@ -101,7 +101,8 @@ export default function MainLayout() {
  </div>
  </div>
 
- <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
+ <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface lg:rounded-l-[2rem] lg:border-l lg:border-slate-border shadow-[-4px_0_24px_-8px_rgba(0,0,0,0.1)] dark:shadow-[-4px_0_24px_-8px_rgba(0,0,0,0.5)]">
+
  <Header
  onMenuClick={() => setSidebarOpen(!sidebarOpen)}
  menuOpen={sidebarOpen}
