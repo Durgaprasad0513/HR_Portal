@@ -43,5 +43,13 @@ export const employeesApi = {
   verifyDocument: async (documentId: string) => {
     const { data } = await apiClient.put<ApiResponse<any>>(`/employees/documents/${documentId}/verify`);
     return data;
+  },
+  uploadPhoto: async (employeeId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    const { data } = await apiClient.post<ApiResponse<any>>(`/employees/${employeeId}/photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
   }
 };
