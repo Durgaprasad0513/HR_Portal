@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
-import { ArrowLeft, FileText, CheckCircle2, Upload, Trash2 } from 'lucide-react';
+import { ArrowLeft, FileText, CheckCircle2, Upload, Trash2, Camera, User } from 'lucide-react';
 import { DatePicker } from '@/components/ui/DatePicker';
 
 export default function EmployeeFormPage() {
@@ -89,14 +89,30 @@ export default function EmployeeFormPage() {
 
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [credentialsModal, setCredentialsModal] = useState<{email: string, password: string} | null>(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (isEdit && empData?.data?.profilePhoto) {
+      setProfilePhotoUrl(empData.data.profilePhoto);
+    }
+  }, [isEdit, empData]);
 
   const mutation = useMutation({
     mutationFn: (data: typeof formData) => isEdit ? employeesApi.update({ id: id!, ...data } as any) : employeesApi.create(data as any),
     onSuccess: async (res) => {
       // Handle the new response format for creation
       const employeeObj = !isEdit && (res?.data as any)?.employee ? (res.data as any).employee : res?.data;
-      const empId = employeeObj?.id;
+      const empId = isEdit ? id : employeeObj?.id;
       
+      if (photoFile && empId) {
+        try {
+          await employeesApi.uploadPhoto(empId, photoFile);
+        } catch (e) {
+          toast.error('Failed to upload profile photo');
+        }
+      }
+
       if (!isEdit && pendingFiles.length > 0 && empId) {
         try {
           await Promise.all(pendingFiles.map(file => {
@@ -209,6 +225,34 @@ export default function EmployeeFormPage() {
             <CardTitle>Personal Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex flex-col items-center justify-center mb-6">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full border-4 border-slate-100 dark:border-slate-800 overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                  {profilePhotoUrl ? (
+                    <img src={profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-12 h-12 text-slate-400" />
+                  )}
+                </div>
+                <label htmlFor="photo-upload" className="absolute bottom-0 right-0 p-1.5 bg-primary-600 rounded-full text-white cursor-pointer hover:bg-primary-700 transition-colors shadow-sm">
+                  <Camera className="w-4 h-4" />
+                </label>
+                <input 
+                  id="photo-upload" 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setPhotoFile(file);
+                      setProfilePhotoUrl(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+              </div>
+              <span className="text-sm text-slate-500 mt-2">Profile Photo</span>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Employee Code" name="employeeCode" value={formData.employeeCode} onChange={handleChange} required />
               <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />
