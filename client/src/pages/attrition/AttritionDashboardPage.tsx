@@ -151,7 +151,7 @@ export default function AttritionDashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight text-text-heading sm:text-3xl">Employee Attrition Dashboard</h1>
           <p className="mt-2 text-sm text-text-muted">Retention and workforce movement · {periodRange}</p>
         </div>
-        <div className="w-full rounded-2xl border border-accent-200 bg-accent-50 px-5 py-3 dark:border-accent-800 dark:bg-accent-950/30 sm:w-auto">
+        <div className="w-full rounded-2xl border border-accent-200 bg-accent-50 px-5 py-3 dark:border-accent-800 dark:bg-accent-900/40 sm:w-auto">
           <span className="block text-[10px] font-bold uppercase tracking-wider text-accent-700 dark:text-accent-300">{filters.periodMonths}-mo avg headcount</span>
           <span className="mt-1 block text-2xl font-black text-accent-700 dark:text-accent-300">{Number(stats.averageStrength || 0).toFixed(1)}</span>
         </div>
@@ -306,7 +306,7 @@ export default function AttritionDashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#94a3b8" opacity={0.25} />
                 <XAxis type="number" unit="%" hide />
                 <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={110} />
-                <RechartsTooltip formatter={(value: any) => [`${value}%`, 'Attrition rate']} />
+                <RechartsTooltip cursor={{ fill: 'rgba(148,163,184,0.08)' }} formatter={(value: any) => [`${value}%`, 'Attrition rate']} />
                 <Bar dataKey="attritionRate" name="Attrition rate" fill="#f59e0b" radius={[0, 5, 5, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer> : <EmptyChartState message="No recorded exits in this scope." />}
