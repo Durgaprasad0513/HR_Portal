@@ -141,34 +141,25 @@ export default function EmployeeDetailPage() {
                 <CardHeader><CardTitle className="text-base">Basic Details</CardTitle></CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-8">
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Employee ID</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.employeeCode}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">First Name</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.firstName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Name</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.lastName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date of Birth</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.dateOfBirth ? formatDate(emp.dateOfBirth) : 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gender</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.gender || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Mobile Number</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.phone || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email Address</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.email}</p>
-                    </div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Employee ID</p><p className="font-medium text-navy-900 dark:text-white">{emp.employeeCode}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">First Name</p><p className="font-medium text-navy-900 dark:text-white">{emp.firstName}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Name</p><p className="font-medium text-navy-900 dark:text-white">{emp.lastName}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Date of Birth</p><p className="font-medium text-navy-900 dark:text-white">{emp.dateOfBirth ? formatDate(emp.dateOfBirth) : 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Gender</p><p className="font-medium text-navy-900 dark:text-white">{emp.gender || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Blood Group</p><p className="font-medium text-navy-900 dark:text-white">{emp.bloodGroup || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Marital Status</p><p className="font-medium text-navy-900 dark:text-white">{emp.maritalStatus || 'N/A'}</p></div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader><CardTitle className="text-base">Contact Information</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Work Email Address</p><p className="font-medium text-navy-900 dark:text-white">{emp.email}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Personal Email</p><p className="font-medium text-navy-900 dark:text-white">{emp.personalEmail || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Mobile Number</p><p className="font-medium text-navy-900 dark:text-white">{emp.phone || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Alternate Mobile</p><p className="font-medium text-navy-900 dark:text-white">{emp.alternateMobile || 'N/A'}</p></div>
                   </div>
                 </CardContent>
               </Card>
@@ -177,22 +168,10 @@ export default function EmployeeDetailPage() {
                 <CardHeader><CardTitle className="text-base">Address & Emergency Contact</CardTitle></CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-                    <div className="md:col-span-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Full Address</p>
-                      <p className="font-medium text-navy-900 dark:text-white">
-                        {[emp.address, emp.city, emp.state, emp.zipCode, emp.country].filter(Boolean).join(', ') || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Emergency Contact Name</p>
-                      <p className="font-medium text-navy-900 dark:text-white">{emp.emergencyContactName || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Emergency Contact Number</p>
-                      <p className="font-medium text-navy-900 dark:text-white">
-                        {emp.emergencyContactNumber || 'N/A'} {emp.emergencyContactRelation ? `(${emp.emergencyContactRelation})` : ''}
-                      </p>
-                    </div>
+                    <div className="md:col-span-2"><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Address</p><p className="font-medium text-navy-900 dark:text-white">{[emp.address, emp.city, emp.state, emp.zipCode, emp.country].filter(Boolean).join(', ') || 'N/A'}</p></div>
+                    <div className="md:col-span-2"><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Permanent Address</p><p className="font-medium text-navy-900 dark:text-white">{emp.permanentAddress || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Emergency Contact Name</p><p className="font-medium text-navy-900 dark:text-white">{emp.emergencyContactName || 'N/A'}</p></div>
+                    <div><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Emergency Contact Number</p><p className="font-medium text-navy-900 dark:text-white">{emp.emergencyContactNumber || 'N/A'} {emp.emergencyContactRelation ? `(${emp.emergencyContactRelation})` : ''}</p></div>
                   </div>
                 </CardContent>
               </Card>
