@@ -9,8 +9,7 @@ import {
   ArrowUpRight,
   Building2,
   Filter,
-  MapPin,
-  TrendingUp,
+TrendingUp,
   UserMinus,
   Users,
 } from 'lucide-react';
@@ -124,9 +123,7 @@ export default function AttritionDashboardPage() {
     ? `${formatPeriodDate(stats.reportingPeriod.start)} – ${formatPeriodDate(stats.reportingPeriod.end)}`
     : 'Selected reporting period';
 
-  const sortedLocations = useMemo(() => [...(stats.locationBreakdown || [])].sort((a: any, b: any) => b.count - a.count), [stats.locationBreakdown]);
-  const sortedDesignations = useMemo(() => [...(stats.designationBreakdown || [])].sort((a: any, b: any) => b.count - a.count), [stats.designationBreakdown]);
-
+    
   const updateFilter = (key: keyof AttritionFilters, value: string) => {
     setFilters((current) => ({
       ...current,
@@ -355,47 +352,9 @@ export default function AttritionDashboardPage() {
           </div>
         </div>
 
-        <div className={chartCardClass}>
-          <div className="mb-5 flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-text-heading">Exit locations</h2>
-              <p className="mt-1 text-xs text-text-muted">Compare concentration across offices and sites.</p>
-            </div>
-            <MapPin className="h-5 w-5 shrink-0 text-sky-600" aria-hidden="true" />
-          </div>
-          <div className="h-72 w-full">
-            {sortedLocations.length ? <ResponsiveContainer>
-              <BarChart data={sortedLocations} margin={{ top: 5, right: 0, left: -20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#94a3b8" opacity={0.25} />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
-                <RechartsTooltip cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="count" name="Exits" fill="#0ea5e9" radius={[5, 5, 0, 0]} barSize={30} />
-              </BarChart>
-            </ResponsiveContainer> : <EmptyChartState message="No recorded exits in this scope." />}
-          </div>
-        </div>
+        
 
-        <div className={chartCardClass}>
-          <div className="mb-5 flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-text-heading">Exit roles</h2>
-              <p className="mt-1 text-xs text-text-muted">Identify roles where knowledge loss may need coverage.</p>
-            </div>
-            <UserMinus className="h-5 w-5 shrink-0 text-orange-600" aria-hidden="true" />
-          </div>
-          <div className="h-72 w-full">
-            {sortedDesignations.length ? <ResponsiveContainer>
-              <BarChart layout="vertical" data={sortedDesignations} margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#94a3b8" opacity={0.25} />
-                <XAxis type="number" allowDecimals={false} hide />
-                <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={120} />
-                <RechartsTooltip cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="count" name="Exits" fill="#f97316" radius={[0, 5, 5, 0]} barSize={22} />
-              </BarChart>
-            </ResponsiveContainer> : <EmptyChartState message="No recorded exits in this scope." />}
-          </div>
-        </div>
+        
       </section>
     </div>
   );
