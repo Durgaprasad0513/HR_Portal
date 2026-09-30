@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'HR' | 'REMOVED_ROLE' | 'MANAGER' | 'EMPLOYEE';
+export type Role = 'ADMIN' | 'HR' | 'REMOVED_ROLE' | 'EMPLOYEE';
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | 'RESIGNED' | 'TERMINATED';
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 export type LeaveType = 'CASUAL' | 'SICK' | 'EARNED' | 'UNPAID' | 'MATERNITY' | 'PATERNITY';

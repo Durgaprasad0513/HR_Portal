@@ -21,7 +21,7 @@ export default function DashboardPage() {
  const navigate = useNavigate();
  const { user } = useAuth();
  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
- const isManager = user?.role === 'MANAGER';
+ const isManager = false;
  const [showAbsent, setShowAbsent] = useState(false);
  
  const [shouldAnimate] = useState(() => {
