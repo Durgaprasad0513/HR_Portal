@@ -380,38 +380,75 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <h3 className="font-bold text-text-heading text-lg">Quick Actions</h3>
             <div className="grid grid-cols-1 gap-3">
-              <Link to="/leaves" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Coffee size={20} />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">Apply Leave</h4>
-                  <p className="text-xs text-text-muted">Request time off</p>
-                </div>
-                <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-              </Link>
-              
-              <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
-                <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Plane size={20} />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">Travel Request</h4>
-                  <p className="text-xs text-text-muted">Plan business travel</p>
-                </div>
-                <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-              </Link>
+              {(() => {
+                const pendingLeaves = stats.moduleOverview?.leave?.pendingApprovals || 0;
+                const pendingTravel = stats.moduleOverview?.travel?.pendingApprovals || 0;
+                const pendingExpenses = stats.moduleOverview?.expenses?.pendingApprovals || 0;
 
-              <Link to="/office-expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
-                <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Receipt size={20} />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">Claim Expense</h4>
-                  <p className="text-xs text-text-muted">Submit bills for reimbursement</p>
-                </div>
-                <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-              </Link>
+                return (
+                  <>
+                    <Link to={pendingLeaves > 0 ? '/leaves/approvals' : '/leaves'} className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <Coffee size={20} />
+                        {pendingLeaves > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingLeaves}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingLeaves > 0 ? 'Leave Approvals' : 'Apply Leave'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingLeaves > 0 ? `${pendingLeaves} request${pendingLeaves > 1 ? 's' : ''} awaiting action` : 'Request time off'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+                    
+                    <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <Plane size={20} />
+                        {pendingTravel > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingTravel}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingTravel > 0 ? 'Travel Approvals' : 'Travel Request'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingTravel > 0 ? `${pendingTravel} request${pendingTravel > 1 ? 's' : ''} awaiting action` : 'Plan business travel'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+
+                    <Link to="/office-expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <Receipt size={20} />
+                        {pendingExpenses > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingExpenses}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingExpenses > 0 ? 'Expense Approvals' : 'Claim Expense'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingExpenses > 0 ? `${pendingExpenses} claim${pendingExpenses > 1 ? 's' : ''} awaiting action` : 'Submit bills for reimbursement'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+                  </>
+                );
+              })()}
             </div>
           </div>
 
