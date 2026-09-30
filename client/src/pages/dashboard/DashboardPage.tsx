@@ -226,44 +226,51 @@ export default function DashboardPage() {
  {isAdminOrHR && (
  <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
- {/* Open Positions */}
- <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
- <div className="flex items-center justify-between mb-4">
- <h3 className="font-semibold text-text-heading flex items-center gap-2">
- <Briefcase className="h-4 w-4 text-accent-600" /> Open Positions
+ {/* Needs Attention */}
+{/* 2. Needs Attention */}
+ <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden flex flex-col">
+ <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
+ <h3 className="font-bold text-text-heading flex items-center gap-2">
+ <AlertTriangle className="w-5 h-5 text-orange-500" />
+ Needs Attention
  </h3>
- <span className="text-xs bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 px-2 py-1 rounded-full font-medium">
- {reqData.filter((r: any) => r.status !== 'JOINED_REJECTED').length} Active
- </span>
  </div>
- <div className="space-y-1">
- {reqData.filter((r: any) => r.status !== 'JOINED_REJECTED').slice(0, 6).map((req: any) => (
- <div
- key={req.id}
- onClick={() => navigate('/recruitment')}
- className="flex items-center justify-between p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
- >
- <div className="min-w-0 flex-1">
- <p className="text-sm font-medium text-text-heading truncate group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">{req.positionTitle}</p>
- <div className="flex items-center gap-2 mt-0.5">
- <span className="text-xs text-text-muted flex items-center gap-1"><MapPin className="h-3 w-3" />{req.location}</span>
- <span className="text-xs text-text-muted">{req.department?.name}</span>
+ <div className="flex-1 p-0 flex flex-col">
+ {needsAttention.length > 0 ? (
+ <div className="divide-y divide-slate-border flex-1">
+ {needsAttention.map((item: any) => (
+ <Link key={item.id} to={item.link} className="flex flex-col gap-1 p-4 hover:bg-tint transition-colors group">
+ <div className="flex items-center justify-between mb-1">
+ <span className="text-[10px] uppercase font-bold tracking-wider text-accent-600 bg-accent-50 px-2 py-0.5 rounded-full">{item.module}</span>
+ {item.dueDate && <span className="text-xs font-medium text-rose-500">Due {formatDate(item.dueDate)}</span>}
  </div>
+ <p className="text-sm font-semibold text-text-heading group-hover:text-accent-700 transition-colors line-clamp-1">{item.title}</p>
+ <div className="flex items-center justify-between mt-2">
+ <p className="text-xs text-text-muted flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5"/> {item.action}</p>
+ <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-accent-600 transition-colors" />
  </div>
- <div className="flex items-center gap-2 ml-2 shrink-0">
- <span className="text-xs text-text-muted flex items-center gap-1"><Users className="h-3 w-3" />{req._count?.candidates || 0}</span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusClasses(req.status)}`}>{getStatusLabel(req.status)}</span>
- <ArrowRight className="h-4 w-4 text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors" />
- </div>
- </div>
+ </Link>
  ))}
- {reqData.filter((r: any) => r.status !== 'JOINED_REJECTED').length === 0 && (
- <p className="text-sm text-text-muted text-center py-6">No open positions</p>
+ </div>
+ ) : (
+ <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
+ <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3">
+ <CheckCircle className="w-6 h-6" />
+ </div>
+ <p className="font-medium text-text-heading mb-1">All caught up!</p>
+ <p className="text-sm text-text-muted">No pending approvals or urgent items.</p>
+ </div>
  )}
  </div>
+ {needsAttention.length >= 5 && (
+ <div className="p-3 border-t border-slate-border bg-tint/50 text-center">
+ <span className="text-xs font-medium text-text-muted">Showing top 5 priorities</span>
  </div>
+ )}
+ </div>
+
  
- {/* Interview Scheduling */}
+{/* Interview Scheduling */}
  <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
  <div className="flex items-center justify-between mb-4">
  <h3 className="font-semibold text-text-heading flex items-center gap-2">
@@ -324,48 +331,6 @@ export default function DashboardPage() {
  {/* Left Column: Needs Attention & Trend */}
  <div className="lg:col-span-1 space-y-8">
  
- {/* 2. Needs Attention */}
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden flex flex-col">
- <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
- <h3 className="font-bold text-text-heading flex items-center gap-2">
- <AlertTriangle className="w-5 h-5 text-orange-500" />
- Needs Attention
- </h3>
- </div>
- <div className="flex-1 p-0 flex flex-col">
- {needsAttention.length > 0 ? (
- <div className="divide-y divide-slate-border flex-1">
- {needsAttention.map((item: any) => (
- <Link key={item.id} to={item.link} className="flex flex-col gap-1 p-4 hover:bg-tint transition-colors group">
- <div className="flex items-center justify-between mb-1">
- <span className="text-[10px] uppercase font-bold tracking-wider text-accent-600 bg-accent-50 px-2 py-0.5 rounded-full">{item.module}</span>
- {item.dueDate && <span className="text-xs font-medium text-rose-500">Due {formatDate(item.dueDate)}</span>}
- </div>
- <p className="text-sm font-semibold text-text-heading group-hover:text-accent-700 transition-colors line-clamp-1">{item.title}</p>
- <div className="flex items-center justify-between mt-2">
- <p className="text-xs text-text-muted flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5"/> {item.action}</p>
- <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-accent-600 transition-colors" />
- </div>
- </Link>
- ))}
- </div>
- ) : (
- <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
- <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3">
- <CheckCircle className="w-6 h-6" />
- </div>
- <p className="font-medium text-text-heading mb-1">All caught up!</p>
- <p className="text-sm text-text-muted">No pending approvals or urgent items.</p>
- </div>
- )}
- </div>
- {needsAttention.length >= 5 && (
- <div className="p-3 border-t border-slate-border bg-tint/50 text-center">
- <span className="text-xs font-medium text-text-muted">Showing top 5 priorities</span>
- </div>
- )}
- </div>
-
  {/* Workforce Trend Chart (Only for HR/Admin) */}
  {isAdminOrHR && joinExitTrend.length > 0 && (
  <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
