@@ -249,12 +249,17 @@ export const EmployeeDashboard = () => {
           <div className="bg-surface rounded-xl border border-slate-border shadow-sm overflow-hidden">
             {recentLeaves.length > 0 ? (
               <div className="divide-y divide-slate-border">
-                {recentLeaves.map((leave: any) => (
+                {recentLeaves.map((leave: any) => {
+                  const d = new Date(leave.startDate);
+                  const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+                  const dateNum = d.getDate();
+                  
+                  return (
                   <div key={leave.id} className="p-4 flex items-center justify-between hover:bg-tint transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">{formatDate(leave.startDate).split(' ')[1]}</span>
-                        <span className="text-sm font-bold text-text-heading">{formatDate(leave.startDate).split(' ')[0]}</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">{month}</span>
+                        <span className="text-sm font-bold text-text-heading">{dateNum}</span>
                       </div>
                       <div>
                         <p className="font-bold text-sm text-text-heading">{leave.leaveType?.replace('_', ' ') || leave.leaveType}</p>
@@ -266,7 +271,7 @@ export const EmployeeDashboard = () => {
                       {leave.status}
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             ) : (
               <div className="p-10 text-center flex flex-col items-center justify-center text-slate-400">
