@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
 import { recruitmentApi } from '@/api/recruitment';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
+import { EmployeeDashboard } from './components/EmployeeDashboard';
+
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
