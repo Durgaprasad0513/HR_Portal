@@ -243,7 +243,7 @@ export const EmployeeDashboard = () => {
         <div className="md:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-text-heading text-lg">My Recent Leaves</h3>
-            <Link to="/leave" className="text-sm font-semibold text-brand-primary hover:underline">View All</Link>
+            <Link to="/leaves" className="text-sm font-semibold text-brand-primary hover:underline">View All</Link>
           </div>
           
           <div className="bg-surface rounded-xl border border-slate-border shadow-sm overflow-hidden">
@@ -257,7 +257,7 @@ export const EmployeeDashboard = () => {
                         <span className="text-sm font-bold text-text-heading">{formatDate(leave.startDate).split(' ')[0]}</span>
                       </div>
                       <div>
-                        <p className="font-bold text-sm text-text-heading">{leave.leaveType.name}</p>
+                        <p className="font-bold text-sm text-text-heading">{leave.leaveType?.replace('_', ' ') || leave.leaveType}</p>
                         <p className="text-xs text-text-muted mt-0.5">{leave.days} day(s) &bull; {leave.reason}</p>
                       </div>
                     </div>
