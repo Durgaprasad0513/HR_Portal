@@ -334,127 +334,6 @@ export default function DashboardPage() {
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
  
- {/* Left Column: Needs Attention & Trend */}
- <div className="lg:col-span-1 space-y-8">
-          {/* Attendance Trend Chart (Only for HR/Admin) */}
-          {isAdminOrHR && stats?.attendanceTrend && (
-            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
-              <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
-              <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.attendanceTrend} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorAbsent" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--slate-border)" />
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '8px', border: '1px solid var(--slate-border)', backgroundColor: 'var(--surface)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      itemStyle={{ fontSize: '12px', fontWeight: 500 }}
-                      labelStyle={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}
-                    />
-                    <Area type="monotone" name="Present" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" />
-                    <Area type="monotone" name="Absent" dataKey="absent" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorAbsent)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-
- 
- 
-
- 
-
-          
-
-          {/* Quick Actions */}
-          <div className="space-y-4">
-            <h3 className="font-bold text-text-heading text-lg">Quick Actions</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {(() => {
-                
-                const pendingTraining = stats.moduleOverview?.training?.pendingApprovals || 0;
-                const pendingTravel = stats.moduleOverview?.travel?.pendingApprovals || 0;
-                const pendingExpenses = stats.moduleOverview?.expenses?.pendingApprovals || 0;
-
-                return (
-                  <>
-                    <Link to="/training" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
-                      <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
-                        <BookOpen size={20} />
-                        {pendingTraining > 0 && (
-                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
-                            {pendingTraining}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
-                          {pendingTraining > 0 ? 'Training Approvals' : 'Training Updates'}
-                        </h4>
-                        <p className="text-xs text-text-muted">
-                          {pendingTraining > 0 ? `${pendingTraining} request${pendingTraining > 1 ? 's' : ''} awaiting action` : 'View training sessions'}
-                        </p>
-                      </div>
-                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-                    </Link>
-                    
-                    <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
-                        <Plane size={20} />
-                        {pendingTravel > 0 && (
-                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
-                            {pendingTravel}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
-                          {pendingTravel > 0 ? 'Travel Approvals' : 'Travel Request'}
-                        </h4>
-                        <p className="text-xs text-text-muted">
-                          {pendingTravel > 0 ? `${pendingTravel} request${pendingTravel > 1 ? 's' : ''} awaiting action` : 'Plan business travel'}
-                        </p>
-                      </div>
-                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-                    </Link>
-
-                    <Link to="/office-expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
-                      <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
-                        <Receipt size={20} />
-                        {pendingExpenses > 0 && (
-                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
-                            {pendingExpenses}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
-                          {pendingExpenses > 0 ? 'Expense Approvals' : 'Claim Expense'}
-                        </h4>
-                        <p className="text-xs text-text-muted">
-                          {pendingExpenses > 0 ? `${pendingExpenses} claim${pendingExpenses > 1 ? 's' : ''} awaiting action` : 'Submit bills for reimbursement'}
-                        </p>
-                      </div>
-                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
-                    </Link>
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-
-  </div>
-
  {/* Right Column: Module Overview Table */}
  <div className="lg:col-span-2">
  <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
@@ -592,6 +471,129 @@ export default function DashboardPage() {
  </div>
  </div>
  </div>
+
+ 
+
+{/* Left Column: Needs Attention & Trend */}
+ <div className="lg:col-span-1 flex flex-col gap-8 h-full">
+          {/* Attendance Trend Chart (Only for HR/Admin) */}
+          {isAdminOrHR && stats?.attendanceTrend && (
+            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
+              <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={stats.attendanceTrend} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorAbsent" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--slate-border)" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '8px', border: '1px solid var(--slate-border)', backgroundColor: 'var(--surface)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      itemStyle={{ fontSize: '12px', fontWeight: 500 }}
+                      labelStyle={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}
+                    />
+                    <Area type="monotone" name="Present" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" />
+                    <Area type="monotone" name="Absent" dataKey="absent" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorAbsent)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+ 
+ 
+
+ 
+
+          
+
+          {/* Quick Actions */}
+          <div className="space-y-4 flex-1 flex flex-col">
+            <h3 className="font-bold text-text-heading text-lg">Quick Actions</h3>
+            <div className="flex-1 flex flex-col justify-between">
+              {(() => {
+                
+                const pendingTraining = stats.moduleOverview?.training?.pendingApprovals || 0;
+                const pendingTravel = stats.moduleOverview?.travel?.pendingApprovals || 0;
+                const pendingExpenses = stats.moduleOverview?.expenses?.pendingApprovals || 0;
+
+                return (
+                  <>
+                    <Link to="/training" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <BookOpen size={20} />
+                        {pendingTraining > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingTraining}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingTraining > 0 ? 'Training Approvals' : 'Training Updates'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingTraining > 0 ? `${pendingTraining} request${pendingTraining > 1 ? 's' : ''} awaiting action` : 'View training sessions'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+                    
+                    <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <Plane size={20} />
+                        {pendingTravel > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingTravel}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingTravel > 0 ? 'Travel Approvals' : 'Travel Request'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingTravel > 0 ? `${pendingTravel} request${pendingTravel > 1 ? 's' : ''} awaiting action` : 'Plan business travel'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+
+                    <Link to="/office-expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <Receipt size={20} />
+                        {pendingExpenses > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingExpenses}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingExpenses > 0 ? 'Expense Approvals' : 'Claim Expense'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingExpenses > 0 ? `${pendingExpenses} claim${pendingExpenses > 1 ? 's' : ''} awaiting action` : 'Submit bills for reimbursement'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+  </div>
 
  </div>
  <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
