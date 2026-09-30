@@ -4,11 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { leavesApi } from '@/api/leaves';
 import { performanceApi } from '@/api/performance';
+import { assetsApi } from '@/api/assets';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 import { 
   Calendar, Clock, Plane, Receipt, User, ArrowRight,
-  CheckCircle, XCircle, AlertCircle, Coffee, Award, Star
+  CheckCircle, XCircle, AlertCircle, Coffee, Award, Star,
+  Laptop
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import clsx from 'clsx';
@@ -42,11 +44,18 @@ export const EmployeeDashboard = () => {
     enabled: !!user?.employee?.id,
   });
 
-  if (loadingBalances || loadingLeaves || loadingPerformance) {
+  const { data: assetsData, isLoading: loadingAssets } = useQuery({
+    queryKey: ['my-assets'],
+    queryFn: () => assetsApi.getAll(),
+    enabled: !!user?.employee?.id,
+  });
+
+  if (loadingBalances || loadingLeaves || loadingPerformance || loadingAssets) {
     return <div className="p-8 flex justify-center"><LoadingSpinner className="w-10 h-10" /></div>;
   }
 
   const balances = (balancesData as any)?.data || [];
+  const assets = (assetsData as any)?.data || [];
   const recentLeaves = ((myLeavesData as any)?.data || []).slice(0, 5);
   const reviews = (performanceData as any)?.data || [];
   
@@ -152,45 +161,35 @@ export const EmployeeDashboard = () => {
             </div>
           </BoxReveal>
 
-          {/* Leave Balances */}
+          {/* Assigned Assets */}
           <BoxReveal duration={0.7} disabled={!shouldAnimate}>
             <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full">
-              <h3 className="font-bold text-text-heading mb-4">Leave Balances</h3>
-              {balances.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {balances.slice(0,2).map((balance: any, index: number) => {
-                    const percentage = (balance.usedBalance / balance.totalBalance) * 100;
-                    const remaining = balance.totalBalance - balance.usedBalance;
-                    return (
-                      <div key={balance.id} className="flex flex-col items-center text-center">
-                        {/* Simple Circular Progress */}
-                        <div className="relative w-16 h-16 mb-2 flex items-center justify-center">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                            <path
-                              className="text-slate-100 dark:text-slate-800"
-                              stroke="currentColor" strokeWidth="4" fill="none"
-                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            />
-                            <path
-                              className={remaining < 3 ? "text-rose-500" : "text-emerald-500"}
-                              strokeDasharray={`${percentage}, 100`}
-                              stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round"
-                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-sm font-bold text-text-heading">{remaining}</span>
-                          </div>
-                        </div>
-                        <h3 className="text-xs font-bold text-text-heading">{balance.leaveType.code}</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-text-heading">Assigned Assets</h3>
+                <Link to="/assets" className="text-xs font-semibold text-brand-primary hover:underline">View All</Link>
+              </div>
+              
+              {assets.length > 0 ? (
+                <div className="space-y-3 overflow-y-auto max-h-[140px] pr-2 custom-scrollbar">
+                  {assets.slice(0, 3).map((asset: any) => (
+                    <div key={asset.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                      <div className="w-8 h-8 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center shrink-0">
+                        <Laptop className="w-4 h-4" />
                       </div>
-                    );
-                  })}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-text-heading truncate">{asset.assetName}</p>
+                        <p className="text-xs text-text-muted truncate">{asset.assetId} • {asset.brandModel || 'Standard'}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                  <Calendar className="w-8 h-8 text-slate-300 mb-2" />
-                  <p className="text-xs text-text-muted">No leave balances assigned to you yet.</p>
+                  <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-3">
+                    <Laptop className="w-6 h-6 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-text-heading mb-1">No Assets Assigned</p>
+                  <p className="text-xs text-text-muted">You have no active company assets.</p>
                 </div>
               )}
             </div>
