@@ -14,7 +14,7 @@ import { AreaChart, Area, BarChart, Bar, Legend, XAxis, YAxis, CartesianGrid, To
 import { 
  Users, UserMinus, Briefcase, FileText, CheckCircle, Clock, 
  ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, Receipt
-} from 'lucide-react';
+, Coffee } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 
 export default function DashboardPage() {
@@ -375,7 +375,47 @@ export default function DashboardPage() {
  
 
           
-</div>
+
+          {/* Quick Actions */}
+          <div className="space-y-4">
+            <h3 className="font-bold text-text-heading text-lg">Quick Actions</h3>
+            <div className="grid grid-cols-1 gap-3">
+              <Link to="/leaves" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Coffee size={20} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">Apply Leave</h4>
+                  <p className="text-xs text-text-muted">Request time off</p>
+                </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+              </Link>
+              
+              <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Plane size={20} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">Travel Request</h4>
+                  <p className="text-xs text-text-muted">Plan business travel</p>
+                </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+              </Link>
+
+              <Link to="/office-expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Receipt size={20} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">Claim Expense</h4>
+                  <p className="text-xs text-text-muted">Submit bills for reimbursement</p>
+                </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+              </Link>
+            </div>
+          </div>
+
+  </div>
 
  {/* Right Column: Module Overview Table */}
  <div className="lg:col-span-2">
