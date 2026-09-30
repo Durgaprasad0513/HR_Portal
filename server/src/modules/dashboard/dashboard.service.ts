@@ -163,8 +163,8 @@ export class DashboardService {
         total: totalReviews
       },
       leave: {
-        pendingApprovals: isAdmin || isManager ? await prisma.leave.count({ where: { status: 'PENDING', ...(isManager ? { employee: { managerId: currentUser.employeeId! } } : {}) } }) : 0
-      },
+          pendingApprovals: await prisma.leave.count({ where: { status: 'PENDING', ...(isAdmin ? {} : isManager ? { employee: { managerId: currentUser.employeeId! } } : { employeeId: currentUser.employeeId! }) } })
+        },
       travel: {
         pendingApprovals: await prisma.travelRequest.count({ where: { approvalStatus: 'APPROVAL_PENDING', ...(isAdmin ? {} : isManager ? { employee: { managerId: currentUser.employeeId! } } : { employeeId: currentUser.employeeId! }) } })
       },
