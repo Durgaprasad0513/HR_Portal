@@ -370,8 +370,6 @@ export default function DashboardPage() {
  </div>
  )}
 
- </div>
-
  {/* Attendance Trend Chart (Only for HR/Admin) */}
           {isAdminOrHR && stats?.attendanceTrend && (
             <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
@@ -397,7 +395,10 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Right Column: Module Overview Table */}
+          
+</div>
+
+ {/* Right Column: Module Overview Table */}
  <div className="lg:col-span-2">
  <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
  <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
