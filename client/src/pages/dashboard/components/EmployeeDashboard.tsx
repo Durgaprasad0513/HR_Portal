@@ -240,15 +240,15 @@ export const EmployeeDashboard = () => {
         </div>
 
         {/* Recent Leave Requests */}
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-text-heading text-lg">My Recent Leaves</h3>
             <Link to="/leaves" className="text-sm font-semibold text-brand-primary hover:underline">View All</Link>
           </div>
           
-          <div className="bg-surface rounded-xl border border-slate-border shadow-sm overflow-hidden">
+          <div className="bg-surface rounded-xl border border-slate-border shadow-sm overflow-hidden flex-1 flex flex-col">
             {recentLeaves.length > 0 ? (
-              <div className="divide-y divide-slate-border">
+              <div className="divide-y divide-slate-border flex-1">
                 {recentLeaves.map((leave: any) => {
                   const d = new Date(leave.startDate);
                   const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
@@ -274,7 +274,7 @@ export const EmployeeDashboard = () => {
                 )})}
               </div>
             ) : (
-              <div className="p-10 text-center flex flex-col items-center justify-center text-slate-400">
+              <div className="p-10 text-center flex flex-col items-center justify-center text-slate-400 flex-1">
                 <Calendar className="w-12 h-12 mb-3 text-slate-300" />
                 <p className="text-sm font-medium text-text-heading mb-1">No recent leaves</p>
                 <p className="text-xs">You haven't taken any time off recently.</p>
