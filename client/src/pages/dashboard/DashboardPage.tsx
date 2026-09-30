@@ -13,7 +13,7 @@ import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 import { AreaChart, Area, BarChart, Bar, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
  Users, UserMinus, Briefcase, FileText, CheckCircle, Clock, 
- ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, Receipt
+ ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, BookOpen, Receipt
 , Coffee } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 
@@ -382,7 +382,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 gap-3">
               {(() => {
                 const pendingLeaves = stats.moduleOverview?.leave?.pendingApprovals || 0;
-                const pendingTravel = stats.moduleOverview?.travel?.pendingApprovals || 0;
+                const pendingTraining = stats.moduleOverview?.training?.pendingApprovals || 0;
                 const pendingExpenses = stats.moduleOverview?.expenses?.pendingApprovals || 0;
 
                 return (
@@ -407,21 +407,21 @@ export default function DashboardPage() {
                       <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
                     </Link>
                     
-                    <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                    <Link to="/training" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
                       <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
-                        <Plane size={20} />
-                        {pendingTravel > 0 && (
+                        <BookOpen size={20} />
+                        {pendingTraining > 0 && (
                           <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
-                            {pendingTravel}
+                            {pendingTraining}
                           </span>
                         )}
                       </div>
                       <div className="flex-1">
                         <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
-                          {pendingTravel > 0 ? 'Travel Approvals' : 'Travel Request'}
+                          {pendingTraining > 0 ? 'Training Approvals' : 'Training Updates'}
                         </h4>
                         <p className="text-xs text-text-muted">
-                          {pendingTravel > 0 ? `${pendingTravel} request${pendingTravel > 1 ? 's' : ''} awaiting action` : 'Plan business travel'}
+                          {pendingTraining > 0 ? `${pendingTraining} request${pendingTraining > 1 ? 's' : ''} awaiting action` : 'View training sessions'}
                         </p>
                       </div>
                       <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />

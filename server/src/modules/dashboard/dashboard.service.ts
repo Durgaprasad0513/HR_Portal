@@ -171,6 +171,9 @@ export class DashboardService {
       expenses: {
         pendingApprovals: await prisma.officeExpense.count({ where: { status: 'PENDING', ...(isAdmin ? {} : isManager ? { submittedBy: { managerId: currentUser.employeeId! } } : { submittedById: currentUser.employeeId! }) } })
       },
+        training: {
+          pendingApprovals: isAdmin || isManager ? await prisma.training.count({ where: { status: 'PENDING' } }) : 0
+        },
       assets: {
         assigned: isAdmin ? await prisma.asset.count({ where: { assignedEmployeeId: { not: null } } }) : await prisma.asset.count({ where: { assignedEmployeeId: currentUser.employeeId! } }),
         total: isAdmin ? await prisma.asset.count() : 0

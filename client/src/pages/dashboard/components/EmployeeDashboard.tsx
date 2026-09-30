@@ -9,7 +9,7 @@ import { assetsApi } from '@/api/assets';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 import { 
-  Calendar, Clock, Plane, Receipt, User, ArrowRight,
+  Calendar, Clock, Plane, BookOpen, Receipt, User, ArrowRight,
   CheckCircle, XCircle, AlertCircle, Coffee, Award, Star,
   Laptop
 } from 'lucide-react';
@@ -214,7 +214,7 @@ export const EmployeeDashboard = () => {
               {(() => {
                 const stats = statsData || {};
                 const pendingLeaves = stats.moduleOverview?.leave?.pendingApprovals || 0;
-                const pendingTravel = stats.moduleOverview?.travel?.pendingApprovals || 0;
+                const pendingTraining = stats.moduleOverview?.training?.pendingApprovals || 0;
                 const pendingExpenses = stats.moduleOverview?.expenses?.pendingApprovals || 0;
 
                 return (
@@ -239,21 +239,21 @@ export const EmployeeDashboard = () => {
                       <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
                     </Link>
                     
-                    <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                    <Link to="/training" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
                       <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
-                        <Plane size={20} />
-                        {pendingTravel > 0 && (
+                        <BookOpen size={20} />
+                        {pendingTraining > 0 && (
                           <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
-                            {pendingTravel}
+                            {pendingTraining}
                           </span>
                         )}
                       </div>
                       <div className="flex-1">
                         <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
-                          {pendingTravel > 0 ? 'Pending Travel Requests' : 'Travel Request'}
+                          {pendingTraining > 0 ? 'Pending Training Requests' : 'Training Updates'}
                         </h4>
                         <p className="text-xs text-text-muted">
-                          {pendingTravel > 0 ? `${pendingTravel} request${pendingTravel > 1 ? 's' : ''} awaiting approval` : 'Plan business travel'}
+                          {pendingTraining > 0 ? `${pendingTraining} request${pendingTraining > 1 ? 's' : ''} awaiting approval` : 'View training sessions'}
                         </p>
                       </div>
                       <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
