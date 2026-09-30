@@ -177,6 +177,48 @@ export class DashboardService {
       }
     };
 
+    // Calculate 7-day attendance trend
+    const trendDays = 7;
+    const trendStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - trendDays + 1);
+    const trendEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    
+    const recentLeaves = await prisma.leave.findMany({
+      where: {
+        ...leaveEmpWhere,
+        status: 'APPROVED',
+        startDate: { lte: trendEndDate },
+        endDate: { gte: trendStartDate }
+      }
+    });
+
+    const attendanceTrend = [];
+    for (let i = 0; i < trendDays; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (trendDays - 1 - i));
+      const dStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const dEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+      
+      let absentOnDay = 0;
+      recentLeaves.forEach(leave => {
+         if (leave.startDate <= dEnd && leave.endDate >= dStart) {
+            absentOnDay++;
+         }
+      });
+      
+      // Assume weekend is full absent or we just show active - absent
+      const dayOfWeek = d.getDay();
+      let presentOnDay = Math.max(0, activeEmployees - absentOnDay);
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+         presentOnDay = 0; // weekends typically 0
+         absentOnDay = 0;
+      }
+      
+      attendanceTrend.push({
+         date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+         present: presentOnDay,
+         absent: absentOnDay
+      });
+    }
+
     return {
       headline: {
         activeEmployees,
@@ -194,6 +236,7 @@ export class DashboardService {
       invitedForInterview,
       selectedCandidates,
       offersAccepted,
+      attendanceTrend,
       absentEmployeesList: absentEmployees.map(l => ({
         id: l.employee.id,
         name: `${l.employee.firstName} ${l.employee.lastName}`,
