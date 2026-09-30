@@ -271,57 +271,63 @@ export default function DashboardPage() {
 
  
 {/* Interview Scheduling */}
- <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
- <div className="flex items-center justify-between mb-4">
- <h3 className="font-semibold text-text-heading flex items-center gap-2">
- <Calendar className="h-4 w-4 text-accent-600" /> Interview Scheduling
- </h3>
- <button
- onClick={() => setIsScheduleModalOpen(true)}
- className="flex items-center gap-1.5 text-xs font-semibold text-accent-600 hover:text-accent-700 bg-accent-50 hover:bg-accent-100 px-3 py-1.5 rounded-lg transition-colors"
- >
- <Plus className="h-3.5 w-3.5" /> Schedule Interview
- </button>
- </div>
- {(() => {
- const interviewStages = ['TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT'];
- const interviewReqs = reqData.filter((r: any) => interviewStages.includes(r.status));
- const stageLabels: Record<string, string> = { TELEPHONIC: 'Telephonic', HR_INTERVIEW: 'HR Round', TECHNICAL: 'Technical', MANAGEMENT: 'Management' };
- const stageBg: Record<string, string> = { TELEPHONIC: 'bg-violet-100 dark:bg-violet-900/30', HR_INTERVIEW: 'bg-purple-100 dark:bg-purple-900/30', TECHNICAL: 'bg-fuchsia-100 dark:bg-fuchsia-900/30', MANAGEMENT: 'bg-pink-100 dark:bg-pink-900/30' };
- const stageText: Record<string, string> = { TELEPHONIC: 'text-violet-700 dark:text-violet-400', HR_INTERVIEW: 'text-purple-700 dark:text-purple-400', TECHNICAL: 'text-fuchsia-700 dark:text-fuchsia-400', MANAGEMENT: 'text-pink-700 dark:text-pink-400' };
- return interviewReqs.length > 0 ? (
- <div className="space-y-1">
- {interviewReqs.map((req: any) => (
- <div
- key={req.id}
- onClick={() => navigate('/recruitment')}
- className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
- >
- <div className={`h-9 w-9 rounded-full ${stageBg[req.status]} flex items-center justify-center shrink-0`}>
- <Calendar className={`h-4 w-4 ${stageText[req.status]}`} />
- </div>
- <div className="min-w-0 flex-1">
- <p className="text-sm font-medium text-text-heading truncate group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">{req.positionTitle}</p>
- <div className="flex items-center gap-2 mt-0.5">
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${stageBg[req.status]} ${stageText[req.status]}`}>{stageLabels[req.status]}</span>
- <span className="text-xs text-text-muted flex items-center gap-1"><Users className="h-3 w-3" />{req._count?.candidates || 0} candidates</span>
- </div>
- </div>
- <ArrowRight className="h-4 w-4 text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400 shrink-0" />
- </div>
- ))}
- </div>
- ) : (
- <div className="flex flex-col items-center justify-center py-8 text-center">
- <div className="h-12 w-12 rounded-full bg-tint flex items-center justify-center mb-3">
- <Clock className="h-6 w-6 text-text-muted" />
- </div>
- <p className="text-sm font-medium text-text-heading">No interviews scheduled</p>
- <p className="text-xs text-text-muted mt-1">Requisitions in interview stages will appear here</p>
- </div>
- );
- })()}
- </div>
+        <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-text-heading flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-accent-600" /> Interview Scheduling
+            </h3>
+            <button
+              onClick={() => setIsScheduleModalOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-accent-600 hover:text-accent-700 bg-accent-50 hover:bg-accent-100 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" /> Schedule Interview
+            </button>
+          </div>
+          {(() => {
+            const upcoming = stats?.upcomingInterviews || [];
+            
+            return upcoming.length > 0 ? (
+              <div className="space-y-1">
+                {upcoming.map((candidate: any) => {
+                  const dateStr = new Date(candidate.interviewDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div
+                      key={candidate.id}
+                      onClick={() => navigate('/recruitment')}
+                      className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
+                    >
+                      <div className="h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
+                        <Users className="h-4 w-4 text-violet-700 dark:text-violet-400" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-text-heading truncate group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
+                          {candidate.candidateName}
+                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                            {candidate.interviewRound || 'Interview'}
+                          </span>
+                          <span className="text-xs text-text-muted truncate">{candidate.requisition?.positionTitle}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end shrink-0">
+                        <span className="text-xs font-semibold text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400">{dateStr}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="h-12 w-12 rounded-full bg-tint flex items-center justify-center mb-3">
+                  <Clock className="h-6 w-6 text-text-muted" />
+                </div>
+                <p className="text-sm font-medium text-text-heading">No interviews scheduled</p>
+                <p className="text-xs text-text-muted mt-1">Candidates with upcoming interviews will appear here</p>
+              </div>
+            );
+          })()}
+        </div>
  </div>
  </BoxReveal>
  )}
