@@ -54,6 +54,15 @@ export default function DashboardPage() {
 
  if (isStatsLoading) return <LoadingSpinner />;
 
+  if (!isAdminOrHR && !isManager) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="My Dashboard" description={`Welcome back, ${user?.employee?.firstName || user?.email.split('@')[0]}`} />
+        <EmployeeDashboard />
+      </div>
+    );
+  }
+
  if (statsError) {
  return (
  <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700" role="alert">
