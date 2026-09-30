@@ -59,7 +59,7 @@ export default function LeaveApplicationPage() {
   };
 
   const columns = [
-    { header: 'Leave Type', accessor: (row: any) => row.leaveType.name },
+    { header: 'Leave Type', accessor: (row: any) => row.leaveType?.replace('_', ' ') || row.leaveType },
     { header: 'Start Date', accessor: (row: any) => formatDate(row.startDate).split(' ')[0] },
     { header: 'End Date', accessor: (row: any) => formatDate(row.endDate).split(' ')[0] },
     { header: 'Days', accessor: (row: any) => row.days },
