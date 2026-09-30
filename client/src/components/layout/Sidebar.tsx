@@ -48,7 +48,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  icon: Calendar,
  children: [
  { name: 'Apply for leave', path: '/leaves', icon: Calendar },
- { name: 'Leave approval history', path: '/leaves/approvals', icon: History },
+ ...(user?.role !== 'EMPLOYEE' ? [{ name: 'Leave approval history', path: '/leaves/approvals', icon: History }] : []),
  ],
  },
  { name: 'Performance', path: '/performance', icon: Target },
