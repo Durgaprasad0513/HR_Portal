@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { leavesApi } from '@/api/leaves';
+import { performanceApi } from '@/api/performance';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 import { 
   Calendar, Clock, Plane, Receipt, User, ArrowRight,
-  CheckCircle, XCircle, AlertCircle, Coffee
+  CheckCircle, XCircle, AlertCircle, Coffee, Award, Star
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import clsx from 'clsx';
@@ -35,12 +36,22 @@ export const EmployeeDashboard = () => {
     queryFn: () => leavesApi.getMyLeaves(),
   });
 
-  if (loadingBalances || loadingLeaves) {
+  const { data: performanceData, isLoading: loadingPerformance } = useQuery({
+    queryKey: ['my-performance'],
+    queryFn: () => performanceApi.getMyReviews(),
+    enabled: !!user?.employee?.id,
+  });
+
+  if (loadingBalances || loadingLeaves || loadingPerformance) {
     return <div className="p-8 flex justify-center"><LoadingSpinner className="w-10 h-10" /></div>;
   }
 
   const balances = (balancesData as any)?.data || [];
   const recentLeaves = ((myLeavesData as any)?.data || []).slice(0, 5);
+  const reviews = (performanceData as any)?.data || [];
+  
+  // Get the most recent review if any exist
+  const latestReview = reviews.length > 0 ? reviews[reviews.length - 1] : null;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -62,7 +73,7 @@ export const EmployeeDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* ROW 1: Profile & Balances */}
+      {/* ROW 1: Profile, Performance & Balances */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Profile Snapshot */}
@@ -96,41 +107,94 @@ export const EmployeeDashboard = () => {
           </div>
         </BoxReveal>
 
-        {/* Leave Balances */}
-        <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {balances.map((balance: any, index: number) => {
-            const percentage = (balance.usedBalance / balance.totalBalance) * 100;
-            const remaining = balance.totalBalance - balance.usedBalance;
-            return (
-              <BoxReveal key={balance.id} duration={0.6 + (index * 0.1)} disabled={!shouldAnimate}>
-                <div className="bg-surface rounded-xl p-5 border border-slate-border shadow-sm flex flex-col h-full items-center text-center">
-                  <h3 className="text-sm font-bold text-text-heading mb-1">{balance.leaveType.name}</h3>
-                  <p className="text-xs text-text-muted mb-4">{balance.leaveType.code}</p>
-                  
-                  {/* Simple Circular Progress (CSS based) */}
-                  <div className="relative w-20 h-20 mb-4 flex items-center justify-center">
-                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                      <path
-                        className="text-slate-100"
-                        stroke="currentColor" strokeWidth="3" fill="none"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      />
-                      <path
-                        className={remaining < 3 ? "text-rose-500" : "text-emerald-500"}
-                        strokeDasharray={`${percentage}, 100`}
-                        stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-lg font-bold text-text-heading">{remaining}</span>
-                    </div>
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Performance Overview */}
+          <BoxReveal duration={0.6} disabled={!shouldAnimate}>
+            <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-text-heading">My Performance</h3>
+                <Link to="/performance" className="text-xs font-semibold text-brand-primary hover:underline">View All</Link>
+              </div>
+              
+              {latestReview ? (
+                <div className="flex flex-col h-full justify-center space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-text-muted">Review Period</span>
+                    <span className="text-sm font-bold bg-tint px-3 py-1 rounded-full text-brand-primary">{latestReview.reviewPeriod}</span>
                   </div>
-                  <p className="text-xs text-text-muted mt-auto">Remaining of {balance.totalBalance}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-text-muted">Status</span>
+                    <span className="text-sm font-bold text-text-heading">{latestReview.status.replace('_', ' ')}</span>
+                  </div>
+                  {latestReview.finalRating ? (
+                    <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-amber-500">
+                        <Star className="fill-current w-5 h-5" />
+                        <span className="font-bold text-text-heading">Rating</span>
+                      </div>
+                      <span className="text-lg font-black text-brand-primary">{latestReview.finalRating} / 5</span>
+                    </div>
+                  ) : (
+                    <div className="mt-2 p-3 bg-amber-50 text-amber-700 rounded-lg border border-amber-100 text-xs font-medium flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" /> Review is currently in progress
+                    </div>
+                  )}
                 </div>
-              </BoxReveal>
-            );
-          })}
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-3">
+                    <Award className="w-6 h-6 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-text-heading mb-1">No Reviews Yet</p>
+                  <p className="text-xs text-text-muted">Your performance reviews will appear here once assigned.</p>
+                </div>
+              )}
+            </div>
+          </BoxReveal>
+
+          {/* Leave Balances */}
+          <BoxReveal duration={0.7} disabled={!shouldAnimate}>
+            <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full">
+              <h3 className="font-bold text-text-heading mb-4">Leave Balances</h3>
+              {balances.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {balances.slice(0,2).map((balance: any, index: number) => {
+                    const percentage = (balance.usedBalance / balance.totalBalance) * 100;
+                    const remaining = balance.totalBalance - balance.usedBalance;
+                    return (
+                      <div key={balance.id} className="flex flex-col items-center text-center">
+                        {/* Simple Circular Progress */}
+                        <div className="relative w-16 h-16 mb-2 flex items-center justify-center">
+                          <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                            <path
+                              className="text-slate-100 dark:text-slate-800"
+                              stroke="currentColor" strokeWidth="4" fill="none"
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <path
+                              className={remaining < 3 ? "text-rose-500" : "text-emerald-500"}
+                              strokeDasharray={`${percentage}, 100`}
+                              stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round"
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-sm font-bold text-text-heading">{remaining}</span>
+                          </div>
+                        </div>
+                        <h3 className="text-xs font-bold text-text-heading">{balance.leaveType.code}</h3>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <Calendar className="w-8 h-8 text-slate-300 mb-2" />
+                  <p className="text-xs text-text-muted">No leave balances assigned to you yet.</p>
+                </div>
+              )}
+            </div>
+          </BoxReveal>
         </div>
       </div>
 
@@ -141,7 +205,7 @@ export const EmployeeDashboard = () => {
         <div className="md:col-span-1 space-y-4">
           <h3 className="font-bold text-text-heading text-lg">Quick Actions</h3>
           <div className="grid grid-cols-1 gap-3">
-            <Link to="/leave/apply" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+            <Link to="/leaves" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
               <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Coffee size={20} />
               </div>
@@ -163,7 +227,7 @@ export const EmployeeDashboard = () => {
               <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
             </Link>
 
-            <Link to="/expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+            <Link to="/office-expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
               <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Receipt size={20} />
               </div>
