@@ -336,39 +336,41 @@ export default function DashboardPage() {
  
  {/* Left Column: Needs Attention & Trend */}
  <div className="lg:col-span-1 space-y-8">
+          {/* Attendance Trend Chart (Only for HR/Admin) */}
+          {isAdminOrHR && stats?.attendanceTrend && (
+            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
+              <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={stats.attendanceTrend} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorAbsent" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--slate-border)" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '8px', border: '1px solid var(--slate-border)', backgroundColor: 'var(--surface)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      itemStyle={{ fontSize: '12px', fontWeight: 500 }}
+                      labelStyle={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}
+                    />
+                    <Area type="monotone" name="Present" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" />
+                    <Area type="monotone" name="Absent" dataKey="absent" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorAbsent)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
  
- {/* Workforce Trend Chart (Only for HR/Admin) */}
- {isAdminOrHR && joinExitTrend.length > 0 && (
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
- <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Workforce Trend (6 Mo)</h3>
- <div className="h-48 w-full">
- <ResponsiveContainer width="100%" height="100%">
- <AreaChart data={joinExitTrend.slice(-6)} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
- <defs>
- <linearGradient id="colorJoins" x1="0" y1="0" x2="0" y2="1">
- <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
- <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
- </linearGradient>
- <linearGradient id="colorExits" x1="0" y1="0" x2="0" y2="1">
- <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
- <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
- </linearGradient>
- </defs>
- <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--slate-border)" />
- <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
- <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
- <Tooltip 
- contentStyle={{ borderRadius: '8px', border: '1px solid var(--slate-border)', backgroundColor: 'var(--surface)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
- itemStyle={{ fontSize: '12px', fontWeight: 500 }}
- labelStyle={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}
- />
- <Area type="monotone" name="Joiners" dataKey="joins" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorJoins)" />
- <Area type="monotone" name="Exits" dataKey="exits" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorExits)" />
- </AreaChart>
- </ResponsiveContainer>
- </div>
- </div>
- )}
+ 
 
  {/* Attendance Trend Chart (Only for HR/Admin) */}
           {isAdminOrHR && stats?.attendanceTrend && (
