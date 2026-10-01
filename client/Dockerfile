@@ -1,6 +1,6 @@
-﻿FROM node:18-alpine AS builder
+FROM node:18-slim AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY package.json ./
 RUN npm install
 COPY . .
 # We must build with the base URL configured, assuming the Nginx proxy handles /api
