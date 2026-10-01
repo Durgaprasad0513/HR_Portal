@@ -6,10 +6,9 @@ COPY . .
 # We must build with the base URL configured, assuming the Nginx proxy handles /api
 RUN npm run build
 
-FROM nginx:alpine
-# Copy the custom Nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-# Copy the built React app
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM node:20-slim
+WORKDIR /app
+RUN npm install -g serve
+COPY --from=builder /app/dist ./dist
+# Railway provides the PORT environment variable dynamically
+CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-8080}"]
