@@ -79,8 +79,8 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
  return (
  <aside aria-label="Primary navigation" className={cn(
- "text-white flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden" style={{ backgroundColor: "#3976A8" }}
- )}>
+  "text-white flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden"
+  )} style={{ backgroundColor: "#3976A8" }}>
  {/* Brand */}
  <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
  <NavLink to="/dashboard" className="flex items-center gap-3 w-full" title={collapsed ? 'HR Portal' : undefined}>
