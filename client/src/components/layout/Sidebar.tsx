@@ -79,7 +79,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
  return (
  <aside aria-label="Primary navigation" className={cn(
- "bg-canvas text-slate-700 dark:text-slate-300 flex flex-col h-full w-full  transition-all duration-300 ease-in-out font-sans overflow-hidden"
+ "text-white flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden" style={{ backgroundColor: "#3976A8" }}
  )}>
  {/* Brand */}
  <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
@@ -88,7 +88,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
             <img src="/lohitha-logo-green.jpg" alt="Sri Lohitha Logo" className="w-full h-full object-contain rounded-full mix-blend-multiply dark:mix-blend-normal dark:bg-white p-1" />
           </div>
           <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
-            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">HR Portal</span>
+            <span className="text-lg font-bold tracking-tight text-white truncate">HR Portal</span>
           </div>
         </NavLink>
  </div>
@@ -99,7 +99,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  {/* Main Section */}
  <div className="flex flex-col gap-1">
  {!collapsed && (
- <div className="px-6 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+ <div className="px-6 pb-2 text-xs font-semibold text-blue-100 uppercase tracking-wider">
  Workspace
  </div>
  )}
@@ -129,7 +129,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  {accountNav.length > 0 && (
  <div className="flex flex-col gap-1 mt-auto">
  {!collapsed && (
- <div className="px-6 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+ <div className="px-6 pb-2 text-xs font-semibold text-blue-100 uppercase tracking-wider">
  Account
  </div>
  )}
