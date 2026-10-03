@@ -83,14 +83,14 @@ export default function EmployeeDetailPage() {
             </span>
           </div>
           <h2 className="text-indigo-200 text-lg font-medium mt-1">{emp.designation || 'No Designation'}</h2>
-          <p className="text-slate-400 text-sm mt-1">{emp.department?.name || 'Unassigned'} • {emp.office?.name || 'Unassigned'}</p>
+          <p className="text-slate-400 text-sm mt-1">{emp.department?.name || 'Unassigned'} • {emp.location || 'Unassigned'}</p>
 
           <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 sm:gap-3 mt-6">
             <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-300 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-500/30 whitespace-nowrap">
               <QrCode className="w-3.5 h-3.5" /> Digital ID Card & QR Pass
             </div>
             <div className="flex items-center gap-2 bg-indigo-500/20 text-indigo-300 px-3 py-1.5 rounded-full text-xs font-semibold border border-indigo-500/30 whitespace-nowrap">
-              Joined: {emp.dateOfJoining ? formatDate(emp.dateOfJoining) : '-'}
+              Joined: {emp.joiningDate ? formatDate(emp.joiningDate) : '-'}
             </div>
             <div className="flex items-center gap-2 bg-green-500/20 text-green-300 px-3 py-1.5 rounded-full text-xs font-semibold border border-green-500/30 whitespace-nowrap">
               Status: {emp.status}
@@ -111,7 +111,7 @@ export default function EmployeeDetailPage() {
           <DetailBlock label="Mobile Phone" value={emp.phone} />
           <DetailBlock label="Official Email" value={emp.email} />
           <DetailBlock label="Residential Address" value={emp.address} />
-          <DetailBlock label="Emergency Contact" value={emp.emergencyContactName ? `${emp.emergencyContactPhone} (${emp.emergencyContactName})` : emp.emergencyContactPhone} />
+          <DetailBlock label="Emergency Contact" value={emp.emergencyContactName ? `${emp.emergencyContactNumber} (${emp.emergencyContactName})` : emp.emergencyContactNumber} />
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export default function EmployeeDetailPage() {
           <DetailBlock label="Assigned Department" value={emp.department?.name} />
           <DetailBlock label="Official Designation" value={emp.designation} />
           <DetailBlock label="Reporting Manager" value={emp.manager ? `${emp.manager.firstName} ${emp.manager.lastName}` : 'None'} />
-          <DetailBlock label="Operating Base / Plant" value={emp.office?.name} />
+          <DetailBlock label="Operating Base / Plant" value={emp.location} />
           <DetailBlock label="Employment Type" value={emp.employmentType?.replace(/_/g, ' ')} />
           <DetailBlock label="Confirmation Date" value={emp.confirmationDate ? formatDate(emp.confirmationDate) : 'Not Applicable'} />
         </div>
@@ -144,7 +144,7 @@ export default function EmployeeDetailPage() {
             <DetailBlock label="ESI Number" value={emp.esiNumber} />
             <DetailBlock label="PAN Number" value={emp.panNumber} />
             <DetailBlock label="Bank Account" value={emp.bankAccountNumber ? `${emp.bankAccountNumber} (${emp.bankName || 'Unknown Bank'})` : ''} />
-            <DetailBlock label="Base Salary" value={emp.baseSalary ? `₹${emp.baseSalary.toLocaleString()}` : ''} />
+            <DetailBlock label="Base Salary" value={emp.basicSalary ? `₹${emp.basicSalary.toLocaleString()}` : ''} />
           </div>
         </div>
       )}
@@ -201,7 +201,7 @@ export default function EmployeeDetailPage() {
           </div>
           {emp.assignedAssets?.length > 0 && (
             <Button variant="ghost" size="sm" className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20" onClick={() => {
-              const csvContent = "data:text/csv;charset=utf-8," + "Asset ID,Type,Brand/Model,Serial Number,Purchase Date,Purchase Value,Issue Date,Condition,Status\n" + emp.assignedAssets.map((a: any) => `${a.id},${a.assetType},${a.brandModel || ''},${a.serialNumber || ''},${a.purchaseDate ? formatDate(a.purchaseDate) : ''},${a.purchaseValue || ''},${a.issueDate ? formatDate(a.issueDate) : ''},${a.issueCondition || ''},${a.status}`).join("\n");
+              const csvContent = "data:text/csv;charset=utf-8," + "Asset ID,Type,Brand/Model,Serial Number,Purchase Date,Purchase Value,Issue Date,Condition,Status\n" + (emp.assignedAssets || []).map((a: any) => `${a.id},${a.assetType},${a.brandModel || ''},${a.serialNumber || ''},${a.purchaseDate ? formatDate(a.purchaseDate) : ''},${a.purchaseValue || ''},${a.issueDate ? formatDate(a.issueDate) : ''},${a.issueCondition || ''},${a.status}`).join("\n");
               const encodedUri = encodeURI(csvContent);
               const link = document.createElement("a");
               link.setAttribute("href", encodedUri);
@@ -214,11 +214,11 @@ export default function EmployeeDetailPage() {
             </Button>
           )}
         </div>
-        {(!emp.assignedAssets || emp.assignedAssets.length === 0) ? (
+        {(!emp.assignedAssets || (emp.assignedAssets?.length || 0) === 0) ? (
           <p className="text-sm text-slate-500 font-medium">No assets currently assigned.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {emp.assignedAssets.map((asset: any) => (
+            {(emp.assignedAssets || []).map((asset: any) => (
               <div key={asset.id} className="bg-slate-50/50 dark:bg-slate-800/20 rounded-2xl p-4 border border-slate-border">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{asset.assetType}</span>
@@ -298,5 +298,7 @@ export default function EmployeeDetailPage() {
     </div>
   );
 }
+
+
 
 

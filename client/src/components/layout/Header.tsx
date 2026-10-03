@@ -188,7 +188,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
        </span>
        <div className="flex items-center mt-0.5 gap-1 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 px-1.5 py-0.5 rounded-full w-max">
          <ShieldCheck className="h-3 w-3" />
-         {user?.roleLabel || user?.role || 'User'}
+         {user?.role || 'User'}
        </div>
      </div>
    </button>
@@ -242,6 +242,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  </>
  );
 }
+
 
 
 
