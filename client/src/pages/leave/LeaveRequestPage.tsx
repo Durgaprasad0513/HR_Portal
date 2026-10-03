@@ -80,7 +80,7 @@ export default function LeaveRequestPage() {
  };
 
  return (
- <div className="space-y-6 max-w-[1200px] mx-auto p-4 bg-[#f8f9fc] min-h-screen">
+ <div className="space-y-6">
  <div className="flex items-center justify-between mb-8">
  <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white">Leave Request</h1>
  <button
