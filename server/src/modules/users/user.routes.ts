@@ -6,7 +6,7 @@ import { userController } from './user.controller';
 const router = Router();
 
 router.use(authenticate);
-router.use(authorize(Role.ADMIN)); // Only ADMIN can manage users
+router.use(authorize(Role.ADMIN, Role.HR)); // ADMIN and HR can manage users
 
 router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
