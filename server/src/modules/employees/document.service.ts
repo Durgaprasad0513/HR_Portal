@@ -106,7 +106,7 @@ export class DocumentService {
     const doc = await prisma.employeeDocument.findUnique({ where: { id: documentId } });
     if (!doc) throw new Error('Document not found');
 
-    if (currentUser.role !== 'HR' && currentUser.role !== 'ADMIN' && currentUser.role !== 'HR_EXECUTIVE') {
+    if (currentUser.role !== 'HR' && currentUser.role !== 'ADMIN') {
       throw new Error('Not authorized to verify documents');
     }
 
