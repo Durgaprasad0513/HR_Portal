@@ -15,7 +15,7 @@ import { formatDate } from '@/utils/dateFormat';
 
 function DetailBlock({ label, value }: { label: string, value: React.ReactNode }) {
   return (
-    <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/60">
+    <div className="bg-slate-50/50 dark:bg-slate-800/20 rounded-2xl p-4 border border-slate-border">
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
       <p className="text-sm font-semibold text-slate-900 dark:text-white">{value || '-'}</p>
     </div>
@@ -51,7 +51,7 @@ export default function EmployeeDetailPage() {
   const canEdit = isHR || user?.employeeId === emp.id;
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-32">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-32">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-500">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
@@ -100,12 +100,12 @@ export default function EmployeeDetailPage() {
       </div>
 
       {/* PERSONAL DETAILS */}
-      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-border">
         <div className="flex items-center gap-3 mb-6">
           <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Personal Details</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <DetailBlock label="Gender" value={emp.gender} />
           <DetailBlock label="Date of Birth" value={emp.dateOfBirth ? formatDate(emp.dateOfBirth) : ''} />
           <DetailBlock label="Mobile Phone" value={emp.phone} />
@@ -116,12 +116,12 @@ export default function EmployeeDetailPage() {
       </div>
 
       {/* EMPLOYMENT & REPORTING STRUCTURE */}
-      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-border">
         <div className="flex items-center gap-3 mb-6">
           <Briefcase className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Employment & Reporting Structure</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <DetailBlock label="Assigned Department" value={emp.department?.name} />
           <DetailBlock label="Official Designation" value={emp.designation} />
           <DetailBlock label="Reporting Manager" value={emp.manager ? `${emp.manager.firstName} ${emp.manager.lastName}` : 'None'} />
@@ -133,12 +133,12 @@ export default function EmployeeDetailPage() {
 
       {/* PAYROLL */}
       {isHR && (
-        <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+        <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-border">
           <div className="flex items-center gap-3 mb-6">
             <Wallet className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Payroll & HR Information</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <DetailBlock label="UAN Number" value={emp.uanNumber} />
             <DetailBlock label="PF Number" value={emp.pfNumber} />
             <DetailBlock label="ESI Number" value={emp.esiNumber} />
@@ -150,15 +150,15 @@ export default function EmployeeDetailPage() {
       )}
 
       {/* DOCUMENTS */}
-      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-border">
         <div className="flex items-center gap-3 mb-6">
           <FileCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">My Verified Documents & Certificates</h2>
         </div>
         {emp.documents && emp.documents.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {emp.documents.map((doc: any) => (
-              <div key={doc.id} className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-2xl">
+              <div key={doc.id} className="flex items-start gap-4 p-4 bg-slate-50/50 dark:bg-slate-800/20 border border-slate-border rounded-2xl">
                 <div className="bg-white dark:bg-slate-700 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600">
                   <FileText className="text-indigo-500 w-5 h-5" />
                 </div>
@@ -193,7 +193,7 @@ export default function EmployeeDetailPage() {
       </div>
 
       {/* ASSETS */}
-      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-border">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <MonitorPlay className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -217,9 +217,9 @@ export default function EmployeeDetailPage() {
         {(!emp.assignedAssets || emp.assignedAssets.length === 0) ? (
           <p className="text-sm text-slate-500 font-medium">No assets currently assigned.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {emp.assignedAssets.map((asset: any) => (
-              <div key={asset.id} className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/60">
+              <div key={asset.id} className="bg-slate-50/50 dark:bg-slate-800/20 rounded-2xl p-4 border border-slate-border">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{asset.assetType}</span>
                   <Badge variant={asset.status === 'IN_USE' ? 'success' : 'default'} className="text-[10px] h-5">{asset.status.replace('_', ' ')}</Badge>
@@ -237,7 +237,7 @@ export default function EmployeeDetailPage() {
 
       
       {/* TRAINING */}
-      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-border">
         <div className="flex items-center gap-3 mb-6">
           <Award className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Training History</h2>
@@ -245,9 +245,9 @@ export default function EmployeeDetailPage() {
         {(!emp.trainingParticipations || emp.trainingParticipations.length === 0) ? (
           <p className="text-sm text-slate-500 font-medium">No training records found.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {emp.trainingParticipations.map((part: any) => (
-              <div key={part.id} className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/60">
+              <div key={part.id} className="bg-slate-50/50 dark:bg-slate-800/20 rounded-2xl p-4 border border-slate-border">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{part.training?.trainingType || 'Training'}</span>
                   <Badge variant={part.attendanceStatus === 'TRAINING_PRESENT' ? 'success' : 'default'} className="text-[10px] h-5">
@@ -266,7 +266,7 @@ export default function EmployeeDetailPage() {
       </div>
 
       {/* PERFORMANCE */}
-      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-surface rounded-[2rem] p-6 sm:p-8 shadow-sm border border-slate-border">
         <div className="flex items-center gap-3 mb-6">
           <Briefcase className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Performance Reviews</h2>
@@ -274,9 +274,9 @@ export default function EmployeeDetailPage() {
         {(!emp.performanceReviews || emp.performanceReviews.length === 0) ? (
           <p className="text-sm text-slate-500 font-medium">No performance reviews found.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {emp.performanceReviews.map((review: any) => (
-              <div key={review.id} className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/60">
+              <div key={review.id} className="bg-slate-50/50 dark:bg-slate-800/20 rounded-2xl p-4 border border-slate-border">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{review.reviewPeriod}</span>
                   <Badge variant={review.status === 'COMPLETED' ? 'success' : 'default'} className="text-[10px] h-5">
@@ -298,3 +298,5 @@ export default function EmployeeDetailPage() {
     </div>
   );
 }
+
+
