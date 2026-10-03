@@ -146,7 +146,7 @@ export default function LeaveApprovalsPage() {
  onClick={() => setStatusFilter(status)}
  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
  statusFilter === status
- ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900'
+ ? 'bg-brand-primary text-white shadow-sm dark:bg-brand-primary dark:text-white'
  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
  }`}
  >
