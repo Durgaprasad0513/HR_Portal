@@ -129,8 +129,8 @@ export default function RequestListPage() {
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-6 pb-6">
           
           {/* Left Pane - Ticket List */}
-          <div className="md:col-span-4 lg:col-span-4 flex flex-col bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden h-full">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-gray-800">
+          <div className="md:col-span-4 lg:col-span-4 flex flex-col bg-white dark:bg-gray-900 rounded-[1.5rem] border border-slate-border dark:border-slate-800 shadow-sm overflow-hidden h-full">
+            <div className="p-4 border-b border-slate-border dark:border-slate-800 bg-slate-50 dark:bg-gray-800">
               <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="ALL">All Ticket Statuses</option>
                 <option value="SUBMITTED">Submitted</option>
@@ -177,10 +177,10 @@ export default function RequestListPage() {
           </div>
 
           {/* Right Pane - Ticket Detail */}
-          <div className="md:col-span-8 lg:col-span-8 flex flex-col bg-white dark:bg-gray-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden h-full">
+          <div className="md:col-span-8 lg:col-span-8 flex flex-col bg-white dark:bg-gray-900 rounded-[1.5rem] border border-slate-border dark:border-slate-800 shadow-sm overflow-hidden h-full">
             {selectedReq ? (
               <>
-                <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 shadow-sm z-10 bg-white dark:bg-gray-900">
+                <div className="p-6 border-b border-slate-border dark:border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 shadow-sm z-10 bg-white dark:bg-gray-900">
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{selectedReq.description}</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -193,7 +193,7 @@ export default function RequestListPage() {
                   {isAdminOrHR && (
                     <div className="flex flex-col sm:items-end gap-2 shrink-0">
                       <select 
-                        className="text-xs py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-surface focus:ring-1 focus:ring-primary-500 font-medium"
+                        className="text-xs py-1.5 px-3 rounded-lg border border-slate-border dark:border-slate-700 bg-surface focus:ring-1 focus:ring-primary-500 font-medium"
                         value={selectedReq.status}
                         onChange={(e) => updateStatusMutation.mutate({ id: selectedReq.id, payload: { status: e.target.value } })}
                         disabled={updateStatusMutation.isPending}
@@ -206,7 +206,7 @@ export default function RequestListPage() {
                       </select>
                       
                       <select 
-                        className="text-xs py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-surface focus:ring-1 focus:ring-primary-500 max-w-[150px] font-medium"
+                        className="text-xs py-1.5 px-3 rounded-lg border border-slate-border dark:border-slate-700 bg-surface focus:ring-1 focus:ring-primary-500 max-w-[150px] font-medium"
                         value={selectedReq.assignedToId || ''}
                         onChange={(e) => assignMutation.mutate({ id: selectedReq.id, assignedToId: e.target.value })}
                         disabled={assignMutation.isPending}
@@ -251,7 +251,7 @@ export default function RequestListPage() {
                 </div>
 
                 {isAdminOrHR && (
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-gray-900 z-10">
+                  <div className="p-4 border-t border-slate-border dark:border-slate-800 bg-white dark:bg-gray-900 z-10">
                     <div className="flex gap-2">
                       <Input 
                         value={responseNotes}
@@ -269,7 +269,7 @@ export default function RequestListPage() {
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-[#f8fafc] dark:bg-gray-900/50">
-                <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 shadow-sm border border-slate-200 dark:border-slate-700">
+                <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 shadow-sm border border-slate-border dark:border-slate-700">
                   <MessageSquare className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 font-medium">Select a ticket to view details</p>
@@ -297,3 +297,5 @@ export default function RequestListPage() {
     </div>
   );
 }
+
+
