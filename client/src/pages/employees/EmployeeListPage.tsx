@@ -88,9 +88,20 @@ export default function EmployeeListPage() {
  <PageHeader
  title="Employee Management"
  description="Find, review, and manage employee records."
- actions={canExport('employees') && <Button variant="outline" onClick={handleExport}>
+ actions={
+ <div className="flex items-center gap-3">
+ {canExport('employees') && (
+ <Button variant="outline" onClick={handleExport}>
  <Download className="w-4 h-4 mr-2" /> Export Register
- </Button>}
+ </Button>
+ )}
+ {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+ <Button onClick={() => navigate('/employees/new')} className="gap-2">
+ <Plus className="w-4 h-4" /> Add new
+ </Button>
+ )}
+ </div>
+ }
  />
 
  {/* Station Cards */}
@@ -190,11 +201,7 @@ export default function EmployeeListPage() {
  {empData?.data?.length || 0} {empData?.data?.length === 1 ? 'employee' : 'employees'}
  </p>
  )}
- {(user?.role === 'ADMIN' || user?.role === 'HR') && (
- <Button onClick={() => navigate('/employees/new')} className="gap-2">
- <Plus className="w-4 h-4" /> Add new
- </Button>
- )}
+
  </div>
  </div>
 
