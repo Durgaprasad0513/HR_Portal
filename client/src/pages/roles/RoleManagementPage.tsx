@@ -15,8 +15,8 @@ import { Select } from '@/components/ui/Select';
 
 const ROLES = ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'];
 const ROLE_LABELS: Record<string, string> = {
- ADMIN: 'Super Admin',
- HR: 'Management',
+ ADMIN: 'Admin',
+ HR: 'HR',
  MANAGER: 'Manager',
   EMPLOYEE: 'Employee',
 };

@@ -23,9 +23,9 @@ export type ModuleKey = (typeof MODULES)[number]['key'];
 export type PermissionAction = 'view' | 'add' | 'edit' | 'delete' | 'approve' | 'export';
 
 export const ROLE_LABELS: Record<Role, string> = {
-  ADMIN: 'Super Admin',
-  HR: 'HR Admin',
-  MANAGER: 'Reporting Manager',
+  ADMIN: 'Admin',
+  HR: 'HR',
+  MANAGER: 'Manager',
   EMPLOYEE: 'Employee',
 };
 
