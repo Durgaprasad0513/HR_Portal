@@ -192,10 +192,10 @@ export default function RequestListPage() {
                   
                   {isAdminOrHR && (
                     <div className="flex flex-col sm:items-end gap-2 shrink-0">
-                      <select 
-                        className="text-xs py-1.5 px-3 rounded-lg border border-slate-border dark:border-slate-700 bg-surface focus:ring-1 focus:ring-primary-500 font-medium"
+                      <Select 
+                        className="w-[180px] min-h-[38px] text-sm"
                         value={selectedReq.status}
-                        onChange={(e) => updateStatusMutation.mutate({ id: selectedReq.id, payload: { status: e.target.value } })}
+                        onChange={(e: any) => updateStatusMutation.mutate({ id: selectedReq.id, payload: { status: e.target.value } })}
                         disabled={updateStatusMutation.isPending}
                       >
                         <option value="SUBMITTED">Status: Submitted</option>
@@ -203,19 +203,19 @@ export default function RequestListPage() {
                         <option value="IN_PROGRESS">Status: In Progress</option>
                         <option value="RESOLVED">Status: Resolved</option>
                         <option value="TICKET_CLOSED">Status: Closed</option>
-                      </select>
+                      </Select>
                       
-                      <select 
-                        className="text-xs py-1.5 px-3 rounded-lg border border-slate-border dark:border-slate-700 bg-surface focus:ring-1 focus:ring-primary-500 max-w-[150px] font-medium"
+                      <Select 
+                        className="w-[180px] min-h-[38px] text-sm"
                         value={selectedReq.assignedToId || ''}
-                        onChange={(e) => assignMutation.mutate({ id: selectedReq.id, assignedToId: e.target.value })}
+                        onChange={(e: any) => assignMutation.mutate({ id: selectedReq.id, assignedToId: e.target.value })}
                         disabled={assignMutation.isPending}
                       >
                         <option value="">Unassigned</option>
                         {admins?.data?.map((u: any) => (
                           <option key={u.id} value={u.id}>{u.employee?.firstName} {u.employee?.lastName}</option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
                   )}
                 </div>
