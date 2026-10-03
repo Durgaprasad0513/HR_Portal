@@ -18,7 +18,7 @@ export default function EmployeeDetailPage() {
  const { id } = useParams<{ id: string }>();
  const navigate = useNavigate();
  const { user } = useAuth();
- const isHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
+ const isHR = user?.role === 'ADMIN' || user?.role === 'HR';
  
  const SECTIONS = React.useMemo(() => [
  { id: 'general', label: 'Personal Information' },
@@ -53,7 +53,7 @@ export default function EmployeeDetailPage() {
  const canEdit = 
  user?.role === 'ADMIN' || 
  user?.role === 'HR' || 
- user?.role === 'REMOVED_ROLE' || 
+ 
  (false && (user?.employeeId === id || emp?.managerId === user?.employeeId || (user as any)?.employee?.id === id || emp?.managerId === (user as any)?.employee?.id));
 
  // Intersection observer logic for scroll spy

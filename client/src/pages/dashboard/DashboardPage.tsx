@@ -21,7 +21,7 @@ import { formatDate } from '@/utils/dateFormat';
 export default function DashboardPage() {
  const navigate = useNavigate();
  const { user } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
  const isManager = false;
  const [showAbsent, setShowAbsent] = useState(false);
  

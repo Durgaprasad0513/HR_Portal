@@ -14,7 +14,7 @@ function exitDateInMonths(joiningDate: Date, exitDate: Date) {
 
 export class DashboardService {
   async getStats(currentUser: CurrentUser) {
-    const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'HR' || currentUser.role === 'REMOVED_ROLE';
+    const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
     const isManager = currentUser.role === 'MANAGER';
     const now = new Date();
 

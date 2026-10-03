@@ -124,7 +124,7 @@ export class PerformanceService {
   }
 
   async submitSelfAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR' || currentUser.role === 'REMOVED_ROLE';
+    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
     
     const review = await prisma.performanceReview.findUnique({ where: { id } });
     if (!review) throw new Error('Review not found');
@@ -165,7 +165,7 @@ export class PerformanceService {
   }
 
   async submitManagerAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR' || currentUser.role === 'REMOVED_ROLE';
+    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
     
     const review = await prisma.performanceReview.findUnique({ 
       where: { id },

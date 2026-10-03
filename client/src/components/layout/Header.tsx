@@ -18,7 +18,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false, onSidebarCollapseToggle }: HeaderProps) {
  const { user, logout } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
  const navigate = useNavigate();
  const queryClient = useQueryClient();
  const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -25,7 +25,6 @@ export type PermissionAction = 'view' | 'add' | 'edit' | 'delete' | 'approve' | 
 export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: 'Super Admin',
   HR: 'HR Admin',
-  REMOVED_ROLE: 'REMOVED_ROLE',
   MANAGER: 'Reporting Manager',
   EMPLOYEE: 'Employee',
 };
@@ -139,24 +138,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
     audit: view(),
     roles: view(),
   },
-  REMOVED_ROLE: {
-    dashboard: view(),
-    employees: ops(false),
-    travel: ops(),
-    assets: ops(false),
-    recruitment: ops(true),
-    attrition: view(),
-    performance: ops(true),
-    training: ops(),
-    requests: { ...ops(), canApprove: true },
-    policies: ops(),
-    departments: view(),
-    audit: none,
-    notifications: view(),
-    roles: none,
-    settings: none,
-    loginHistory: none,
-  },
+
   MANAGER: {
     dashboard: view(),
     employees: view(),

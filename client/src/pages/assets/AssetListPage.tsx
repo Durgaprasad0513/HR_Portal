@@ -24,7 +24,7 @@ export default function AssetListPage() {
  const { user } = useAuth();
  const { canExport } = usePermissions();
  const queryClient = useQueryClient();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [returnConfirmOpen, setReturnConfirmOpen] = useState(false);
