@@ -28,7 +28,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  const { user } = useAuth();
  const location = useLocation();
  const navigate = useNavigate();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE';
  
  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
  'nav-group-leave-requests': true,
@@ -79,14 +79,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
  return (
  <aside aria-label="Primary navigation" className={cn(
- "bg-[#0f172a] text-slate-300 flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden"
+  "bg-canvas text-slate-700 dark:text-slate-300 flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden"
  )}>
  {/* Brand */}
  <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
  <NavLink to="/dashboard" className="flex items-center gap-3 w-full" title={collapsed ? 'HR Portal' : undefined}>
-          <div className={cn("flex items-center justify-center shrink-0 transition-all", collapsed ? "h-10 w-10" : "h-12 w-12")}>
-            <img src="/lohitha-logo-green.jpg" alt="Sri Lohitha Logo" className="w-full h-full object-contain rounded-full mix-blend-multiply dark:mix-blend-normal dark:bg-white p-1" />
-          </div>
+           <div className={cn("flex items-center justify-center shrink-0 transition-all bg-white rounded-full", collapsed ? "h-10 w-10" : "h-12 w-12")}>
+             <img src="/lohitha-logo-green.jpg" alt="Sri Lohitha Logo" className="w-full h-full object-contain rounded-full p-1" />
           <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
             <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">HR Portal</span>
           </div>

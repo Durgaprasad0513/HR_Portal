@@ -127,7 +127,7 @@ export class AssetService {
     if (!existing.assignedEmployeeId) throw new Error('Asset is not currently assigned.');
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const isOwner = user?.employeeId === existing.assignedEmployeeId;
-    const isEditor = user?.role === 'ADMIN' || user?.role === 'HR';
+    const isEditor = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE';
     if (!isOwner && !isEditor) throw new Error('You do not have permission to modify this asset.');
 
     const newStatus = isEditor ? AssetStatus.RETURNED : AssetStatus.RETURN_REQUESTED;

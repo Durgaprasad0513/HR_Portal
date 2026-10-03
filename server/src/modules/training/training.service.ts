@@ -150,7 +150,7 @@ export class TrainingService {
   }
 
   async submitFeedback(trainingId: string, employeeId: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isAdminOrHR = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
+    const isAdminOrHR = currentUser.role === 'ADMIN' || currentUser.role === 'HR' || currentUser.role === 'HR_EXECUTIVE';
     const includesTraineeFeedback = data.feedbackRating !== undefined || data.feedbackComments !== undefined;
     const includesTrainerFeedback = data.trainerFeedbackRating !== undefined || data.trainerFeedbackComments !== undefined;
 

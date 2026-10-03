@@ -124,7 +124,7 @@ export class LeaveService {
   }
 
   async getPendingApprovals(user: any) {
-    const whereClause = (user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'MANAGER') ? {} : { employeeId: user?.employeeId };
+    const whereClause = (user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE' || user?.role === 'MANAGER') ? {} : { employeeId: user?.employeeId };
     return prisma.leave.findMany({
       where: whereClause,
       include: {
