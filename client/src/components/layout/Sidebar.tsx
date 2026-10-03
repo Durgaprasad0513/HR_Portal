@@ -79,7 +79,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
  return (
  <aside aria-label="Primary navigation" className={cn(
- "bg-canvas text-slate-700 dark:text-slate-300 flex flex-col h-full w-full  transition-all duration-300 ease-in-out font-sans overflow-hidden"
+ "bg-[#0f172a] text-slate-300 flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden"
  )}>
  {/* Brand */}
  <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
