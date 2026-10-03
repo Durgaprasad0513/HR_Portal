@@ -9,7 +9,7 @@ export function ProfileBanner() {
   const navigate = useNavigate();
 
   // Only show for HR and EMPLOYEE. Exclude ADMIN and MANAGER.
-  if (user?.role === 'MANAGER') {
+  if (user?.role === 'HR') {
     return null;
   }
 
@@ -30,8 +30,8 @@ export function ProfileBanner() {
     <div className="bg-surface rounded-2xl p-6 border border-slate-border shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-6">
       <div className="flex items-center gap-6">
         <div className="w-20 h-20 rounded-full bg-slate-200 overflow-hidden shrink-0 border-4 border-white shadow-sm flex items-center justify-center text-3xl font-bold text-slate-500">
-          {employee?.profilePicture ? (
-            <img src={employee.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+          {employee?.profilePhoto ? (
+            <img src={employee.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             firstName.charAt(0)
           )}
@@ -78,3 +78,4 @@ export function ProfileBanner() {
     </div>
   );
 }
+
