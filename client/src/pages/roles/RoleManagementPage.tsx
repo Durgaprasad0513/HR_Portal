@@ -93,7 +93,7 @@ function PermissionsMatrix() {
  {ROLES.map(role => (
  <th key={role} colSpan={PERMISSION_FLAGS.length} className="py-3 px-2 text-center font-semibold text-gray-700 dark:text-gray-300 bg-surface border-l border-slate-border">
  <div className="flex items-center justify-center gap-1">
- {role === 'ADMIN' && <Lock className="w-3 h-3 text-primary-500" />}
+ {(role === 'ADMIN' || role === 'HR' || role === 'REMOVED_ROLE') && <Lock className="w-3 h-3 text-primary-500" />}
  {ROLE_LABELS[role]}
  </div>
  </th>
@@ -118,7 +118,7 @@ function PermissionsMatrix() {
  </td>
  {ROLES.flatMap(role => {
  const perm = getPermission(role, mod.key);
- const isAdmin = role === 'ADMIN';
+ const isAdmin = role === 'ADMIN' || role === 'HR' || role === 'REMOVED_ROLE';
  return PERMISSION_FLAGS.map(flag => (
  <td key={`${role}-${mod.key}-${flag.key}`} className="py-3 px-1 text-center">
  <PermissionToggle
@@ -344,7 +344,7 @@ export default function RoleManagementPage() {
  <div className="space-y-4">
  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-300 flex items-center gap-2">
  <Lock className="w-4 h-4 flex-shrink-0" />
- ADMIN role permissions are locked (always full access). Changes to other roles take effect on the user&apos;s next page load.
+ ADMIN, HR, and REMOVED_ROLE role permissions are locked (always full access). Changes to other roles take effect on the user&apos;s next page load.
  </div>
  <div className="bg-surface rounded-xl border border-slate-border overflow-hidden">
  <PermissionsMatrix />
