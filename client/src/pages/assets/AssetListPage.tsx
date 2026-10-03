@@ -32,6 +32,8 @@ export default function AssetListPage() {
  const [editingAsset, setEditingAsset] = useState<any>(null);
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 300);
+ const [categoryFilter, setCategoryFilter] = useState('ALL');
+ const [statusFilter, setStatusFilter] = useState('ALL');
 
  const { data, isLoading } = useQuery({
  queryKey: ['assets'],
@@ -40,17 +42,31 @@ export default function AssetListPage() {
 
  const filteredData = React.useMemo(() => {
  if (!data) return [];
- if (!debouncedSearch) return data;
+ return data.filter((asset: any) => {
+ let matchesSearch = true;
+ if (debouncedSearch) {
  const lowerSearch = debouncedSearch.toLowerCase();
- return data.filter((asset: any) =>
- asset.brandModel?.toLowerCase().includes(lowerSearch) ||
+ matchesSearch = asset.brandModel?.toLowerCase().includes(lowerSearch) ||
  asset.serialNumber?.toLowerCase().includes(lowerSearch) ||
  asset.assetType?.toLowerCase().includes(lowerSearch) ||
  asset.assetCategory?.toLowerCase().includes(lowerSearch) ||
  asset.assignedEmployee?.firstName?.toLowerCase().includes(lowerSearch) ||
- asset.assignedEmployee?.lastName?.toLowerCase().includes(lowerSearch)
- );
- }, [data, debouncedSearch]);
+ asset.assignedEmployee?.lastName?.toLowerCase().includes(lowerSearch);
+ }
+
+ let matchesCategory = true;
+ if (categoryFilter !== 'ALL') {
+ matchesCategory = asset.assetCategory === categoryFilter;
+ }
+
+ let matchesStatus = true;
+ if (statusFilter !== 'ALL') {
+ matchesStatus = asset.status === statusFilter;
+ }
+
+ return matchesSearch && matchesCategory && matchesStatus;
+ });
+ }, [data, debouncedSearch, categoryFilter, statusFilter]);
 
  const { data: empData } = useQuery({
  queryKey: ['employees'],
@@ -263,16 +279,33 @@ export default function AssetListPage() {
  />
  ) : (
  <div className="space-y-4">
- <div className="flex gap-3">
- <div className="relative flex-1 max-w-sm">
+ <div className="flex flex-col md:flex-row gap-4 w-full">
+ <div className="relative flex-1">
  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
  <input
  aria-label="Search assets"
- placeholder="Search assets..."
+ placeholder="Search asset, serial # or assigned employee..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="w-full pl-9 pr-4 py-2 h-[42px] rounded-[1.25rem] border border-slate-200 dark:border-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-[13px] focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all bg-white dark:bg-surface text-slate-900 dark:text-white"
  />
+ </div>
+ <div className="flex gap-3 shrink-0">
+ <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-[180px]">
+ <option value="ALL">All Categories</option>
+ <option value="IT">IT Equipment</option>
+ <option value="NON_IT">Non-IT</option>
+ <option value="VEHICLE_CAT">Vehicle</option>
+ </Select>
+ <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-[180px]">
+ <option value="ALL">All Statuses</option>
+ <option value="IN_USE">In Use</option>
+ <option value="RETURN_REQUESTED">Return Requested</option>
+ <option value="RETURNED">Returned</option>
+ <option value="DAMAGED">Damaged</option>
+ <option value="LOST">Lost</option>
+ <option value="RETIRED">Retired</option>
+ </Select>
  </div>
  </div>
  <DataTable
