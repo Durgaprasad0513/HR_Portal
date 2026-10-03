@@ -91,7 +91,7 @@ export default function EmployeeListPage() {
  actions={
  <div className="flex items-center gap-3">
  {canExport('employees') && (
- <Button variant="outline" onClick={handleExport}>
+ <Button variant="outline" onClick={handleExport} className="border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white">
  <Download className="w-4 h-4 mr-2" /> Export Register
  </Button>
  )}
