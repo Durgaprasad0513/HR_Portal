@@ -154,76 +154,7 @@ export default function AttritionDashboardPage() {
  </div>
  </header>
 
- <section className="rounded-2xl border border-slate-border bg-surface p-4 shadow-sm sm:p-5" aria-label="Attrition filters">
- <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
- <div className="flex items-center gap-2">
- <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-50 text-accent-700 dark:bg-accent-950/40 dark:text-accent-300">
- <Filter className="h-4 w-4" aria-hidden="true" />
- </div>
- <div>
- <h2 className="text-sm font-semibold text-text-heading">Review scope</h2>
- <p className="text-xs text-text-muted">Slice the workforce data before taking action.</p>
- </div>
- </div>
- <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
- <label className="text-xs font-medium text-text-muted">
- Reporting period
- <Select
- aria-label="Filter by reporting period"
- value={filters.periodMonths}
- onChange={(event) => updateFilter('periodMonths', event.target.value)}
- className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
- >
- <option value={12}>Last 12 months</option>
- <option value={6}>Last 6 months</option>
- <option value={3}>Last 3 months</option>
- </Select>
- </label>
- <label className="text-xs font-medium text-text-muted">
- Department
- <Select
- aria-label="Filter by department"
- value={filters.department}
- onChange={(event) => updateFilter('department', event.target.value)}
- className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
- >
- <option value="">All departments</option>
- {filterOptions.departments.map((option: string) => <option key={option} value={option}>{option}</option>)}
- </Select>
- </label>
- <label className="text-xs font-medium text-text-muted">
- Location
- <Select
- aria-label="Filter by location"
- value={filters.location}
- onChange={(event) => updateFilter('location', event.target.value)}
- className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
- >
- <option value="">All locations</option>
- {filterOptions.locations.map((option: string) => <option key={option} value={option}>{option}</option>)}
- </Select>
- </label>
- <label className="text-xs font-medium text-text-muted">
- Employment type
- <Select
- aria-label="Filter by employment type"
- value={filters.employmentType}
- onChange={(event) => updateFilter('employmentType', event.target.value)}
- className="mt-1 block h-10 w-full rounded-lg border border-slate-border bg-background px-3 text-sm text-text-heading outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
- >
- <option value="">All employment types</option>
- {filterOptions.employmentTypes.map((option: string) => <option key={option} value={option}>{option}</option>)}
- </Select>
- </label>
- </div>
- </div>
- {hasFilters && (
- <div className="mt-4 flex items-center justify-between border-t border-slate-border pt-3">
- <span className="text-xs text-text-muted">{isFetching ? 'Updating insights…' : 'Filters applied to all insights'}</span>
- <button type="button" onClick={() => setFilters(initialFilters)} className="text-xs font-semibold text-accent-700 hover:underline dark:text-accent-300">Reset filters</button>
- </div>
- )}
- </section>
+ 
 
  <section className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4" aria-label="Attrition insights">
  <InsightCard
