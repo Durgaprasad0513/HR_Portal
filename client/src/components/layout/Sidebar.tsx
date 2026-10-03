@@ -79,7 +79,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
  return (
  <aside aria-label="Primary navigation" className={cn(
-  "bg-canvas text-slate-700 dark:text-slate-300 flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden"
+  "bg-[#0f172a] text-slate-300 flex flex-col h-full w-full transition-all duration-300 ease-in-out font-sans overflow-hidden"
   )}>
   {/* Brand */}
   <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
@@ -88,13 +88,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
       <img src="/lohitha-logo-green.jpg" alt="Sri Lohitha Logo" className="w-full h-full object-contain rounded-full p-1" />
     </div>
     <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
-      <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">HR Portal</span>
+      <span className="text-lg font-bold tracking-tight text-white truncate">HR Portal</span>
     </div>
   </NavLink>
   </div>
 
 
-  {/* Navigation{/* Navigation */}
+  {/* Navigation */}
  <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-6 custom-scrollbar pr-3">
  {/* Main Section */}
  <div className="flex flex-col gap-1">
