@@ -53,8 +53,8 @@ export default function AnimatedRadio({ options, value, onChange, className, nam
  }}
  className={`cursor-pointer text-sm font-medium py-3 px-4 block transition-all duration-300 ease-in-out ${
  selectedValue === option.value
- ? 'text-teal-600 dark:text-teal-400'
- : 'text-slate-600 dark:text-slate-400 hover:text-teal-500/80 dark:hover:text-teal-300/80'
+ ? 'text-emerald-400'
+ : 'text-slate-400 hover:text-slate-200'
  }`}
  >
  {option.label}
@@ -62,16 +62,16 @@ export default function AnimatedRadio({ options, value, onChange, className, nam
  </div>
  ))}
 
- <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-slate-300 dark:via-slate-700 to-transparent">
+ <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-slate-700 to-transparent">
  <div
- className="relative w-full bg-gradient-to-b from-transparent via-teal-600 dark:via-teal-500 to-transparent transition-transform duration-500 ease-[cubic-bezier(0.37,1.95,0.66,0.56)]"
+ className="relative w-full bg-gradient-to-b from-transparent via-emerald-500 to-transparent transition-transform duration-500 ease-[cubic-bezier(0.37,1.95,0.66,0.56)]"
  style={{ 
  transform: getGliderTransform(),
  height: `${100 / options.length}%` 
  }}
  >
- <div className="absolute top-1/2 -translate-y-1/2 h-3/5 w-[300%] bg-teal-600 dark:bg-teal-500 blur-[6px] opacity-70" />
- <div className="absolute left-0 h-full w-36 bg-gradient-to-r from-teal-600/20 dark:from-teal-500/20 to-transparent pointer-events-none" />
+ <div className="absolute top-1/2 -translate-y-1/2 h-3/5 w-[300%] bg-emerald-500 blur-[6px] opacity-70" />
+ <div className="absolute left-0 h-full w-36 bg-gradient-to-r from-emerald-500/20 to-transparent pointer-events-none" />
  </div>
  </div>
  </div>
