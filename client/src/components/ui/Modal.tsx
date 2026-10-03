@@ -82,16 +82,16 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
  aria-modal="true"
  aria-labelledby={titleId}
  tabIndex={-1}
- className={cn("bg-surface rounded-lg shadow-lg w-full max-w-md max-h-[90vh] flex flex-col", className)}
+ className={cn("bg-surface rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden", className)}
  onMouseDown={(e) => e.stopPropagation()}
  >
- <div className="flex items-center justify-between p-4 border-b">
- <h2 id={titleId} className="text-lg font-semibold">{title}</h2>
+ <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800/60">
+ <h2 id={titleId} className="text-[17px] font-bold text-slate-900 dark:text-white">{title}</h2>
  <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 rounded-full" aria-label={`Close ${title}`}>
  <X className="h-4 w-4" aria-hidden="true" />
  </Button>
  </div>
- <div className="p-4 overflow-y-auto">
+ <div className="p-5 overflow-y-auto">
  {children}
  </div>
  </div>

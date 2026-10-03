@@ -293,8 +293,8 @@ export default function RecruitmentPage() {
  <form onSubmit={handleSubmitReq} className="space-y-4">
  <Input name="positionTitle" label="Job Title" placeholder="e.g. Senior Frontend Engineer" required />
  <div className="flex flex-col">
- <label htmlFor="requisition-department" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
- <Select id="requisition-department" name="departmentId" required className="w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="requisition-department" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Department</label>
+ <Select id="requisition-department" name="departmentId" required className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="">Select Department...</option>
  {deptData?.data?.map((dept: any) => (
  <option key={dept.id} value={dept.id}>{dept.name}</option>

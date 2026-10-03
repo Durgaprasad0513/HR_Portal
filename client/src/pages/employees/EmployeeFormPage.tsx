@@ -264,7 +264,7 @@ export default function EmployeeFormPage() {
  <Input label="Blood Group" name="bloodGroup" value={formData.bloodGroup} required onChange={handleChange} />
  <Input label="Qualification" name="qualification" value={formData.qualification} onChange={handleChange} />
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-marital" className="text-sm font-medium text-slate-700 dark:text-slate-300">Marital Status <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-marital" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Marital Status <span className="text-red-500">*</span></label>
  <Select 
  id="employee-marital"
  name="maritalStatus" required 
@@ -285,13 +285,13 @@ export default function EmployeeFormPage() {
 
  <DatePicker label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-gender" className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-gender" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Gender <span className="text-red-500">*</span></label>
  <Select 
  id="employee-gender"
  name="gender" required 
  value={formData.gender} 
  onChange={handleChange}
- className="flex h-10 w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
+ className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  >
  <option value="">Select Gender</option>
  <option value="MALE">Male</option>
@@ -327,13 +327,13 @@ export default function EmployeeFormPage() {
  <CardContent className="space-y-4">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-department" className="text-sm font-medium text-slate-700 dark:text-slate-300">Department <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-department" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Department <span className="text-red-500">*</span></label>
  <Select 
  id="employee-department"
  name="departmentId"
  value={formData.departmentId} 
  onChange={handleChange}
- className="flex h-10 w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
+ className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  required
  >
  <option value="">Select Department</option>
@@ -354,13 +354,13 @@ export default function EmployeeFormPage() {
  <Input label="Notice Period (Days)" type="number" min="0" name="noticePeriod" value={formData.noticePeriod} onChange={handleChange} />
  
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-type" className="text-sm font-medium text-slate-700 dark:text-slate-300">Employment Type <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-type" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Employment Type <span className="text-red-500">*</span></label>
  <Select 
  id="employee-type"
  name="employmentType" required 
  value={formData.employmentType} 
  onChange={handleChange}
- className="flex h-10 w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
+ className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  >
  <option value="PERMANENT">Full-time</option>
  <option value="CONTRACT">Part-time / Contract</option>
@@ -369,13 +369,13 @@ export default function EmployeeFormPage() {
  </div>
 
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-manager" className="text-sm font-medium text-slate-700 dark:text-slate-300">Line Manager</label>
+ <label htmlFor="employee-manager" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Line Manager</label>
  <Select 
  id="employee-manager"
  name="managerId" 
  value={formData.managerId} 
  onChange={handleChange}
- className="flex h-10 w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
+ className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  >
  <option value="">Select Manager</option>
  {employeesList?.data?.map((emp: any) => (
@@ -385,13 +385,13 @@ export default function EmployeeFormPage() {
  </div>
 
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-location" className="text-sm font-medium text-slate-700 dark:text-slate-300">Office Location</label>
+ <label htmlFor="employee-location" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Office Location</label>
  <Select 
  id="employee-location"
  name="location" 
  value={formData.location} 
  onChange={handleChange}
- className="flex h-10 w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
+ className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  >
  <option value="">Select Office</option>
  <option value="Hyd Office">Hyd Office</option>
@@ -400,13 +400,13 @@ export default function EmployeeFormPage() {
  </div>
  
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-status" className="text-sm font-medium text-slate-700 dark:text-slate-300">Employee Status <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-status" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Employee Status <span className="text-red-500">*</span></label>
  <Select 
  id="employee-status"
  name="status" required 
  value={formData.status} 
  onChange={handleChange}
- className="flex h-10 w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
+ className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  >
  <option value="ACTIVE">Active</option>
  <option value="INACTIVE">Inactive</option>
@@ -616,7 +616,7 @@ export default function EmployeeFormPage() {
  <p className="text-sm text-gray-600 dark:text-gray-400">
  A login account has been automatically created for this employee. Please share these credentials securely.
  </p>
- <div className="bg-surface p-4 rounded-lg border border-slate-border space-y-3">
+ <div className="bg-surface p-4 rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3">
  <div>
  <p className="text-xs text-gray-500 uppercase font-medium">Email</p>
  <p className="font-mono text-sm font-semibold">{credentialsModal.email}</p>

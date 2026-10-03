@@ -14,7 +14,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
  ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
  
  // Base styles: rounded-lg, focus rings, disabled states, transitions for micro-interactions
- const baseStyles = "inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-150 ease-out focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50";
+ const baseStyles = "inline-flex items-center justify-center rounded-full font-semibold transition-all duration-150 ease-out focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50";
  
  const variants = {
  // 1. Brand Primary

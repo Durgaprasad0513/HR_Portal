@@ -117,7 +117,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
  return (
  <div className={cn("flex flex-col", label ? "space-y-1 w-full" : (className && className.includes("w-") ? "" : "w-full sm:w-auto min-w-[140px]"))} ref={containerRef}>
  {label && (
- <label htmlFor={selectId} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+ <label htmlFor={selectId} className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">
  {label} {required && <span className="text-red-500" aria-hidden="true">*</span>}
  </label>
  )}
@@ -126,7 +126,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
  {/* Custom Trigger */}
  <div
  className={cn(
- "h-10 w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm cursor-pointer select-none transition-colors",
+ "h-[42px] w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface text-gray-900 dark:text-gray-100 px-4 py-2 text-[13px] cursor-pointer select-none transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-600",
  displayError && "border-red-500",
  disabled && "opacity-50 cursor-not-allowed",
  className,
@@ -147,12 +147,12 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 
  {/* Custom Dropdown Menu */}
  {isOpen && (
- <div className="absolute z-50 w-full mt-1 bg-surface border border-slate-border rounded-md shadow-lg max-h-60 overflow-auto py-1 ring-1 ring-black ring-opacity-5">
+ <div className="absolute z-50 w-full mt-2 bg-surface border border-slate-200 dark:border-slate-700 rounded-[1.25rem] shadow-xl max-h-60 overflow-auto p-1.5 ring-1 ring-black ring-opacity-5">
  {options.map((opt, i) => (
  <div
  key={i}
  className={cn(
- "cursor-pointer select-none relative py-2 pl-3 pr-9 text-sm transition-colors",
+ "cursor-pointer select-none relative py-2.5 px-3 text-[13px] rounded-xl transition-colors font-medium mb-0.5 last:mb-0",
  opt.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-brand-primary hover:text-white dark:hover:bg-brand-primary dark:hover:text-white text-gray-900 dark:text-gray-100",
  String(opt.value) === String(internalValue) && !opt.disabled ? "bg-accent-50 text-brand-primary font-medium dark:bg-accent-900/20" : ""
  )}

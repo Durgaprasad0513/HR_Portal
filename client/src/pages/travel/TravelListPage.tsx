@@ -299,8 +299,8 @@ export default function TravelListPage() {
  </div>
  <div className="grid grid-cols-2 gap-4">
  <div className="flex flex-col">
- <label htmlFor="travel-mode" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Travel Mode</label>
- <Select id="travel-mode" name="travelMode" className="w-full rounded-md border border-slate-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="travel-mode" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Travel Mode</label>
+ <Select id="travel-mode" name="travelMode" className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="AIR">Flight (Air)</option>
  <option value="TRAIN">Train</option>
  <option value="ROAD">Bus / Cab (Road)</option>

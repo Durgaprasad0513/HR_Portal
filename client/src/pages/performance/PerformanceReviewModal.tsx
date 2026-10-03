@@ -135,7 +135,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  const renderMetricRatings = (ratings: MetricRatings, editable: boolean, idPrefix: string) => (
  <div className="space-y-3">
  {PERFORMANCE_METRICS.map((metric) => (
- <div key={metric.key} className="flex flex-col gap-2 rounded-lg border border-slate-border p-3 sm:flex-row sm:items-center sm:justify-between">
+ <div key={metric.key} className="flex flex-col gap-2 rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] p-3 sm:flex-row sm:items-center sm:justify-between">
  <div>
  <p className="font-medium text-navy-900 dark:text-white">{metric.label}</p>
  <p className="text-xs text-gray-500 dark:text-gray-400">{metric.description}</p>
@@ -192,7 +192,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div>
  <label htmlFor="review-period" className="mb-1 block text-xs font-semibold uppercase text-gray-500">Review period</label>
- <Select id="review-period" name="reviewPeriod" value={formData.reviewPeriod || 'QUARTERLY'} onChange={handleChange} className="w-full rounded-md border border-slate-border bg-surface p-2 text-sm ">
+ <Select id="review-period" name="reviewPeriod" value={formData.reviewPeriod || 'QUARTERLY'} onChange={handleChange} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 text-sm ">
  <option value="MONTHLY">Monthly</option>
  <option value="QUARTERLY">Quarterly</option>
  <option value="HALF_YEARLY">Half-yearly</option>
@@ -201,17 +201,17 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  </div>
  <div>
  <label htmlFor="review-target" className="mb-1 block text-xs font-semibold uppercase text-gray-500">Target value</label>
- <input id="review-target" type="text" name="targetValue" value={formData.targetValue || ''} onChange={handleChange} className="w-full rounded-md border border-slate-border bg-surface p-2 text-sm " />
+ <input id="review-target" type="text" name="targetValue" value={formData.targetValue || ''} onChange={handleChange} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 text-sm " />
  </div>
  </div>
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div>
  <label htmlFor="review-kra" className="mb-1 block text-xs font-semibold uppercase text-gray-500">KRA description</label>
- <textarea id="review-kra" name="kraDescription" value={formData.kraDescription || ''} onChange={handleChange} className="w-full rounded-md border border-slate-border bg-surface p-2 text-sm " rows={2} />
+ <textarea id="review-kra" name="kraDescription" value={formData.kraDescription || ''} onChange={handleChange} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 text-sm " rows={2} />
  </div>
  <div>
  <label htmlFor="review-goal" className="mb-1 block text-xs font-semibold uppercase text-gray-500">Goal description</label>
- <textarea id="review-goal" name="goalDescription" value={formData.goalDescription || ''} onChange={handleChange} className="w-full rounded-md border border-slate-border bg-surface p-2 text-sm " rows={2} />
+ <textarea id="review-goal" name="goalDescription" value={formData.goalDescription || ''} onChange={handleChange} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 text-sm " rows={2} />
  </div>
  </div>
  <div className="flex justify-end gap-2">
@@ -241,7 +241,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="achievedValue" label="Achieved value" value={formData.achievedValue || ''} onChange={handleChange} disabled={!canSubmitSelf} /><Input name="strengths" label="Strengths" value={formData.strengths || ''} onChange={handleChange} disabled={!canSubmitSelf} /></div>
  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="areasOfImprovement" label="Areas for improvement" value={formData.areasOfImprovement || ''} onChange={handleChange} disabled={!canSubmitSelf} /><Input name="trainingRequirement" label="Training requirements" value={formData.trainingRequirement || ''} onChange={handleChange} disabled={!canSubmitSelf} /></div>
  <label htmlFor="employee-comments" className="mb-1 mt-4 block text-sm font-medium">Employee comments <span className="font-normal text-gray-500">(optional)</span></label>
- <textarea id="employee-comments" name="employeeComments" value={formData.employeeComments || ''} onChange={handleChange} disabled={!canSubmitSelf} className="w-full rounded-md border border-slate-border bg-surface p-2 " rows={3} />
+ <textarea id="employee-comments" name="employeeComments" value={formData.employeeComments || ''} onChange={handleChange} disabled={!canSubmitSelf} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 " rows={3} />
  </div>
  {canSubmitSelf && <Button type="button" onClick={() => submitWithMetrics(selfAppraisalMutation)} isLoading={selfAppraisalMutation.isPending}>Submit self-review</Button>}
  </section>
@@ -255,7 +255,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  <div className={canSubmitManager ? '' : 'opacity-70'}>
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="salaryRevisionRecommendation" label="Salary revision recommendation" value={formData.salaryRevisionRecommendation || ''} onChange={handleChange} disabled={!canSubmitManager} /><div className="flex items-center gap-2 pt-7"><input type="checkbox" id="promotionRecommendation" name="promotionRecommendation" checked={formData.promotionRecommendation || false} onChange={handleChange} disabled={!canSubmitManager} /><label htmlFor="promotionRecommendation">Recommend for promotion</label></div></div>
  <label htmlFor="manager-comments" className="mb-1 mt-4 block text-sm font-medium">Manager comments <span className="font-normal text-gray-500">(optional)</span></label>
- <textarea id="manager-comments" name="managerComments" value={formData.managerComments || ''} onChange={handleChange} disabled={!canSubmitManager} className="w-full rounded-md border border-slate-border bg-surface p-2 " rows={3} />
+ <textarea id="manager-comments" name="managerComments" value={formData.managerComments || ''} onChange={handleChange} disabled={!canSubmitManager} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 " rows={3} />
  </div>
  {canSubmitManager && <Button type="button" onClick={() => submitWithMetrics(managerAppraisalMutation)} isLoading={managerAppraisalMutation.isPending}>Submit manager review</Button>}
  </section>
@@ -264,7 +264,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  <section className="space-y-4">
  <div className="flex items-start justify-between gap-4 border-b pb-2"><div><h3 className="text-lg font-semibold">HR independent review</h3><p className="text-sm text-gray-500">An independent HR assessment carrying 20% of the final score.</p></div>{status !== 'HR_REVIEW' && <span className="text-xs font-medium text-gray-500">{status === 'EMPLOYEE_REVIEW' || status === 'MANAGER_REVIEW' ? 'Waiting for manager review' : 'Submitted & locked'}</span>}</div>
  {renderMetricRatings(canSubmitHR ? metricRatings : normaliseMetricRatings(review.hrMetricRatings), canSubmitHR, 'hr')}
- <div className={canSubmitHR ? '' : 'opacity-70'}><label htmlFor="hr-comments" className="mb-1 block text-sm font-medium">HR comments <span className="font-normal text-gray-500">(optional)</span></label><textarea id="hr-comments" name="hrComments" value={formData.hrComments || ''} onChange={handleChange} disabled={!canSubmitHR} className="w-full rounded-md border border-slate-border bg-surface p-2 " rows={3} /></div>
+ <div className={canSubmitHR ? '' : 'opacity-70'}><label htmlFor="hr-comments" className="mb-1 block text-sm font-medium">HR comments <span className="font-normal text-gray-500">(optional)</span></label><textarea id="hr-comments" name="hrComments" value={formData.hrComments || ''} onChange={handleChange} disabled={!canSubmitHR} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 " rows={3} /></div>
  {canSubmitHR && <Button type="button" onClick={() => submitWithMetrics(hrAppraisalMutation)} isLoading={hrAppraisalMutation.isPending}>Submit HR review</Button>}
  </section>
  )}
@@ -272,7 +272,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  {canViewHr && (status === 'FINAL_APPROVAL' || status === 'COMPLETED') && (
  <section className="space-y-4">
  <div className="border-b pb-2"><h3 className="text-lg font-semibold">Final approval</h3><p className="text-sm text-gray-500">Calculated from self 20%, manager 60%, and HR 20%. This score cannot be entered manually.</p></div>
- <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="finalRating" label="Calculated final rating (out of 5)" value={review.finalRating || 'Calculated after approval'} disabled /><div><label htmlFor="final-approval-status" className="mb-1 block text-sm font-medium">Approval status</label><Select id="final-approval-status" name="finalApprovalStatus" value={formData.finalApprovalStatus || 'APPROVAL_PENDING'} onChange={handleChange} disabled={!canSubmitFinal} className="flex h-10 w-full rounded-lg border border-slate-border bg-surface px-3 py-2 text-sm "><option value="APPROVAL_PENDING">Pending</option><option value="APPROVAL_APPROVED">Approved</option><option value="APPROVAL_REJECTED">Rejected</option></Select></div></div>
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="finalRating" label="Calculated final rating (out of 5)" value={review.finalRating || 'Calculated after approval'} disabled /><div><label htmlFor="final-approval-status" className="mb-1 block text-sm font-medium">Approval status</label><Select id="final-approval-status" name="finalApprovalStatus" value={formData.finalApprovalStatus || 'APPROVAL_PENDING'} onChange={handleChange} disabled={!canSubmitFinal} className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm "><option value="APPROVAL_PENDING">Pending</option><option value="APPROVAL_APPROVED">Approved</option><option value="APPROVAL_REJECTED">Rejected</option></Select></div></div>
  {canSubmitFinal && <Button type="button" onClick={() => finalApprovalMutation.mutate(formData)} isLoading={finalApprovalMutation.isPending}>Finalize review</Button>}
  </section>
  )}

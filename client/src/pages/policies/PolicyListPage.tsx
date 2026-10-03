@@ -249,7 +249,7 @@ export default function PolicyListPage() {
  <button
  type="button"
  onClick={() => { setSelectedPolicy(policy); setRecordsModalOpen(true); }}
- className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-border px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-slate-50 dark:text-gray-200 dark:hover:bg-slate-800"
+ className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-slate-50 dark:text-gray-200 dark:hover:bg-slate-800"
  aria-label={`View acknowledgement records for ${policy.policyName}`}
  >
  <Users className="h-4 w-4" aria-hidden="true" /> Records

@@ -289,8 +289,8 @@ export default function AssetListPage() {
  <form key={editingAsset ? editingAsset.id : 'new'} onSubmit={handleSubmit} className="space-y-4">
  <div className="grid grid-cols-2 gap-4">
  <div className="flex flex-col">
- <label htmlFor="asset-type" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asset Type</label>
- <Select id="asset-type" name="assetType" defaultValue={editingAsset?.assetType || ""} className="w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="asset-type" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Asset Type</label>
+ <Select id="asset-type" name="assetType" defaultValue={editingAsset?.assetType || ""} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="LAPTOP">Laptop</option>
  <option value="DESKTOP">Desktop</option>
  <option value="MOBILE">Mobile</option>
@@ -304,8 +304,8 @@ export default function AssetListPage() {
  </Select>
  </div>
  <div className="flex flex-col">
- <label htmlFor="asset-category" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
- <Select id="asset-category" name="assetCategory" defaultValue={editingAsset?.assetCategory || ""} className="w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="asset-category" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Category</label>
+ <Select id="asset-category" name="assetCategory" defaultValue={editingAsset?.assetCategory || ""} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="IT">IT Equipment</option>
  <option value="NON_IT">Non-IT</option>
  <option value="VEHICLE_CAT">Vehicle</option>
@@ -322,8 +322,8 @@ export default function AssetListPage() {
 
  <div className="grid grid-cols-2 gap-4">
  <div className="flex flex-col">
- <label htmlFor="asset-assignee" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign To (Optional)</label>
- <Select id="asset-assignee" name="assignedEmployeeId" defaultValue={editingAsset?.assignedEmployeeId || ""} className="w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="asset-assignee" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Assign To (Optional)</label>
+ <Select id="asset-assignee" name="assignedEmployeeId" defaultValue={editingAsset?.assignedEmployeeId || ""} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="">Unassigned</option>
  {empData?.data?.map((emp: any) => (
  <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
@@ -333,8 +333,8 @@ export default function AssetListPage() {
  <Input name="assetLocation" defaultValue={editingAsset?.assetLocation || ""} label="Location" placeholder="e.g. Hyderabad Office" />
  <DatePicker name="issueDate" defaultValue={editingAsset?.issueDate ? new Date(editingAsset.issueDate).toISOString().split('T')[0] : ""} label="Issue Date" type="date" />
  <div className="flex flex-col">
- <label htmlFor="asset-condition" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issue Condition</label>
- <Select id="asset-condition" name="issueCondition" defaultValue={editingAsset?.issueCondition || ""} className="w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="asset-condition" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Issue Condition</label>
+ <Select id="asset-condition" name="issueCondition" defaultValue={editingAsset?.issueCondition || ""} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="">Select Condition</option>
  <option value="NEW">New</option>
  <option value="GOOD">Good</option>
@@ -346,8 +346,8 @@ export default function AssetListPage() {
 
  {editingAsset && (
  <div className="flex flex-col">
- <label htmlFor="asset-status" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
- <Select id="asset-status" name="status" defaultValue={editingAsset.status} className="w-full rounded-md border border-slate-border bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="asset-status" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Status</label>
+ <Select id="asset-status" name="status" defaultValue={editingAsset.status} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="IN_USE">In Use</option>
  <option value="RETURN_REQUESTED">Return Requested</option>
  <option value="RETURNED">Returned</option>

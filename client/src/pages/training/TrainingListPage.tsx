@@ -307,14 +307,14 @@ export default function TrainingListPage() {
  value={searchTerm}
  onChange={(event) => setSearchTerm(event.target.value)}
  placeholder="Topic, trainer, location..."
- className="h-10 w-full rounded-lg border border-slate-border bg-surface pl-9 pr-3 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 "
+ className="h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface pl-9 pr-3 text-sm outline-none transition focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 "
  aria-label="Search training sessions"
  />
  </span>
  </label>
  <label className="w-full lg:w-44">
  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Type</span>
- <Select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-border bg-surface px-3 text-sm " aria-label="Filter by training type">
+ <Select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 text-sm " aria-label="Filter by training type">
  <option value="ALL">All types</option>
  <option value="INTERNAL">Internal</option>
  <option value="EXTERNAL">External</option>
@@ -322,7 +322,7 @@ export default function TrainingListPage() {
  </label>
  {isAdminOrHR && <label className="w-full lg:w-52">
  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">Department</span>
- <Select value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="h-10 w-full rounded-lg border border-slate-border bg-surface px-3 text-sm " aria-label="Filter by department">
+ <Select value={departmentFilter} onChange={(event) => setDepartmentFilter(event.target.value)} className="h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 text-sm " aria-label="Filter by department">
  <option value="ALL">All departments</option>
  {departmentsData?.data?.map((department: any) => <option key={department.id} value={department.id}>{department.name}</option>)}
  </Select>
