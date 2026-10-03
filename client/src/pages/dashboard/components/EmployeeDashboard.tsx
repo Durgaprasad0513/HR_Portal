@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
+import { leavesApi } from '@/api/leaves';
+import { performanceApi } from '@/api/performance';
+import { assetsApi } from '@/api/assets';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { BoxReveal } from '@/components/ui/modern-animated-sign-in';
 import { 
-  Plane, Laptop, MessageSquare, FileText, CheckCircle, ArrowRight
+  Calendar, Clock, Plane, BookOpen, Receipt, User, ArrowRight,
+  CheckCircle, XCircle, AlertCircle, Coffee, Award, Star,
+  Laptop
 } from 'lucide-react';
+import { formatDate } from '@/utils/dateFormat';
+import clsx from 'clsx';
 
 export const EmployeeDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   
   const [shouldAnimate] = useState(() => {
     const hasAnimated = sessionStorage.getItem('emp_dashboard_animated');
@@ -22,164 +28,277 @@ export const EmployeeDashboard = () => {
     return false;
   });
 
-  const { data: statsData, isLoading: isStatsLoading } = useQuery({
+  
+  const { data: statsData } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: () => dashboardApi.getStats().then((res: any) => res.data),
   });
 
-  if (isStatsLoading) {
+  const { data: balancesData, isLoading: loadingBalances } = useQuery({
+    queryKey: ['leave-balances', user?.employee?.id],
+    queryFn: () => leavesApi.getBalances(),
+    enabled: !!user?.employee?.id,
+  });
+
+  const { data: myLeavesData, isLoading: loadingLeaves } = useQuery({
+    queryKey: ['my-leaves'],
+    queryFn: () => leavesApi.getMyLeaves(),
+  });
+
+  const { data: performanceData, isLoading: loadingPerformance } = useQuery({
+    queryKey: ['my-performance'],
+    queryFn: () => performanceApi.getMyReviews(),
+    enabled: !!user?.employee?.id,
+  });
+
+  const { data: assetsData, isLoading: loadingAssets } = useQuery({
+    queryKey: ['my-assets'],
+    queryFn: () => assetsApi.getAll(),
+    enabled: !!user?.employee?.id,
+  });
+
+  if (loadingBalances || loadingLeaves || loadingPerformance || loadingAssets) {
     return <div className="p-8 flex justify-center"><LoadingSpinner className="w-10 h-10" /></div>;
   }
 
-  const stats = statsData || {};
+  const balances = (balancesData as any)?.data || [];
+  const assets = (assetsData as any)?.data || [];
+  const recentLeaves = ((myLeavesData as any)?.data || []).slice(0, 5);
+  const reviews = (performanceData as any)?.data || [];
   
-  const travelCount = stats.moduleOverview?.travel?.pendingApprovals || 0;
-  const hardwareCount = stats.moduleOverview?.assets?.assigned || 0;
-  const queryCount = 0; // Helpdesk not in stats yet
-  const policyCount = 0; // Policy not in stats yet
+  // Get the most recent review if any exist
+  const latestReview = reviews.length > 0 ? reviews[reviews.length - 1] : null;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      case 'REJECTED': return 'text-rose-600 bg-rose-50 border-rose-200';
+      case 'PENDING': return 'text-amber-600 bg-amber-50 border-amber-200';
+      default: return 'text-slate-600 bg-slate-50 border-slate-200';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return <CheckCircle className="w-4 h-4" />;
+      case 'REJECTED': return <XCircle className="w-4 h-4" />;
+      case 'PENDING': return <Clock className="w-4 h-4" />;
+      default: return <AlertCircle className="w-4 h-4" />;
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* 4 Metric Cards */}
-      <BoxReveal duration={0.5} disabled={!shouldAnimate}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-          
-          <div 
-            onClick={() => navigate('/travel')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex items-center justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98]"
-          >
-            <div>
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Travel Claims</p>
-              <h3 className="text-3xl md:text-4xl font-bold text-text-heading mb-1">{travelCount}</h3>
-              <p className="text-[10px] md:text-xs text-slate-500">My Field Tours</p>
-            </div>
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-sky-50 flex items-center justify-center text-sky-500 shrink-0">
-              <Plane className="w-6 h-6" />
-            </div>
-          </div>
+      {/* ROW 1: Profile, Performance & Balances */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <div 
-            onClick={() => navigate('/assets')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex items-center justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98]"
-          >
-            <div>
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Assigned Hard...</p>
-              <h3 className="text-3xl md:text-4xl font-bold text-text-heading mb-1">{hardwareCount}</h3>
-              <p className="text-[10px] md:text-xs text-slate-500">Issued Equipment</p>
-            </div>
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
-              <Laptop className="w-6 h-6" />
-            </div>
-          </div>
 
-          <div 
-            onClick={() => navigate('/requests')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex items-center justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98]"
-          >
-            <div>
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">HR Queries</p>
-              <h3 className="text-3xl md:text-4xl font-bold text-text-heading mb-1">{queryCount}</h3>
-              <p className="text-[10px] md:text-xs text-slate-500">My Helpdesk Tick...</p>
-            </div>
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
-              <MessageSquare className="w-6 h-6" />
-            </div>
-          </div>
-
-          <div 
-            onClick={() => navigate('/policies')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex items-center justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98]"
-          >
-            <div>
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Policy Complia...</p>
-              <h3 className="text-3xl md:text-4xl font-bold text-text-heading mb-1">{policyCount}</h3>
-              <p className="text-[10px] md:text-xs text-slate-500">Pending Acknowle...</p>
-            </div>
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-500 shrink-0">
-              <FileText className="w-6 h-6" />
-            </div>
-          </div>
-
-        </div>
-      </BoxReveal>
-
-      {/* 2 Wide Cards Row */}
-      <BoxReveal duration={0.6} disabled={!shouldAnimate}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          
-          <div 
-            onClick={() => navigate('/policies')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex flex-col justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98] group"
-          >
-            <div className="flex items-start justify-between mb-8 gap-4">
-              <div className="min-w-0">
-                <h3 className="text-base md:text-lg font-bold text-text-heading group-hover:text-emerald-700 transition-colors">Pending Actions</h3>
-                <p className="text-xs md:text-sm text-slate-500 mt-1">Corporate documents requiring your digital acknowledgement</p>
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Performance Overview */}
+          <BoxReveal duration={0.6} disabled={!shouldAnimate}>
+            <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-text-heading">My Performance</h3>
+                <Link to="/performance" className="text-xs font-semibold text-brand-primary hover:underline">View All</Link>
               </div>
-              <div className="bg-purple-50 px-3 py-1.5 rounded-2xl border border-purple-100 flex flex-col items-center justify-center min-w-[60px] shrink-0">
-                <span className="text-[10px] font-bold text-purple-600">0</span>
-                <span className="text-[9px] font-bold text-purple-600">Pending</span>
-              </div>
+              
+              {latestReview ? (
+                <div className="flex flex-col h-full justify-center space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-text-muted">Review Period</span>
+                    <span className="text-sm font-bold bg-tint px-3 py-1 rounded-full text-brand-primary">{latestReview.reviewPeriod}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-text-muted">Status</span>
+                    <span className="text-sm font-bold text-text-heading">{latestReview.status.replace('_', ' ')}</span>
+                  </div>
+                  {latestReview.finalRating ? (
+                    <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-amber-500">
+                        <Star className="fill-current w-5 h-5" />
+                        <span className="font-bold text-text-heading">Rating</span>
+                      </div>
+                      <span className="text-lg font-black text-brand-primary">{latestReview.finalRating} / 5</span>
+                    </div>
+                  ) : (
+                    <div className="mt-2 p-3 bg-amber-50 text-amber-700 rounded-lg border border-amber-100 text-xs font-medium flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" /> Review is currently in progress
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-3">
+                    <Award className="w-6 h-6 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-text-heading mb-1">No Reviews Yet</p>
+                  <p className="text-xs text-text-muted">Your performance reviews will appear here once assigned.</p>
+                </div>
+              )}
             </div>
-            <div className="bg-emerald-50 border border-emerald-100/50 rounded-xl p-4 flex gap-3 items-center">
-              <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-              <p className="text-xs md:text-sm text-emerald-700 font-medium">All mandatory HR policies are acknowledged! Your compliance status is 100%.</p>
-            </div>
-          </div>
+          </BoxReveal>
 
-          <div 
-            onClick={() => navigate('/travel')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex flex-col justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98] group"
-          >
-            <div className="flex items-start justify-between mb-8 gap-4">
-              <div className="min-w-0">
-                <h3 className="text-base md:text-lg font-bold text-text-heading group-hover:text-emerald-700 transition-colors">My Travel Allowance Status</h3>
-                <p className="text-xs md:text-sm text-slate-500 mt-1">Recent tour requests, advances, and bill reimbursements</p>
+          {/* Assigned Assets */}
+          <BoxReveal duration={0.7} disabled={!shouldAnimate}>
+            <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-text-heading">Assigned Assets</h3>
+                <Link to="/assets" className="text-xs font-semibold text-brand-primary hover:underline">View All</Link>
               </div>
-              <button className="text-xs md:text-sm font-bold text-emerald-600 flex items-center gap-1 group-hover:text-emerald-700 transition-colors bg-emerald-50 group-hover:bg-emerald-100 px-3 py-1.5 rounded-full shrink-0">
-                View All <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              
+              {assets.length > 0 ? (
+                <div className="space-y-3 overflow-y-auto max-h-[140px] pr-2 custom-scrollbar">
+                  {assets.slice(0, 3).map((asset: any) => (
+                    <div key={asset.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                      <div className="w-8 h-8 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center shrink-0">
+                        <Laptop className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-text-heading truncate">{asset.assetName}</p>
+                        <p className="text-xs text-text-muted truncate">{asset.assetId} • {asset.brandModel || 'Standard'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-3">
+                    <Laptop className="w-6 h-6 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-text-heading mb-1">No Assets Assigned</p>
+                  <p className="text-xs text-text-muted">You have no active company assets.</p>
+                </div>
+              )}
             </div>
-            <div className="flex items-center justify-center py-8 text-slate-400 text-xs md:text-sm">
-              No recent travel records found.
-            </div>
-          </div>
-
+          </BoxReveal>
         </div>
-      </BoxReveal>
+      </div>
 
-      {/* Bottom Small Links */}
-      <BoxReveal duration={0.7} disabled={!shouldAnimate}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      {/* ROW 2: Quick Actions & Recent Leaves */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Quick Actions */}
+          <div className="md:col-span-1 space-y-4">
+            <h3 className="font-bold text-text-heading text-lg">Quick Actions</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {(() => {
+                const stats = statsData || {};
+                const pendingTraining = stats.moduleOverview?.training?.pendingApprovals || 0;
+                const pendingTravel = stats.moduleOverview?.travel?.pendingApprovals || 0;
+                const pendingExpenses = stats.moduleOverview?.expenses?.pendingApprovals || 0;
+
+                return (
+                  <>
+                    <Link to="/training" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <BookOpen size={20} />
+                        {pendingTraining > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingTraining}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingTraining > 0 ? 'Training Approvals' : 'Training Updates'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingTraining > 0 ? `${pendingTraining} request${pendingTraining > 1 ? 's' : ''} awaiting action` : 'View training sessions'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+                    
+                    <Link to="/travel" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <Plane size={20} />
+                        {pendingTravel > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingTravel}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingTravel > 0 ? 'Travel Approvals' : 'Travel Request'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingTravel > 0 ? `${pendingTravel} request${pendingTravel > 1 ? 's' : ''} awaiting action` : 'Plan business travel'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+
+                    <Link to="/office-expenses" className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-slate-border hover:border-brand-primary hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform relative">
+                        <Receipt size={20} />
+                        {pendingExpenses > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-navy-900">
+                            {pendingExpenses}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-sm text-text-heading group-hover:text-brand-primary transition-colors">
+                          {pendingExpenses > 0 ? 'Expense Approvals' : 'Claim Expense'}
+                        </h4>
+                        <p className="text-xs text-text-muted">
+                          {pendingExpenses > 0 ? `${pendingExpenses} claim${pendingExpenses > 1 ? 's' : ''} awaiting action` : 'Submit bills for reimbursement'}
+                        </p>
+                      </div>
+                      <ArrowRight size={16} className="text-slate-300 group-hover:text-brand-primary group-hover:translate-x-1 transition-all" />
+                    </Link>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Recent Leave Requests */}
+        <div className="md:col-span-2 flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-text-heading text-lg">My Recent Leaves</h3>
+            <Link to="/leaves" className="text-sm font-semibold text-brand-primary hover:underline">View All</Link>
+          </div>
           
-          <div 
-            onClick={() => navigate('/assets')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex items-center justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98] group gap-4"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <Laptop className="w-4 h-4 md:w-5 md:h-5 text-emerald-600 shrink-0" />
-              <h3 className="text-sm md:text-base font-bold text-text-heading group-hover:text-emerald-700 transition-colors truncate">My Assigned Company Assets</h3>
-            </div>
-            <span className="text-xs md:text-sm font-bold text-emerald-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform shrink-0">
-              Details <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            </span>
+          <div className="bg-surface rounded-xl border border-slate-border shadow-sm overflow-hidden flex-1 flex flex-col">
+            {recentLeaves.length > 0 ? (
+              <div className="divide-y divide-slate-border flex-1">
+                {recentLeaves.map((leave: any) => {
+                  const d = new Date(leave.startDate);
+                  const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+                  const dateNum = d.getDate();
+                  
+                  return (
+                  <div key={leave.id} className="p-4 flex items-center justify-between hover:bg-tint transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">{month}</span>
+                        <span className="text-sm font-bold text-text-heading">{dateNum}</span>
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-text-heading">{leave.leaveType?.replace('_', ' ') || leave.leaveType}</p>
+                        <p className="text-xs text-text-muted mt-0.5">{leave.days} day(s) &bull; {leave.reason}</p>
+                      </div>
+                    </div>
+                    <div className={clsx("flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold", getStatusColor(leave.status))}>
+                      {getStatusIcon(leave.status)}
+                      {leave.status}
+                    </div>
+                  </div>
+                )})}
+              </div>
+            ) : (
+              <div className="p-10 text-center flex flex-col items-center justify-center text-slate-400 flex-1">
+                <Calendar className="w-12 h-12 mb-3 text-slate-300" />
+                <p className="text-sm font-medium text-text-heading mb-1">No recent leaves</p>
+                <p className="text-xs">You haven't taken any time off recently.</p>
+              </div>
+            )}
           </div>
-
-          <div 
-            onClick={() => navigate('/requests')}
-            className="bg-surface rounded-2xl p-5 md:p-6 border border-slate-border shadow-sm flex items-center justify-between hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all cursor-pointer active:scale-[0.98] group gap-4"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-emerald-600 shrink-0" />
-              <h3 className="text-sm md:text-base font-bold text-text-heading group-hover:text-emerald-700 transition-colors truncate">My HR Queries & Requests</h3>
-            </div>
-            <span className="text-xs md:text-sm font-bold text-emerald-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform shrink-0">
-              Open Desk <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            </span>
-          </div>
-
         </div>
-      </BoxReveal>
+
+      </div>
     </div>
   );
 };
