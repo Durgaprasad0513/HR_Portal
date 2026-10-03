@@ -93,7 +93,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  >
  <div className="flex items-center text-gray-400 dark:text-gray-500 font-medium">
  <Search className="h-4 w-4 mr-3" strokeWidth={2.5} />
- <span>Search portal, staff, travel, policies...</span>
+ <span>Search</span>
  </div>
  <kbd className="hidden sm:flex items-center justify-center text-[11px] font-semibold px-2 py-0.5 rounded bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 shadow-sm gap-0.5">
  <span className="text-[12px] font-sans">⌘</span>K
@@ -242,6 +242,8 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  </>
  );
 }
+
+
 
 
 
