@@ -74,7 +74,7 @@ export default function MainLayout() {
  }, [isDesktop, sidebarOpen]);
 
  return (
- <div className="flex h-screen bg-canvas transition-colors overflow-hidden relative">
+ <div className="flex h-screen bg-[#0f172a] transition-colors overflow-hidden relative">
  {/* Mobile overlay */}
  {sidebarOpen && !isDesktop && (
  <button
@@ -116,4 +116,5 @@ export default function MainLayout() {
  </div>
  );
 }
+
 
