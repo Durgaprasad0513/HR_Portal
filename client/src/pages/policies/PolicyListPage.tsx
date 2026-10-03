@@ -151,24 +151,25 @@ export default function PolicyListPage() {
  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
  <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full sm:w-auto">
  <div className="relative w-full sm:w-80">
- <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
- <input 
+ <Search className="absolute left-3.5 top-3 h-4 w-4 text-gray-400 dark:text-gray-500 z-10" />
+ <Input 
  aria-label="Search documents"
  placeholder="Search policy name or summary..." 
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-9 pr-4 py-2 bg-surface border border-slate-border shadow-sm rounded-lg text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+ className="pl-10"
  />
  </div>
- <select
+ <div className="w-full sm:w-64">
+ <Select
  aria-label="Filter by category"
  value={categoryFilter}
  onChange={(e) => setCategoryFilter(e.target.value)}
- className="w-full sm:w-48 py-2 px-3 bg-surface border border-slate-border shadow-sm rounded-lg text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all text-slate-700 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700"
  >
  <option value="ALL">All Categories</option>
  {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
- </select>
+ </Select>
+ </div>
  </div>
  {!isLoading && (
  <p className="text-sm text-gray-600 dark:text-gray-400 shrink-0" aria-live="polite">
