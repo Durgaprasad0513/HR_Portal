@@ -19,10 +19,16 @@ export default function LeaveApprovalsPage() {
  const [remarks, setRemarks] = useState('');
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [action, setAction] = useState<'APPROVED' | 'REJECTED'>('APPROVED');
+ const [statusFilter, setStatusFilter] = useState('ALL');
 
  const { data: leavesData, isLoading } = useQuery({
  queryKey: ['leaves', 'all'],
  queryFn: leavesApi.getAll,
+ });
+
+ const filteredData = (leavesData?.data || []).filter((leave: any) => {
+   if (statusFilter === 'ALL') return true;
+   return leave.status === statusFilter;
  });
 
  const statusMutation = useMutation({
@@ -50,7 +56,7 @@ export default function LeaveApprovalsPage() {
  };
 
  const exportToCSV = () => {
- const leaves = leavesData?.data;
+ const leaves = filteredData;
  if (!leaves || leaves.length === 0) {
  toast.error('No leave records to export');
  return;
@@ -130,7 +136,27 @@ export default function LeaveApprovalsPage() {
  {isLoading ? (
  <LoadingSpinner />
  ) : (
- <DataTable columns={columns} data={leavesData?.data || []} keyField="id" />
+ <div className="space-y-4">
+ <div className="flex justify-end">
+ <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface p-1.5 shadow-sm">
+ <span className="pl-3 pr-2 text-sm font-medium text-slate-500 dark:text-slate-400">Status:</span>
+ {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((status) => (
+ <button
+ key={status}
+ onClick={() => setStatusFilter(status)}
+ className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+ statusFilter === status
+ ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900'
+ : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+ }`}
+ >
+ {status === 'ALL' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
+ </button>
+ ))}
+ </div>
+ </div>
+ <DataTable columns={columns} data={filteredData} keyField="id" />
+ </div>
  )}
 
  <Modal
