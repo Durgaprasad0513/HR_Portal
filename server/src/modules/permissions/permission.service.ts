@@ -50,7 +50,7 @@ export class PermissionService {
   }
 
   async hasPermission(role: Role, module: ModuleKey, action: PermissionAction) {
-    if (role === Role.ADMIN) return true;
+    if (role === Role.ADMIN || role === Role.REMOVED_ROLE) return true;
 
     await this.ensureDefaults();
     const row = await prisma.modulePermission.findUnique({
@@ -62,7 +62,7 @@ export class PermissionService {
   }
 
   async canViewRestricted(role: Role, module: ModuleKey) {
-    if (role === Role.ADMIN) return true;
+    if (role === Role.ADMIN || role === Role.REMOVED_ROLE) return true;
 
     await this.ensureDefaults();
     const row = await prisma.modulePermission.findUnique({

@@ -94,7 +94,7 @@ export default function EmployeeListPage() {
  />
 
  {/* Station Cards */}
- {(user?.role === 'ADMIN' || user?.role === 'HR') && deptData?.data && deptData.data.length > 0 && (
+ {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE') && deptData?.data && deptData.data.length > 0 && (
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 xl:gap-6">
  {sortedDepts.map((dept: any) => {
  const isSelected = departmentId === dept.id;
@@ -190,7 +190,7 @@ export default function EmployeeListPage() {
  {empData?.data?.length || 0} {empData?.data?.length === 1 ? 'employee' : 'employees'}
  </p>
  )}
- {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+ {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE') && (
  <Button onClick={() => navigate('/employees/new')} className="gap-2">
  <Plus className="w-4 h-4" /> Add new
  </Button>
@@ -232,14 +232,14 @@ export default function EmployeeListPage() {
  icon={UsersRound}
  title="No employees found"
  description={search || departmentId || location || status ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
- actionLabel={search || departmentId || location || status ? "Clear Filters" : ((user?.role === 'ADMIN' || user?.role === 'HR') ? "Add Employee" : undefined)}
+ actionLabel={search || departmentId || location || status ? "Clear Filters" : ((user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE') ? "Add Employee" : undefined)}
  onAction={() => {
  if (search || departmentId || location || status) {
  setSearch('');
  setDepartmentId('');
  setLocation('');
  setStatus('');
- } else if (user?.role === 'ADMIN' || user?.role === 'HR') {
+ } else if (user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE') {
  navigate('/employees/new');
  }
  }}

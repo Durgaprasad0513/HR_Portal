@@ -9,7 +9,7 @@ export function ProfileBanner() {
   const navigate = useNavigate();
 
   // Only show for HR and EMPLOYEE. Exclude ADMIN and MANAGER.
-  if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
+  if (user?.role === 'MANAGER') {
     return null;
   }
 

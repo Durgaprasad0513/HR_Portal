@@ -41,7 +41,7 @@ export default function PolicyListPage() {
  const [isUploading, setIsUploading] = useState(false);
  const [search, setSearch] = useState('');
 
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
 
  const { data: policiesData, isLoading } = useQuery({
  queryKey: ['policies'],

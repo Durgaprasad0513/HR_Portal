@@ -7,7 +7,7 @@ export type Scope = 'SELF' | 'TEAM' | 'ORG' | 'NONE';
  * Determines the visibility scope for a given module/role combination.
  */
 export const getModuleScope = (role: Role, module: string): Scope => {
-  if (role === 'ADMIN' || role === 'HR') return 'ORG';
+  if (role === 'ADMIN' || role === 'HR' || role === 'REMOVED_ROLE') return 'ORG';
   
   if (role === 'MANAGER') {
     // For a manager, we generally want TEAM scope for most operational modules

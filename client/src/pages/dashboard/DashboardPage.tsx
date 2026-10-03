@@ -21,7 +21,7 @@ import { formatDate } from '@/utils/dateFormat';
 export default function DashboardPage() {
  const navigate = useNavigate();
  const { user } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'REMOVED_ROLE';
  const isManager = false;
  const [showAbsent, setShowAbsent] = useState(false);
  
@@ -100,7 +100,7 @@ export default function DashboardPage() {
  return (
  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 p-0 sm:p-2 pb-12">
  <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.4} width="100%">
- {user?.role === 'HR' ? (
+ {isAdminOrHR ? (
  <ProfileBanner />
  ) : (
  <PageHeader
