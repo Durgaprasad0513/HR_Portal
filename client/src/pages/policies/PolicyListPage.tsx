@@ -40,6 +40,7 @@ export default function PolicyListPage() {
  const [file, setFile] = useState<File | null>(null);
  const [isUploading, setIsUploading] = useState(false);
  const [search, setSearch] = useState('');
+ const [categoryFilter, setCategoryFilter] = useState('ALL');
 
  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
@@ -115,7 +116,11 @@ export default function PolicyListPage() {
  return acksData?.some((a: any) => a.policyId === policyId && a.acknowledgementStatus === 'ACKNOWLEDGED');
  };
 
- const filteredData = (policiesData || []).filter((p: any) => p.policyName.toLowerCase().includes(search.toLowerCase()));
+ const filteredData = (policiesData || []).filter((p: any) => {
+   const matchesSearch = p.policyName.toLowerCase().includes(search.toLowerCase());
+   const matchesCategory = categoryFilter === 'ALL' || p.policyCategory === categoryFilter;
+   return matchesSearch && matchesCategory;
+ });
 
  const getCategoryLabel = (category: string) =>
  CATEGORIES.find((item) => item.value === category)?.label || category;
@@ -144,18 +149,29 @@ export default function PolicyListPage() {
  />
 
  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+ <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full sm:w-auto">
  <div className="relative w-full sm:w-80">
  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
  <input 
  aria-label="Search documents"
- placeholder="Search documents..." 
+ placeholder="Search policy name or summary..." 
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-9 pr-4 py-2 bg-surface border border-slate-border shadow-sm rounded-lg text-sm focus:outline-none transition-all"
+ className="w-full pl-9 pr-4 py-2 bg-surface border border-slate-border shadow-sm rounded-lg text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
  />
  </div>
+ <select
+ aria-label="Filter by category"
+ value={categoryFilter}
+ onChange={(e) => setCategoryFilter(e.target.value)}
+ className="w-full sm:w-48 py-2 px-3 bg-surface border border-slate-border shadow-sm rounded-lg text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all text-slate-700 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700"
+ >
+ <option value="ALL">All Categories</option>
+ {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+ </select>
+ </div>
  {!isLoading && (
- <p className="text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
+ <p className="text-sm text-gray-600 dark:text-gray-400 shrink-0" aria-live="polite">
  {filteredData.length} {filteredData.length === 1 ? 'document' : 'documents'}
  </p>
  )}
