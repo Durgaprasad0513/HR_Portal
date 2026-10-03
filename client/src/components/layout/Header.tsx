@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, LogOut, User, Search, Sun, Moon, Bell, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Menu, X, LogOut, User, Search, Sun, Moon, Bell, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -166,21 +166,42 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  )}
  </div>
 
- <button
- type="button"
- className="flex items-center cursor-pointer space-x-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
- onClick={() => { setDropdownOpen(!dropdownOpen); setNotifOpen(false); }}
- aria-label="Open user menu"
- aria-expanded={dropdownOpen}
- aria-controls="user-menu"
- >
- <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold">
- {user?.email?.[0].toUpperCase()}
+ <div className="flex items-center gap-4 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
+   <button
+     type="button"
+     className="flex items-center cursor-pointer gap-3 text-left focus:outline-none group"
+     onClick={() => { setDropdownOpen(!dropdownOpen); setNotifOpen(false); }}
+     aria-label="Open user menu"
+     aria-expanded={dropdownOpen}
+     aria-controls="user-menu"
+   >
+     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold overflow-hidden ring-2 ring-white dark:ring-slate-800">
+       {user?.employee?.profilePhoto ? (
+         <img src={user.employee.profilePhoto} alt="Profile" className="h-full w-full object-cover" />
+       ) : (
+         user?.email?.[0].toUpperCase()
+       )}
+     </div>
+     <div className="hidden sm:flex flex-col">
+       <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 max-w-[150px] truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+         {user?.employee?.firstName ? `${user.employee.firstName} ${user.employee.lastName}` : user?.email}
+       </span>
+       <div className="flex items-center mt-0.5 gap-1 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 px-1.5 py-0.5 rounded-full w-max">
+         <ShieldCheck className="h-3 w-3" />
+         {user?.roleLabel || user?.role || 'User'}
+       </div>
+     </div>
+   </button>
+   
+   <button 
+     type="button"
+     className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+     title="Logout"
+     onClick={() => setLogoutConfirmOpen(true)}
+   >
+     <LogOut className="h-5 w-5" strokeWidth={1.5} />
+   </button>
  </div>
- <span className="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:block">
- {user?.employee?.firstName ? `${user.employee.firstName} ${user.employee.lastName}` : user?.email}
- </span>
- </button>
 
  {dropdownOpen && (
  <div id="user-menu" className="absolute right-0 top-10 mt-2 w-48 rounded-md bg-surface py-1 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-border">
