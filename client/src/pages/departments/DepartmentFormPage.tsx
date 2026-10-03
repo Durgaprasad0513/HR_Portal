@@ -87,25 +87,25 @@ export default function DepartmentFormPage() {
  <Input label="Department Name" name="name" value={formData.name} onChange={handleChange} required />
  
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="department-description" className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+ <label htmlFor="department-description" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Description</label>
  <textarea
  id="department-description"
  name="description"
  value={formData.description}
  onChange={handleChange}
- className="flex min-h-[100px] w-full rounded-md border border-slate-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+ className="flex min-h-[100px] w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
  placeholder="Optional description"
  />
  </div>
 
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="department-head" className="text-sm font-medium text-slate-700 dark:text-slate-300">Department Head</label>
+ <label htmlFor="department-head" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Department Head</label>
  <Select 
  id="department-head"
  name="headId" 
  value={formData.headId} 
  onChange={handleChange}
- className="flex h-10 w-full rounded-md border border-slate-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+ className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
  >
  <option value="">None</option>
  {empData?.data?.map(emp => (

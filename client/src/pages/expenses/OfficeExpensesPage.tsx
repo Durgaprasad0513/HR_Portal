@@ -226,8 +226,8 @@ export default function OfficeExpensesPage() {
  <div className="grid grid-cols-2 gap-4">
  <DatePicker name="expenseDate" label="Date incurred" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
  <div className="flex flex-col">
- <label htmlFor="office-expense-category" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
- <Select id="office-expense-category" name="category" className="w-full rounded-md border border-slate-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <label htmlFor="office-expense-category" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Category</label>
+ <Select id="office-expense-category" name="category" className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="STATIONERY">Stationery</option>
  <option value="FOOD_SNACKS">Food & Snacks</option>
  <option value="MAINTENANCE">Maintenance</option>
