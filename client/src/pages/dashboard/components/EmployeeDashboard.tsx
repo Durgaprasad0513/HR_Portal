@@ -90,38 +90,8 @@ export const EmployeeDashboard = () => {
   return (
     <div className="space-y-6">
       {/* ROW 1: Profile, Performance & Balances */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Profile Snapshot */}
-        <BoxReveal duration={0.5} disabled={!shouldAnimate}>
-          <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full bg-gradient-to-br from-brand-primary/5 to-transparent">
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-full bg-brand-primary text-white flex items-center justify-center text-2xl font-bold shadow-md">
-                {user?.employee?.firstName?.[0] || 'U'}
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-text-heading">{user?.employee?.firstName} {user?.employee?.lastName}</h2>
-                <p className="text-brand-primary font-medium text-sm mb-1">{user?.employee?.designation}</p>
-                <div className="flex items-center gap-1 text-xs text-text-muted">
-                  <span className="bg-white/50 px-2 py-0.5 rounded-full border border-slate-200">{user?.employee?.employeeCode}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 pt-6 border-t border-slate-border/50 grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-text-muted mb-1">Department</p>
-                <p className="text-sm font-semibold text-text-heading">{user?.employee?.department?.name || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-text-muted mb-1">Reporting To</p>
-                <p className="text-sm font-semibold text-text-heading">
-                  {user?.employee?.manager ? `${user?.employee?.manager.firstName} ${user?.employee?.manager.lastName}` : 'N/A'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </BoxReveal>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
 
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Performance Overview */}
