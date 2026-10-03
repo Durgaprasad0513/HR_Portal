@@ -7,7 +7,7 @@ export type Scope = 'SELF' | 'TEAM' | 'ORG' | 'NONE';
  * Determines the visibility scope for a given module/role combination.
  */
 export const getModuleScope = (role: Role, module: string): Scope => {
-  if (role === 'ADMIN' || role === 'HR' || role === 'HR_EXECUTIVE') return 'ORG';
+  if (role === 'ADMIN' || role === 'HR') return 'ORG';
   
   if (role === 'MANAGER') {
     // For a manager, we generally want TEAM scope for most operational modules
@@ -17,13 +17,7 @@ export const getModuleScope = (role: Role, module: string): Scope => {
     return 'SELF';
   }
 
-  if (role === 'HR_EXECUTIVE') {
-    // HR Executive might need ORG scope but with limited mutation,
-    // or they might be restricted. For MVP, we'll give them ORG for operational tasks.
-    const hrExecModules = ['employees', 'travel', 'assets', 'recruitment', 'performance', 'training', 'requests', 'policies'];
-    if (hrExecModules.includes(module)) return 'ORG';
-    return 'SELF';
-  }
+
 
   // DEFAULT EMPLOYEE
   return 'SELF';

@@ -17,7 +17,7 @@ export default function RecruitmentPage() {
  const { user } = useAuth();
  const queryClient = useQueryClient();
  const { canExport } = usePermissions();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
  
  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
  const [selectedReq, setSelectedReq] = useState<any>(null);

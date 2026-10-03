@@ -25,7 +25,7 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  const navigate = useNavigate();
  const { user } = useAuth();
 
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
  useEffect(() => {
  const down = (e: KeyboardEvent) => {

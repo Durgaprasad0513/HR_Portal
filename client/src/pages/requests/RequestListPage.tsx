@@ -34,7 +34,7 @@ export default function RequestListPage() {
  const [manageModalOpen, setManageModalOpen] = useState(false);
  const [selectedReq, setSelectedReq] = useState<any>(null);
 
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
 
  const { data: requestsData, isLoading } = useQuery({
  queryKey: ['requests'],

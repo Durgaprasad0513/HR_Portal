@@ -20,7 +20,7 @@ import { Select } from '@/components/ui/Select';
 
 export default function PerformanceListPage() {
  const { user } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE';
+ const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
  const secondTabName: Tab = isAdminOrHR ? 'Team/Company Reviews' : 'Team/Company Reviews'; // Simplified for type matching
  const [activeTab, setActiveTab] = useState<Tab>('My Performance');
  const [selectedReview, setSelectedReview] = useState<any>(null);
@@ -129,7 +129,7 @@ export default function PerformanceListPage() {
  title="Performance"
  description="Track review progress, feedback, and next approvals."
  actions={<>
- {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'HR_EXECUTIVE') && (
+ {(user?.role === 'ADMIN' || user?.role === 'HR') && (
  <Button onClick={() => setIsCreateModalOpen(true)}>
  Initiate Review
  </Button>
