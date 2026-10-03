@@ -94,7 +94,7 @@ export default function LeaveRequestPage() {
  {isLoading ? (
  <LoadingSpinner />
  ) : (
- <div className="bg-surface rounded-lg shadow overflow-hidden border border-slate-border dark:border-slate-border">
+ <div className="w-full sm:w-48 py-2 px-3 h-[42px] rounded-[1.25rem] border border-slate-200 dark:border-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-[13px] focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all bg-white dark:bg-surface text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-600">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="bg-surface border-b border-slate-border text-xs font-bold text-gray-700 uppercase tracking-wider">

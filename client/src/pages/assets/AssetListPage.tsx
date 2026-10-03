@@ -271,7 +271,7 @@ export default function AssetListPage() {
  placeholder="Search assets..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full pl-9 pr-4 py-2 bg-surface border border-slate-border shadow-sm rounded-lg text-sm focus:outline-none transition-all"
+ className="w-full pl-9 pr-4 py-2 h-[42px] rounded-[1.25rem] border border-slate-200 dark:border-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-[13px] focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all bg-white dark:bg-surface text-slate-900 dark:text-white"
  />
  </div>
  </div>
