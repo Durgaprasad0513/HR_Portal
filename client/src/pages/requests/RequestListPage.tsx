@@ -153,12 +153,12 @@ export default function RequestListPage() {
                       onClick={() => setSelectedReqId(req.id)}
                       className={`p-4 border-b border-slate-100 dark:border-slate-800/50 cursor-pointer transition-colors border-l-4 ${
                         isActive 
-                          ? 'border-l-primary-500 bg-primary-50/30 dark:bg-primary-900/10' 
+                          ? 'border-l-brand-primary bg-brand-primary/10 dark:bg-brand-primary/20' 
                           : 'border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50'
                       }`}
                     >
                       <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-bold text-primary-600 dark:text-primary-400">REQ-{req.id.slice(-10).toUpperCase()}</span>
+                        <span className="text-xs font-bold text-brand-primary dark:text-brand-primary">REQ-{req.id.slice(-10).toUpperCase()}</span>
                         {getStatusBadge(req.status)}
                       </div>
                       <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1">{req.description}</h3>
@@ -235,17 +235,17 @@ export default function RequestListPage() {
                    </div>
 
                    {selectedReq.responseNotes && (
-                     <div className="bg-primary-50 dark:bg-primary-900/20 p-5 rounded-2xl rounded-tr-sm shadow-sm border border-primary-100 dark:border-primary-800/50 max-w-[85%] ml-auto">
+                     <div className="bg-brand-primary/10 dark:bg-brand-primary/20 p-5 rounded-2xl rounded-tr-sm shadow-sm border border-brand-primary/20 dark:border-brand-primary/30 max-w-[85%] ml-auto">
                         <div className="flex items-center justify-end gap-3 mb-3">
                            <div className="text-right">
-                             <p className="text-sm font-semibold text-primary-800 dark:text-primary-300">HR Helpdesk</p>
-                             <p className="text-[11px] text-primary-600/70 dark:text-primary-400/70">Response</p>
+                             <p className="text-sm font-semibold text-brand-primary dark:text-brand-primary-light">HR Helpdesk</p>
+                             <p className="text-[11px] text-brand-primary/70 dark:text-brand-primary/70">Response</p>
                            </div>
-                           <div className="w-8 h-8 rounded-full bg-primary-200 dark:bg-primary-800 text-primary-800 dark:text-primary-200 flex items-center justify-center shrink-0">
+                           <div className="w-8 h-8 rounded-full bg-brand-primary/20 dark:bg-brand-primary/30 text-brand-primary dark:text-brand-primary-light flex items-center justify-center shrink-0">
                              <MessageSquare className="w-4 h-4" />
                            </div>
                         </div>
-                        <p className="text-sm text-primary-900 dark:text-primary-100 whitespace-pre-wrap mr-11 text-right">{selectedReq.responseNotes}</p>
+                        <p className="text-sm text-slate-900 dark:text-slate-100 whitespace-pre-wrap mr-11 text-right">{selectedReq.responseNotes}</p>
                      </div>
                    )}
                 </div>
@@ -260,7 +260,7 @@ export default function RequestListPage() {
                         className="flex-1 bg-slate-50 dark:bg-gray-800 focus:bg-white transition-colors"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSendResponse() }}
                       />
-                      <Button onClick={handleSendResponse} disabled={!responseNotes.trim() || updateStatusMutation.isPending} className="bg-primary-600 hover:bg-primary-700 shrink-0 gap-2 px-6 rounded-lg">
+                      <Button onClick={handleSendResponse} disabled={!responseNotes.trim() || updateStatusMutation.isPending} className="bg-brand-primary hover:bg-brand-hover shrink-0 gap-2 px-6 rounded-lg">
                         <Send className="w-4 h-4" /> Send
                       </Button>
                     </div>
