@@ -70,7 +70,7 @@ export default function LeaveApplicationPage() {
   const myLeaves = (leavesData as any)?.data || [];
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-6">
       <PageHeader
         title="Leave Management"
         description="Apply for time off and view your leave history."
