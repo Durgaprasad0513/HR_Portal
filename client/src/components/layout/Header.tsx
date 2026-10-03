@@ -224,15 +224,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  <User className="mr-2 h-4 w-4" /> Profile
  </button>
  
- <button 
- className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-gray-700"
- onClick={() => {
- setDropdownOpen(false);
- setLogoutConfirmOpen(true);
- }}
- >
- <LogOut className="mr-2 h-4 w-4" /> Logout
- </button>
+ 
  </div>
  )}
  </div>
