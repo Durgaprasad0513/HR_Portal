@@ -55,7 +55,7 @@ export function ProfileBanner() {
       <div className="flex flex-wrap items-center gap-3">
         <button 
           onClick={() => navigate('/leaves')}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-brand-primary hover:bg-brand-hover text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
         >
           <Calendar className="w-4 h-4" />
           Apply Leave
