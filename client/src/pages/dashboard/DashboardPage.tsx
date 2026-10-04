@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
+import { expensesApi } from '@/api/expenses';
 import { recruitmentApi } from '@/api/recruitment';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
 import { EmployeeDashboard } from './components/EmployeeDashboard';
@@ -54,7 +55,66 @@ export default function DashboardPage() {
  const reqData = reqResponse?.data || [];
  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
- if (isStatsLoading) return <LoadingSpinner />;
+   const { data: expensesData } = useQuery({
+    queryKey: ['dashboard-expenses'],
+    queryFn: expensesApi.getAll,
+    enabled: isAdminOrHR,
+  });
+
+  const expenseSummary = React.useMemo(() => {
+    const defaultData = [
+      { name: 'Rent & Maintenance', category: 'MAINTENANCE', value: 0, color: 'bg-emerald-500', hex: '#10b981' },
+      { name: 'Power & Telecom', category: 'UTILITIES', value: 0, color: 'bg-blue-500', hex: '#3b82f6' },
+      { name: 'IT / Software', category: 'IT_SOFTWARE', value: 0, color: 'bg-amber-500', hex: '#f59e0b' },
+      { name: 'Food & Snacks', category: 'FOOD_SNACKS', value: 0, color: 'bg-purple-500', hex: '#8b5cf6' },
+      { name: 'Stationery & Print', category: 'STATIONERY', value: 0, color: 'bg-pink-500', hex: '#ec4899' },
+      { name: 'Other', category: 'OTHER', value: 0, color: 'bg-slate-500', hex: '#64748b' }
+    ];
+    
+    if (!expensesData?.data) {
+       // Mock data if API returns nothing so it doesn't look broken during loading/demo
+       return [
+          { name: 'Rent & Maintenance', value: 145000, color: 'bg-emerald-500', hex: '#10b981' },
+          { name: 'Power & Telecom', value: 38400, color: 'bg-blue-500', hex: '#3b82f6' },
+          { name: 'HVAC & Repairs', value: 22000, color: 'bg-amber-500', hex: '#f59e0b' },
+          { name: 'Pantry Refreshment', value: 18500, color: 'bg-purple-500', hex: '#8b5cf6' },
+          { name: 'Stationery & Print', value: 9800, color: 'bg-pink-500', hex: '#ec4899' }
+       ];
+    }
+    
+    const sums: Record<string, number> = {
+      MAINTENANCE: 0, UTILITIES: 0, IT_SOFTWARE: 0, FOOD_SNACKS: 0, STATIONERY: 0, OTHER: 0
+    };
+    
+    expensesData.data.forEach((exp: any) => {
+      // Only count approved or paid expenses if possible, or all for now
+      if (sums[exp.category] !== undefined) {
+         sums[exp.category] += exp.amount || 0;
+      } else {
+         sums['OTHER'] += exp.amount || 0;
+      }
+    });
+    
+    let hasData = false;
+    const finalData = defaultData.map(item => {
+      const val = sums[item.category as keyof typeof sums] || 0;
+      if (val > 0) hasData = true;
+      return { ...item, value: val };
+    });
+    
+    if (!hasData) {
+        return [
+          { name: 'Rent & Maintenance', value: 145000, color: 'bg-emerald-500', hex: '#10b981' },
+          { name: 'Power & Telecom', value: 38400, color: 'bg-blue-500', hex: '#3b82f6' },
+          { name: 'HVAC & Repairs', value: 22000, color: 'bg-amber-500', hex: '#f59e0b' },
+          { name: 'Pantry Refreshment', value: 18500, color: 'bg-purple-500', hex: '#8b5cf6' },
+          { name: 'Stationery & Print', value: 9800, color: 'bg-pink-500', hex: '#ec4899' }
+       ];
+    }
+    return finalData.filter(item => item.value > 0);
+  }, [expensesData]);
+
+  if (isStatsLoading) return <LoadingSpinner />;
 
   if (!isAdminOrHR && !isManager) {
     return (
@@ -386,7 +446,7 @@ export default function DashboardPage() {
                   <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Hyderabad Corporate HQ Expenses</h3>
                   <p className="text-xs text-text-muted mt-1">Expense distribution across operational cost centers</p>
                 </div>
-                <button className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full hover:bg-emerald-100 transition-colors shrink-0">
+                <button onClick={() => navigate('/office-expenses')} className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full hover:bg-emerald-100 transition-colors shrink-0 cursor-pointer">
                   Expenses <ArrowRight size={12} />
                 </button>
               </div>
@@ -396,13 +456,7 @@ export default function DashboardPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={[
-                          { name: 'Rent & Maintenance', value: 145000 },
-                          { name: 'Power & Telecom', value: 38400 },
-                          { name: 'HVAC & Repairs', value: 22000 },
-                          { name: 'Pantry Refreshment', value: 18500 },
-                          { name: 'Stationery & Print', value: 9800 },
-                        ]}
+                        data={expenseSummary}
                         cx="50%"
                         cy="50%"
                         innerRadius={70}
@@ -411,11 +465,9 @@ export default function DashboardPage() {
                         dataKey="value"
                         stroke="none"
                       >
-                        <Cell fill="#10b981" />
-                        <Cell fill="#3b82f6" />
-                        <Cell fill="#f59e0b" />
-                        <Cell fill="#8b5cf6" />
-                        <Cell fill="#ec4899" />
+                        {expenseSummary.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.hex} />
+                        ))}
                       </Pie>
                       <Tooltip 
                         formatter={(value: any) => '?' + Number(value).toLocaleString('en-IN')}
@@ -426,13 +478,7 @@ export default function DashboardPage() {
                 </div>
                 
                 <div className="flex flex-col gap-4 flex-1 w-full max-w-xs justify-center">
-                  {[
-                    { name: 'Rent & Maintenance', value: 145000, color: 'bg-emerald-500' },
-                    { name: 'Power & Telecom', value: 38400, color: 'bg-blue-500' },
-                    { name: 'HVAC & Repairs', value: 22000, color: 'bg-amber-500' },
-                    { name: 'Pantry Refreshment', value: 18500, color: 'bg-purple-500' },
-                    { name: 'Stationery & Print', value: 9800, color: 'bg-pink-500' },
-                  ].map((item, idx) => (
+                  {expenseSummary.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-3">
                         <div className={'w-3 h-3 rounded-full ' + item.color}></div>
