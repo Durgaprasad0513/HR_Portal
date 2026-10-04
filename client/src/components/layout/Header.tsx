@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, LogOut, QrCode, User, Search, Sun, Moon, Bell, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react';
+import { Menu, X, LogOut, User, Search, Sun, Moon, Bell, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -25,7 +25,6 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  const [notifOpen, setNotifOpen] = useState(false);
  const [cmdOpen, setCmdOpen] = useState(false);
  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const [isDigitalIDModalOpen, setIsDigitalIDModalOpen] = useState(false);
  const { theme, setTheme } = useTheme();
  const headerRef = useRef<HTMLDivElement>(null);
 
@@ -225,18 +224,6 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  <User className="mr-2 h-4 w-4" /> Profile
  </button>
  
- {user?.employee && (
-   <button
-     className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700"
-     onClick={() => {
-       setDropdownOpen(false);
-       setIsDigitalIDModalOpen(true);
-     }}
-   >
-     <QrCode className="mr-2 h-4 w-4" /> Digital ID Card
-   </button>
- )}
- 
  
  </div>
  )}
@@ -255,7 +242,6 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  </>
  );
 }
-
 
 
 
