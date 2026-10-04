@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Employee } from '@/types';
-import { ShieldCheck, Droplet, Phone, MapPin, Building } from 'lucide-react';
+import { ShieldCheck, Droplet } from 'lucide-react';
 
 interface DigitalIDCardModalProps {
   isOpen: boolean;
@@ -73,50 +73,9 @@ export function DigitalIDCardModal({ isOpen, onClose, employee }: DigitalIDCardM
             </div>
           </div>
         </div>
-
-        {/* BACK OF CARD */}
-        <div className="bg-white dark:bg-surface rounded-[2rem] shadow-xl overflow-hidden w-full max-w-[320px] border border-slate-200 dark:border-slate-700 shrink-0 flex flex-col">
-          {/* Header */}
-          <div className="bg-slate-900 px-6 py-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0">
-               <Building className="w-5 h-5 text-emerald-600" />
-            </div>
-            <div>
-              <h4 className="text-emerald-400 text-[11px] font-bold leading-tight uppercase tracking-wider">Corporate Portal</h4>
-              <p className="text-slate-300 text-[9px] mt-0.5">Corporate & Plant Security Desk</p>
-            </div>
-          </div>
-          
-          <div className="p-6 flex-1 flex flex-col gap-5">
-            <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl p-3.5">
-              <p className="text-rose-600 dark:text-rose-400 text-[10px] font-bold flex items-center gap-1.5 mb-1.5 uppercase tracking-wide">
-                <Phone className="w-3 h-3" /> Employee Emergency Contact
-              </p>
-              <p className="text-slate-900 dark:text-white font-bold text-sm ml-4.5">{employee.emergencyContactNumber || 'Not provided'}</p>
-            </div>
-            
-            <div>
-              <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold flex items-center gap-1.5 mb-1.5 uppercase tracking-wide">
-                <MapPin className="w-3 h-3" /> Office / Plant Location
-              </p>
-              <p className="text-slate-900 dark:text-white text-xs font-bold ml-4.5 leading-snug">{employee.location || 'Head Office'}</p>
-              <p className="text-slate-500 dark:text-slate-400 text-[10px] ml-4.5 mt-1 leading-snug">
-                Company Registered Address,<br />
-                Business District, State - 123456
-              </p>
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold mb-1.5 uppercase tracking-wide">
-                Corporate Security Helpline
-              </p>
-              <p className="text-slate-900 dark:text-white text-[11px] font-bold">+91 800 000 0000</p>
-              <p className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">security@company.com</p>
-            </div>
-          </div>
-        </div>
-
       </div>
     </Modal>
   );
 }
+
+
