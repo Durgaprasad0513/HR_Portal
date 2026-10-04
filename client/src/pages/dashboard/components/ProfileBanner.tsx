@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plane, MessageSquare, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
 
 export function ProfileBanner() {
   const { user } = useAuth();
@@ -53,34 +54,22 @@ export function ProfileBanner() {
       </div>
 
       <div className="flex flex-wrap justify-center md:justify-end items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
-        <button 
-          onClick={() => navigate('/leaves')}
-          className="flex items-center gap-2 bg-brand-primary hover:bg-brand-hover text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
-        >
+        <Button variant="primary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/leaves')}>
           <Calendar className="w-4 h-4" />
           Apply Leave
-        </button>
-        <button 
-          onClick={() => navigate('/travel')}
-          className="flex items-center gap-2 bg-surface hover:bg-tint text-text-heading border border-slate-border px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
-        >
+        </Button>
+        <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/travel')}>
           <Plane className="w-4 h-4" />
           Travel Claim
-        </button>
-        <button 
-          onClick={() => navigate('/requests')}
-          className="flex items-center gap-2 bg-surface hover:bg-tint text-text-heading border border-slate-border px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
-        >
+        </Button>
+        <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/requests')}>
           <MessageSquare className="w-4 h-4" />
           HR Query
-        </button>
-        <button 
-          onClick={() => navigate('/office-expenses')}
-          className="flex items-center gap-2 bg-surface hover:bg-tint text-text-heading border border-slate-border px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
-        >
+        </Button>
+        <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/office-expenses')}>
           <Receipt className="w-4 h-4" />
           Submit Expense
-        </button>
+        </Button>
       </div>
     </div>
   );
