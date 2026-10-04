@@ -216,42 +216,50 @@ export const EmployeeDashboard = () => {
         </BoxReveal>
       </div>
 
-      {/* ROW 2: Needs Attention | My Leave History | Recent Requests */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ROW 2: Recent Requests | My Leave History */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* Card 1: Needs Attention */}
-        <BoxReveal duration={0.5} disabled={!shouldAnimate} width="100%" className="h-full">
+        {/* Card 3: Recent Requests Tracker */}
+        <BoxReveal duration={0.7} disabled={!shouldAnimate} width="100%" className="h-full">
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-text-heading">Needs Attention</h3>
+              <h3 className="font-bold text-text-heading">Recent Requests</h3>
             </div>
             <div className="bg-surface rounded-xl border border-slate-border shadow-sm flex-1 flex flex-col overflow-hidden">
-              {statsData?.needsAttention?.length > 0 ? (
+              {recentRequests.length > 0 ? (
                 <div className="divide-y divide-slate-border flex-1">
-                  {statsData.needsAttention.slice(0, 4).map((item: any) => (
-                    <Link key={item.id} to={item.link} className="flex flex-col gap-1 p-4 hover:bg-tint transition-colors group">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-brand-primary bg-tint px-2 py-0.5 rounded-full">{item.module}</span>
-                        {item.dueDate && <span className="text-xs font-medium text-rose-500">Due {formatDate(item.dueDate)}</span>}
+                  {recentRequests.map((req: any) => (
+                    <Link key={req.id} to={req.link} className="p-4 flex items-center justify-between hover:bg-tint transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <div className={clsx("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", req.iconBg)}>
+                          {req.icon}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-text-heading line-clamp-1 group-hover:text-brand-primary transition-colors">{req.title}</p>
+                          <p className="text-xs text-text-muted mt-0.5">{req.sub}</p>
+                        </div>
                       </div>
-                      <p className="text-sm font-semibold text-text-heading group-hover:text-brand-primary transition-colors line-clamp-1">{item.title}</p>
+                      <div className={clsx("flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold shrink-0", getStatusColor(req.status))}>
+                        {getStatusIcon(req.status)}
+                        <span className="hidden sm:inline">{req.status || 'PENDING'}</span>
+                      </div>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
-                  <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3">
-                    <CheckCircle className="w-6 h-6" />
+                <div className="p-10 text-center flex flex-col items-center justify-center flex-1">
+                  <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-3">
+                    <Receipt className="w-6 h-6 text-slate-300" />
                   </div>
-                  <p className="font-medium text-text-heading mb-1">All caught up!</p>
-                  <p className="text-xs text-text-muted">No pending approvals or urgent items.</p>
+                  <p className="text-sm font-semibold text-text-heading mb-1">No recent requests</p>
+                  <p className="text-xs text-text-muted">Your expense and travel requests will appear here.</p>
                 </div>
               )}
             </div>
           </div>
         </BoxReveal>
 
-        {/* Card 2 (Middle): My Recent Leave History */}
+{/* Card 2 (Middle): My Recent Leave History */}
         <BoxReveal duration={0.6} disabled={!shouldAnimate} width="100%" className="h-full">
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-3">
@@ -298,46 +306,7 @@ export const EmployeeDashboard = () => {
           </div>
         </BoxReveal>
 
-        {/* Card 3: Recent Requests Tracker */}
-        <BoxReveal duration={0.7} disabled={!shouldAnimate} width="100%" className="h-full">
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-text-heading">Recent Requests</h3>
-            </div>
-            <div className="bg-surface rounded-xl border border-slate-border shadow-sm flex-1 flex flex-col overflow-hidden">
-              {recentRequests.length > 0 ? (
-                <div className="divide-y divide-slate-border flex-1">
-                  {recentRequests.map((req: any) => (
-                    <Link key={req.id} to={req.link} className="p-4 flex items-center justify-between hover:bg-tint transition-colors group">
-                      <div className="flex items-center gap-3">
-                        <div className={clsx("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", req.iconBg)}>
-                          {req.icon}
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm text-text-heading line-clamp-1 group-hover:text-brand-primary transition-colors">{req.title}</p>
-                          <p className="text-xs text-text-muted mt-0.5">{req.sub}</p>
-                        </div>
-                      </div>
-                      <div className={clsx("flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold shrink-0", getStatusColor(req.status))}>
-                        {getStatusIcon(req.status)}
-                        <span className="hidden sm:inline">{req.status || 'PENDING'}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-10 text-center flex flex-col items-center justify-center flex-1">
-                  <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-3">
-                    <Receipt className="w-6 h-6 text-slate-300" />
-                  </div>
-                  <p className="text-sm font-semibold text-text-heading mb-1">No recent requests</p>
-                  <p className="text-xs text-text-muted">Your expense and travel requests will appear here.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </BoxReveal>
-
+        
       </div>
     </div>
   );
