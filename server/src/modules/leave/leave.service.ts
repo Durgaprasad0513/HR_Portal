@@ -25,6 +25,14 @@ export class LeaveService {
       throw new Error('Leave period must include at least one working day');
     }
 
+    // Adjust for half-day or hourly leave
+    if (data.isHalfDay && totalDays === 1) {
+      totalDays = 0.5;
+    } else if (data.isHourly && totalDays === 1 && data.hourlyDuration) {
+      // Convert hours to fraction of a day (8-hour workday)
+      totalDays = parseFloat((data.hourlyDuration / (8 * 60)).toFixed(4));
+    }
+
     // Check leave balance
     const currentYear = new Date().getFullYear();
     const balance = await prisma.leaveBalance.findUnique({
@@ -63,6 +71,9 @@ export class LeaveService {
         startDate,
         endDate,
         totalDays,
+        isHalfDay: data.isHalfDay ?? false,
+        isHourly: data.isHourly ?? false,
+        hourlyDuration: data.isHourly ? (data.hourlyDuration ?? null) : null,
         reason: data.reason,
       },
       include: {

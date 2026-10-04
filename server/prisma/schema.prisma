@@ -441,7 +441,10 @@ model Leave {
   leaveType LeaveType
   startDate DateTime    @db.Date
   endDate   DateTime    @db.Date
-  totalDays Decimal
+  totalDays      Decimal
+  isHalfDay      Boolean  @default(false)
+  isHourly       Boolean  @default(false)
+  hourlyDuration Int?      // minutes, e.g. 60 for 1 hour
   reason    String
   status    LeaveStatus @default(PENDING)
   remarks   String?

@@ -62,21 +62,21 @@ export function ProfileBanner() {
         </button>
         <button 
           onClick={() => navigate('/travel')}
-          className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-surface hover:bg-tint text-text-heading border border-slate-border px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
         >
           <Plane className="w-4 h-4" />
           Travel Claim
         </button>
         <button 
           onClick={() => navigate('/requests')}
-          className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-surface hover:bg-tint text-text-heading border border-slate-border px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
         >
           <MessageSquare className="w-4 h-4" />
           HR Query
         </button>
         <button 
           onClick={() => navigate('/office-expenses')}
-          className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-surface hover:bg-tint text-text-heading border border-slate-border px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
         >
           <Receipt className="w-4 h-4" />
           Submit Expense
