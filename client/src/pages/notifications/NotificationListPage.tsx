@@ -41,7 +41,7 @@ export default function NotificationListPage() {
  });
 
  return (
- <div className="p-6 max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto p-4 sm:p-6 pb-32 space-y-4">
  <button
  onClick={() => navigate(-1)}
  className="flex items-center gap-2 text-sm text-gray-500 hover:text-navy-900 dark:text-gray-400 dark:hover:text-white mb-4 transition-colors"
