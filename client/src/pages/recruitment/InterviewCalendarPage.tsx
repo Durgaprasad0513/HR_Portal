@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { ScheduleInterviewModal } from '@/pages/dashboard/components/ScheduleInterviewModal';
 import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal } from 'lucide-react';
 
 export default function InterviewCalendarPage() {
@@ -90,63 +91,7 @@ export default function InterviewCalendarPage() {
       </div>
 
       {/* Schedule Interview Modal */}
-      <Modal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} title="Schedule Candidate Interview" className="max-w-xl">
-        <form className="space-y-5 py-2" onSubmit={(e) => { e.preventDefault(); setIsScheduleModalOpen(false); }}>
-          
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Select Candidate from Pipeline</label>
-            <Select required>
-              <option value="">-- Choose Candidate --</option>
-              <option value="1">John Doe - Frontend Engineer</option>
-              <option value="2">Jane Smith - Product Manager</option>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Interview Round</label>
-              <Select required>
-                <option value="hr">HR Screening</option>
-                <option value="technical">Technical Interview</option>
-                <option value="managerial">Managerial Round</option>
-                <option value="final">Final Discussion</option>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Interview Mode</label>
-              <Select required>
-                <option value="in-person">In-Person</option>
-                <option value="video">Video Call</option>
-                <option value="phone">Phone Call</option>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Date & Time</label>
-            <Input type="datetime-local" required />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Interviewer / Panel Assigned</label>
-            <Input placeholder="e.g. Lakshmi Prasanna (HR) & Technical Head" required />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Location or Meeting Link</label>
-            <Input placeholder="e.g. Hyderabad Corporate Office - Boardroom" required />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
-            <Button type="button" variant="outline" onClick={() => setIsScheduleModalOpen(false)} className="rounded-xl px-5">
-              Cancel
-            </Button>
-            <Button type="submit" className="rounded-xl px-6 bg-emerald-600 hover:bg-emerald-700 text-white border-0">
-              Confirm Schedule
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
 
     </div>
   );
