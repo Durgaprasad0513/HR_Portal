@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '@/api/recruitment';
 import { departmentsApi } from '@/api/departments';
@@ -14,6 +15,7 @@ import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, Search, Ph
 import { KanbanBoard } from './KanbanBoard';
 
 export default function RecruitmentPage() {
+  const navigate = useNavigate();
  const { user } = useAuth();
  const queryClient = useQueryClient();
  const { canExport } = usePermissions();
@@ -269,7 +271,7 @@ export default function RecruitmentPage() {
                   originalData: req
                 }))} 
                 onStatusChange={handleStatusChange} 
-                onItemClick={(item) => setSelectedReq(item.originalData)}
+                onItemClick={(item) => navigate('/recruitment/interviews?reqId=' + item.id)}
               />
             ) : (
               <div className="mt-2">
@@ -360,6 +362,7 @@ export default function RecruitmentPage() {
  </div>
  );
 }
+
 
 
 
