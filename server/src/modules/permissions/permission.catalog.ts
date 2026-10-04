@@ -27,6 +27,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   HR: 'HR',
   MANAGER: 'Manager',
   EMPLOYEE: 'Employee',
+  HR_EXECUTIVE: 'HR Executive',
 };
 
 export interface PermissionFlags {
@@ -134,6 +135,11 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
     ...allFull,
   },
   HR: {
+    ...allFull,
+    audit: view(),
+    roles: view(),
+  },
+  HR_EXECUTIVE: {
     ...allFull,
     audit: view(),
     roles: view(),
