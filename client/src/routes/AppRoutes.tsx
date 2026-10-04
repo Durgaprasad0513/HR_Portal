@@ -22,6 +22,7 @@ const AssetListPage = lazy(() => import('@/pages/assets/AssetListPage'));
 const TravelListPage = lazy(() => import('@/pages/travel/TravelListPage'));
 const OfficeExpensesPage = lazy(() => import('@/pages/expenses/OfficeExpensesPage'));
 const RecruitmentPage = lazy(() => import('@/pages/recruitment/RecruitmentPage'));
+const InterviewCalendarPage = lazy(() => import('@/pages/recruitment/InterviewCalendarPage'));
 const NotificationListPage = lazy(() => import('@/pages/notifications/NotificationListPage'));
 const AttritionDashboardPage = lazy(() => import('@/pages/attrition/AttritionDashboardPage'));
 const AuditLogPage = lazy(() => import('@/pages/audit/AuditLogPage'));
@@ -72,6 +73,7 @@ const AppRoutes = () => {
 
  <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR']} />}>
  <Route path="/recruitment" element={<RecruitmentPage />} />
+          <Route path="/recruitment/interviews" element={<InterviewCalendarPage />} />
  <Route path="/leaves/approvals" element={<LeaveApprovalsPage />} />
   <Route path="/audit" element={<AuditLogPage />} />
  <Route path="/login-history" element={<LoginHistoryPage />} />
@@ -89,5 +91,6 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+
 
 

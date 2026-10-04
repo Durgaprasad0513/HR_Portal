@@ -6,7 +6,7 @@ import {
  LayoutDashboard, Users, Laptop, Plane, Briefcase, 
  Target, ClipboardList, GraduationCap, Files, UserMinus, 
  Shield, History, ChevronRight, ChevronDown, Building2, CreditCard,
- ClipboardCheck, Calendar, ChevronsLeft, ChevronsRight, Settings, HelpCircle
+ ClipboardCheck, Calendar, CalendarDays, ChevronsLeft, ChevronsRight, Settings, HelpCircle
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  ...(isAdminOrHR ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
  { name: 'Employees', path: '/employees', icon: Users },
  ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
+  ...(isAdminOrHR ? [{ name: 'Interview Calendar', path: '/recruitment/interviews', icon: CalendarDays }] : []),
  {
  name: 'Leave Requests',
  icon: Calendar,
@@ -273,3 +274,4 @@ function renderNavItem(
  </NavLink>
  );
 }
+
