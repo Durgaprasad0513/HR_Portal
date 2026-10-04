@@ -8,7 +8,9 @@ const queryClient = new QueryClient({
  defaultOptions: {
  queries: {
  retry: 1,
- refetchOnWindowFocus: false,
+ refetchOnWindowFocus: true, // Auto-refresh when user switches back to the tab
+ refetchInterval: 5000, // Poll every 5 seconds for real-time updates across the app
+ staleTime: 4000, // Keep data fresh just under the polling interval
  },
  },
 });
