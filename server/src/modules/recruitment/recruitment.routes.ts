@@ -20,6 +20,9 @@ router.post('/requisitions', requirePermission('recruitment', 'add'), validateRe
 router.get('/requisitions', requirePermission('recruitment', 'view'), (req, res) => recruitmentController.getRequisitions(req, res));
 router.put('/requisitions/:id/status', requirePermission('recruitment', 'edit'), validateRequest({ body: updateRequisitionStatusSchema }), (req, res) => recruitmentController.updateRequisitionStatus(req, res));
 
+// Interviews
+router.get('/interviews', requirePermission('recruitment', 'view'), (req, res) => recruitmentController.getAllInterviews(req, res));
+
 // Candidates
 router.post('/candidates', requirePermission('recruitment', 'add'), validateRequest({ body: createCandidateSchema }), (req, res) => recruitmentController.createCandidate(req, res));
 router.get('/requisitions/:reqId/candidates', requirePermission('recruitment', 'view'), (req, res) => recruitmentController.getCandidatesByRequisition(req, res));

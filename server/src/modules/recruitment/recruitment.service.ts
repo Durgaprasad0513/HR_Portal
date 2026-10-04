@@ -101,6 +101,30 @@ export class RecruitmentService {
     });
   }
 
+  async getAllInterviews(currentUser: CurrentUser) {
+    const scope = getModuleScope(currentUser.role as Role, 'recruitment');
+    
+    const whereClause: any = {
+      interviewDate: { not: null }
+    };
+
+    if (scope === 'SELF') {
+      whereClause.requisition = { raisedById: currentUser.employeeId };
+    } else if (scope === 'TEAM') {
+      const emp = await prisma.employee.findUnique({ where: { id: currentUser.employeeId! }, select: { departmentId: true } });
+      whereClause.requisition = { departmentId: emp?.departmentId };
+    }
+
+    return prisma.candidate.findMany({
+      where: whereClause,
+      include: {
+        requisition: { select: { positionTitle: true } },
+        interviewer: { select: { firstName: true, lastName: true } }
+      },
+      orderBy: { interviewDate: 'asc' }
+    });
+  }
+
   async getCandidatesByRequisition(requisitionId: string, currentUser: CurrentUser) {
     const scope = getModuleScope(currentUser.role as Role, 'recruitment');
     const req = await prisma.requisition.findUnique({ where: { id: requisitionId } });
