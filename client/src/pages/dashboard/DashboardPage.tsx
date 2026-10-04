@@ -17,7 +17,7 @@ import { AreaChart, Area, BarChart, Bar, Legend, XAxis, YAxis, CartesianGrid, To
 import { 
  Users, UserMinus, Briefcase, FileText, CheckCircle, Clock, 
  ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, BookOpen, Receipt
-, Coffee } from 'lucide-react';
+, Coffee, IndianRupee } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 
 export default function DashboardPage() {
@@ -340,17 +340,17 @@ export default function DashboardPage() {
  </div>
 
  
-{/* Interview Scheduling */}
+{/* Interview Calendar */}
         <div className="bg-surface rounded-xl border border-slate-border p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-text-heading flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-accent-600" /> Interview Scheduling
+              <Calendar className="h-4 w-4 text-accent-600" /> Interview Calendar
             </h3>
             <button
-              onClick={() => setIsScheduleModalOpen(true)}
+              onClick={() => navigate('/recruitment/interviews')}
               className="flex items-center gap-1.5 text-xs font-semibold text-accent-600 hover:text-accent-700 bg-accent-50 hover:bg-accent-100 px-3 py-1.5 rounded-lg transition-colors"
             >
-              <Plus className="h-3.5 w-3.5" /> Schedule Interview
+              View Calendar <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
           {(() => {
@@ -470,7 +470,7 @@ export default function DashboardPage() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: any) => '?' + Number(value).toLocaleString('en-IN')}
+                        formatter={(value: any) => '\u20B9' + Number(value).toLocaleString('en-IN')}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       />
                     </PieChart>
@@ -484,7 +484,7 @@ export default function DashboardPage() {
                         <div className={'w-3 h-3 rounded-full ' + item.color}></div>
                         <span className="text-text-muted font-medium">{item.name}</span>
                       </div>
-                      <span className="font-bold text-text-heading">?{item.value.toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-text-heading flex items-center"><IndianRupee className="w-3.5 h-3.5 inline mr-0.5" />{item.value.toLocaleString('en-IN')}</span>
                     </div>
                   ))}
                 </div>
@@ -503,5 +503,6 @@ export default function DashboardPage() {
  </div>
  );
 }
+
 
 
