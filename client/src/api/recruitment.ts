@@ -2,6 +2,11 @@ import apiClient from './client';
 import { ApiResponse } from '../types';
 
 export const recruitmentApi = {
+  getInterviews: async () => {
+    const { data } = await apiClient.get<ApiResponse<any[]>>('/recruitment/interviews');
+    return data;
+  },
+
  getRequisitions: async () => {
  const { data } = await apiClient.get<ApiResponse<any[]>>('/recruitment/requisitions');
  return data;
