@@ -40,6 +40,15 @@ export class RecruitmentController {
     }
   }
 
+  async getAllInterviews(req: AuthRequest, res: Response) {
+    try {
+      const data = await recruitmentService.getAllInterviews(req.user!);
+      return sendSuccess(res, data, 'Interviews retrieved successfully');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
+    }
+  }
+
   async getCandidatesByRequisition(req: AuthRequest, res: Response) {
     try {
       const result = await recruitmentService.getCandidatesByRequisition(req.params.reqId as string, req.user!);
