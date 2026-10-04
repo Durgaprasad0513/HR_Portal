@@ -9,13 +9,12 @@ get_interviews_code = """  getInterviews: async () => {
   },
 """
 
-content = re.sub(
-    r'(  getCandidates: async \(id: string\) => {)',
-    get_interviews_code + r'\1',
-    content
+content = content.replace(
+    'export const recruitmentApi = {',
+    'export const recruitmentApi = {\n' + get_interviews_code
 )
 
 with open('client/src/api/recruitment.ts', 'w', encoding='utf-8') as f:
     f.write(content)
 
-print("Fixed API")
+print("Fixed API again")

@@ -613,6 +613,7 @@ model Candidate {
   screeningStatus   ScreeningStatus  @default(SCREENING_PENDING)
   screeningNotes    String?
   interviewRound    String?
+  interviewLocation String?
   interviewDate     DateTime?
   interviewFeedback String?
   interviewScore    Int?
