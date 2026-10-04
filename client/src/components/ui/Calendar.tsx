@@ -12,6 +12,10 @@ import {
  isSameDay,
  addDays,
  isToday,
+ getYear,
+ getMonth,
+ setYear,
+ setMonth
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
@@ -32,24 +36,63 @@ export function Calendar({ value, onChange, className }: CalendarProps) {
  };
 
  const renderHeader = () => {
+ const currentYear = getYear(currentMonth);
+ const currentMonthValue = getMonth(currentMonth);
+
+ const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+ setCurrentMonth(setYear(currentMonth, parseInt(e.target.value)));
+ };
+
+ const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+ setCurrentMonth(setMonth(currentMonth, parseInt(e.target.value)));
+ };
+
+ const years = [];
+ for (let i = 1950; i <= new Date().getFullYear() + 20; i++) {
+ years.push(i);
+ }
+ 
+ const months = [
+ 'January', 'February', 'March', 'April', 'May', 'June',
+ 'July', 'August', 'September', 'October', 'November', 'December'
+ ];
+
  return (
  <div className="flex justify-between items-center mb-4">
  <Button
  variant="ghost"
  type="button"
  onClick={prevMonth}
- className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+ className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 shrink-0"
  >
  <ChevronLeft className="h-4 w-4" />
  </Button>
- <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
- {format(currentMonth, 'MMMM yyyy')}
+ 
+ <div className="flex gap-1 font-semibold text-sm text-slate-900 dark:text-slate-100 items-center justify-center flex-1">
+ <select 
+ value={currentMonthValue} 
+ onChange={handleMonthChange}
+ className="bg-transparent border-none focus:ring-0 cursor-pointer outline-none hover:bg-slate-100 dark:hover:bg-slate-800 rounded px-1 py-1 text-sm font-semibold appearance-none text-center"
+ style={{ backgroundImage: 'none' }}
+ >
+ {months.map((m, idx) => <option key={m} value={idx} className="text-slate-900 dark:bg-gray-800 dark:text-white">{m}</option>)}
+ </select>
+ 
+ <select 
+ value={currentYear} 
+ onChange={handleYearChange}
+ className="bg-transparent border-none focus:ring-0 cursor-pointer outline-none hover:bg-slate-100 dark:hover:bg-slate-800 rounded px-1 py-1 text-sm font-semibold appearance-none text-center"
+ style={{ backgroundImage: 'none' }}
+ >
+ {years.map(y => <option key={y} value={y} className="text-slate-900 dark:bg-gray-800 dark:text-white">{y}</option>)}
+ </select>
  </div>
+ 
  <Button
  variant="ghost"
  type="button"
  onClick={nextMonth}
- className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+ className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 shrink-0"
  >
  <ChevronRight className="h-4 w-4" />
  </Button>
