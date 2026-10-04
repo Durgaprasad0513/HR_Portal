@@ -342,10 +342,10 @@ export default function DashboardPage() {
  </BoxReveal>
  )}
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
  
  {/* Left Column: Needs Attention & Trend */}
- <div className="lg:col-span-1 flex flex-col gap-8 h-full">
+ 
           {/* Attendance Trend Chart (Only for HR/Admin) */}
           {isAdminOrHR && stats?.attendanceTrend && (
             <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
@@ -463,148 +463,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
+
   </div>
-
-  {/* Right Column: Module Overview Table */}
- <div className="lg:col-span-2">
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
- <div className="p-5 border-b border-slate-border bg-tint flex items-center justify-between">
- <h3 className="font-bold text-text-heading flex items-center gap-2">
- <FileText className="w-5 h-5 text-blue-500" />
- Module Overview
- </h3>
- </div>
- 
- <div className="overflow-x-auto">
- <table className="w-full text-sm text-left">
- <thead className="bg-surface text-text-muted border-b border-slate-border">
- <tr>
- <th className="px-5 py-3 font-semibold uppercase text-xs tracking-wider">Module</th>
- <th className="px-5 py-3 font-semibold uppercase text-xs tracking-wider">Useful Summary</th>
- <th className="px-5 py-3 font-semibold uppercase text-xs tracking-wider">Attention Signal</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-border">
- {/* Employees */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/employees')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Users className="w-4 h-4 text-orange-500"/> Employees</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.employees?.active || 0}</span> active headcount<br/>
- <span className="text-xs">{moduleOverview.employees?.joinersThisMonth || 0} joined, {moduleOverview.employees?.exitsThisMonth || 0} exited recently</span>
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- -
- </td>
- </tr>
-
- {/* Recruitment */}
- {isAdminOrHR && (
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/recruitment')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Briefcase className="w-4 h-4 text-purple-500"/> Recruitment</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.recruitment?.vacancies || 0}</span> open vacancies<br/>
- <span className="text-xs">{moduleOverview.recruitment?.selectedCandidates || 0} selected, {moduleOverview.recruitment?.offersAccepted || 0} offers accepted</span>
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {stats.upcomingInterviews?.length > 0 ? (
- <span className="text-accent-600 font-medium">{stats.upcomingInterviews.length} upcoming interviews</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
- )}
-
- {/* Performance */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/performance')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Award className="w-4 h-4 text-yellow-500"/> Performance</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.performance?.completed || 0} / {moduleOverview.performance?.total || 0}</span> reviews completed<br/>
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {needsAttention.filter((i: any) => i.module === 'Performance').length > 0 ? (
- <span className="text-orange-600 font-medium">{needsAttention.filter((i: any) => i.module === 'Performance').length} reviews awaiting your action</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Training */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/training')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Briefcase className="w-4 h-4 text-indigo-500"/> Training</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.trainingsThisMonth || 0}</span> sessions this month
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- -
- </td>
- </tr>
-
- {/* Leave */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate(isAdminOrHR || isManager ? '/leaves/approvals' : '/leaves')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500"/> Leave</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.pendingLeaves || 0}</span> pending overall requests
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {moduleOverview.leave?.pendingApprovals > 0 ? (
- <span className="text-rose-600 font-medium">{moduleOverview.leave.pendingApprovals} awaiting your approval</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Travel */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/travel')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Plane className="w-4 h-4 text-cyan-500"/> Travel</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.pendingTravel || 0}</span> pending overall requests
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {moduleOverview.travel?.pendingApprovals > 0 ? (
- <span className="text-rose-600 font-medium">{moduleOverview.travel.pendingApprovals} awaiting your approval</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Office Expenses */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/expenses')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><Receipt className="w-4 h-4 text-emerald-600"/> Office Expenses</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{stats.pendingExpenses || 0}</span> pending overall requests
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- {moduleOverview.expenses?.pendingApprovals > 0 ? (
- <span className="text-rose-600 font-medium">{moduleOverview.expenses.pendingApprovals} awaiting your approval</span>
- ) : (
- "-"
- )}
- </td>
- </tr>
-
- {/* Assets */}
- <tr className="hover:bg-tint transition-colors cursor-pointer" onClick={() => navigate('/assets')}>
- <td className="px-5 py-4 font-bold text-text-heading flex items-center gap-2"><FileText className="w-4 h-4 text-slate-500"/> Assets</td>
- <td className="px-5 py-4 text-text-muted">
- <span className="font-medium text-text-heading">{moduleOverview.assets?.assigned || 0}</span> assets assigned
- </td>
- <td className="px-5 py-4 text-text-muted text-xs">
- -
- </td>
- </tr>
-
- </tbody>
- </table>
- </div>
- </div>
- </div>
-
-</div>
  <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
  </div>
  );
 }
+
