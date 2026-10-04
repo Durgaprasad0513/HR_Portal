@@ -62,13 +62,13 @@ export function ProfileBanner() {
           <Plane className="w-4 h-4" />
           Travel Claim
         </Button>
-        <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/requests')}>
-          <MessageSquare className="w-4 h-4" />
-          HR Query
-        </Button>
         <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/office-expenses')}>
           <Receipt className="w-4 h-4" />
           Submit Expense
+        </Button>
+        <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/requests')}>
+          <MessageSquare className="w-4 h-4" />
+          HR Query
         </Button>
       </div>
     </div>

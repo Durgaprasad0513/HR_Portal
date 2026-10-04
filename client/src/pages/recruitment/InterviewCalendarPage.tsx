@@ -92,14 +92,13 @@ export default function InterviewCalendarPage() {
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Mode & Venue</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Panel</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Round</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Status</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted text-right">Actions</th>
+                  
                 </tr>
               </thead>
               
               <tbody className="divide-y divide-slate-border">
                 {isLoading ? (
-                  <tr><td colSpan={7} className="py-10"><LoadingSpinner /></td></tr>
+                  <tr><td colSpan={5} className="py-10"><LoadingSpinner /></td></tr>
                 ) : filteredInterviews && filteredInterviews.length > 0 ? (
                   filteredInterviews.map((cand: any) => (
                     <tr key={cand.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
@@ -121,40 +120,12 @@ export default function InterviewCalendarPage() {
                           {cand.interviewRound ? cand.interviewRound.replace('_', ' ') : 'HR INTERVIEW'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        {cand.interviewFeedback === 'Finished' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Finished
-                          </span>
-                        ) : (
-                          <button 
-                            onClick={() => handleMarkFinish(cand.id)}
-                            disabled={updateCandidateMutation.isPending}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer"
-                          >
-                            <CalendarDays className="w-3.5 h-3.5" /> Scheduled
-                          </button>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <select 
-                          className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 outline-none cursor-pointer text-slate-700 dark:text-slate-300"
-                          value={cand.interviewRound || 'HR_INTERVIEW'}
-                          onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                          disabled={updateCandidateMutation.isPending}
-                        >
-                          <option value="TELEPHONIC">Telephonic</option>
-                          <option value="HR_INTERVIEW">HR Interview</option>
-                          <option value="TECHNICAL">Technical</option>
-                          <option value="MANAGEMENT">Management</option>
-                          <option value="OFFER">Offer Stage</option>
-                        </select>
-                      </td>
+                      
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-16 text-center">
+                    <td colSpan={5} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-700">
                           <CalendarIcon className="w-8 h-8 text-slate-400" />
