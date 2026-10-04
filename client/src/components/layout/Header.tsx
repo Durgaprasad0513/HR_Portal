@@ -54,7 +54,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
 
  return (
  <>
- <header className="flex h-20 items-center justify-between bg-transparent px-6 transition-colors">
+ <header className="flex h-20 items-center justify-between bg-transparent px-4 sm:px-6 transition-colors">
  <div className="flex items-center flex-1">
  <Button
  variant="ghost"
@@ -101,7 +101,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  </button>
  </div>
 
- <div ref={headerRef} className="flex items-center space-x-4 relative">
+ <div ref={headerRef} className="flex items-center gap-2 sm:gap-4 relative">
  <Button 
  variant="ghost" 
  size="sm" 
@@ -129,7 +129,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  </Button>
  
  {notifOpen && (
- <div id="notifications-panel" className="absolute right-0 top-10 mt-2 w-80 rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-border">
+ <div id="notifications-panel" className="absolute right-[-70px] sm:right-0 top-10 mt-2 w-[300px] sm:w-80 rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-border">
  <div className="px-4 py-3 border-b border-slate-border font-semibold text-sm text-navy-900 dark:text-white flex justify-between">
  Notifications
  <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{unreadCount} new</span>
@@ -166,7 +166,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  )}
  </div>
 
- <div className="flex items-center gap-4 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
+ <div className="flex items-center gap-2 sm:gap-4 border-l border-slate-200 dark:border-slate-700 pl-2 sm:pl-4 ml-1 sm:ml-2">
    <button
      type="button"
      className="flex items-center cursor-pointer gap-3 text-left focus:outline-none group"
