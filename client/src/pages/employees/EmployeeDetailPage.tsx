@@ -199,7 +199,7 @@ export default function EmployeeDetailPage() {
             <MonitorPlay className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Assigned Assets</h2>
           </div>
-          {emp.assignedAssets?.length > 0 && (
+          {(emp.assignedAssets?.length ?? 0) > 0 && (
             <Button variant="ghost" size="sm" className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20" onClick={() => {
               const csvContent = "data:text/csv;charset=utf-8," + "Asset ID,Type,Brand/Model,Serial Number,Purchase Date,Purchase Value,Issue Date,Condition,Status\n" + (emp.assignedAssets || []).map((a: any) => `${a.id},${a.assetType},${a.brandModel || ''},${a.serialNumber || ''},${a.purchaseDate ? formatDate(a.purchaseDate) : ''},${a.purchaseValue || ''},${a.issueDate ? formatDate(a.issueDate) : ''},${a.issueCondition || ''},${a.status}`).join("\n");
               const encodedUri = encodeURI(csvContent);
@@ -299,6 +299,7 @@ export default function EmployeeDetailPage() {
     </div>
   );
 }
+
 
 
 
