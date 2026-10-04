@@ -28,7 +28,7 @@ export function ProfileBanner() {
 
   return (
     <div className="bg-surface rounded-2xl p-6 border border-slate-border shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-6">
-      <div className="flex items-center gap-6">
+      <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-6">
         <div className="w-20 h-20 rounded-full bg-slate-200 overflow-hidden shrink-0 border-4 border-white shadow-sm flex items-center justify-center text-3xl font-bold text-slate-500">
           {employee?.profilePhoto ? (
             <img src={employee.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
@@ -37,9 +37,9 @@ export function ProfileBanner() {
           )}
         </div>
         
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-text-heading">Welcome, {fullName}!</h1>
+        <div className="flex flex-col items-center sm:items-start">
+          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 sm:gap-3 mb-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-text-heading">Welcome, {fullName}!</h1>
             {employeeCode !== 'N/A' && (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold tracking-wide uppercase border border-emerald-100">
                 {employeeCode}
@@ -52,7 +52,7 @@ export function ProfileBanner() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap justify-center md:justify-end items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
         <button 
           onClick={() => navigate('/leaves')}
           className="flex items-center gap-2 bg-brand-primary hover:bg-brand-hover text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
