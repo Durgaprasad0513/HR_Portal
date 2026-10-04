@@ -12,6 +12,7 @@ import {
   Briefcase, Wallet, MonitorPlay, FileCheck, Award
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
+import { DigitalIDCardModal } from './components/DigitalIDCardModal';
 
 function DetailBlock({ label, value }: { label: string, value: React.ReactNode }) {
   return (
@@ -28,6 +29,7 @@ export default function EmployeeDetailPage() {
   const { user } = useAuth();
   const isHR = user?.role === 'ADMIN' || user?.role === 'HR';
   const queryClient = useQueryClient();
+  const [isDigitalIDModalOpen, setIsDigitalIDModalOpen] = useState(false);
 
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
   const deactivateMutation = { mutate: (id: string) => {}, isPending: false }; // stub for now
@@ -86,9 +88,7 @@ export default function EmployeeDetailPage() {
           <p className="text-slate-400 text-sm mt-1">{emp.department?.name || 'Unassigned'} • {emp.location || 'Unassigned'}</p>
 
           <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 sm:gap-3 mt-6">
-            <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-300 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-500/30 whitespace-nowrap">
-              <QrCode className="w-3.5 h-3.5" /> Digital ID Card & QR Pass
-            </div>
+            <button onClick={() => setIsDigitalIDModalOpen(true)} className="flex items-center gap-2 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/40 hover:text-emerald-100 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-500/30 whitespace-nowrap cursor-pointer transition-colors"><QrCode className="w-3.5 h-3.5" /> Digital ID Card & QR Pass</button>
             <div className="flex items-center gap-2 bg-indigo-500/20 text-indigo-300 px-3 py-1.5 rounded-full text-xs font-semibold border border-indigo-500/30 whitespace-nowrap">
               Joined: {emp.joiningDate ? formatDate(emp.joiningDate) : '-'}
             </div>
@@ -295,9 +295,11 @@ export default function EmployeeDetailPage() {
         )}
       </div>
 <ConfirmDialog isOpen={isDeactivateOpen} title="Deactivate Employee" message="Are you sure you want to deactivate this employee? They will lose access to the system immediately." confirmLabel="Deactivate" cancelLabel="Cancel" isDestructive={true} onConfirm={() => deactivateMutation.mutate(id as string)} onCancel={() => setIsDeactivateOpen(false)} />
+          {emp && <DigitalIDCardModal isOpen={isDigitalIDModalOpen} onClose={() => setIsDigitalIDModalOpen(false)} employee={emp} />}
     </div>
   );
 }
+
 
 
 
