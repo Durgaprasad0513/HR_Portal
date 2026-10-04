@@ -43,7 +43,7 @@ function SortableItemCard({ item, onClick }: { item: KanbanItem; onClick?: () =>
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 cursor-grab active:cursor-grabbing w-full outline-none" aria-label={`Candidate ${item.title}`}>
-      <Card className="hover:border-accent-300 dark:hover:border-accent-600 transition-colors w-full text-left shadow-sm bg-white dark:bg-surface border-slate-200 dark:border-slate-700">
+      <Card className="hover:border-accent-300 dark:hover:border-accent-600 transition-colors w-full text-left shadow-sm ">
         <CardContent className="p-4">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ function KanbanColumn({ col, items, onItemClick }: { col: typeof COLUMNS[0]; ite
       </div>
 
       <div className={`flex flex-col rounded-[1.25rem] p-5 w-full transition-all border ${
-        isOver ? 'bg-slate-50 dark:bg-slate-800/80 border-accent-400/50 shadow-md' : 'bg-white dark:bg-surface border-slate-200 dark:border-slate-800 hover:shadow-sm'
+        isOver ? 'bg-slate-50 dark:bg-slate-800/80 border-accent-400/50 shadow-md' : 'bg-surface border-slate-border hover:shadow-sm'
       }`}>
         {/* Header Row */}
         <div className="flex items-center justify-between mb-2">
@@ -119,7 +119,7 @@ function KanbanColumn({ col, items, onItemClick }: { col: typeof COLUMNS[0]; ite
             ))}
           </SortableContext>
           {items.length === 0 && (
-             <div className="w-full h-[60px] border-2 border-dashed border-slate-200 dark:border-slate-700/50 rounded-xl flex items-center justify-center text-slate-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+             <div className="w-full h-[60px] border-2 border-dashed border-slate-border rounded-xl flex items-center justify-center text-slate-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                Drop here
              </div>
           )}
@@ -216,4 +216,5 @@ export function KanbanBoard({ items, onStatusChange, onItemClick }: KanbanBoardP
     </DndContext>
   );
 }
+
 
