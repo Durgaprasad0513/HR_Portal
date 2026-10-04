@@ -360,10 +360,11 @@ export default function DashboardPage() {
               <div className="space-y-1">
                 {upcoming.map((candidate: any) => {
                   const dateStr = new Date(candidate.interviewDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const interviewerName = candidate.interviewer ? `${candidate.interviewer.firstName} ${candidate.interviewer.lastName}` : 'Unassigned';
                   return (
                     <div
                       key={candidate.id}
-                      onClick={() => navigate('/recruitment')}
+                      onClick={() => navigate('/recruitment/interviews')}
                       className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
                     >
                       <div className="h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
@@ -380,8 +381,9 @@ export default function DashboardPage() {
                           <span className="text-xs text-text-muted truncate">{candidate.requisition?.positionTitle}</span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end shrink-0">
+                      <div className="flex flex-col items-end shrink-0 gap-1">
                         <span className="text-xs font-semibold text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400">{dateStr}</span>
+                          <span className="text-[10px] text-slate-500 font-medium">{interviewerName}</span>
                       </div>
                     </div>
                   );
