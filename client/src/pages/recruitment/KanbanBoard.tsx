@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { DndContext, DragOverlay, closestCorners, PointerSensor, KeyboardSensor, useSensor, useSensors, DragStartEvent, DragEndEvent, useDroppable } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { sortableKeyboardCoordinates, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Star, MoreHorizontal, Check, Bookmark, Send, FileText, Phone, Users, Code, Briefcase, UserCheck, CheckCircle } from 'lucide-react';
@@ -84,35 +84,47 @@ function KanbanColumn({ col, items, onItemClick }: { col: typeof COLUMNS[0]; ite
   return (
     <div 
       ref={setNodeRef}
-      className={`flex flex-col rounded-[1.25rem] p-3 min-w-[280px] w-[280px] shrink-0 transition-colors ${
-        isOver ? 'bg-slate-100 dark:bg-slate-800/80 ring-2 ring-accent-400/50' : 'bg-slate-50/80 dark:bg-slate-900/20'
-      }`}
+      className={`relative pl-14 md:pl-20 py-2 transition-colors w-full group`}
       role="region"
-      aria-label={`${col.title} column`}
+      aria-label={`${col.title} stage`}
     >
-      
-      {/* Header Row */}
-      <div className="flex items-center justify-between mb-4 px-1 mt-1">
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${col.colors.bg}`}>
-            <Icon className={`w-4 h-4 ${col.colors.text}`} strokeWidth={2.5} />
-          </div>
-          <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{col.title}</h3>
-        </div>
-        <div className="flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-slate-200/50 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400">
-          {items.length}
-        </div>
-      </div>
-      
-      {/* Items Area */}
-      <div className="flex-1 w-full min-h-[100px] flex flex-col">
-        <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
-          {items.map(i => (
-            <SortableItemCard key={i.id} item={i} onClick={() => onItemClick?.(i)} />
-          ))}
-        </SortableContext>
+      {/* Timeline Node */}
+      <div className={`absolute left-0 md:left-6 top-6 w-10 h-10 rounded-full flex items-center justify-center z-10 border-4 border-slate-50 dark:border-slate-900 ${col.colors.bg} ${isOver ? 'ring-4 ring-accent-400/30 scale-110' : ''} transition-all`}>
+        <Icon className={`w-5 h-5 ${col.colors.text}`} strokeWidth={2.5} />
       </div>
 
+      <div className={`flex flex-col rounded-[1.25rem] p-5 w-full transition-all border ${
+        isOver ? 'bg-slate-50 dark:bg-slate-800/80 border-accent-400/50 shadow-md' : 'bg-white dark:bg-surface border-slate-200 dark:border-slate-800 hover:shadow-sm'
+      }`}>
+        {/* Header Row */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <h3 className="font-extrabold text-base text-slate-800 dark:text-slate-100 tracking-tight">{col.title}</h3>
+            {items.length > 0 && (
+              <span className="flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400">
+                {items.length}
+              </span>
+            )}
+          </div>
+          {items.length === 0 && (
+            <span className="text-xs font-medium text-slate-400">Empty</span>
+          )}
+        </div>
+        
+        {/* Items Area */}
+        <div className="flex-1 w-full min-h-[70px] flex flex-row flex-wrap gap-4 items-start mt-2">
+          <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
+            {items.map(i => (
+              <SortableItemCard key={i.id} item={i} onClick={() => onItemClick?.(i)} />
+            ))}
+          </SortableContext>
+          {items.length === 0 && (
+             <div className="w-full h-[60px] border-2 border-dashed border-slate-200 dark:border-slate-700/50 rounded-xl flex items-center justify-center text-slate-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+               Drop here
+             </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -188,7 +200,8 @@ export function KanbanBoard({ items, onStatusChange, onItemClick }: KanbanBoardP
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-5 overflow-x-auto pb-6 custom-scrollbar items-start min-h-[500px]">
+      <div className="flex flex-col gap-1 overflow-y-auto pb-10 items-stretch min-h-[500px] relative custom-scrollbar pr-2">
+        <div className="absolute left-5 md:left-[2.75rem] top-10 bottom-10 w-0.5 bg-slate-200 dark:bg-slate-700 z-0"></div>
         {COLUMNS.map((col) => (
           <KanbanColumn key={col.id} col={col} items={columnsData[col.id]} onItemClick={onItemClick} />
         ))}

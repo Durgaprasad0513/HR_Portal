@@ -240,28 +240,14 @@ export default function RecruitmentPage() {
  ) : (
            <div className="flex flex-col gap-4 h-full">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-              <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg border border-slate-200 dark:border-slate-700/50">
-                <button 
-                  onClick={() => setTrackerMode('kanban')} 
-                  className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${trackerMode === 'kanban' ? 'bg-white dark:bg-surface shadow-sm text-accent-600 dark:text-accent-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                >
-                  Board View
-                </button>
-                <button 
-                  onClick={() => setTrackerMode('table')} 
-                  className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${trackerMode === 'table' ? 'bg-white dark:bg-surface shadow-sm text-accent-600 dark:text-accent-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                >
-                  List View
-                </button>
-              </div>
-              {canExport('recruitment') && trackerMode === 'table' && (
+              {canExport('recruitment') && (
                 <Button variant="outline" onClick={handleExportCandidates} className="shadow-sm">
                   <Download className="w-4 h-4 mr-2" /> Export Register
                 </Button>
               )}
             </div>
 
-            {trackerMode === 'kanban' ? (
+            {true ? (
               <KanbanBoard 
                 items={data.filter((req: any) => req.id === selectedBoardReqId).map((req: any) => ({
                   id: req.id,
