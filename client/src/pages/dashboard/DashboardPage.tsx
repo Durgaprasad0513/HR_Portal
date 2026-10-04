@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -89,9 +89,9 @@ export default function DashboardPage() {
     expensesData.data.forEach((exp: any) => {
       // Only count approved or paid expenses if possible, or all for now
       if (sums[exp.category] !== undefined) {
-         sums[exp.category] += exp.amount || 0;
+         sums[exp.category] += Number(exp.amount) || 0;
       } else {
-         sums['OTHER'] += exp.amount || 0;
+         sums['OTHER'] += Number(exp.amount) || 0;
       }
     });
     
@@ -470,7 +470,7 @@ export default function DashboardPage() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: any) => '₹' + Number(value).toLocaleString('en-IN')}
+                        formatter={(value: any) => '?' + Number(value).toLocaleString('en-IN')}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       />
                     </PieChart>
@@ -484,7 +484,7 @@ export default function DashboardPage() {
                         <div className={'w-3 h-3 rounded-full ' + item.color}></div>
                         <span className="text-text-muted font-medium">{item.name}</span>
                       </div>
-                      <span className="font-bold text-text-heading">₹{item.value.toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-text-heading">?{item.value.toLocaleString('en-IN')}</span>
                     </div>
                   ))}
                 </div>
@@ -503,4 +503,5 @@ export default function DashboardPage() {
  </div>
  );
 }
+
 
