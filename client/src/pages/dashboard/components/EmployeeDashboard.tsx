@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
@@ -20,6 +20,7 @@ import clsx from 'clsx';
 
 export const EmployeeDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   const [shouldAnimate] = useState(() => {
     const hasAnimated = sessionStorage.getItem('emp_dashboard_animated');
@@ -86,8 +87,9 @@ export const EmployeeDashboard = () => {
       title: e.description || e.category?.replace(/_/g, ' ') || 'Expense',
       sub: 'Office Expense',
       status: e.status,
+      link: '/office-expenses',
       icon: <Receipt size={18} />,
-      iconBg: 'bg-indigo-50 text-indigo-600',
+      iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
     }));
 
   const myTravel = ((myTravelData as any)?.data || [])
@@ -97,8 +99,9 @@ export const EmployeeDashboard = () => {
       title: t.destination || 'Travel Request',
       sub: 'Travel Request',
       status: t.status,
+      link: '/travel',
       icon: <Plane size={18} />,
-      iconBg: 'bg-emerald-50 text-emerald-600',
+      iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
     }));
 
   const recentRequests = [...myExpenses, ...myTravel].slice(0, 4);
@@ -305,13 +308,13 @@ export const EmployeeDashboard = () => {
               {recentRequests.length > 0 ? (
                 <div className="divide-y divide-slate-border flex-1">
                   {recentRequests.map((req: any) => (
-                    <div key={req.id} className="p-4 flex items-center justify-between hover:bg-tint transition-colors">
+                    <Link key={req.id} to={req.link} className="p-4 flex items-center justify-between hover:bg-tint transition-colors group">
                       <div className="flex items-center gap-3">
                         <div className={clsx("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", req.iconBg)}>
                           {req.icon}
                         </div>
                         <div>
-                          <p className="font-bold text-sm text-text-heading line-clamp-1">{req.title}</p>
+                          <p className="font-bold text-sm text-text-heading line-clamp-1 group-hover:text-brand-primary transition-colors">{req.title}</p>
                           <p className="text-xs text-text-muted mt-0.5">{req.sub}</p>
                         </div>
                       </div>
@@ -319,7 +322,7 @@ export const EmployeeDashboard = () => {
                         {getStatusIcon(req.status)}
                         <span className="hidden sm:inline">{req.status || 'PENDING'}</span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
