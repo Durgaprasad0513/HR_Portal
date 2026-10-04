@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -111,7 +111,7 @@ export default function DashboardPage() {
           { name: 'IT / Software', value: 22000, color: 'bg-pink-500', hex: '#ec4899' }
        ];
     }
-    return finalData.filter(item => item.value > 0);
+    return finalData;
   }, [expensesData]);
 
   if (isStatsLoading) return <LoadingSpinner />;
@@ -443,7 +443,7 @@ export default function DashboardPage() {
             <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Hyderabad Corporate HQ Expenses</h3>
+                  <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Office Expenses</h3>
                   <p className="text-xs text-text-muted mt-1">Expense distribution across operational cost centers</p>
                 </div>
                 <button onClick={() => navigate('/office-expenses')} className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full hover:bg-emerald-100 transition-colors shrink-0 cursor-pointer">
@@ -470,7 +470,7 @@ export default function DashboardPage() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: any) => '?' + Number(value).toLocaleString('en-IN')}
+                        formatter={(value: any) => '₹' + Number(value).toLocaleString('en-IN')}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       />
                     </PieChart>
@@ -484,7 +484,7 @@ export default function DashboardPage() {
                         <div className={'w-3 h-3 rounded-full ' + item.color}></div>
                         <span className="text-text-muted font-medium">{item.name}</span>
                       </div>
-                      <span className="font-bold text-text-heading">?{item.value.toLocaleString('en-IN')}</span>
+                      <span className="font-bold text-text-heading">₹{item.value.toLocaleString('en-IN')}</span>
                     </div>
                   ))}
                 </div>
