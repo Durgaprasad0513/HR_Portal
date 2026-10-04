@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '@/api/recruitment';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -19,6 +20,8 @@ export default function InterviewCalendarPage() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const reqId = searchParams.get('reqId');
 
   const updateCandidateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string, payload: any }) => recruitmentApi.interviewCandidate(id, payload),
@@ -40,6 +43,13 @@ export default function InterviewCalendarPage() {
     queryFn: () => recruitmentApi.getInterviews().then((res: any) => res.data)
   });
 
+  const filteredInterviews = useMemo(() => {
+    if (!interviewsData) return [];
+    if (reqId) {
+      return interviewsData.filter((cand: any) => cand.requisitionId === reqId || cand.requisition?.id === reqId);
+    }
+    return interviewsData;
+  }, [interviewsData, reqId]);
 
   return (
     <div className="space-y-6">
@@ -90,8 +100,8 @@ export default function InterviewCalendarPage() {
               <tbody className="divide-y divide-slate-border">
                 {isLoading ? (
                   <tr><td colSpan={7} className="py-10"><LoadingSpinner /></td></tr>
-                ) : interviewsData && interviewsData.length > 0 ? (
-                  interviewsData.map((cand: any) => (
+                ) : filteredInterviews && filteredInterviews.length > 0 ? (
+                  filteredInterviews.map((cand: any) => (
                     <tr key={cand.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-slate-900 dark:text-white">{cand.candidateName}</p>
@@ -175,8 +185,8 @@ export default function InterviewCalendarPage() {
                 Interviews on {formatDate(selectedDate.toISOString())}
               </h3>
               <div className="space-y-4">
-                {interviewsData && interviewsData.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).length > 0 ? (
-                  interviewsData.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).map((cand: any) => (
+                {filteredInterviews && filteredInterviews.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).length > 0 ? (
+                  filteredInterviews.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).map((cand: any) => (
                     <div key={cand.id} className="flex items-start justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -234,3 +244,6 @@ export default function InterviewCalendarPage() {
     </div>
   );
 }
+
+
+
