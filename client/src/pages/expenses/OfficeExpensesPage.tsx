@@ -79,7 +79,7 @@ export default function OfficeExpensesPage() {
  },
  { 
  header: 'Amount', 
- accessor: (row: any) => <span className="font-medium">₹{row.amount}</span>
+ accessor: (row: any) => <span className="font-medium"><IndianRupee className="w-3 h-3 inline mr-0.5 -mt-0.5"/>{row.amount}</span>
  },
  { 
  header: 'Submitted By', 
@@ -194,7 +194,7 @@ export default function OfficeExpensesPage() {
  <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
  <p className="text-sm text-text-muted mb-1 font-medium">Total Paid (All Time)</p>
  <p className="text-2xl font-bold text-text-heading">
- ₹{data.filter((d:any) => d.status === 'PAID').reduce((sum:number, d:any) => sum + Number(d.amount), 0)}
+<IndianRupee className="w-5 h-5 inline mr-1 -mt-1"/>{data.filter((d:any) => d.status === 'PAID').reduce((sum:number, d:any) => sum + Number(d.amount), 0)}
  </p>
  </div>
  </div>
