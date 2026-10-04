@@ -249,7 +249,10 @@ export class DashboardService {
         where: { interviewDate: { gte: now } },
         orderBy: { interviewDate: 'asc' },
         take: 5,
-        include: { requisition: { select: { positionTitle: true } } }
+        include: { 
+          requisition: { select: { positionTitle: true } },
+          interviewer: { select: { firstName: true, lastName: true } }
+        }
       }) : [],
     };
   }

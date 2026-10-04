@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Plane, MessageSquare } from 'lucide-react';
+import { Calendar, Plane, MessageSquare, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function ProfileBanner() {
@@ -73,6 +73,13 @@ export function ProfileBanner() {
         >
           <MessageSquare className="w-4 h-4" />
           HR Query
+        </button>
+        <button 
+          onClick={() => navigate('/office-expenses')}
+          className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm"
+        >
+          <Receipt className="w-4 h-4" />
+          Submit Expense
         </button>
       </div>
     </div>
