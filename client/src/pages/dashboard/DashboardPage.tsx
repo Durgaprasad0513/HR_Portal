@@ -63,22 +63,22 @@ export default function DashboardPage() {
 
   const expenseSummary = React.useMemo(() => {
     const defaultData = [
-      { name: 'Rent & Maintenance', category: 'MAINTENANCE', value: 0, color: 'bg-emerald-500', hex: '#10b981' },
-      { name: 'Power & Telecom', category: 'UTILITIES', value: 0, color: 'bg-blue-500', hex: '#3b82f6' },
-      { name: 'IT / Software', category: 'IT_SOFTWARE', value: 0, color: 'bg-amber-500', hex: '#f59e0b' },
-      { name: 'Food & Snacks', category: 'FOOD_SNACKS', value: 0, color: 'bg-purple-500', hex: '#8b5cf6' },
-      { name: 'Stationery & Print', category: 'STATIONERY', value: 0, color: 'bg-pink-500', hex: '#ec4899' },
+      { name: 'Stationery', category: 'STATIONERY', value: 0, color: 'bg-emerald-500', hex: '#10b981' },
+      { name: 'Food & Snacks', category: 'FOOD_SNACKS', value: 0, color: 'bg-blue-500', hex: '#3b82f6' },
+      { name: 'Maintenance', category: 'MAINTENANCE', value: 0, color: 'bg-amber-500', hex: '#f59e0b' },
+      { name: 'Utilities', category: 'UTILITIES', value: 0, color: 'bg-purple-500', hex: '#8b5cf6' },
+      { name: 'IT / Software', category: 'IT_SOFTWARE', value: 0, color: 'bg-pink-500', hex: '#ec4899' },
       { name: 'Other', category: 'OTHER', value: 0, color: 'bg-slate-500', hex: '#64748b' }
     ];
     
     if (!expensesData?.data) {
        // Mock data if API returns nothing so it doesn't look broken during loading/demo
        return [
-          { name: 'Rent & Maintenance', value: 145000, color: 'bg-emerald-500', hex: '#10b981' },
-          { name: 'Power & Telecom', value: 38400, color: 'bg-blue-500', hex: '#3b82f6' },
-          { name: 'HVAC & Repairs', value: 22000, color: 'bg-amber-500', hex: '#f59e0b' },
-          { name: 'Pantry Refreshment', value: 18500, color: 'bg-purple-500', hex: '#8b5cf6' },
-          { name: 'Stationery & Print', value: 9800, color: 'bg-pink-500', hex: '#ec4899' }
+          { name: 'Stationery', value: 9800, color: 'bg-emerald-500', hex: '#10b981' },
+          { name: 'Food & Snacks', value: 18500, color: 'bg-blue-500', hex: '#3b82f6' },
+          { name: 'Maintenance', value: 145000, color: 'bg-amber-500', hex: '#f59e0b' },
+          { name: 'Utilities', value: 38400, color: 'bg-purple-500', hex: '#8b5cf6' },
+          { name: 'IT / Software', value: 22000, color: 'bg-pink-500', hex: '#ec4899' }
        ];
     }
     
@@ -104,11 +104,11 @@ export default function DashboardPage() {
     
     if (!hasData) {
         return [
-          { name: 'Rent & Maintenance', value: 145000, color: 'bg-emerald-500', hex: '#10b981' },
-          { name: 'Power & Telecom', value: 38400, color: 'bg-blue-500', hex: '#3b82f6' },
-          { name: 'HVAC & Repairs', value: 22000, color: 'bg-amber-500', hex: '#f59e0b' },
-          { name: 'Pantry Refreshment', value: 18500, color: 'bg-purple-500', hex: '#8b5cf6' },
-          { name: 'Stationery & Print', value: 9800, color: 'bg-pink-500', hex: '#ec4899' }
+          { name: 'Stationery', value: 9800, color: 'bg-emerald-500', hex: '#10b981' },
+          { name: 'Food & Snacks', value: 18500, color: 'bg-blue-500', hex: '#3b82f6' },
+          { name: 'Maintenance', value: 145000, color: 'bg-amber-500', hex: '#f59e0b' },
+          { name: 'Utilities', value: 38400, color: 'bg-purple-500', hex: '#8b5cf6' },
+          { name: 'IT / Software', value: 22000, color: 'bg-pink-500', hex: '#ec4899' }
        ];
     }
     return finalData.filter(item => item.value > 0);
