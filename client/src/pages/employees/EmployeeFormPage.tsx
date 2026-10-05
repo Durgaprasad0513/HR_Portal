@@ -394,7 +394,7 @@ export default function EmployeeFormPage() {
  className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  >
  <option value="">Select Office</option>
- <option value="Hyd Office">Hyd Office</option>
+ <option value="Hyderabad Office">Hyderabad Office</option>
  <option value="Peddapuram Plant">Peddapuram Plant</option>
  </Select>
  </div>
