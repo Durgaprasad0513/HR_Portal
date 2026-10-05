@@ -295,7 +295,48 @@ function UserAccountsTab() {
  </div>
  )}
 
- {resetModal && (
+ 
+ {isAddModalOpen && (
+ <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Create Management User">
+ <div className="space-y-4 py-2">
+ <p className="text-sm text-slate-500">Create a standalone user account that is not linked to an employee profile.</p>
+ <Input
+ label="Email Address"
+ type="email"
+ value={newUser.email}
+ onChange={e => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+ required
+ />
+ <Input
+ label="Password"
+ type="password"
+ placeholder="Min 6 characters"
+ value={newUser.password}
+ onChange={e => setNewUser(prev => ({ ...prev, password: e.target.value }))}
+ required
+ />
+ <Select
+ label="Role"
+ value={newUser.role}
+ onChange={e => setNewUser(prev => ({ ...prev, role: e.target.value }))}
+ required
+ >
+ {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+ </Select>
+ <div className="flex justify-end gap-2 pt-2">
+ <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+ <Button
+ onClick={() => addUserMutation.mutate(newUser)}
+ disabled={addUserMutation.isPending || newUser.password.length < 6 || !newUser.email}
+ >
+ {addUserMutation.isPending ? 'Creating...' : 'Create User'}
+ </Button>
+ </div>
+ </div>
+ </Modal>
+ )}
+
+      {resetModal && (
  <Modal isOpen={!!resetModal} onClose={() => { setResetModal(null); setNewPassword(''); }} title={`Reset Password — ${resetModal.email}`}>
  <div className="space-y-4">
  <p className="text-sm text-gray-600 dark:text-gray-400">Set a new temporary password for this user. Their active sessions will be invalidated.</p>
