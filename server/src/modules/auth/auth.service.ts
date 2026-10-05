@@ -8,8 +8,13 @@ import { ROLE_LABELS } from '../permissions/permission.catalog';
 
 export class AuthService {
   async login(input: LoginInput, reqContext: { ipAddress?: string, deviceBrowser?: string } = {}) {
-    const user = await prisma.user.findUnique({
-      where: { email: input.email },
+    const user = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { email: input.email },
+          { employee: { employeeCode: input.email } }
+        ]
+      },
       include: {
         employee: {
           select: {
@@ -25,7 +30,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid username/email or password');
     }
 
     if (!user.isActive) {
@@ -42,7 +47,7 @@ export class AuthService {
           ipAddress: reqContext.ipAddress,
         }
       });
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid username/email or password');
     }
 
     const token = generateToken({
@@ -176,3 +181,5 @@ export class AuthService {
 }
 
 export const authService = new AuthService();
+
+
