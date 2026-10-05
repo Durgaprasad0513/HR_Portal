@@ -4,6 +4,18 @@ import { sendSuccess, sendError } from '../../utils/response';
 import { userManagementService } from './user.service';
 
 export class UserController {
+  async createUser(req: AuthRequest, res: Response) {
+    try {
+      const { email, password, role } = req.body;
+      if (!email || !password || !role) return sendError(res, 'Email, password and role are required', 400);
+      const user = await userManagementService.createUser({ email, password, role }, req.user!.userId);
+      return sendSuccess(res, user, 'User created successfully', 201);
+    } catch (error: any) {
+      if (error.code === 'P2002') return sendError(res, 'Email already exists', 400);
+      return sendError(res, error.message, 400);
+    }
+  }
+
   async getAllUsers(req: Request, res: Response) {
     try {
       const users = await userManagementService.getAllUsers(req.query);

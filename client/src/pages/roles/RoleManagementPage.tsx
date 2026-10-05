@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Search, Shield, Users, Lock, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Shield, Users, Lock, CheckCircle, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -144,6 +144,17 @@ function UserAccountsTab() {
  const [roleFilter, setRoleFilter] = useState('');
  const [resetModal, setResetModal] = useState<any>(null);
  const [newPassword, setNewPassword] = useState('');
+ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+ const [newUser, setNewUser] = useState({ email: '', password: '', role: 'MANAGER' });
+
+ const addUserMutation = useMutation({
+ mutationFn: async (data: any) => {
+ await apiClient.post(`/users`, data);
+ },
+ onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['all-users'] }); toast.success('User created successfully'); setIsAddModalOpen(false); setNewUser({ email: '', password: '', role: 'MANAGER' }); },
+ onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to create user'),
+ });
+
 
  const { data: users, isLoading } = useQuery({
  queryKey: ['all-users', debouncedSearch, roleFilter],
@@ -181,8 +192,10 @@ function UserAccountsTab() {
  });
 
  return (
+
  <div className="space-y-4">
- <div className="flex gap-3">
+ <div className="flex flex-wrap items-center justify-between gap-3">
+ <div className="flex gap-3 flex-1 min-w-[200px]">
  <div className="relative flex-1 max-w-sm">
  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
  <input
@@ -202,6 +215,9 @@ function UserAccountsTab() {
  {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
  </Select>
  </div>
+ <Button onClick={() => setIsAddModalOpen(true)} className="gap-2"><Plus className="w-4 h-4" /> Add User</Button>
+ </div>
+
 
  {isLoading ? <div className="py-12"><LoadingSpinner /></div> : (
  <div className="bg-surface rounded-xl border border-slate-border overflow-hidden">

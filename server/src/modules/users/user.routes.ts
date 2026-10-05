@@ -9,6 +9,7 @@ router.use(authenticate);
 router.use(authorize(Role.ADMIN, Role.HR)); // ADMIN and HR can manage users
 
 router.get('/', userController.getAllUsers);
+router.post('/', userController.createUser);
 router.get('/:id', userController.getUserById);
 router.patch('/:id/role', userController.changeRole);
 router.patch('/:id/status', userController.toggleStatus);
