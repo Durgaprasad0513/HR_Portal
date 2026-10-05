@@ -1,6 +1,31 @@
 import prisma from '../../config/database';
 
 export class UserManagementService {
+  async createUser(data: { email: string, password: string, role: string }, adminUserId: string) {
+    const { hashPassword } = await import('../../utils/password');
+    const hashed = await hashPassword(data.password);
+
+    const user = await prisma.user.create({
+      data: {
+        email: data.email,
+        password: hashed,
+        role: data.role as any,
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actionPerformed: 'CREATE_USER',
+        moduleAffected: 'roles',
+        recordIdAffected: user.id,
+        newValue: JSON.stringify({ email: data.email, role: data.role }),
+        userId: adminUserId,
+      },
+    });
+
+    return user;
+  }
+
   async getAllUsers(filters: any = {}) {
     const { search, role } = filters;
 
