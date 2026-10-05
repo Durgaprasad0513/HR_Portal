@@ -9,7 +9,7 @@
         "start": "node dist/server.js",
         "lint": "eslint src/",
         "prisma:generate": "prisma generate",
-        "prisma:push": "prisma db push",
+        "prisma:push": "prisma db push --accept-data-loss",
         "prisma:seed": "prisma db seed",
         "prisma:studio": "prisma studio",
         "test": "jest --runInBand",
