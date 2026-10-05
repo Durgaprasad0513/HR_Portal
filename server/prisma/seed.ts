@@ -16,9 +16,9 @@ async function main() {
   });
 
   const hr = await prisma.department.upsert({
-    where: { name: 'HR' },
+    where: { name: 'HR&Admin' },
     update: {},
-    create: { name: 'HR', description: 'Human Resources' },
+    create: { name: 'HR&Admin', description: 'Human Resources' },
   });
 
   const marketing = await prisma.department.upsert({
@@ -38,6 +38,31 @@ async function main() {
     update: {},
     create: { name: 'Commercial', description: 'Commercial Operations' },
   });
+
+  await prisma.department.upsert({
+    where: { name: 'Quality' },
+    update: {},
+    create: { name: 'Quality', description: 'Quality Assurance' },
+  });
+
+  await prisma.department.upsert({
+    where: { name: 'Export' },
+    update: {},
+    create: { name: 'Export', description: 'Export & Shipping' },
+  });
+
+  await prisma.department.upsert({
+    where: { name: 'MIS' },
+    update: {},
+    create: { name: 'MIS', description: 'Management Information Systems' },
+  });
+
+  await prisma.department.upsert({
+    where: { name: 'Automobile' },
+    update: {},
+    create: { name: 'Automobile', description: 'Automobile Management' },
+  });
+
 
   // Create only the foundational Admin Employee
   const adminEmployee = await prisma.employee.upsert({
