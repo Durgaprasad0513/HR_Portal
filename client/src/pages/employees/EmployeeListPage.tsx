@@ -164,7 +164,7 @@ export default function EmployeeListPage() {
  onChange={(e) => setLocation(e.target.value)}
  >
  <option value="">All Offices</option>
- <option value="Hyd Office">Hyd Office</option>
+ <option value="Hyderabad Office">Hyderabad Office</option>
  <option value="Peddapuram Plant">Peddapuram Plant</option>
  </Select>
  
