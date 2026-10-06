@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ScheduleInterviewModal } from '@/pages/dashboard/components/ScheduleInterviewModal';
-import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal } from 'lucide-react';
+import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal, Download } from 'lucide-react';
 
 export default function InterviewCalendarPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
@@ -39,17 +39,33 @@ export default function InterviewCalendarPage() {
   };
 
   const { data: interviewsData, isLoading } = useQuery({
-    queryKey: ['interviews'],
-    queryFn: () => recruitmentApi.getInterviews().then((res: any) => res.data)
+    queryKey: ['interviews', reqId],
+    queryFn: () => reqId 
+      ? recruitmentApi.getCandidates(reqId).then((res: any) => res.data)
+      : recruitmentApi.getInterviews().then((res: any) => res.data)
   });
 
   const filteredInterviews = useMemo(() => {
     if (!interviewsData) return [];
-    if (reqId) {
-      return interviewsData.filter((cand: any) => cand.requisitionId === reqId || cand.requisition?.id === reqId);
-    }
+    // Already filtered by API if reqId exists, but safe to return directly
     return interviewsData;
-  }, [interviewsData, reqId]);
+  }, [interviewsData]);
+
+  const handleExport = () => {
+    if (!filteredInterviews?.length) return;
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "Candidate Name,Role,Interview Date,Location,Interviewer,Round,Status\n"
+      + filteredInterviews.map((cand: any) => 
+          `${cand.candidateName},${cand.requisition?.positionTitle || ''},${cand.interviewDate || 'Not Scheduled'},${cand.interviewLocation || 'In-person'},${cand.interviewer ? cand.interviewer.firstName + ' ' + cand.interviewer.lastName : 'Unassigned'},${cand.interviewRound || 'HR_INTERVIEW'},${cand.interviewFeedback || 'Pending'}`
+        ).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "Interview_Calendar.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="space-y-6">
@@ -73,6 +89,9 @@ export default function InterviewCalendarPage() {
                 List View
               </button>
             </div>
+            <Button variant="outline" onClick={handleExport} className="gap-2">
+              <Download className="w-4 h-4" /> Export Excel
+            </Button>
             <Button onClick={() => setIsScheduleModalOpen(true)} className="gap-2">
               <Plus className="w-4 h-4" /> Schedule Interview
             </Button>
@@ -92,7 +111,7 @@ export default function InterviewCalendarPage() {
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Mode & Venue</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Panel</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Round</th>
-                  
+                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Actions</th>
                 </tr>
               </thead>
               
@@ -120,7 +139,31 @@ export default function InterviewCalendarPage() {
                           {cand.interviewRound ? cand.interviewRound.replace('_', ' ') : 'HR INTERVIEW'}
                         </span>
                       </td>
-                      
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <select 
+                            className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 outline-none cursor-pointer"
+                            value={cand.interviewRound || 'HR_INTERVIEW'}
+                            onChange={(e) => handleSetPhase(cand.id, e.target.value)}
+                            disabled={updateCandidateMutation.isPending}
+                          >
+                            <option value="TELEPHONIC">Telephonic</option>
+                            <option value="HR_INTERVIEW">HR Interview</option>
+                            <option value="TECHNICAL">Technical</option>
+                            <option value="MANAGEMENT">Management</option>
+                            <option value="OFFER">Offer</option>
+                          </select>
+                          {cand.interviewFeedback === 'Finished' ? (
+                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Finished
+                            </span>
+                          ) : (
+                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id)} disabled={updateCandidateMutation.isPending}>
+                              Mark Finish
+                            </Button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -210,11 +253,12 @@ export default function InterviewCalendarPage() {
       </div>
 
       {/* Schedule Interview Modal */}
-      <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
+      <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} initialRequisitionId={reqId || undefined} />
 
     </div>
   );
 }
+
 
 
 
