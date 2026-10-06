@@ -33,6 +33,38 @@ export class RecruitmentService {
     });
   }
 
+  async updateRequisition(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
+    const req = await prisma.requisition.findUnique({ where: { id } });
+    if (!req) throw new Error('Requisition not found.');
+
+    if (data.departmentId) {
+      const department = await prisma.department.findUnique({ where: { id: data.departmentId }, select: { id: true } });
+      if (!department) throw new Error('Department not found.');
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.requisition.update({
+        where: { id },
+        data: {
+          positionTitle: data.positionTitle,
+          departmentId: data.departmentId,
+          location: data.location,
+          numberOfVacancies: data.numberOfVacancies
+        }
+      });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'UPDATE_REQUISITION',
+          moduleAffected: 'recruitment',
+          recordIdAffected: id,
+          userId,
+          ipAddress: reqContext.ipAddress,
+        }
+      });
+      return updated;
+    });
+  }
+
   async getRequisitions(currentUser: CurrentUser, filters: any = {}) {
     const scope = getModuleScope(currentUser.role as Role, 'recruitment');
     if (scope !== 'ORG' && !currentUser.employeeId) return [];
@@ -139,7 +171,7 @@ export class RecruitmentService {
     return prisma.candidate.findMany({
       where: { requisitionId },
       include: {
-        interviewer: { select: { id: true, firstName: true, lastName: true } }
+        interviewer: { select: { id: true, firstName: true, lastName: true } }, requisition: { select: { id: true, positionTitle: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -173,9 +205,9 @@ export class RecruitmentService {
   async interviewCandidate(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
     const candidate = await prisma.candidate.findUnique({ where: { id } });
     if (!candidate) throw new Error('Candidate not found.');
-    if (candidate.screeningStatus !== 'SHORTLISTED') {
-      throw new Error('Candidate must be shortlisted before interviewing.');
-    }
+      if (candidate.screeningStatus === 'SCREENING_PENDING') {
+        await prisma.candidate.update({ where: { id }, data: { screeningStatus: 'SHORTLISTED' } });
+      }
 
     return prisma.$transaction(async (tx) => {
       const updated = await tx.candidate.update({
@@ -234,3 +266,5 @@ export class RecruitmentService {
 }
 
 export const recruitmentService = new RecruitmentService();
+
+

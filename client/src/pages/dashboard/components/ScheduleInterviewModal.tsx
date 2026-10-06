@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -10,9 +10,11 @@ import { employeesApi } from '@/api/employees';
 interface ScheduleInterviewModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialRequisitionId?: string;
 }
 
-export function ScheduleInterviewModal({ isOpen, onClose }: ScheduleInterviewModalProps) {
+export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }: ScheduleInterviewModalProps) {
+  React.useEffect(() => { if (isOpen && initialRequisitionId) setRequisitionId(initialRequisitionId); }, [isOpen, initialRequisitionId]);
   const queryClient = useQueryClient();
   const [candidateName, setCandidateName] = useState('');
   const [requisitionId, setRequisitionId] = useState('');
@@ -38,6 +40,7 @@ export function ScheduleInterviewModal({ isOpen, onClose }: ScheduleInterviewMod
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['interviews'] });
       onClose();
       setCandidateName('');
       setRequisitionId('');
@@ -59,6 +62,7 @@ export function ScheduleInterviewModal({ isOpen, onClose }: ScheduleInterviewMod
       interviewerId: interviewerId || undefined,
       interviewRound: interviewRound || undefined,
       interviewLocation: interviewLocation || undefined,
+      screeningStatus: 'SHORTLISTED',
       screeningStatus: 'SHORTLISTED', // Auto-shortlist for interview
     });
   };
@@ -141,3 +145,6 @@ export function ScheduleInterviewModal({ isOpen, onClose }: ScheduleInterviewMod
     </Modal>
   );
 }
+
+
+
