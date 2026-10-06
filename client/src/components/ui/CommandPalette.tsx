@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { employeesApi } from '@/api/employees';
 import { useDebounce } from '@/hooks/useDebounce';
 import { hasAdminAccess } from '@/utils/roles';
+import { usePermissions } from '@/hooks/usePermissions';
+import type { ModuleKey } from '@/types';
 import {
  LayoutDashboard, Users, Laptop, Plane, Briefcase,
  Target, ClipboardList, GraduationCap, Files, UserMinus,
@@ -32,6 +34,8 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  const debouncedSearch = useDebounce(search.trim(), 250);
 
  const isAdminOrHR = hasAdminAccess(user?.role);
+ const { canView, isLoading: permissionsLoading } = usePermissions();
+ const canShow = (module: ModuleKey) => permissionsLoading || canView(module);
 
  const { data: employeeResponse, isFetching: isSearchingEmployees } = useQuery({
  queryKey: ['global-employee-search', debouncedSearch],
@@ -64,25 +68,25 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
 
  // Flattened sidebar navigation mapping
  const mainNav = [
- { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
- ...(isAdminOrHR ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
- { name: 'Employees', path: '/employees', icon: Users },
- { name: 'Performance', path: '/performance', icon: Target },
- { name: 'Apply for leave', path: '/leaves', icon: Calendar },
- ...(isAdminOrHR ? [{ name: 'Leave approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
- ...(isAdminOrHR ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
- { name: 'Training', path: '/training', icon: GraduationCap },
- { name: 'Assets', path: '/assets', icon: Laptop },
- { name: 'Travel', path: '/travel', icon: Plane },
- { name: 'Expenses', path: '/office-expenses', icon: CreditCard },
- { name: 'Documents', path: '/documents', icon: Files },
- { name: 'Helpdesk', path: '/requests', icon: HelpCircle },
+ ...(canShow('dashboard') ? [{ name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }] : []),
+ ...(isAdminOrHR && canShow('attrition') ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
+ ...(canShow('employees') ? [{ name: 'Employees', path: '/employees', icon: Users }] : []),
+ ...(canShow('performance') ? [{ name: 'Performance', path: '/performance', icon: Target }] : []),
+ ...(canShow('leave') ? [{ name: 'Apply for leave', path: '/leaves', icon: Calendar }] : []),
+ ...(isAdminOrHR && canShow('leave') ? [{ name: 'Leave approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
+ ...(isAdminOrHR && canShow('recruitment') ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
+ ...(canShow('training') ? [{ name: 'Training', path: '/training', icon: GraduationCap }] : []),
+ ...(canShow('assets') ? [{ name: 'Assets', path: '/assets', icon: Laptop }] : []),
+ ...(canShow('travel') ? [{ name: 'Travel', path: '/travel', icon: Plane }] : []),
+ ...(canShow('expenses') ? [{ name: 'Expenses', path: '/office-expenses', icon: CreditCard }] : []),
+ ...(canShow('policies') ? [{ name: 'Documents', path: '/documents', icon: Files }] : []),
+ ...(canShow('requests') ? [{ name: 'Helpdesk', path: '/requests', icon: HelpCircle }] : []),
  ];
 
  const accountNav = [
  ...(isAdminOrHR ? [
- { name: 'Role Management', path: '/roles', icon: Shield },
- { name: 'Audit Log', path: '/audit', icon: History },
+ ...(canShow('roles') ? [{ name: 'Role Management', path: '/roles', icon: Shield }] : []),
+ ...(canShow('audit') ? [{ name: 'Audit Log', path: '/audit', icon: History }] : []),
  ] : [])
  ];
 
