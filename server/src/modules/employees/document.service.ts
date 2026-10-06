@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { hasAdminAccess } from '../../utils/roles';
 import { DocumentType } from '@prisma/client';
 import crypto from 'crypto';
 
@@ -106,7 +107,7 @@ export class DocumentService {
     const doc = await prisma.employeeDocument.findUnique({ where: { id: documentId } });
     if (!doc) throw new Error('Document not found');
 
-    if (currentUser.role !== 'HR' && currentUser.role !== 'ADMIN') {
+    if (!hasAdminAccess(currentUser.role)) {
       throw new Error('Not authorized to verify documents');
     }
 

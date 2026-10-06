@@ -16,12 +16,13 @@ import { Select } from '@/components/ui/Select';
 import { Wallet, Plus, CheckCircle2, Download, XCircle, IndianRupee } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function OfficeExpensesPage() {
  const { user } = useAuth();
  const { canExport } = usePermissions();
  const queryClient = useQueryClient();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
  
  const [isModalOpen, setIsModalOpen] = useState(false);
 

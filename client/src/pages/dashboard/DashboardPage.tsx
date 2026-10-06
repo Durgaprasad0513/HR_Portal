@@ -19,6 +19,7 @@ import {
  ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, BookOpen, Receipt
 , Coffee, IndianRupee } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
+import { hasAdminAccess } from '@/utils/roles';
 
 const RECRUITMENT_STAGE_ORDER = [
   'REQUIREMENT',
@@ -48,8 +49,7 @@ const getCompletedRecruitmentLevels = (status: string) => {
 export default function DashboardPage() {
  const navigate = useNavigate();
  const { user } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
- const isManager = false;
+ const isAdminOrHR = hasAdminAccess(user?.role);
  const [showAbsent, setShowAbsent] = useState(false);
  const [expandedRequisitionId, setExpandedRequisitionId] = useState<string | null>(null);
  
@@ -142,7 +142,7 @@ export default function DashboardPage() {
 
   if (isStatsLoading) return <LoadingSpinner />;
 
-  if (!isAdminOrHR && !isManager) {
+  if (!isAdminOrHR) {
     return (
       <div className="space-y-6">
         <ProfileBanner />

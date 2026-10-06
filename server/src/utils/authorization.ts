@@ -1,21 +1,14 @@
 import { Role } from '@prisma/client';
 import prisma from '../config/database';
+import { hasAdminAccess } from './roles';
 
 export type Scope = 'SELF' | 'TEAM' | 'ORG' | 'NONE';
 
 /**
  * Determines the visibility scope for a given module/role combination.
  */
-export const getModuleScope = (role: Role, module: string): Scope => {
-  if (role === 'ADMIN' || role === 'HR') return 'ORG';
-  
-  if (role === 'MANAGER') {
-    // For a manager, we generally want TEAM scope for most operational modules
-    // and SELF for their own profile/settings.
-    const teamModules = ['employees', 'travel', 'assets', 'performance', 'training', 'requests', 'leave', 'recruitment'];
-    if (teamModules.includes(module)) return 'TEAM';
-    return 'SELF';
-  }
+export const getModuleScope = (role: Role, _module: string): Scope => {
+  if (hasAdminAccess(role)) return 'ORG';
 
 
 

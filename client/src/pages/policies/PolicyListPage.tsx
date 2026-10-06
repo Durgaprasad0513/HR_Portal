@@ -13,6 +13,7 @@ import apiClient from '@/api/client';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
+import { hasAdminAccess } from '@/utils/roles';
 
 const CATEGORIES = [
  { value: 'HR_POLICY', label: 'HR Policies' },
@@ -42,7 +43,7 @@ export default function PolicyListPage() {
  const [search, setSearch] = useState('');
  const [categoryFilter, setCategoryFilter] = useState('ALL');
 
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
 
  const { data: policiesData, isLoading } = useQuery({
  queryKey: ['policies'],

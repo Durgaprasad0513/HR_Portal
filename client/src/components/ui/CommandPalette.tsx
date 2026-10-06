@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { employeesApi } from '@/api/employees';
 import { useDebounce } from '@/hooks/useDebounce';
+import { hasAdminAccess } from '@/utils/roles';
 import {
  LayoutDashboard, Users, Laptop, Plane, Briefcase,
  Target, ClipboardList, GraduationCap, Files, UserMinus,
@@ -30,7 +31,7 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search.trim(), 250);
 
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
 
  const { data: employeeResponse, isFetching: isSearchingEmployees } = useQuery({
  queryKey: ['global-employee-search', debouncedSearch],

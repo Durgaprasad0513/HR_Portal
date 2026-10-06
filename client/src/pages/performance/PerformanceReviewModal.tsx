@@ -7,6 +7,7 @@ import { performanceApi } from '@/api/performance';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Select } from '@/components/ui/Select';
+import { hasAdminAccess } from '@/utils/roles';
 
 interface PerformanceReviewModalProps {
  isOpen: boolean;
@@ -125,11 +126,11 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  );
 
  const status = review?.status;
- const canSubmitSelf = status === 'EMPLOYEE_REVIEW' && (user?.employeeId === review.employeeId || user?.role === 'ADMIN' || user?.role === 'HR');
- const canSubmitManager = status === 'MANAGER_REVIEW' && (false || user?.role === 'ADMIN' || user?.role === 'HR');
- const canSubmitHR = status === 'HR_REVIEW' && (user?.role === 'HR' || user?.role === 'ADMIN');
- const canSubmitFinal = status === 'FINAL_APPROVAL' && (user?.role === 'HR' || user?.role === 'ADMIN');
- const canEditCore = user?.role === 'ADMIN' || user?.role === 'HR';
+ const canSubmitSelf = status === 'EMPLOYEE_REVIEW' && (user?.employeeId === review.employeeId || hasAdminAccess(user?.role));
+ const canSubmitManager = status === 'MANAGER_REVIEW' && hasAdminAccess(user?.role);
+ const canSubmitHR = status === 'HR_REVIEW' && hasAdminAccess(user?.role);
+ const canSubmitFinal = status === 'FINAL_APPROVAL' && hasAdminAccess(user?.role);
+ const canEditCore = hasAdminAccess(user?.role);
  const canViewHr = user?.role !== 'EMPLOYEE';
 
  const renderMetricRatings = (ratings: MetricRatings, editable: boolean, idPrefix: string) => (
