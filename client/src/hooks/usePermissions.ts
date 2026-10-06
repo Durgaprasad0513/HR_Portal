@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/api/client';
+import type { ModuleKey } from '@/types';
 
 interface ModulePermission {
  canView: boolean;
@@ -22,6 +23,10 @@ export function usePermissions() {
  },
  staleTime: 5 * 60 * 1000, // Cache for 5 minutes
  });
+
+ const canView = (module: ModuleKey | string): boolean => {
+ return data?.[module]?.canView ?? false;
+ };
 
  const canExport = (module: string): boolean => {
  return data?.[module]?.canExport ?? false;
@@ -50,6 +55,7 @@ export function usePermissions() {
  return {
  permissions: data,
  isLoading,
+ canView,
  canExport,
  canAdd,
  canEdit,
