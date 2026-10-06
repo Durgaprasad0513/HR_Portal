@@ -83,7 +83,9 @@ export const requirePermission = (module: ModuleKey, action: PermissionAction) =
       return;
     }
 
-    const allowed = await permissionService.hasPermission(req.user.role as Role, module, action);
+    const role = req.user.role as Role;
+    const allowed = await permissionService.hasPermission(role, module, action)
+      && (action === 'view' || await permissionService.hasPermission(role, module, 'view'));
     if (!allowed) {
       sendError(res, 'You do not have permission to perform this action.', 403);
       return;
