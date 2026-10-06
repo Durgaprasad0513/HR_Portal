@@ -4,6 +4,8 @@ export const MODULES = [
   { key: 'dashboard', label: 'Dashboard' },
   { key: 'employees', label: 'Employee Data Management' },
   { key: 'travel', label: 'Travel Allowance' },
+  { key: 'leave', label: 'Leave Requests & Approvals' },
+  { key: 'expenses', label: 'Office Expenses' },
   { key: 'assets', label: 'Asset Management' },
   { key: 'recruitment', label: 'Recruitment Tracker' },
   { key: 'attrition', label: 'Attrition' },
@@ -116,8 +118,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
   },
   HR: {
     ...allFull,
-    audit: view(),
-    roles: view(),
   },
   REMOVED_ROLE: {
     ...allFull,
@@ -132,6 +132,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
     dashboard: view(),
     employees: view(),
     travel: selfService,
+    leave: { ...selfService, canEdit: true },
+    expenses: selfService,
     assets: view(),
     recruitment: none,
     attrition: none,

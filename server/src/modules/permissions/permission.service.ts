@@ -12,9 +12,6 @@ import { hasAdminAccess } from '../../utils/roles';
 
 export class PermissionService {
   async ensureDefaults() {
-    const existing = await prisma.modulePermission.count();
-    if (existing > 0) return;
-
     const rows = (Object.keys(DEFAULT_ROLE_PERMISSIONS) as Role[]).flatMap((role) =>
       MODULES.map((module) => ({
         role,
@@ -23,7 +20,7 @@ export class PermissionService {
       }))
     );
 
-    await prisma.modulePermission.createMany({ data: rows });
+    await prisma.modulePermission.createMany({ data: rows, skipDuplicates: true });
   }
 
   async getForRole(role: Role) {
@@ -98,12 +95,18 @@ export class PermissionService {
       canDelete?: boolean;
       canApprove?: boolean;
       canViewRestricted?: boolean;
+      canExport?: boolean;
     },
     userId?: string
   ) {
+    if (hasAdminAccess(role)) {
+      throw new Error('Admin, HR, and Manager permissions are locked to full access');
+    }
+    const { canView, canAdd, canEdit, canDelete, canApprove, canViewRestricted, canExport } = flags;
+    const permissionFlags = { canView, canAdd, canEdit, canDelete, canApprove, canViewRestricted, canExport };
     return prisma.modulePermission.upsert({
       where: { role_module: { role, module } },
-      update: flags,
+      update: permissionFlags,
       create: {
         role,
         module,
@@ -113,6 +116,7 @@ export class PermissionService {
         canDelete: flags.canDelete ?? false,
         canApprove: flags.canApprove ?? false,
         canViewRestricted: flags.canViewRestricted ?? false,
+        canExport: flags.canExport ?? false,
         createdById: userId,
       },
     });
