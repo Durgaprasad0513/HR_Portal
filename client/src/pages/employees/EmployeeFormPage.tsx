@@ -11,14 +11,18 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
-import { ArrowLeft, FileText, CheckCircle2, Upload, Trash2, Camera, User } from 'lucide-react';
+import { ArrowLeft, FileText, CheckCircle2, Upload, Trash2, Camera, User, Download } from 'lucide-react';
 import { DatePicker } from '@/components/ui/DatePicker';
+import Tesseract from 'tesseract.js';
+import * as XLSX from 'xlsx';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function EmployeeFormPage() {
  const { id } = useParams<{ id: string }>();
  const isEdit = !!id;
  const navigate = useNavigate();
  const queryClient = useQueryClient();
+ const { user } = useAuth();
 
  const [formData, setFormData] = useState({
  employeeCode: '', firstName: '', lastName: '', email: '', phone: '',
@@ -146,6 +150,104 @@ export default function EmployeeFormPage() {
  }
  });
 
+ const [isOcrProcessing, setIsOcrProcessing] = useState(false);
+
+ const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+ const file = e.target.files?.[0];
+ if (!file) return;
+
+ setIsOcrProcessing(true);
+ try {
+   const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+   
+   if (['xlsx', 'xls', 'csv'].includes(fileExt)) {
+     const arrayBuffer = await file.arrayBuffer();
+     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+     const firstSheetName = workbook.SheetNames[0];
+     const worksheet = workbook.Sheets[firstSheetName];
+     const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+     
+     if (jsonData.length > 0) {
+       const firstRow = jsonData[0];
+       let extracted: any = {};
+       
+       const findVal = (obj: any, searchKeys: string[]) => {
+         const keys = Object.keys(obj);
+         for (const k of keys) {
+           const normalized = String(k).toLowerCase().replace(/[^a-z]/g, '');
+           if (searchKeys.some(sk => normalized.includes(sk))) return obj[k];
+         }
+         return null;
+       };
+       
+       extracted.firstName = findVal(firstRow, ['firstname', 'first']);
+       extracted.lastName = findVal(firstRow, ['lastname', 'last']);
+       extracted.email = findVal(firstRow, ['email']);
+       
+       if (!extracted.firstName && !extracted.lastName && !extracted.email) {
+           jsonData.forEach(row => {
+               const vals = Object.values(row);
+               if (vals.length >= 2) {
+                   const k = String(vals[0]).toLowerCase().replace(/[^a-z]/g, '');
+                   const v = String(vals[1]);
+                   if (k.includes('firstname') || k === 'first') extracted.firstName = v;
+                   if (k.includes('lastname') || k === 'last') extracted.lastName = v;
+                   if (k.includes('email')) extracted.email = v;
+               }
+           });
+       }
+
+       setFormData(prev => ({
+         ...prev,
+         firstName: extracted.firstName || prev.firstName,
+         lastName: extracted.lastName || prev.lastName,
+         email: extracted.email || prev.email
+       }));
+       toast.success('Excel document processed successfully');
+     }
+   } else if (['jpg', 'jpeg', 'png', 'webp'].includes(fileExt)) {
+     const { data: { text } } = await Tesseract.recognize(file, 'eng');
+     
+     const firstNameMatch = text.match(/First Name[:\-]?\s*([A-Za-z]+)/i);
+     const lastNameMatch = text.match(/Last Name[:\-]?\s*([A-Za-z]+)/i);
+     const emailMatch = text.match(/Email[:\-]?\s*([\w.-]+@[\w.-]+\.\w+)/i);
+
+     setFormData(prev => ({
+       ...prev,
+       firstName: firstNameMatch ? firstNameMatch[1] : prev.firstName,
+       lastName: lastNameMatch ? lastNameMatch[1] : prev.lastName,
+       email: emailMatch ? emailMatch[1] : prev.email
+     }));
+
+     toast.success('Document scanned successfully');
+   } else {
+     toast.error('Unsupported file format. Please upload an image or excel file.');
+   }
+ } catch (error) {
+   toast.error('Failed to read document');
+ } finally {
+   setIsOcrProcessing(false);
+ }
+ };
+
+ const handleDownloadTemplate = () => {
+    const headers = [
+      "First Name", "Last Name", "Email", "Phone", "Designation", 
+      "Joining Date", "Employment Type", "Date of Birth",
+      "Gender", "Address", "City", "State", "Zip Code", "Country", 
+      "Marital Status", "Blood Group", "Qualification", "Experience", 
+      "Emergency Contact Name", "Emergency Contact Number", "Bank Name", "Bank Account Number", "IFSC Code", "PAN Number", "Aadhaar Number"
+    ];
+    const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "Employee_Onboarding_Template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+ };
+
  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
  const uploadMutation = useMutation({
  mutationFn: async (files: File[]) => {
@@ -220,6 +322,23 @@ export default function EmployeeFormPage() {
  </div>
 
  <form onSubmit={handleSubmit}>
+ <Card className="mb-6">
+ <CardHeader>
+ <CardTitle>Auto-fill with Document (OCR)</CardTitle>
+ </CardHeader>
+ <CardContent>
+ <div className="flex items-center gap-4">
+ <input 
+ type="file" 
+ accept="image/*" 
+ onChange={handleOcrUpload} 
+ disabled={isOcrProcessing}
+ className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent-50 file:text-accent-700 hover:file:bg-accent-100 dark:file:bg-accent-900 dark:file:text-accent-200"
+ />
+ {isOcrProcessing && <span className="text-sm text-slate-500 whitespace-nowrap">Scanning document...</span>}
+ </div>
+ </CardContent>
+ </Card>
  <Card>
  <CardHeader>
  <CardTitle>Personal Information</CardTitle>
@@ -418,6 +537,7 @@ export default function EmployeeFormPage() {
  </CardContent>
  </Card>
 
+ {user?.role !== 'EMPLOYEE' && (
  <Card className="mt-6">
  <CardHeader>
  <CardTitle>Payroll & HR Information</CardTitle>
@@ -444,6 +564,7 @@ export default function EmployeeFormPage() {
  </div>
  </CardContent>
  </Card>
+ )}
 
  <Card className="mt-6">
  <CardHeader>
