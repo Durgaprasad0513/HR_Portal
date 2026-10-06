@@ -175,11 +175,23 @@ export default function InterviewCalendarPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <select 
+                          {!showHistory && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleReject(cand.id)} 
+                                disabled={updateCandidateMutation.isPending}
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                title="Reject Candidate"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <select 
                             className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 outline-none cursor-pointer"
                             value={cand.interviewRound || 'HR_INTERVIEW'}
                             onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                            disabled={updateCandidateMutation.isPending}
+                            disabled={updateCandidateMutation.isPending} || cand.selectionStatus === 'SELECTION_REJECTED'
                           >
                             <option value="TELEPHONIC">Telephonic</option>
                             <option value="HR_INTERVIEW">HR Interview</option>
@@ -255,11 +267,23 @@ export default function InterviewCalendarPage() {
                         ) : (
                           <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={updateCandidateMutation.isPending}>Mark Finish</Button>
                         )}
-                        <select 
+                        {!showHistory && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleReject(cand.id)} 
+                                disabled={updateCandidateMutation.isPending}
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-2"
+                                title="Reject Candidate"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <select 
                           className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
                           value={cand.interviewRound || 'HR_INTERVIEW'}
                           onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                          disabled={updateCandidateMutation.isPending}
+                          disabled={updateCandidateMutation.isPending} || cand.selectionStatus === 'SELECTION_REJECTED'
                         >
                           <option value="TELEPHONIC">Telephonic</option>
                           <option value="HR_INTERVIEW">HR Interview</option>
