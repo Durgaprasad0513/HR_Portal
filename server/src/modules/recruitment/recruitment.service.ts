@@ -213,7 +213,7 @@ export class RecruitmentService {
       const updated = await tx.candidate.update({
         where: { id },
         data: {
-          screeningStatus: candidate.screeningStatus,
+          
           interviewRound: data.interviewRound,
           interviewDate: data.interviewDate ? new Date(data.interviewDate) : candidate.interviewDate,
           interviewFeedback: data.interviewFeedback ?? candidate.interviewFeedback,
@@ -266,5 +266,6 @@ export class RecruitmentService {
 }
 
 export const recruitmentService = new RecruitmentService();
+
 
 
