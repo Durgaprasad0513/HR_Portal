@@ -13,6 +13,15 @@ export class RecruitmentController {
     }
   }
 
+  async updateRequisition(req: AuthRequest, res: Response) {
+    try {
+      const result = await recruitmentService.updateRequisition(req.params.id as string, req.body, req.user!.userId, { ipAddress: req.ip });
+      return sendSuccess(res, result, 'Requisition updated successfully');
+    } catch (error: any) {
+      return sendError(res, error.message, 400);
+    }
+  }
+
   async getRequisitions(req: AuthRequest, res: Response) {
     try {
       const result = await recruitmentService.getRequisitions(req.user!, req.query);
