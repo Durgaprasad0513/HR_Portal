@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ScheduleInterviewModal } from '@/pages/dashboard/components/ScheduleInterviewModal';
 import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal, Download, XCircle, History } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function InterviewCalendarPage() {
     const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
@@ -28,7 +29,10 @@ export default function InterviewCalendarPage() {
     mutationFn: ({ id, payload }: { id: string, payload: any }) => recruitmentApi.interviewCandidate(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interviews'] });
-    }
+      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      toast.success('Candidate updated');
+    },
+    onError: (error: any) => toast.error(error?.response?.data?.message || 'Could not update candidate')
   });
 
   const handleMarkFinish = (id: string, currentRound: string) => {
@@ -56,6 +60,13 @@ export default function InterviewCalendarPage() {
 
   const handleSetPhase = (id: string, phase: string) => {
     updateCandidateMutation.mutate({ id, payload: { interviewRound: phase, interviewFeedback: 'Pending' } });
+  };
+
+  const handleSetStatus = (id: string, status: string) => {
+    updateCandidateMutation.mutate({
+      id,
+      payload: { selectionStatus: status === 'IN_PROGRESS' ? null : status }
+    });
   };
 
   const { data: interviewsData, isLoading } = useQuery({
@@ -145,13 +156,14 @@ export default function InterviewCalendarPage() {
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Mode & Venue</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Panel</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Round</th>
+                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Status</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Actions</th>
                 </tr>
               </thead>
               
               <tbody className="divide-y divide-slate-border">
                 {isLoading ? (
-                  <tr><td colSpan={5} className="py-10"><LoadingSpinner /></td></tr>
+                  <tr><td colSpan={7} className="py-10"><LoadingSpinner /></td></tr>
                 ) : filteredInterviews && filteredInterviews.length > 0 ? (
                   filteredInterviews.map((cand: any) => (
                     <tr key={cand.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
@@ -174,19 +186,21 @@ export default function InterviewCalendarPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
+                        <select
+                          aria-label={`Status for ${cand.candidateName}`}
+                          className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1.5 outline-none cursor-pointer"
+                          value={cand.selectionStatus || 'IN_PROGRESS'}
+                          onChange={(event) => handleSetStatus(cand.id, event.target.value)}
+                          disabled={updateCandidateMutation.isPending}
+                        >
+                          <option value="IN_PROGRESS">In progress</option>
+                          <option value="SELECTION_ON_HOLD">On hold</option>
+                          <option value="SELECTED">Selected</option>
+                          <option value="SELECTION_REJECTED">Rejected</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          {!showHistory && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleReject(cand.id)} 
-                                disabled={updateCandidateMutation.isPending}
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                                title="Reject Candidate"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
-                            )}
                             <select 
                             className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 outline-none cursor-pointer"
                             value={cand.interviewRound || 'HR_INTERVIEW'}
@@ -214,7 +228,7 @@ export default function InterviewCalendarPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center">
+                    <td colSpan={7} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-700">
                           <CalendarIcon className="w-8 h-8 text-slate-400" />
@@ -261,7 +275,7 @@ export default function InterviewCalendarPage() {
                           <span className="flex items-center gap-1.5">Panel: {cand.interviewer ? `${cand.interviewer.firstName} ${cand.interviewer.lastName}` : 'Unassigned'}</span>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 shrink-0 items-end">
+                        <div className="flex flex-col gap-2 shrink-0 items-end">
                         {cand.interviewFeedback === 'Finished' ? (
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Finished</span>
                         ) : (
@@ -290,6 +304,18 @@ export default function InterviewCalendarPage() {
                           <option value="TECHNICAL">Technical</option>
                           <option value="MANAGEMENT">Management</option>
                           <option value="OFFER">Offer</option>
+                        </select>
+                        <select
+                          aria-label={`Status for ${cand.candidateName}`}
+                          className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
+                          value={cand.selectionStatus || 'IN_PROGRESS'}
+                          onChange={(event) => handleSetStatus(cand.id, event.target.value)}
+                          disabled={updateCandidateMutation.isPending}
+                        >
+                          <option value="IN_PROGRESS">In progress</option>
+                          <option value="SELECTION_ON_HOLD">On hold</option>
+                          <option value="SELECTED">Selected</option>
+                          <option value="SELECTION_REJECTED">Rejected</option>
                         </select>
                       </div>
                     </div>

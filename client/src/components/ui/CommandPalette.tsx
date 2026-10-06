@@ -1,6 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { employeesApi } from '@/api/employees';
+import { useDebounce } from '@/hooks/useDebounce';
 import {
  LayoutDashboard, Users, Laptop, Plane, Briefcase,
  Target, ClipboardList, GraduationCap, Files, UserMinus,
@@ -24,8 +27,18 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  const navigate = useNavigate();
  const { user } = useAuth();
+ const [search, setSearch] = useState('');
+ const debouncedSearch = useDebounce(search.trim(), 250);
 
  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+
+ const { data: employeeResponse, isFetching: isSearchingEmployees } = useQuery({
+ queryKey: ['global-employee-search', debouncedSearch],
+ queryFn: () => employeesApi.getAll({ search: debouncedSearch, limit: 6 }),
+ enabled: open && debouncedSearch.length >= 2,
+ staleTime: 30_000,
+ });
+ const employeeResults = employeeResponse?.data || [];
 
  useEffect(() => {
  const down = (e: KeyboardEvent) => {
@@ -38,6 +51,10 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  document.addEventListener('keydown', down);
  return () => document.removeEventListener('keydown', down);
  }, [setOpen]);
+
+ useEffect(() => {
+ if (!open) setSearch('');
+ }, [open]);
 
  const runCommand = (command: () => void) => {
  setOpen(false);
@@ -70,9 +87,29 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
 
  return (
  <CommandDialog open={open} onOpenChange={setOpen}>
- <CommandInput placeholder="Search modules..." />
+ <CommandInput value={search} onValueChange={setSearch} placeholder="Search modules or employee names..." />
  <CommandList>
- <CommandEmpty>No results found.</CommandEmpty>
+ <CommandEmpty>{isSearchingEmployees ? 'Searching employees...' : 'No results found.'}</CommandEmpty>
+
+ {debouncedSearch.length >= 2 && employeeResults.length > 0 && (
+ <CommandGroup heading="Employees">
+ {employeeResults.map((employee) => (
+ <CommandItem
+ key={employee.id}
+ value={`${employee.firstName} ${employee.lastName} ${employee.employeeCode} ${employee.designation || ''} ${employee.department?.name || ''}`}
+ onSelect={() => runCommand(() => navigate(`/employees/${employee.id}`))}
+ >
+ <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+ {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}
+ </div>
+ <div className="min-w-0 flex-1">
+ <p className="truncate font-medium">{employee.firstName} {employee.lastName}</p>
+ <p className="truncate text-xs text-text-muted">{employee.employeeCode} · {employee.designation || employee.department?.name || 'Employee'}</p>
+ </div>
+ </CommandItem>
+ ))}
+ </CommandGroup>
+ )}
 
  <CommandGroup heading="Navigation">
  {mainNav.map((item) => (
