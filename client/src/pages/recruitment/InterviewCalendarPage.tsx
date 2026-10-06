@@ -12,12 +12,13 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ScheduleInterviewModal } from '@/pages/dashboard/components/ScheduleInterviewModal';
-import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal, Download } from 'lucide-react';
+import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal, Download, XCircle, History } from 'lucide-react';
 
 export default function InterviewCalendarPage() {
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
+    const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -66,9 +67,20 @@ export default function InterviewCalendarPage() {
 
   const filteredInterviews = useMemo(() => {
     if (!interviewsData) return [];
-    // Already filtered by API if reqId exists, but safe to return directly
-    return interviewsData;
-  }, [interviewsData]);
+    if (showHistory) {
+      return interviewsData.filter((cand: any) => cand.selectionStatus === 'SELECTION_REJECTED');
+    }
+    return interviewsData.filter((cand: any) => cand.selectionStatus !== 'SELECTION_REJECTED');
+  }, [interviewsData, showHistory]);
+
+  const handleReject = (id: string) => {
+    if (window.confirm('Are you sure you want to reject this candidate and move them to history?')) {
+      updateCandidateMutation.mutate({ 
+        id, 
+        payload: { selectionStatus: 'SELECTION_REJECTED' } 
+      });
+    }
+  };
 
   const handleExport = () => {
     if (!filteredInterviews?.length) return;
@@ -108,6 +120,9 @@ export default function InterviewCalendarPage() {
                 List View
               </button>
             </div>
+            <Button variant="outline" onClick={() => setShowHistory(!showHistory)} className={`gap-2 ${showHistory ? 'bg-slate-100 dark:bg-slate-800' : ''}`}>
+              <History className="w-4 h-4" /> {showHistory ? 'Hide History' : 'Show History'}
+            </Button>
             <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="w-4 h-4" /> Export Excel
             </Button>
