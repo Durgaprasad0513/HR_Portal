@@ -218,13 +218,16 @@ export interface Requisition {
  numberOfVacancies: number;
  requisitionDate: string;
  status: RequisitionStatus;
+ stageUpdatedAt?: string;
  departmentId?: string;
  department?: { id: string; name: string };
  raisedById?: string;
  raisedBy?: { firstName: string; lastName: string };
  candidates?: Candidate[];
+ selectedCount?: number;
  _count?: { candidates: number };
  createdAt?: string;
+ updatedAt?: string;
 }
 
 export interface Candidate {

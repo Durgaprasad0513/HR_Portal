@@ -87,15 +87,21 @@ export class RecruitmentService {
       };
     }
 
-    return prisma.requisition.findMany({
+    const requisitions = await prisma.requisition.findMany({
       where: { ...filters, ...scopeQuery },
       include: {
         department: true,
         raisedBy: { select: { id: true, firstName: true, lastName: true } },
+        candidates: { select: { selectionStatus: true } },
         _count: { select: { candidates: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
+
+    return requisitions.map(({ candidates, ...requisition }) => ({
+      ...requisition,
+      selectedCount: candidates.filter(candidate => candidate.selectionStatus === 'SELECTED').length
+    }));
   }
 
   async updateRequisitionStatus(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
@@ -103,7 +109,10 @@ export class RecruitmentService {
     if (!req) throw new Error('Requisition not found.');
 
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.requisition.update({ where: { id }, data: { status: data.status } });
+      const updated = await tx.requisition.update({
+        where: { id },
+        data: { status: data.status, stageUpdatedAt: new Date() }
+      });
       await tx.auditLog.create({
         data: {
           actionPerformed: 'UPDATE_REQUISITION_STATUS',
@@ -214,11 +223,13 @@ export class RecruitmentService {
         where: { id },
         data: {
           
-          interviewRound: data.interviewRound,
+          interviewRound: data.interviewRound ?? candidate.interviewRound,
           interviewDate: data.interviewDate ? new Date(data.interviewDate) : candidate.interviewDate,
           interviewFeedback: data.interviewFeedback ?? candidate.interviewFeedback,
           interviewScore: data.interviewScore ?? candidate.interviewScore,
-          selectionStatus: data.selectionStatus,
+          selectionStatus: Object.prototype.hasOwnProperty.call(data, 'selectionStatus')
+            ? data.selectionStatus
+            : candidate.selectionStatus,
           interviewerId: data.interviewerId ?? candidate.interviewerId
         }
       });
