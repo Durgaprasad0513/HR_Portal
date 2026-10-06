@@ -25,7 +25,7 @@ export class NotificationService {
     triggerEvent?: string;
   }) {
     const hrUsers = await prisma.user.findMany({
-      where: { role: { in: ['HR', 'ADMIN'] }, employeeId: { not: null } }
+      where: { role: { in: ['HR', 'ADMIN', 'MANAGER'] }, employeeId: { not: null } }
     });
     
     const notifications = hrUsers.map(hr => ({

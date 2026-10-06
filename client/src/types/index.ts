@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'HR' | 'REMOVED_ROLE' | 'EMPLOYEE';
+export type Role = 'ADMIN' | 'HR' | 'MANAGER' | 'REMOVED_ROLE' | 'EMPLOYEE';
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | 'RESIGNED' | 'TERMINATED';
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 export type LeaveType = 'CASUAL' | 'SICK' | 'EARNED' | 'UNPAID' | 'MATERNITY' | 'PATERNITY';
@@ -218,13 +218,16 @@ export interface Requisition {
  numberOfVacancies: number;
  requisitionDate: string;
  status: RequisitionStatus;
+ stageUpdatedAt?: string;
  departmentId?: string;
  department?: { id: string; name: string };
  raisedById?: string;
  raisedBy?: { firstName: string; lastName: string };
  candidates?: Candidate[];
+ selectedCount?: number;
  _count?: { candidates: number };
  createdAt?: string;
+ updatedAt?: string;
 }
 
 export interface Candidate {

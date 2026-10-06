@@ -17,10 +17,11 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { DataTable } from '@/components/ui/DataTable';
 import { Select } from '@/components/ui/Select';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function PerformanceListPage() {
  const { user } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
  const secondTabName: Tab = isAdminOrHR ? 'Team/Company Reviews' : 'Team/Company Reviews'; // Simplified for type matching
  const [activeTab, setActiveTab] = useState<Tab>('My Performance');
  const [selectedReview, setSelectedReview] = useState<any>(null);
@@ -55,8 +56,6 @@ export default function PerformanceListPage() {
  if (!rawReviews) return [];
  const actionableStatuses = user?.role === 'EMPLOYEE'
  ? ['EMPLOYEE_REVIEW']
- : false
- ? ['MANAGER_REVIEW']
  : ['HR_REVIEW', 'FINAL_APPROVAL'];
  return rawReviews.filter((review: any) => actionableStatuses.includes(review.status)).slice(0, 4);
  }, [rawReviews, user?.role]);
@@ -129,7 +128,7 @@ export default function PerformanceListPage() {
  title="Performance"
  description="Track review progress, feedback, and next approvals."
  actions={<>
- {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+ {hasAdminAccess(user?.role) && (
  <Button onClick={() => setIsCreateModalOpen(true)}>
  Initiate Review
  </Button>

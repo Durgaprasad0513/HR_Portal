@@ -4,7 +4,7 @@ import { MODULES } from './permission.catalog';
 const moduleKeys = MODULES.map((m) => m.key) as [string, ...string[]];
 
 export const updatePermissionSchema = z.object({
-  role: z.enum(['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE']),
+  role: z.enum(['ADMIN', 'HR', 'MANAGER', 'REMOVED_ROLE', 'EMPLOYEE']),
   module: z.enum(moduleKeys),
   canView: z.boolean().optional(),
   canAdd: z.boolean().optional(),

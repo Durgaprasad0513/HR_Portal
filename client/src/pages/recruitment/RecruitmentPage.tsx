@@ -11,15 +11,16 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, Search, PhoneCall, UserCheck, Award, TrendingUp, Calendar, Clock, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, Search, PhoneCall, UserCheck, Award, TrendingUp, Calendar, Clock, MapPin, CheckCircle2, ArrowRight, Pencil } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function RecruitmentPage() {
   const navigate = useNavigate();
  const { user } = useAuth();
  const queryClient = useQueryClient();
- const { canExport } = usePermissions();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const { canExport, canEdit } = usePermissions();
+ const isAdminOrHR = hasAdminAccess(user?.role);
  
  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
  const [selectedReq, setSelectedReq] = useState<any>(null);
@@ -246,6 +247,23 @@ export default function RecruitmentPage() {
  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClasses(req.status)}`}>
  {getStatusLabel(req.status)}
  </span>
+ {canEdit('recruitment') && (
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ className="gap-1.5"
+ onClick={(event) => {
+ event.stopPropagation();
+ setEditingReq(req);
+ setIsReqModalOpen(true);
+ }}
+ onKeyDown={(event) => event.stopPropagation()}
+ aria-label={`Edit ${req.positionTitle} requisition`}
+ >
+ <Pencil className="h-3.5 w-3.5" aria-hidden="true" /> Edit
+ </Button>
+ )}
  <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary-700 dark:text-primary-300">
  Open pipeline <ChevronRight className="h-4 w-4" aria-hidden="true" />
  </span>
@@ -263,7 +281,7 @@ export default function RecruitmentPage() {
               )}
             </div>
 
-            {true ? (
+            {trackerMode === 'kanban' ? (
               <KanbanBoard 
                 items={data.filter((req: any) => req.id === selectedBoardReqId).map((req: any) => ({
                   id: req.id,

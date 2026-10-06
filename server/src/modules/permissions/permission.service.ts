@@ -8,12 +8,10 @@ import {
   PermissionAction,
   ROLE_LABELS,
 } from './permission.catalog';
+const hasLockedPermissions = (role: Role) => role === Role.ADMIN || role === Role.HR;
 
 export class PermissionService {
   async ensureDefaults() {
-    const existing = await prisma.modulePermission.count();
-    if (existing > 0) return;
-
     const rows = (Object.keys(DEFAULT_ROLE_PERMISSIONS) as Role[]).flatMap((role) =>
       MODULES.map((module) => ({
         role,
@@ -22,15 +20,22 @@ export class PermissionService {
       }))
     );
 
-    await prisma.modulePermission.createMany({ data: rows });
+    await prisma.modulePermission.createMany({ data: rows, skipDuplicates: true });
   }
 
   async getForRole(role: Role) {
     await this.ensureDefaults();
-    return prisma.modulePermission.findMany({
+    const rows = await prisma.modulePermission.findMany({
       where: { role },
       orderBy: { module: 'asc' },
     });
+
+    if (!hasLockedPermissions(role)) return rows;
+
+    return rows.map((row) => ({
+      ...row,
+      ...DEFAULT_ROLE_PERMISSIONS[Role.ADMIN][row.module as ModuleKey],
+    }));
   }
 
   async getMatrix() {
@@ -39,18 +44,27 @@ export class PermissionService {
       orderBy: [{ role: 'asc' }, { module: 'asc' }],
     });
 
+    const permissions = rows.map((row) =>
+      hasLockedPermissions(row.role)
+        ? {
+            ...row,
+            ...DEFAULT_ROLE_PERMISSIONS[Role.ADMIN][row.module as ModuleKey],
+          }
+        : row
+    );
+
     return {
       roles: (Object.keys(ROLE_LABELS) as Role[]).map((role) => ({
         role,
         label: ROLE_LABELS[role],
       })),
       modules: MODULES,
-      permissions: rows,
+      permissions,
     };
   }
 
   async hasPermission(role: Role, module: ModuleKey, action: PermissionAction) {
-    if (role === Role.ADMIN || role === Role.HR) return true;
+    if (hasLockedPermissions(role)) return true;
 
     await this.ensureDefaults();
     const row = await prisma.modulePermission.findUnique({
@@ -62,7 +76,7 @@ export class PermissionService {
   }
 
   async canViewRestricted(role: Role, module: ModuleKey) {
-    if (role === Role.ADMIN || role === Role.HR) return true;
+    if (hasLockedPermissions(role)) return true;
 
     await this.ensureDefaults();
     const row = await prisma.modulePermission.findUnique({
@@ -81,12 +95,18 @@ export class PermissionService {
       canDelete?: boolean;
       canApprove?: boolean;
       canViewRestricted?: boolean;
+      canExport?: boolean;
     },
     userId?: string
   ) {
+    if (hasLockedPermissions(role)) {
+      throw new Error('Admin and HR permissions are locked to full access');
+    }
+    const { canView, canAdd, canEdit, canDelete, canApprove, canViewRestricted, canExport } = flags;
+    const permissionFlags = { canView, canAdd, canEdit, canDelete, canApprove, canViewRestricted, canExport };
     return prisma.modulePermission.upsert({
       where: { role_module: { role, module } },
-      update: flags,
+      update: permissionFlags,
       create: {
         role,
         module,
@@ -96,6 +116,7 @@ export class PermissionService {
         canDelete: flags.canDelete ?? false,
         canApprove: flags.canApprove ?? false,
         canViewRestricted: flags.canViewRestricted ?? false,
+        canExport: flags.canExport ?? false,
         createdById: userId,
       },
     });
