@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Select } from '@/components/ui/Select';
+import { usePermissions } from '@/hooks/usePermissions';
 const hasLockedPermissions = (role: string) => role === 'ADMIN' || role === 'HR';
 
 const ROLES = ['ADMIN', 'HR', 'MANAGER', 'HR_EXECUTIVE', 'EMPLOYEE'];
@@ -57,6 +58,8 @@ function PermissionToggle({ checked, disabled, label, onChange }: { checked: boo
 
 function PermissionsMatrix() {
  const queryClient = useQueryClient();
+ const { canEdit } = usePermissions();
+ const mayEditRoles = canEdit('roles');
 
  const { data, isLoading } = useQuery({
  queryKey: ['permissions-matrix'],
@@ -133,8 +136,8 @@ function PermissionsMatrix() {
  <PermissionToggle
  label={`${ROLE_LABELS[role]}: ${mod.label} — ${flag.label}`}
  checked={isAdmin ? true : Boolean(perm?.[flag.key])}
- disabled={isAdmin || updateMutation.isPending}
- onChange={() => !isAdmin && toggle(role, mod.key, flag.key, Boolean(perm?.[flag.key]))}
+ disabled={isAdmin || !mayEditRoles || updateMutation.isPending}
+ onChange={() => !isAdmin && mayEditRoles && toggle(role, mod.key, flag.key, Boolean(perm?.[flag.key]))}
  />
  </td>
  ));
@@ -149,6 +152,9 @@ function PermissionsMatrix() {
 
 function UserAccountsTab() {
  const queryClient = useQueryClient();
+ const { canAdd, canEdit } = usePermissions();
+ const mayAddUsers = canAdd('roles');
+ const mayEditUsers = canEdit('roles');
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 500);
  const [roleFilter, setRoleFilter] = useState('');
@@ -225,7 +231,7 @@ function UserAccountsTab() {
  {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
  </Select>
  </div>
- <Button onClick={() => setIsAddModalOpen(true)} className="gap-2"><Plus className="w-4 h-4" /> Add User</Button>
+ {mayAddUsers && <Button onClick={() => setIsAddModalOpen(true)} className="gap-2"><Plus className="w-4 h-4" /> Add User</Button>}
  </div>
 
 
@@ -267,7 +273,7 @@ function UserAccountsTab() {
  aria-label={`Change role for ${u.email}`}
  value={u.role}
  onChange={e => roleMutation.mutate({ id: u.id, role: e.target.value })}
- disabled={u.role === 'ADMIN'}
+ disabled={u.role === 'ADMIN' || !mayEditUsers}
  className="text-xs py-1 px-2 rounded border border-slate-border bg-surface focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
  >
  {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
@@ -276,7 +282,7 @@ function UserAccountsTab() {
  <td className="px-4 py-3">
  <button
  onClick={() => statusMutation.mutate({ id: u.id, isActive: !u.isActive })}
- disabled={u.role === 'ADMIN'}
+ disabled={u.role === 'ADMIN' || !mayEditUsers}
  className="disabled:opacity-50 disabled:cursor-not-allowed"
  >
  {u.isActive ? (
@@ -290,12 +296,12 @@ function UserAccountsTab() {
  {u.lastLogin ? formatDateTime(u.lastLogin) : 'Never'}
  </td>
  <td className="px-4 py-3">
- <button
+ {mayEditUsers && <button
  onClick={() => setResetModal(u)}
  className="text-xs text-gray-400 hover:text-navy-900 dark:text-gray-500 dark:hover:text-white transition-colors font-medium flex items-center gap-1"
  >
  <Lock className="w-3 h-3" /> Reset Password
- </button>
+ </button>}
  </td>
  </tr>
  ))}
@@ -306,7 +312,7 @@ function UserAccountsTab() {
  )}
 
  
- {isAddModalOpen && (
+ {mayAddUsers && isAddModalOpen && (
  <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Create Management User">
  <div className="space-y-4 py-2">
  <p className="text-sm text-slate-500">Create a standalone user account that is not linked to an employee profile.</p>
@@ -346,7 +352,7 @@ function UserAccountsTab() {
  </Modal>
  )}
 
-      {resetModal && (
+      {mayEditUsers && resetModal && (
  <Modal isOpen={!!resetModal} onClose={() => { setResetModal(null); setNewPassword(''); }} title={`Reset Password — ${resetModal.email}`}>
  <div className="space-y-4">
  <p className="text-sm text-gray-600 dark:text-gray-400">Set a new temporary password for this user. Their active sessions will be invalidated.</p>
