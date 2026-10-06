@@ -223,22 +223,7 @@ export default function LeaveApplicationPage() {
                           </button>
                         ))}
                       </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[240, 300, 360].map(mins => (
-                          <button
-                            key={mins}
-                            type="button"
-                            onClick={() => setHourlyDuration(mins)}
-                            className={`py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
-                              hourlyDuration === mins
-                                ? 'border-brand-primary bg-brand-light text-brand-primary dark:bg-brand-primary/20'
-                                : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
-                            }`}
-                          >
-                            {mins / 60}h
-                          </button>
-                        ))}
-                      </div>
+
                     </div>
                   )}
                 </div>
