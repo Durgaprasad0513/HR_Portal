@@ -30,12 +30,31 @@ export default function InterviewCalendarPage() {
     }
   });
 
-  const handleMarkFinish = (id: string) => {
-    updateCandidateMutation.mutate({ id, payload: { interviewFeedback: 'Finished' } });
+  const handleMarkFinish = (id: string, currentRound: string) => {
+    const rounds = ['TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT', 'OFFER'];
+    const currentIndex = rounds.indexOf(currentRound || 'TELEPHONIC');
+    
+    if (currentIndex >= 0 && currentIndex < rounds.length - 1) {
+      const nextRound = rounds[currentIndex + 1];
+      updateCandidateMutation.mutate({ 
+        id, 
+        payload: { 
+          interviewRound: nextRound,
+          interviewFeedback: 'Pending'
+        } 
+      });
+    } else {
+      updateCandidateMutation.mutate({ 
+        id, 
+        payload: { 
+          interviewFeedback: 'Finished'
+        } 
+      });
+    }
   };
 
   const handleSetPhase = (id: string, phase: string) => {
-    updateCandidateMutation.mutate({ id, payload: { interviewRound: phase } });
+    updateCandidateMutation.mutate({ id, payload: { interviewRound: phase, interviewFeedback: 'Pending' } });
   };
 
   const { data: interviewsData, isLoading } = useQuery({
@@ -158,7 +177,7 @@ export default function InterviewCalendarPage() {
                               <CheckCircle2 className="w-3 h-3" /> Finished
                             </span>
                           ) : (
-                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id)} disabled={updateCandidateMutation.isPending}>
+                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={updateCandidateMutation.isPending}>
                               Mark Finish
                             </Button>
                           )}
@@ -219,7 +238,7 @@ export default function InterviewCalendarPage() {
                         {cand.interviewFeedback === 'Finished' ? (
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Finished</span>
                         ) : (
-                          <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id)} disabled={updateCandidateMutation.isPending}>Mark Finish</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={updateCandidateMutation.isPending}>Mark Finish</Button>
                         )}
                         <select 
                           className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
