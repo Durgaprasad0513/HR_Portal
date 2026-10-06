@@ -26,6 +26,7 @@ export default function RecruitmentPage() {
  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
  const [selectedBoardReqId, setSelectedBoardReqId] = useState<string | null>(null);
  const [trackerMode, setTrackerMode] = useState<'kanban' | 'table'>('kanban');
+ const [editingReq, setEditingReq] = useState<any>(null);
  
  const { data: deptData } = useQuery({
  queryKey: ['departments'],
@@ -51,6 +52,16 @@ export default function RecruitmentPage() {
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ['requisitions'] });
  setIsReqModalOpen(false);
+ setEditingReq(null);
+ }
+ });
+
+ const updateReqMutation = useMutation({
+ mutationFn: ({ id, payload }: { id: string, payload: any }) => recruitmentApi.updateRequisition(id, payload),
+ onSuccess: () => {
+ queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+ setIsReqModalOpen(false);
+ setEditingReq(null);
  }
  });
 
@@ -103,13 +114,18 @@ export default function RecruitmentPage() {
  const handleSubmitReq = (e: React.FormEvent<HTMLFormElement>) => {
  e.preventDefault();
  const formData = new FormData(e.currentTarget);
- createReqMutation.mutate({
+ const payload = {
  positionTitle: formData.get('positionTitle'),
  departmentId: formData.get('departmentId'),
  location: formData.get('location'),
- numberOfVacancies: Number(formData.get('numberOfVacancies')),
- requisitionDate: new Date().toISOString()
- });
+ numberOfVacancies: Number(formData.get('numberOfVacancies'))
+ };
+
+ if (editingReq) {
+ updateReqMutation.mutate({ id: editingReq.id, payload });
+ } else {
+ createReqMutation.mutate({ ...payload, requisitionDate: new Date().toISOString() });
+ }
  };
 
  return (
@@ -122,7 +138,7 @@ export default function RecruitmentPage() {
  <Button variant="outline" onClick={() => setViewMode('list')}>Back to List</Button>
  )}
  {isAdminOrHR && viewMode === 'list' && (
- <Button onClick={() => setIsReqModalOpen(true)} className="gap-2">
+ <Button onClick={() => { setEditingReq(null); setIsReqModalOpen(true); }} className="gap-2">
  <Plus className="w-4 h-4" /> New Requisition
  </Button>
  )}
@@ -298,12 +314,12 @@ export default function RecruitmentPage() {
  )}
  </div>
 
- <Modal isOpen={isReqModalOpen} onClose={() => setIsReqModalOpen(false)} title="New Job Requisition">
+ <Modal isOpen={isReqModalOpen} onClose={() => { setIsReqModalOpen(false); setEditingReq(null); }} title={editingReq ? "Edit Job Requisition" : "New Job Requisition"}>
  <form onSubmit={handleSubmitReq} className="space-y-4">
- <Input name="positionTitle" label="Job Title" placeholder="e.g. Senior Frontend Engineer" required />
+ <Input name="positionTitle" label="Job Title" placeholder="e.g. Senior Frontend Engineer" required defaultValue={editingReq?.positionTitle} />
  <div className="flex flex-col">
  <label htmlFor="requisition-department" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Department</label>
- <Select id="requisition-department" name="departmentId" required className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
+ <Select id="requisition-department" name="departmentId" required defaultValue={editingReq?.departmentId} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="">Select Department...</option>
  {deptData?.data?.map((dept: any) => (
  <option key={dept.id} value={dept.id}>{dept.name}</option>
@@ -311,14 +327,14 @@ export default function RecruitmentPage() {
  </Select>
  </div>
  <div className="grid grid-cols-2 gap-4">
- <Input name="location" label="Location" placeholder="e.g. Remote" required />
- <Input name="numberOfVacancies" label="Vacancies" type="number" min="1" required />
+ <Input name="location" label="Location" placeholder="e.g. Remote" required defaultValue={editingReq?.location} />
+ <Input name="numberOfVacancies" label="Vacancies" type="number" min="1" required defaultValue={editingReq?.numberOfVacancies} />
  </div>
  
  <div className="flex justify-end space-x-2 pt-4">
- <Button type="button" variant="outline" onClick={() => setIsReqModalOpen(false)}>Cancel</Button>
- <Button type="submit" disabled={createReqMutation.isPending}>
- {createReqMutation.isPending ? 'Submitting...' : 'Create Requisition'}
+ <Button type="button" variant="outline" onClick={() => { setIsReqModalOpen(false); setEditingReq(null); }}>Cancel</Button>
+ <Button type="submit" disabled={createReqMutation.isPending || updateReqMutation.isPending}>
+ {createReqMutation.isPending || updateReqMutation.isPending ? 'Submitting...' : (editingReq ? 'Update Requisition' : 'Create Requisition')}
  </Button>
  </div>
  </form>
@@ -326,9 +342,16 @@ export default function RecruitmentPage() {
 
  <Modal isOpen={!!selectedReq} onClose={() => setSelectedReq(null)} title="Requisition Details">
  <div className="space-y-4 pb-4">
+ <div className="flex justify-between items-start">
  <div>
  <h3 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq?.positionTitle}</h3>
  <p className="text-sm font-medium text-gray-500 mt-1">{selectedReq?.department?.name} • {selectedReq?.location}</p>
+ </div>
+ {isAdminOrHR && (
+ <Button variant="outline" onClick={() => { setEditingReq(selectedReq); setSelectedReq(null); setIsReqModalOpen(true); }} size="sm">
+ Edit
+ </Button>
+ )}
  </div>
  
  <div className="grid grid-cols-2 gap-4 mt-6">

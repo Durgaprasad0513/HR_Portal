@@ -404,7 +404,7 @@ export default function DashboardPage() {
  </BoxReveal>
  )}
 
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+ <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
  
  {/* Left Column: Needs Attention & Trend */}
  
@@ -493,12 +493,50 @@ export default function DashboardPage() {
               </div>
             </div>
 
- 
- 
-
- 
-
-          
+            {/* Recruitment Pipeline Widget */}
+            {isAdminOrHR && (
+              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Recruitment Pipeline</h3>
+                    <p className="text-xs text-text-muted mt-1">Active open requisitions</p>
+                  </div>
+                  <button onClick={() => navigate('/recruitment')} className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors shrink-0 cursor-pointer">
+                    View All <ArrowRight size={12} />
+                  </button>
+                </div>
+                <div className="flex-1 flex flex-col gap-3 justify-center">
+                  {reqData.filter((r: any) => r.status !== 'CLOSED' && r.status !== 'JOINED_REJECTED').slice(0, 4).map((req: any) => {
+                    const candidateCount = req.candidates?.length || 0;
+                    const vacancies = req.numberOfVacancies || 1;
+                    const progress = Math.min(100, Math.round((candidateCount / (vacancies * 3)) * 100));
+                    return (
+                      <div key={req.id} className="p-3 rounded-lg border border-slate-border hover:bg-tint transition-colors">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-sm font-semibold text-text-heading truncate pr-2" title={req.positionTitle}>{req.positionTitle}</span>
+                          <span className="text-[10px] font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap">{getStatusLabel(req.status)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-text-muted mb-2">
+                          <span>{vacancies} Vacanc{vacancies > 1 ? 'ies' : 'y'}</span>
+                          <span>{candidateCount} Candidate{candidateCount !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-gray-800 overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${progress || 0}%` }}></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {reqData.filter((r: any) => r.status !== 'CLOSED' && r.status !== 'JOINED_REJECTED').length === 0 && (
+                    <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
+                      <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
+                        <Briefcase className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <p className="text-sm font-medium text-text-heading">No open requisitions</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
           </div>
  <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />

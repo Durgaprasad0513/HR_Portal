@@ -15,6 +15,10 @@ export const recruitmentApi = {
  const { data } = await apiClient.post<ApiResponse<any>>('/recruitment/requisitions', payload);
  return data;
  },
+ updateRequisition: async (id: string, payload: any) => {
+ const { data } = await apiClient.put<ApiResponse<any>>('/recruitment/requisitions/' + id, payload);
+ return data;
+ },
  updateRequisitionStatus: async (id: string, payload: any) => {
  const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/requisitions/${id}/status`, payload);
  return data;
