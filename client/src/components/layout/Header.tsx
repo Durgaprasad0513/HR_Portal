@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useTheme } from 'next-themes';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi } from '@/api/notifications';
+import { hasAdminAccess } from '@/utils/roles';
 
 interface HeaderProps {
  onMenuClick?: () => void;
@@ -18,7 +19,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false, onSidebarCollapseToggle }: HeaderProps) {
  const { user, logout } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
  const navigate = useNavigate();
  const queryClient = useQueryClient();
  const [dropdownOpen, setDropdownOpen] = useState(false);

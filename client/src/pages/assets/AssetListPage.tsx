@@ -19,12 +19,13 @@ import { Select } from '@/components/ui/Select';
 import { Laptop, Plus, Settings2, RefreshCcw, Download, Search } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function AssetListPage() {
  const { user } = useAuth();
  const { canExport } = usePermissions();
  const queryClient = useQueryClient();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
 
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [returnConfirmOpen, setReturnConfirmOpen] = useState(false);

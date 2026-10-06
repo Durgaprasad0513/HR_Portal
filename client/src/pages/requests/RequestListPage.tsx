@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Send, MessageSquare } from 'lucide-react';
 import apiClient from '@/api/client';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { hasAdminAccess } from '@/utils/roles';
 
 const REQUEST_TYPES = [
   { value: 'HR_QUERY', label: 'HR Query' },
@@ -33,7 +34,7 @@ export default function RequestListPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [responseNotes, setResponseNotes] = useState('');
 
-  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  const isAdminOrHR = hasAdminAccess(user?.role);
 
   const { data: requestsData, isLoading } = useQuery({
     queryKey: ['requests'],

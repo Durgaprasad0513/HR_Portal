@@ -8,6 +8,6 @@ router.use(authenticate);
 
 router.get('/stats', requirePermission('dashboard', 'view'), dashboardController.getStats);
 router.get('/attrition', requirePermission('attrition', 'view'), dashboardController.getAttritionStats);
-router.get('/reports/:type', requirePermission('dashboard', 'view'), authorize('ADMIN', 'HR'), dashboardController.getReport);
+router.get('/reports/:type', requirePermission('dashboard', 'view'), authorize('ADMIN', 'HR', 'MANAGER'), dashboardController.getReport);
 
 export default router;

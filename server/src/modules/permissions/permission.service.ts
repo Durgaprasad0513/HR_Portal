@@ -8,6 +8,7 @@ import {
   PermissionAction,
   ROLE_LABELS,
 } from './permission.catalog';
+import { hasAdminAccess } from '../../utils/roles';
 
 export class PermissionService {
   async ensureDefaults() {
@@ -27,10 +28,17 @@ export class PermissionService {
 
   async getForRole(role: Role) {
     await this.ensureDefaults();
-    return prisma.modulePermission.findMany({
+    const rows = await prisma.modulePermission.findMany({
       where: { role },
       orderBy: { module: 'asc' },
     });
+
+    if (!hasAdminAccess(role)) return rows;
+
+    return rows.map((row) => ({
+      ...row,
+      ...DEFAULT_ROLE_PERMISSIONS[Role.ADMIN][row.module as ModuleKey],
+    }));
   }
 
   async getMatrix() {
@@ -39,18 +47,27 @@ export class PermissionService {
       orderBy: [{ role: 'asc' }, { module: 'asc' }],
     });
 
+    const permissions = rows.map((row) =>
+      hasAdminAccess(row.role)
+        ? {
+            ...row,
+            ...DEFAULT_ROLE_PERMISSIONS[Role.ADMIN][row.module as ModuleKey],
+          }
+        : row
+    );
+
     return {
       roles: (Object.keys(ROLE_LABELS) as Role[]).map((role) => ({
         role,
         label: ROLE_LABELS[role],
       })),
       modules: MODULES,
-      permissions: rows,
+      permissions,
     };
   }
 
   async hasPermission(role: Role, module: ModuleKey, action: PermissionAction) {
-    if (role === Role.ADMIN || role === Role.HR) return true;
+    if (hasAdminAccess(role)) return true;
 
     await this.ensureDefaults();
     const row = await prisma.modulePermission.findUnique({
@@ -62,7 +79,7 @@ export class PermissionService {
   }
 
   async canViewRestricted(role: Role, module: ModuleKey) {
-    if (role === Role.ADMIN || role === Role.HR) return true;
+    if (hasAdminAccess(role)) return true;
 
     await this.ensureDefaults();
     const row = await prisma.modulePermission.findUnique({

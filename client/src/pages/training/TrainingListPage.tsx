@@ -18,6 +18,7 @@ import { Plus, Download, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calend
 import { Card, CardContent } from '@/components/ui/Card';
 import apiClient from '@/api/client';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function TrainingListPage() {
  const { user } = useAuth();
@@ -32,7 +33,7 @@ export default function TrainingListPage() {
  const [statusFilter, setStatusFilter] = useState('ALL');
  const [typeFilter, setTypeFilter] = useState('ALL');
  const [departmentFilter, setDepartmentFilter] = useState('ALL');
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
 
  const { data: trainingData, isLoading } = useQuery({
  queryKey: ['trainings'],

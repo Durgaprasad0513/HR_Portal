@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import { DigitalIDCardModal } from './components/DigitalIDCardModal';
+import { hasAdminAccess } from '@/utils/roles';
 
 function DetailBlock({ label, value }: { label: string, value: React.ReactNode }) {
   return (
@@ -27,7 +28,7 @@ export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  const isHR = hasAdminAccess(user?.role);
   const queryClient = useQueryClient();
   const [isDigitalIDModalOpen, setIsDigitalIDModalOpen] = useState(false);
 

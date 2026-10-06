@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { hasAdminAccess } from '../../utils/roles';
 import { notificationService } from '../notifications/notification.service';
 import { notificationDispatcher } from '../../utils/notification.dispatcher';
 import { Role, Prisma } from '@prisma/client';
@@ -150,7 +151,7 @@ export class TrainingService {
   }
 
   async submitFeedback(trainingId: string, employeeId: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isAdminOrHR = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
+    const isAdminOrHR = hasAdminAccess(currentUser.role);
     const includesTraineeFeedback = data.feedbackRating !== undefined || data.feedbackComments !== undefined;
     const includesTrainerFeedback = data.trainerFeedbackRating !== undefined || data.trainerFeedbackComments !== undefined;
 
@@ -158,7 +159,7 @@ export class TrainingService {
       throw new Error('You can only submit feedback for your own participation');
     }
     if (includesTrainerFeedback && !isAdminOrHR) {
-      throw new Error('Only HR or Admin can submit trainer feedback');
+      throw new Error('Only Admin, HR, or Manager can submit trainer feedback');
     }
 
     const participant = await prisma.trainingParticipant.findUnique({

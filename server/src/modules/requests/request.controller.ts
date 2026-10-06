@@ -59,7 +59,7 @@ export class RequestController {
   getStaffUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const staff = await prisma.user.findMany({
-        where: { role: { in: ['ADMIN', 'HR'] } },
+        where: { role: { in: ['ADMIN', 'HR', 'MANAGER'] } },
         select: { id: true, email: true, employee: { select: { firstName: true, lastName: true } } }
       });
       res.json({ success: true, data: staff });

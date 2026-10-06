@@ -13,13 +13,14 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, Search, PhoneCall, UserCheck, Award, TrendingUp, Calendar, Clock, MapPin, CheckCircle2, ArrowRight, Pencil } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function RecruitmentPage() {
   const navigate = useNavigate();
  const { user } = useAuth();
  const queryClient = useQueryClient();
  const { canExport, canEdit } = usePermissions();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
  
  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
  const [selectedReq, setSelectedReq] = useState<any>(null);

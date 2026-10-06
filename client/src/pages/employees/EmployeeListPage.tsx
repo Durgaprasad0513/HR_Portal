@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Select } from '@/components/ui/Select';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function EmployeeListPage() {
  const navigate = useNavigate();
@@ -95,7 +96,7 @@ export default function EmployeeListPage() {
  <Download className="w-4 h-4 mr-2" /> Export Register
  </Button>
  )}
- {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+ {hasAdminAccess(user?.role) && (
  <Button onClick={() => navigate('/employees/new')} className="gap-2">
  <Plus className="w-4 h-4" /> Add new
  </Button>
@@ -105,7 +106,7 @@ export default function EmployeeListPage() {
  />
 
  {/* Station Cards */}
- {(user?.role === 'ADMIN' || user?.role === 'HR') && deptData?.data && deptData.data.length > 0 && (
+ {hasAdminAccess(user?.role) && deptData?.data && deptData.data.length > 0 && (
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 xl:gap-6">
  {sortedDepts.map((dept: any) => {
  const isSelected = departmentId === dept.id;
@@ -239,14 +240,14 @@ export default function EmployeeListPage() {
  icon={UsersRound}
  title="No employees found"
  description={search || departmentId || location || status ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
- actionLabel={search || departmentId || location || status ? "Clear Filters" : ((user?.role === 'ADMIN' || user?.role === 'HR') ? "Add Employee" : undefined)}
+ actionLabel={search || departmentId || location || status ? "Clear Filters" : (hasAdminAccess(user?.role) ? "Add Employee" : undefined)}
  onAction={() => {
  if (search || departmentId || location || status) {
  setSearch('');
  setDepartmentId('');
  setLocation('');
  setStatus('');
- } else if (user?.role === 'ADMIN' || user?.role === 'HR') {
+ } else if (hasAdminAccess(user?.role)) {
  navigate('/employees/new');
  }
  }}

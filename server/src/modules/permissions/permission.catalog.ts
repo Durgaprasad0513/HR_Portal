@@ -59,16 +59,6 @@ const view = (restricted = false): PermissionFlags => ({
 
 const selfService: PermissionFlags = { ...none, canView: true, canAdd: true, canExport: false };
 
-const ops = (restricted = false): PermissionFlags => ({
-  canView: true,
-  canAdd: true,
-  canEdit: true,
-  canDelete: false,
-  canApprove: false,
-  canViewRestricted: restricted,
-  canExport: true,
-});
-
 const full: PermissionFlags = {
   canView: true,
   canAdd: true,
@@ -78,16 +68,6 @@ const full: PermissionFlags = {
   canViewRestricted: true,
   canExport: true,
 };
-
-const managerApprove = (restricted = false): PermissionFlags => ({
-  canView: true,
-  canAdd: false,
-  canEdit: false,
-  canDelete: false,
-  canApprove: true,
-  canViewRestricted: restricted,
-  canExport: false,
-});
 
 export const EMPLOYEE_RESTRICTED_FIELDS = [
   'salary',
@@ -146,22 +126,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Record<ModuleKey, Permission
   },
 
   MANAGER: {
-    dashboard: view(),
-    employees: view(),
-    travel: managerApprove(),
-    assets: view(),
-    recruitment: { ...none, canView: true, canAdd: true },
-    attrition: view(),
-    performance: { ...ops(true), canApprove: true },
-    training: { ...none, canView: true, canEdit: true },
-    requests: view(),
-    policies: view(),
-    departments: view(),
-    audit: none,
-    notifications: view(),
-    roles: none,
-    settings: none,
-    loginHistory: none,
+    ...allFull,
   },
   EMPLOYEE: {
     dashboard: view(),

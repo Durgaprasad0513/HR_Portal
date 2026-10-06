@@ -71,7 +71,7 @@ const AppRoutes = () => {
  <Route path="/profile" element={<Navigate to="/" replace />} />
  <Route path="/notifications" element={<NotificationListPage />} />
 
- <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR']} />}>
+ <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR', 'MANAGER']} />}>
  <Route path="/recruitment" element={<RecruitmentPage />} />
           <Route path="/recruitment/interviews" element={<InterviewCalendarPage />} />
  <Route path="/leaves/approvals" element={<LeaveApprovalsPage />} />
