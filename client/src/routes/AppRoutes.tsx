@@ -46,39 +46,47 @@ const AppRoutes = () => {
  <Route element={<ProtectedRoute />}>
  <Route element={<MainLayout />}>
  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+ <Route element={<ProtectedRoute requiredModule="dashboard" />}>
  <Route path="/dashboard" element={<DashboardPage />} />
+ </Route>
  
+ <Route element={<ProtectedRoute requiredModule="employees" />}>
  <Route path="/employees" element={<EmployeeListPage />} />
  <Route path="/employees/new" element={<EmployeeFormPage />} />
  <Route path="/employees/:id" element={<EmployeeDetailPage />} />
  <Route path="/employees/:id/edit" element={<EmployeeFormPage />} />
+ </Route>
  
- <Route path="/performance" element={<PerformanceListPage />} />
- <Route path="/documents" element={<PolicyListPage />} />
- <Route path="/assets" element={<AssetListPage />} />
- <Route path="/travel" element={<TravelListPage />} />
- <Route path="/office-expenses" element={<OfficeExpensesPage />} />
+ <Route element={<ProtectedRoute requiredModule="performance" />}><Route path="/performance" element={<PerformanceListPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="policies" />}><Route path="/documents" element={<PolicyListPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="assets" />}><Route path="/assets" element={<AssetListPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="travel" />}><Route path="/travel" element={<TravelListPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="expenses" />}><Route path="/office-expenses" element={<OfficeExpensesPage />} /></Route>
  
+ <Route element={<ProtectedRoute requiredModule="departments" />}>
  <Route path="/departments" element={<DepartmentListPage />} />
  <Route path="/departments/new" element={<DepartmentFormPage />} />
  <Route path="/departments/:id/edit" element={<DepartmentFormPage />} />
+ </Route>
  
- <Route path="/training" element={<TrainingListPage />} />
- <Route path="/requests" element={<RequestListPage />} />
- <Route path="/leaves" element={<LeaveApplicationPage />} />
+ <Route element={<ProtectedRoute requiredModule="training" />}><Route path="/training" element={<TrainingListPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="requests" />}><Route path="/requests" element={<RequestListPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="leave" />}><Route path="/leaves" element={<LeaveApplicationPage />} /></Route>
 
  <Route path="/policies" element={<Navigate to="/documents" replace />} />
  <Route path="/profile" element={<Navigate to="/" replace />} />
- <Route path="/notifications" element={<NotificationListPage />} />
+ <Route element={<ProtectedRoute requiredModule="notifications" />}><Route path="/notifications" element={<NotificationListPage />} /></Route>
 
  <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR', 'MANAGER']} />}>
+ <Route element={<ProtectedRoute requiredModule="recruitment" />}>
  <Route path="/recruitment" element={<RecruitmentPage />} />
-          <Route path="/recruitment/interviews" element={<InterviewCalendarPage />} />
- <Route path="/leaves/approvals" element={<LeaveApprovalsPage />} />
-  <Route path="/audit" element={<AuditLogPage />} />
- <Route path="/login-history" element={<LoginHistoryPage />} />
- <Route path="/roles" element={<RoleManagementPage />} />
- <Route path="/dashboard/attrition" element={<AttritionDashboardPage />} />
+ <Route path="/recruitment/interviews" element={<InterviewCalendarPage />} />
+ </Route>
+ <Route element={<ProtectedRoute requiredModule="leave" />}><Route path="/leaves/approvals" element={<LeaveApprovalsPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="audit" />}><Route path="/audit" element={<AuditLogPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="loginHistory" />}><Route path="/login-history" element={<LoginHistoryPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="roles" />}><Route path="/roles" element={<RoleManagementPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="attrition" />}><Route path="/dashboard/attrition" element={<AttritionDashboardPage />} /></Route>
  <Route path="/attrition" element={<Navigate to="/dashboard/attrition" replace />} />
  </Route>
 
