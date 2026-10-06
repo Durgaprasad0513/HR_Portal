@@ -10,7 +10,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/my', permissionController.getMyPermissions);
-router.get('/', permissionController.getMatrix);
-router.patch('/', authorize(Role.ADMIN), validate(updatePermissionSchema), permissionController.updatePermission);
+router.get('/', authorize(Role.ADMIN, Role.HR, Role.MANAGER), permissionController.getMatrix);
+router.patch('/', authorize(Role.ADMIN, Role.HR, Role.MANAGER), validate(updatePermissionSchema), permissionController.updatePermission);
 
 export default router;

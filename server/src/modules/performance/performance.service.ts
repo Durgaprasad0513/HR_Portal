@@ -4,6 +4,7 @@ import { notificationDispatcher } from '../../utils/notification.dispatcher';
 import { Role, Prisma } from '@prisma/client';
 import { getModuleScope } from '../../utils/authorization';
 import { performanceMetricKeys } from './performance.schema';
+import { hasAdminAccess } from '../../utils/roles';
 
 const REVIEW_WEIGHTS = { self: 0.2, manager: 0.6, hr: 0.2 } as const;
 
@@ -124,7 +125,7 @@ export class PerformanceService {
   }
 
   async submitSelfAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
+    const isOverride = hasAdminAccess(currentUser.role);
     
     const review = await prisma.performanceReview.findUnique({ where: { id } });
     if (!review) throw new Error('Review not found');
@@ -165,7 +166,7 @@ export class PerformanceService {
   }
 
   async submitManagerAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isOverride = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
+    const isOverride = hasAdminAccess(currentUser.role);
     
     const review = await prisma.performanceReview.findUnique({ 
       where: { id },
@@ -207,8 +208,8 @@ export class PerformanceService {
   }
 
   async submitHRAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (currentUser.role !== 'HR' && currentUser.role !== 'ADMIN') {
-      throw new Error('Only HR or Admin can submit HR appraisal');
+    if (!hasAdminAccess(currentUser.role)) {
+      throw new Error('Only Admin, HR, or Manager can submit HR appraisal');
     }
 
     const review = await prisma.performanceReview.findUnique({ where: { id } });
@@ -240,8 +241,8 @@ export class PerformanceService {
   }
 
   async submitFinalApproval(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'HR') {
-      throw new Error('Only Admin or HR can perform final approval');
+    if (!hasAdminAccess(currentUser.role)) {
+      throw new Error('Only Admin, HR, or Manager can perform final approval');
     }
 
     const review = await prisma.performanceReview.findUnique({ where: { id } });

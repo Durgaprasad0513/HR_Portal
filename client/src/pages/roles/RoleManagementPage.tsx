@@ -12,12 +12,14 @@ import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Select } from '@/components/ui/Select';
+const hasLockedPermissions = (role: string) => role === 'ADMIN' || role === 'HR';
 
-const ROLES = ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'];
+const ROLES = ['ADMIN', 'HR', 'MANAGER', 'HR_EXECUTIVE', 'EMPLOYEE'];
 const ROLE_LABELS: Record<string, string> = {
  ADMIN: 'Admin',
  HR: 'HR',
  MANAGER: 'Manager',
+ HR_EXECUTIVE: 'HR Executive',
   EMPLOYEE: 'Employee',
 };
 const PERMISSION_FLAGS = [
@@ -27,11 +29,17 @@ const PERMISSION_FLAGS = [
  { key: 'canDelete', label: 'Delete' },
  { key: 'canApprove', label: 'Approve' },
  { key: 'canExport', label: 'Export' },
+ { key: 'canViewRestricted', label: 'Restricted data' },
 ];
 
-function PermissionToggle({ checked, disabled, onChange }: { checked: boolean; disabled?: boolean; onChange: () => void }) {
+function PermissionToggle({ checked, disabled, label, onChange }: { checked: boolean; disabled?: boolean; label: string; onChange: () => void }) {
  return (
  <button
+ type="button"
+ role="switch"
+ aria-label={label}
+ aria-checked={checked}
+ title={label}
  onClick={onChange}
  disabled={disabled}
  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
@@ -42,7 +50,7 @@ function PermissionToggle({ checked, disabled, onChange }: { checked: boolean; d
  : 'bg-surface border-slate-border hover:border-primary-400'
  }`}
  >
- {(checked || disabled) && <CheckCircle className={`w-3 h-3 ${disabled ? 'text-primary-500 dark:text-primary-400' : 'text-white'}`} />}
+ {checked && <CheckCircle className={`w-3 h-3 ${disabled ? 'text-primary-500 dark:text-primary-400' : 'text-white'}`} />}
  </button>
  );
 }
@@ -73,7 +81,8 @@ function PermissionsMatrix() {
  if (isLoading) return <div className="py-16"><LoadingSpinner /></div>;
  if (!data) return null;
 
- const { modules, permissions } = data;
+ const { modules, permissions, roles } = data;
+ const matrixRoles = roles.map((entry: { role: string }) => entry.role);
 
  const getPermission = (role: string, moduleKey: string) =>
  permissions.find((p: any) => p.role === role && p.module === moduleKey);
@@ -90,10 +99,10 @@ function PermissionsMatrix() {
  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300 bg-surface sticky left-0 z-10 min-w-[180px]">
  Module
  </th>
- {ROLES.map(role => (
+ {matrixRoles.map((role: string) => (
  <th key={role} colSpan={PERMISSION_FLAGS.length} className="py-3 px-2 text-center font-semibold text-gray-700 dark:text-gray-300 bg-surface border-l border-slate-border">
  <div className="flex items-center justify-center gap-1">
- {(role === 'ADMIN' || role === 'HR') && <Lock className="w-3 h-3 text-primary-500" />}
+ {hasLockedPermissions(role) && <Lock className="w-3 h-3 text-primary-500" />}
  {ROLE_LABELS[role]}
  </div>
  </th>
@@ -101,7 +110,7 @@ function PermissionsMatrix() {
  </tr>
  <tr>
  <th className="sticky left-0 z-10 bg-surface border-b border-slate-border" />
- {ROLES.flatMap(role =>
+ {matrixRoles.flatMap((role: string) =>
  PERMISSION_FLAGS.map(flag => (
  <th key={`${role}-${flag.key}`} className="py-2 px-1 text-center text-gray-400 font-normal border-b border-slate-border whitespace-nowrap">
  {flag.label}
@@ -116,14 +125,15 @@ function PermissionsMatrix() {
  <td className="py-3 px-4 font-medium text-gray-800 dark:text-gray-200 sticky left-0 bg-inherit border-r border-slate-border">
  {mod.label}
  </td>
- {ROLES.flatMap(role => {
+ {matrixRoles.flatMap((role: string) => {
  const perm = getPermission(role, mod.key);
- const isAdmin = role === 'ADMIN' || role === 'HR';
+ const isAdmin = hasLockedPermissions(role);
  return PERMISSION_FLAGS.map(flag => (
  <td key={`${role}-${mod.key}-${flag.key}`} className="py-3 px-1 text-center">
  <PermissionToggle
+ label={`${ROLE_LABELS[role]}: ${mod.label} — ${flag.label}`}
  checked={isAdmin ? true : Boolean(perm?.[flag.key])}
- disabled={isAdmin}
+ disabled={isAdmin || updateMutation.isPending}
  onChange={() => !isAdmin && toggle(role, mod.key, flag.key, Boolean(perm?.[flag.key]))}
  />
  </td>
@@ -401,7 +411,7 @@ export default function RoleManagementPage() {
  <div className="space-y-4">
  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-300 flex items-center gap-2">
  <Lock className="w-4 h-4 flex-shrink-0" />
- ADMIN and HR role permissions are locked (always full access). Changes to other roles take effect on the user&apos;s next page load.
+ ADMIN and HR role permissions are locked (always full access). Manager permissions are editable. Changes take effect on the user&apos;s next page load.
  </div>
  <div className="bg-surface rounded-xl border border-slate-border overflow-hidden">
  <PermissionsMatrix />

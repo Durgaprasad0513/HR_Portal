@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { hasAdminAccess } from '@/utils/roles';
 
 type SidebarNavItem = {
  name: string;
@@ -28,7 +29,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  const { user } = useAuth();
  const location = useLocation();
  const navigate = useNavigate();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
  
  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
  'nav-group-leave-requests': true,
