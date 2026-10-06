@@ -8,6 +8,13 @@ export const createRequisitionSchema = z.object({
   departmentId: z.string()
 });
 
+export const updateRequisitionSchema = z.object({
+  positionTitle: z.string().optional(),
+  departmentId: z.string().optional(),
+  location: z.string().optional(),
+  numberOfVacancies: z.number().optional()
+});
+
 export const updateRequisitionStatusSchema = z.object({
   status: z.enum(['REQUIREMENT', 'SOURCING', 'SCREENING', 'TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT', 'SELECTED', 'OFFER', 'JOINED_REJECTED'])
 });
@@ -37,11 +44,11 @@ export const screenCandidateSchema = z.object({
 });
 
 export const interviewCandidateSchema = z.object({
-  interviewRound: z.string().min(1),
-  interviewDate: z.string(),
+  interviewRound: z.string().min(1).optional(),
+  interviewDate: z.string().optional(),
   interviewFeedback: z.string().optional(),
   interviewScore: z.number().optional(),
-  selectionStatus: z.enum(['SELECTED', 'SELECTION_REJECTED', 'SELECTION_ON_HOLD']),
+  selectionStatus: z.enum(['SELECTED', 'SELECTION_REJECTED', 'SELECTION_ON_HOLD']).optional(),
   interviewerId: z.string().optional()
 });
 
@@ -51,3 +58,4 @@ export const offerCandidateSchema = z.object({
   offeredSalary: z.number().optional(),
   joiningDate: z.string().optional()
 });
+
