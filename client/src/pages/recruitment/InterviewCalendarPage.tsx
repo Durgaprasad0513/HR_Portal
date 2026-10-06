@@ -191,7 +191,7 @@ export default function InterviewCalendarPage() {
                             className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 outline-none cursor-pointer"
                             value={cand.interviewRound || 'HR_INTERVIEW'}
                             onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                            disabled={updateCandidateMutation.isPending} || cand.selectionStatus === 'SELECTION_REJECTED'
+                            disabled={updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
                           >
                             <option value="TELEPHONIC">Telephonic</option>
                             <option value="HR_INTERVIEW">HR Interview</option>
@@ -283,7 +283,7 @@ export default function InterviewCalendarPage() {
                           className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
                           value={cand.interviewRound || 'HR_INTERVIEW'}
                           onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                          disabled={updateCandidateMutation.isPending} || cand.selectionStatus === 'SELECTION_REJECTED'
+                          disabled={updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
                         >
                           <option value="TELEPHONIC">Telephonic</option>
                           <option value="HR_INTERVIEW">HR Interview</option>
@@ -316,6 +316,7 @@ export default function InterviewCalendarPage() {
     </div>
   );
 }
+
 
 
 
