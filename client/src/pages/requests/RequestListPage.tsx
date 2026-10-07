@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Plus, Send, MessageSquare } from 'lucide-react';
 import apiClient from '@/api/client';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { hasAdminAccess } from '@/utils/roles';
 
 const REQUEST_TYPES = [
   { value: 'HR_QUERY', label: 'HR Query' },
@@ -27,13 +29,17 @@ const REQUEST_TYPES = [
 
 export default function RequestListPage() {
   const { user } = useAuth();
+  const { canAdd, canEdit, canApprove } = usePermissions();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReqId, setSelectedReqId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [responseNotes, setResponseNotes] = useState('');
 
-  const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  const isAdminOrHR = hasAdminAccess(user?.role);
+  const mayCreateRequest = canAdd('requests');
+  const mayAssignRequest = canEdit('requests');
+  const mayRespondToRequest = canApprove('requests');
 
   const { data: requestsData, isLoading } = useQuery({
     queryKey: ['requests'],
@@ -112,15 +118,15 @@ export default function RequestListPage() {
   };
 
   return (
-    <div className="p-6 h-[calc(100vh-80px)] flex flex-col space-y-4">
+    <div className="h-[calc(100vh-5rem)] min-w-0 flex flex-col space-y-4">
       <PageHeader
         title="HR Helpdesk"
         description="Submit, track, and resolve workplace requests."
-        actions={
+        actions={mayCreateRequest && (
           <Button onClick={() => setIsModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" /> New Request
           </Button>
-        }
+        )}
       />
 
       {isLoading ? (
@@ -190,9 +196,9 @@ export default function RequestListPage() {
                     </p>
                   </div>
                   
-                  {isAdminOrHR && (
+                  {(mayAssignRequest || mayRespondToRequest) && (
                     <div className="flex flex-col sm:items-end gap-2 shrink-0">
-                      <Select 
+                      {mayRespondToRequest && <Select
                         className="w-[180px] min-h-[38px] text-sm"
                         value={selectedReq.status}
                         onChange={(e: any) => updateStatusMutation.mutate({ id: selectedReq.id, payload: { status: e.target.value } })}
@@ -203,9 +209,9 @@ export default function RequestListPage() {
                         <option value="IN_PROGRESS">Status: In Progress</option>
                         <option value="RESOLVED">Status: Resolved</option>
                         <option value="TICKET_CLOSED">Status: Closed</option>
-                      </Select>
+                      </Select>}
                       
-                      <Select 
+                      {mayAssignRequest && <Select
                         className="w-[180px] min-h-[38px] text-sm"
                         value={selectedReq.assignedToId || ''}
                         onChange={(e: any) => assignMutation.mutate({ id: selectedReq.id, assignedToId: e.target.value })}
@@ -215,7 +221,7 @@ export default function RequestListPage() {
                         {admins?.data?.map((u: any) => (
                           <option key={u.id} value={u.id}>{u.employee?.firstName} {u.employee?.lastName}</option>
                         ))}
-                      </Select>
+                      </Select>}
                     </div>
                   )}
                 </div>
@@ -250,7 +256,7 @@ export default function RequestListPage() {
                    )}
                 </div>
 
-                {isAdminOrHR && (
+                {mayRespondToRequest && (
                   <div className="p-4 border-t border-slate-border dark:border-slate-800 bg-white dark:bg-gray-900 z-10">
                     <div className="flex gap-2">
                       <Input 
@@ -281,7 +287,7 @@ export default function RequestListPage() {
       )}
 
       {/* New Request Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Submit HR Request">
+      <Modal isOpen={isModalOpen && mayCreateRequest} onClose={() => setIsModalOpen(false)} title="Submit HR Request">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Select name="requestType" label="Request Type" required>
             <option value="">Select request type...</option>
@@ -290,7 +296,7 @@ export default function RequestListPage() {
           <Input name="description" label="Description" required />
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={createMutation.isPending}>Submit</Button>
+            {mayCreateRequest && <Button type="submit" disabled={createMutation.isPending}>Submit</Button>}
           </div>
         </form>
       </Modal>

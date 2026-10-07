@@ -16,7 +16,6 @@ datasource db {
 enum Role {
   ADMIN
   HR
-  HR_EXECUTIVE
   MANAGER
   EMPLOYEE
 }
@@ -582,6 +581,7 @@ model Requisition {
   numberOfVacancies Int               @default(1)
   requisitionDate   DateTime          @default(now())
   status            RequisitionStatus @default(REQUIREMENT)
+  stageUpdatedAt    DateTime          @default(now())
 
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])

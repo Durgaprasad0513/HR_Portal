@@ -13,11 +13,13 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Select } from '@/components/ui/Select';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function EmployeeListPage() {
  const navigate = useNavigate();
  const { user } = useAuth();
- const { canExport } = usePermissions();
+ const { canExport, canAdd } = usePermissions();
+ const mayAddEmployees = canAdd('employees');
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 500);
  const [departmentId, setDepartmentId] = useState('');
@@ -51,6 +53,7 @@ export default function EmployeeListPage() {
  if (indexB === -1) return -1;
  return indexA - indexB;
  });
+ const populatedDepts = sortedDepts.filter((dept: any) => (dept._count?.employees || 0) >= 1);
 
 
  const getEmpTypeBadge = (type: string) => {
@@ -95,7 +98,7 @@ export default function EmployeeListPage() {
  <Download className="w-4 h-4 mr-2" /> Export Register
  </Button>
  )}
- {(user?.role === 'ADMIN' || user?.role === 'HR') && (
+ {mayAddEmployees && (
  <Button onClick={() => navigate('/employees/new')} className="gap-2">
  <Plus className="w-4 h-4" /> Add new
  </Button>
@@ -105,9 +108,9 @@ export default function EmployeeListPage() {
  />
 
  {/* Station Cards */}
- {(user?.role === 'ADMIN' || user?.role === 'HR') && deptData?.data && deptData.data.length > 0 && (
+ {hasAdminAccess(user?.role) && populatedDepts.length > 0 && (
  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 xl:gap-6">
- {sortedDepts.map((dept: any) => {
+ {populatedDepts.map((dept: any) => {
  const isSelected = departmentId === dept.id;
  return (
  <div
@@ -239,14 +242,14 @@ export default function EmployeeListPage() {
  icon={UsersRound}
  title="No employees found"
  description={search || departmentId || location || status ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
- actionLabel={search || departmentId || location || status ? "Clear Filters" : ((user?.role === 'ADMIN' || user?.role === 'HR') ? "Add Employee" : undefined)}
+ actionLabel={search || departmentId || location || status ? "Clear Filters" : (mayAddEmployees ? "Add Employee" : undefined)}
  onAction={() => {
  if (search || departmentId || location || status) {
  setSearch('');
  setDepartmentId('');
  setLocation('');
  setStatus('');
- } else if (user?.role === 'ADMIN' || user?.role === 'HR') {
+ } else if (mayAddEmployees) {
  navigate('/employees/new');
  }
  }}

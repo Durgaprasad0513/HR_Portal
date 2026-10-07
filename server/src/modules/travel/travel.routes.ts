@@ -14,5 +14,5 @@ router.get('/:id', requirePermission('travel', 'view'), (req, res) => travelCont
 router.put('/:id/approve', requirePermission('travel', 'approve'), validateRequest({ body: updateApprovalSchema }), (req, res) => travelController.updateApprovalStatus(req, res));
 router.put('/:id/settle', requirePermission('travel', 'edit'), validateRequest({ body: updateSettlementSchema }), (req, res) => travelController.updateSettlement(req, res));
 
-router.put('/:id/expenses', validateRequest({ body: submitExpenseSchema }), (req, res) => travelController.submitExpenses(req, res));
+router.put('/:id/expenses', requirePermission('travel', 'edit'), validateRequest({ body: submitExpenseSchema }), (req, res) => travelController.submitExpenses(req, res));
 export default router;

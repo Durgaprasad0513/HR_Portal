@@ -18,12 +18,16 @@ import { Plane, Plus, FileText, CheckCircle2, Download, IndianRupee, Receipt } f
 import apiClient from '@/api/client'; // Need this for custom expense put
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function TravelListPage() {
  const { user } = useAuth();
- const { canExport } = usePermissions();
+ const { canExport, canAdd, canEdit, canApprove } = usePermissions();
  const queryClient = useQueryClient();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
+ const mayCreateTravel = canAdd('travel');
+ const mayEditTravel = canEdit('travel');
+ const mayApproveTravel = canApprove('travel');
  
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [approvalModalOpen, setApprovalModalOpen] = useState(false);
@@ -148,7 +152,7 @@ export default function TravelListPage() {
  header: 'Action', 
  accessor: (row: any) => (
  <div className="flex items-center gap-2">
- {row.approvalStatus === 'APPROVAL_PENDING' && isAdminOrHR && (
+ {row.approvalStatus === 'APPROVAL_PENDING' && mayApproveTravel && (
  <button 
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[110px]" 
  title="Review Request"
@@ -162,7 +166,7 @@ export default function TravelListPage() {
  </button>
  )}
 
- {row.approvalStatus === 'APPROVAL_APPROVED' && row.settlementStatus === 'UNSETTLED' && row.employee?.id === user?.employeeId && (
+ {row.approvalStatus === 'APPROVAL_APPROVED' && row.settlementStatus === 'UNSETTLED' && row.employee?.id === user?.employeeId && mayEditTravel && (
  <button 
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[130px]" 
  title="Submit Expenses"
@@ -176,7 +180,7 @@ export default function TravelListPage() {
  </button>
  )}
 
- {row.settlementStatus === 'SUBMITTED' && isAdminOrHR && (
+ {row.settlementStatus === 'SUBMITTED' && mayEditTravel && (
  <button 
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[110px]" 
  title="Settle Claim"
@@ -241,9 +245,9 @@ export default function TravelListPage() {
  {canExport('travel') && <Button variant="outline" onClick={handleExport} className="gap-2">
  <Download className="w-4 h-4" /> Export Register
  </Button>}
- <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+ {mayCreateTravel && <Button onClick={() => setIsModalOpen(true)} className="gap-2">
  <Plus className="w-4 h-4" /> New Travel Request
- </Button>
+ </Button>}
  </div>}
  />
 
@@ -275,8 +279,8 @@ export default function TravelListPage() {
  icon={Plane}
  title="No travel requests"
  description="You don't have any travel requests or approvals pending."
- actionLabel="Create Request"
- onAction={() => setIsModalOpen(true)}
+ actionLabel={mayCreateTravel ? "Create Request" : undefined}
+ onAction={mayCreateTravel ? () => setIsModalOpen(true) : undefined}
  />
  ) : (
  <DataTable 
@@ -289,15 +293,15 @@ export default function TravelListPage() {
  </div>
 
  {/* New Request Modal */}
- <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="New Travel Request">
+ <Modal isOpen={isModalOpen && mayCreateTravel} onClose={() => setIsModalOpen(false)} title="New Travel Request">
  <form onSubmit={handleSubmit} className="space-y-4">
  <Input name="destination" label="Destination" placeholder="e.g. New York, NY" required />
  <Input name="travelPurpose" label="Business Purpose" required />
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <DatePicker name="startDate" label="Start Date" type="date" required />
  <DatePicker name="endDate" label="End Date" type="date" required />
  </div>
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div className="flex flex-col">
  <label htmlFor="travel-mode" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Travel Mode</label>
  <Select id="travel-mode" name="travelMode" className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
@@ -309,7 +313,7 @@ export default function TravelListPage() {
  </div>
  <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="1" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
  </div>
- <FileUpload name="billUpload" label="Upload Attachment (Optional)" />
+ <FileUpload name="billUpload" label="Upload Attachment (Optional)" module="travel" action="add" />
  
  <div className="flex justify-end space-x-2 pt-4">
  <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
@@ -321,7 +325,7 @@ export default function TravelListPage() {
  </Modal>
 
  {/* Approval Modal */}
- <Modal isOpen={approvalModalOpen} onClose={() => setApprovalModalOpen(false)} title="Review Travel Request">
+ <Modal isOpen={approvalModalOpen && mayApproveTravel} onClose={() => setApprovalModalOpen(false)} title="Review Travel Request">
  <div className="space-y-4">
  <p className="text-sm text-gray-600">Please review this travel request. Specify the approved advance amount if applicable.</p>
  
@@ -359,18 +363,18 @@ export default function TravelListPage() {
  </Modal>
 
  {/* Submit Expenses Modal */}
- <Modal isOpen={expenseModalOpen} onClose={() => setExpenseModalOpen(false)} title="Submit Travel Expenses">
+ <Modal isOpen={expenseModalOpen && mayEditTravel} onClose={() => setExpenseModalOpen(false)} title="Submit Travel Expenses">
  <form onSubmit={handleExpenseSubmit} className="space-y-4">
  <p className="text-sm text-gray-600">Fill in your expenses for this trip. The advance you received (if any) will be automatically deducted during settlement.</p>
  
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
  <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
  <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
  <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
  </div>
 
- <FileUpload name="billUpload" label="Upload Bills/Receipts" required />
+ <FileUpload name="billUpload" label="Upload Bills/Receipts" required module="travel" action="edit" />
  
  <div className="flex justify-end space-x-2 pt-4">
  <Button type="button" variant="outline" onClick={() => setExpenseModalOpen(false)}>Cancel</Button>
@@ -382,7 +386,7 @@ export default function TravelListPage() {
  </Modal>
 
  {/* Settle Claim Modal */}
- <Modal isOpen={settleModalOpen} onClose={() => setSettleModalOpen(false)} title="Verify & Settle Claim">
+ <Modal isOpen={settleModalOpen && mayEditTravel} onClose={() => setSettleModalOpen(false)} title="Verify & Settle Claim">
  <div className="space-y-4">
  <p className="text-sm text-gray-600">Verify the submitted expenses and bills. Finalize the settlement.</p>
  

@@ -19,12 +19,16 @@ import { Select } from '@/components/ui/Select';
 import { Laptop, Plus, Settings2, RefreshCcw, Download, Search } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function AssetListPage() {
  const { user } = useAuth();
- const { canExport } = usePermissions();
+ const { canExport, canAdd, canEdit, canApprove } = usePermissions();
  const queryClient = useQueryClient();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
+ const mayAddAssets = canAdd('assets');
+ const mayEditAssets = canEdit('assets');
+ const mayApproveAssets = canApprove('assets');
 
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [returnConfirmOpen, setReturnConfirmOpen] = useState(false);
@@ -157,7 +161,7 @@ export default function AssetListPage() {
  <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">View Photo</span>
  </a>
  )}
- {row.status === 'IN_USE' && row.assignedEmployee?.id === (user?.employeeId || user?.employee?.id) && (
+ {mayEditAssets && row.status === 'IN_USE' && row.assignedEmployee?.id === (user?.employeeId || user?.employee?.id) && (
  <button
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[120px]"
  title="Return Asset"
@@ -169,7 +173,7 @@ export default function AssetListPage() {
  <RefreshCcw className="w-4 h-4 shrink-0" /><span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">Return Asset</span>
  </button>
  )}
- {isAdminOrHR && row.status === 'RETURN_REQUESTED' && (
+   {mayEditAssets && row.status === 'RETURN_REQUESTED' && (
  <button
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[130px]"
  title="Approve Return"
@@ -179,7 +183,7 @@ export default function AssetListPage() {
  </button>
  )}
 
- {isAdminOrHR && (
+ {mayEditAssets && (
  <button
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-24"
  onClick={() => {
@@ -240,9 +244,9 @@ export default function AssetListPage() {
  <PageHeader
  title="Asset Management"
  description={isAdminOrHR ? 'Manage company assets and assignments.' : 'View your assigned hardware and equipment.'}
- actions={isAdminOrHR && (
+ actions={(
  <div className="flex gap-3">
- <Button variant="outline" onClick={() => {
+ {canExport('assets') && <Button variant="outline" onClick={() => {
  if (!data) return;
  const csvContent = "data:text/csv;charset=utf-8,"
  + "Asset ID,Type,Category,Brand/Model,Serial Number,Purchase Value,Assigned Employee,Status\n"
@@ -258,10 +262,10 @@ export default function AssetListPage() {
  document.body.removeChild(link);
  }}>
  <Download className="w-4 h-4 mr-2" /> Export Register
- </Button>
- <Button onClick={() => { setEditingAsset(null); setIsModalOpen(true); }} className="gap-2">
+ </Button>}
+ {mayAddAssets && <Button onClick={() => { setEditingAsset(null); setIsModalOpen(true); }} className="gap-2">
  <Plus className="w-4 h-4" /> Add Asset
- </Button>
+ </Button>}
  </div>
  )}
  />
@@ -274,8 +278,8 @@ export default function AssetListPage() {
  icon={Laptop}
  title={isAdminOrHR ? "No assets in inventory" : "No assigned assets"}
  description={isAdminOrHR ? "Start tracking hardware by adding your first asset." : "You do not currently have any equipment assigned to you."}
- actionLabel={isAdminOrHR ? "Add Asset" : undefined}
- onAction={isAdminOrHR ? () => setIsModalOpen(true) : undefined}
+ actionLabel={mayAddAssets ? "Add Asset" : undefined}
+ onAction={mayAddAssets ? () => setIsModalOpen(true) : undefined}
  />
  ) : (
  <div className="space-y-4">
@@ -318,9 +322,9 @@ export default function AssetListPage() {
  )}
  </div>
 
- <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingAsset ? 'Edit Asset' : 'Add New Asset'}>
+ <Modal isOpen={isModalOpen && (editingAsset ? mayEditAssets : mayAddAssets)} onClose={() => setIsModalOpen(false)} title={editingAsset ? 'Edit Asset' : 'Add New Asset'}>
  <form key={editingAsset ? editingAsset.id : 'new'} onSubmit={handleSubmit} className="space-y-4">
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div className="flex flex-col">
  <label htmlFor="asset-type" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Asset Type</label>
  <Select id="asset-type" name="assetType" defaultValue={editingAsset?.assetType || ""} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
@@ -346,14 +350,14 @@ export default function AssetListPage() {
  </div>
  </div>
 
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <Input name="brandModel" defaultValue={editingAsset?.brandModel || ""} label="Brand & Model" placeholder="e.g. MacBook Pro 16" required />
  <Input name="serialNumber" defaultValue={editingAsset?.serialNumber || ""} label="Serial/ID Number" required />
  <DatePicker name="purchaseDate" defaultValue={editingAsset?.purchaseDate ? new Date(editingAsset.purchaseDate).toISOString().split('T')[0] : ""} label="Purchase Date" type="date" />
  <Input name="purchaseValue" defaultValue={editingAsset?.purchaseValue || 0} label="Purchase Value" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
  </div>
 
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div className="flex flex-col">
  <label htmlFor="asset-assignee" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Assign To (Optional)</label>
  <Select id="asset-assignee" name="assignedEmployeeId" defaultValue={editingAsset?.assignedEmployeeId || ""} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">

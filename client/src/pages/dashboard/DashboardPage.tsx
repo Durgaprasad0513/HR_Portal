@@ -19,13 +19,39 @@ import {
  ChevronRight, Calendar, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Award, MapPin, Plus, ArrowRight, Plane, BookOpen, Receipt
 , Coffee, IndianRupee } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
+import { hasAdminAccess } from '@/utils/roles';
+
+const RECRUITMENT_STAGE_ORDER = [
+  'REQUIREMENT',
+  'SOURCING',
+  'SCREENING',
+  'TELEPHONIC',
+  'HR_INTERVIEW',
+  'TECHNICAL',
+  'MANAGEMENT',
+  'SELECTED',
+  'OFFER',
+  'JOINED_REJECTED'
+];
+
+const RECRUITMENT_LEVELS = [
+  { label: 'L1', name: 'Telephonic', completeAt: 'HR_INTERVIEW' },
+  { label: 'L2', name: 'HR', completeAt: 'TECHNICAL' },
+  { label: 'L3', name: 'Technical', completeAt: 'MANAGEMENT' },
+  { label: 'L4', name: 'Management', completeAt: 'SELECTED' }
+];
+
+const getCompletedRecruitmentLevels = (status: string) => {
+  const stageIndex = RECRUITMENT_STAGE_ORDER.indexOf(status);
+  return RECRUITMENT_LEVELS.filter(level => stageIndex >= RECRUITMENT_STAGE_ORDER.indexOf(level.completeAt)).length;
+};
 
 export default function DashboardPage() {
  const navigate = useNavigate();
  const { user } = useAuth();
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
- const isManager = false;
+ const isAdminOrHR = hasAdminAccess(user?.role);
  const [showAbsent, setShowAbsent] = useState(false);
+ const [expandedRequisitionId, setExpandedRequisitionId] = useState<string | null>(null);
  
  const [shouldAnimate] = useState(() => {
  const hasAnimated = sessionStorage.getItem('dashboard_animated');
@@ -116,7 +142,7 @@ export default function DashboardPage() {
 
   if (isStatsLoading) return <LoadingSpinner />;
 
-  if (!isAdminOrHR && !isManager) {
+  if (!isAdminOrHR) {
     return (
       <div className="space-y-6">
         <ProfileBanner />
@@ -157,6 +183,27 @@ export default function DashboardPage() {
 
  const moduleOverview = stats.moduleOverview || {};
  const joinExitTrend = attritionData?.joinExitTrend || [];
+ const activeRequisitions = reqData.filter((requisition: any) => requisition.status !== 'JOINED_REJECTED');
+ const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
+ const vacancyStageCounts = [
+   { label: 'Telephonic', status: 'TELEPHONIC' },
+   { label: 'HR Interview', status: 'HR_INTERVIEW' },
+   { label: 'Management Interview', status: 'MANAGEMENT' },
+   { label: 'Offer', status: 'OFFER' },
+ ].map((stage) => ({
+   ...stage,
+   count: activeRequisitions.filter((requisition: any) => requisition.status === stage.status)
+     .reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0),
+ }));
+ const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
+   activeRequisitions.filter((requisition: any) => getCompletedRecruitmentLevels(requisition.status) > levelIndex).length
+ );
+ const overallRecruitmentProgress = activeRequisitions.length
+   ? Math.round(activeRequisitions.reduce((total: number, requisition: any) => total + getCompletedRecruitmentLevels(requisition.status) * 25, 0) / activeRequisitions.length)
+   : 0;
+ const trackedRequisitions = [...activeRequisitions]
+   .sort((first: any, second: any) => new Date(first.stageUpdatedAt || first.updatedAt).getTime() - new Date(second.stageUpdatedAt || second.updatedAt).getTime())
+   .slice(0, 6);
 
  return (
  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 p-0 sm:p-2 pb-12">
@@ -173,7 +220,7 @@ export default function DashboardPage() {
 
  {/* 1. Four Headline Metrics */}
  <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+ <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
  {/* Active Employees / Today's Attendance */}
  <div 
    onClick={() => navigate('/employees')}
@@ -268,8 +315,13 @@ export default function DashboardPage() {
  <Briefcase className="w-5 h-5" />
  </div>
  </div>
- <div className="text-xs text-text-muted">
- <span className="font-medium text-text-heading">{stats.invitedForInterview || 0}</span> screening, <span className="font-medium text-text-heading">{stats.offersAccepted || 0}</span> accepted
+ <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-1 text-[11px] leading-4 text-text-muted">
+ {vacancyStageCounts.map((stage) => (
+   <span key={stage.status} className="flex min-w-0 items-start justify-between gap-1">
+     <span className="min-w-0 break-words">{stage.label}</span>
+     <span className="shrink-0 font-semibold text-text-heading">{stage.count}</span>
+   </span>
+ ))}
  </div>
  </Link>
 
@@ -404,15 +456,15 @@ export default function DashboardPage() {
  </BoxReveal>
  )}
 
- <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+ <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[repeat(2,minmax(0,1fr))] lg:gap-8">
  
  {/* Left Column: Needs Attention & Trend */}
  
           {/* Attendance Trend Chart (Only for HR/Admin) */}
           {isAdminOrHR && stats?.attendanceTrend && (
-            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
+            <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5">
               <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
-              <div className="h-48 w-full">
+              <div className="h-48 w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={stats.attendanceTrend} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
                     <defs>
@@ -442,7 +494,7 @@ export default function DashboardPage() {
           )}
 
             {/* Office Expenses Chart */}
-            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
+            <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Office Expenses</h3>
@@ -453,7 +505,7 @@ export default function DashboardPage() {
                 </button>
               </div>
               
-              <div className="flex-1 flex flex-col xl:flex-row items-center justify-center gap-6 xl:gap-8 w-full mt-4">
+              <div className="flex-1 flex flex-col 2xl:flex-row items-center justify-center gap-6 2xl:gap-8 w-full min-w-0 mt-4">
                 <div className="w-56 h-56 relative shrink-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -493,40 +545,98 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Recruitment Pipeline Widget */}
+            {/* Recruitment Progress */}
             {isAdminOrHR && (
-              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-4">
+              <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full lg:col-span-2">
+                <div className="flex flex-wrap justify-between items-start gap-3 mb-5">
                   <div>
-                    <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Recruitment Pipeline</h3>
-                    <p className="text-xs text-text-muted mt-1">Active open requisitions</p>
+                    <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Recruitment Progress</h3>
+                    <p className="text-xs text-text-muted mt-1">Role-wise interview levels, current stage, and stage dates</p>
                   </div>
                   <button onClick={() => navigate('/recruitment')} className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors shrink-0 cursor-pointer">
                     View All <ArrowRight size={12} />
                   </button>
                 </div>
-                <div className="flex-1 flex flex-col gap-3 justify-center">
-                  {reqData.filter((r: any) => r.status !== 'CLOSED' && r.status !== 'JOINED_REJECTED').slice(0, 4).map((req: any) => {
-                    const candidateCount = req.candidates?.length || 0;
-                    const vacancies = req.numberOfVacancies || 1;
-                    const progress = Math.min(100, Math.round((candidateCount / (vacancies * 3)) * 100));
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 mb-5">
+                  <div className="rounded-lg bg-tint p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Open roles</p>
+                    <p className="mt-1 text-xl font-bold text-text-heading">{activeRequisitions.length}</p>
+                    <p className="text-[11px] text-text-muted">{totalOpenVacancies} vacancies</p>
+                  </div>
+                  {RECRUITMENT_LEVELS.map((level, index) => (
+                    <div key={level.label} className="rounded-lg bg-tint p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">{level.label} completed</p>
+                      <p className="mt-1 text-xl font-bold text-text-heading">{levelCompletionCounts[index]}</p>
+                      <p className="text-[11px] text-text-muted">{level.name}</p>
+                    </div>
+                  ))}
+                  <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-950/30">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Overall</p>
+                    <p className="mt-1 text-xl font-bold text-blue-800 dark:text-blue-200">{overallRecruitmentProgress}%</p>
+                    <p className="text-[11px] text-blue-700 dark:text-blue-300">rounds complete</p>
+                  </div>
+                </div>
+
+                <div className="hidden md:grid md:grid-cols-[minmax(0,1.5fr)_5rem_12rem_8rem_10rem_1.5rem] gap-3 px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                  <span>Role</span><span>Openings</span><span>Levels</span><span>Progress</span><span>Current status</span><span />
+                </div>
+
+                <div className="flex-1 flex flex-col gap-2">
+                  {trackedRequisitions.map((requisition: any) => {
+                    const completedLevels = getCompletedRecruitmentLevels(requisition.status);
+                    const progress = completedLevels * 25;
+                    const isExpanded = expandedRequisitionId === requisition.id;
+                    const stageDate = requisition.stageUpdatedAt || requisition.updatedAt;
+                    const daysInStage = Math.max(0, Math.floor((Date.now() - new Date(stageDate).getTime()) / 86400000));
+
                     return (
-                      <div key={req.id} className="p-3 rounded-lg border border-slate-border hover:bg-tint transition-colors">
-                        <div className="flex justify-between items-center mb-1.5">
-                          <span className="text-sm font-semibold text-text-heading truncate pr-2" title={req.positionTitle}>{req.positionTitle}</span>
-                          <span className="text-[10px] font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap">{getStatusLabel(req.status)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs text-text-muted mb-2">
-                          <span>{vacancies} Vacanc{vacancies > 1 ? 'ies' : 'y'}</span>
-                          <span>{candidateCount} Candidate{candidateCount !== 1 ? 's' : ''}</span>
-                        </div>
-                        <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-gray-800 overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${progress || 0}%` }}></div>
-                        </div>
+                      <div key={requisition.id} className="rounded-lg border border-slate-border overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedRequisitionId(isExpanded ? null : requisition.id)}
+                          className="w-full grid grid-cols-1 md:grid-cols-[minmax(0,1.5fr)_5rem_12rem_8rem_10rem_1.5rem] gap-3 items-center p-3 text-left hover:bg-tint transition-colors"
+                          aria-expanded={isExpanded}
+                        >
+                          <span className="min-w-0">
+                            <span className="block text-sm font-semibold text-text-heading truncate">{requisition.positionTitle}</span>
+                            <span className="block text-xs text-text-muted truncate">{requisition.department?.name || requisition.location || 'Department not specified'} · {requisition.selectedCount || 0} selected</span>
+                          </span>
+                          <span className="text-sm font-semibold text-text-heading md:text-center">{requisition.numberOfVacancies || 0}</span>
+                          <span className="flex items-center gap-2" aria-label={`${completedLevels} of 4 interview levels completed`}>
+                            {RECRUITMENT_LEVELS.map((level, index) => (
+                              <span
+                                key={level.label}
+                                className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${index < completedLevels ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'}`}
+                                title={`${level.label} ${level.name}: ${index < completedLevels ? 'Completed' : 'Pending'}`}
+                              >
+                                {level.label}
+                              </span>
+                            ))}
+                          </span>
+                          <span>
+                            <span className="flex justify-between text-[11px] font-semibold text-text-muted mb-1"><span>Work done</span><span>{progress}%</span></span>
+                            <span className="block h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                              <span className="block h-full rounded-full bg-blue-500" style={{ width: `${progress}%` }} />
+                            </span>
+                          </span>
+                          <span className={`justify-self-start rounded-full px-2.5 py-1 text-[10px] font-semibold ${getStatusClasses(requisition.status)}`}>
+                            {getStatusLabel(requisition.status)}
+                          </span>
+                          <ChevronRight className={`h-4 w-4 text-text-muted transition-transform ${isExpanded ? 'rotate-90' : ''}`} aria-hidden="true" />
+                        </button>
+                        {isExpanded && (
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 border-t border-slate-border bg-tint/60 px-4 py-3 text-xs">
+                            <div><span className="block text-text-muted">Opening date</span><span className="font-semibold text-text-heading">{formatDate(requisition.requisitionDate)}</span></div>
+                            <div><span className="block text-text-muted">Current stage since</span><span className="font-semibold text-text-heading">{formatDate(stageDate)}</span></div>
+                            <div><span className="block text-text-muted">Days in stage</span><span className="font-semibold text-text-heading">{daysInStage}</span></div>
+                            <button type="button" onClick={() => navigate('/recruitment?tab=vacancies')} className="justify-self-start self-center font-semibold text-blue-600 hover:text-blue-700">Open recruitment tracker</button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
-                  {reqData.filter((r: any) => r.status !== 'CLOSED' && r.status !== 'JOINED_REJECTED').length === 0 && (
+                  {activeRequisitions.length === 0 && (
                     <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
                       <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
                         <Briefcase className="h-5 w-5 text-slate-400" />

@@ -11,9 +11,11 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Download } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function LeaveApprovalsPage() {
  const { user } = useAuth();
+ const { canApprove, canExport } = usePermissions();
  const queryClient = useQueryClient();
  const [selectedLeave, setSelectedLeave] = useState<any>(null);
  const [remarks, setRemarks] = useState('');
@@ -118,19 +120,17 @@ export default function LeaveApprovalsPage() {
  accessor: (row: any) => getStatusBadge(row.status)
  },
  ];
- const columns = user?.role === 'EMPLOYEE' ? baseColumns : [...baseColumns, { header: 'Actions', accessor: (row: any) => row.status === 'PENDING' ? (<div className="flex gap-2"><Button variant="primary" size="sm" onClick={() => handleAction(row, 'APPROVED')}>Approve</Button><Button variant="danger" size="sm" onClick={() => handleAction(row, 'REJECTED')}>Reject</Button></div>) : <span className="text-slate-400 text-sm">Processed</span> }];
+ const columns = canApprove('leave') ? [...baseColumns, { header: 'Actions', accessor: (row: any) => row.status === 'PENDING' ? (<div className="flex gap-2"><Button variant="primary" size="sm" onClick={() => handleAction(row, 'APPROVED')}>Approve</Button><Button variant="danger" size="sm" onClick={() => handleAction(row, 'REJECTED')}>Reject</Button></div>) : <span className="text-slate-400 text-sm">Processed</span> }] : baseColumns;
 
  return (
  <div className="space-y-6">
  <PageHeader
  title={user?.role === 'EMPLOYEE' ? 'Leave Approval History' : 'Leave Approvals'}
  description={user?.role === 'EMPLOYEE' ? 'View your past and present leave applications.' : 'Review and action pending leave requests from your team.'}
- actions={
- <Button variant="outline" onClick={exportToCSV}>
+ actions={canExport('leave') && <Button variant="outline" onClick={exportToCSV}>
  <Download className="w-4 h-4 mr-2" />
  Export Register
- </Button>
- }
+ </Button>}
  />
 
  {isLoading ? (

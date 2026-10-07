@@ -1,5 +1,5 @@
 import prisma from '../../config/database';
-import { Role } from '@prisma/client';
+import { hasAdminAccess } from '../../utils/roles';
 
 interface CurrentUser {
   userId: string;
@@ -14,16 +14,13 @@ function exitDateInMonths(joiningDate: Date, exitDate: Date) {
 
 export class DashboardService {
   async getStats(currentUser: CurrentUser) {
-    const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'HR';
-    const isManager = currentUser.role === 'MANAGER';
+    const hasOrganizationAccess = hasAdminAccess(currentUser.role);
     const now = new Date();
 
     // 1. Headline Metrics
     // Active Employees
-    const activeEmployees = isAdmin
+    const activeEmployees = hasOrganizationAccess
       ? await prisma.employee.count({ where: { isActive: true } })
-      : isManager
-      ? await prisma.employee.count({ where: { managerId: currentUser.employeeId!, isActive: true } })
       : 1;
 
     // Monthly Attrition
@@ -31,9 +28,9 @@ export class DashboardService {
     let exitsThisMonth = 0;
     let joinersThisMonth = 0;
 
-    if (isAdmin || isManager) {
+    if (hasOrganizationAccess) {
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const empWhere = isManager ? { managerId: currentUser.employeeId! } : {};
+      const empWhere = {};
 
       const [recentExits, recentJoins, totalHistoricalEmployees] = await Promise.all([
         prisma.employee.count({
@@ -58,7 +55,7 @@ export class DashboardService {
     }
 
     // Open Vacancies
-    const openVacancies = isAdmin
+    const openVacancies = hasOrganizationAccess
       ? await prisma.requisition.aggregate({
           where: { status: { notIn: ['JOINED_REJECTED', 'OFFER'] } },
           _sum: { numberOfVacancies: true }
@@ -66,24 +63,22 @@ export class DashboardService {
       : 0;
 
     // Reviews Completed
-    const reviewWhere = isAdmin ? {} : isManager
-      ? { employee: { managerId: currentUser.employeeId! } }
-      : { employeeId: currentUser.employeeId! };
+    const reviewWhere = hasOrganizationAccess ? {} : { employeeId: currentUser.employeeId! };
 
     const totalReviews = await prisma.performanceReview.count({ where: reviewWhere });
     const completedReviews = await prisma.performanceReview.count({ where: { ...reviewWhere, status: 'COMPLETED' } });
 
     // Recruitment Stats Fixes
-    const selectedCandidates = isAdmin ? await prisma.candidate.count({ where: { selectionStatus: 'SELECTED' } }) : 0;
-    const offersAccepted = isAdmin ? await prisma.candidate.count({ where: { offerStatus: 'OFFER_ACCEPTED' } }) : 0;
-    const invitedForInterview = isAdmin ? await prisma.candidate.count({ where: { screeningStatus: 'SHORTLISTED' } }) : 0;
+    const selectedCandidates = hasOrganizationAccess ? await prisma.candidate.count({ where: { selectionStatus: 'SELECTED' } }) : 0;
+    const offersAccepted = hasOrganizationAccess ? await prisma.candidate.count({ where: { offerStatus: 'OFFER_ACCEPTED' } }) : 0;
+    const invitedForInterview = hasOrganizationAccess ? await prisma.candidate.count({ where: { screeningStatus: 'SHORTLISTED' } }) : 0;
 
     // Today's Attendance (from Leave module)
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-    const leaveEmpWhere = isManager ? { employee: { managerId: currentUser.employeeId! } } : {};
+    const leaveEmpWhere = {};
 
-    const absentEmployees = isAdmin || isManager
+    const absentEmployees = hasOrganizationAccess
       ? await prisma.leave.findMany({
           where: {
             ...leaveEmpWhere,
@@ -99,11 +94,21 @@ export class DashboardService {
     const presentToday = Math.max(0, activeEmployees - absentToday);
 
     // 2. Needs Attention Queue
-    const needsAttention = [];
+    const needsAttention: Array<{
+      id: string;
+      module: string;
+      title: string;
+      owner: string;
+      dueDate: string | null;
+      action: string;
+      priority: string;
+      link: string;
+      sortDate: Date;
+    }> = [];
 
-    if (isAdmin || isManager) {
+    if (hasOrganizationAccess) {
       const pendingLeaves = await prisma.leave.findMany({
-        where: { status: 'PENDING', ...(isManager ? { employee: { managerId: currentUser.employeeId! } } : {}) },
+        where: { status: 'PENDING' },
         include: { employee: { select: { firstName: true, lastName: true } } },
         orderBy: { createdAt: 'asc' },
         take: 5
@@ -117,16 +122,60 @@ export class DashboardService {
           dueDate: leave.startDate.toISOString(),
           action: 'Approve or Reject',
           priority: 'high',
-          link: '/leaves/approvals'
+          link: '/leaves/approvals',
+          sortDate: leave.createdAt
+        });
+      }
+
+      const [pendingTravel, pendingExpenses] = await Promise.all([
+        prisma.travelRequest.findMany({
+          where: { approvalStatus: 'APPROVAL_PENDING' },
+          include: { employee: { select: { firstName: true, lastName: true } } },
+          orderBy: { createdAt: 'asc' },
+          take: 5
+        }),
+        prisma.officeExpense.findMany({
+          where: { status: 'PENDING' },
+          include: { submittedBy: { select: { firstName: true, lastName: true } } },
+          orderBy: { createdAt: 'asc' },
+          take: 5
+        })
+      ]);
+
+      for (const request of pendingTravel) {
+        needsAttention.push({
+          id: `travel-${request.id}`,
+          module: 'Travel',
+          title: `Travel to ${request.destination} for ${request.employee.firstName} ${request.employee.lastName}`,
+          owner: currentUser.userId,
+          dueDate: request.startDate.toISOString(),
+          action: 'Review travel request',
+          priority: 'high',
+          link: '/travel',
+          sortDate: request.createdAt
+        });
+      }
+
+      for (const expense of pendingExpenses) {
+        needsAttention.push({
+          id: `expense-${expense.id}`,
+          module: 'Office Expense',
+          title: `${expense.category.replace(/_/g, ' ')} expense from ${expense.submittedBy.firstName} ${expense.submittedBy.lastName}`,
+          owner: currentUser.userId,
+          dueDate: expense.expenseDate.toISOString(),
+          action: 'Review expense approval',
+          priority: 'high',
+          link: '/office-expenses',
+          sortDate: expense.createdAt
         });
       }
     }
 
-    const pendingReviewStatuses = isAdmin ? ['HR_REVIEW', 'FINAL_APPROVAL'] : isManager ? ['MANAGER_REVIEW'] : ['EMPLOYEE_REVIEW'];
+    const pendingReviewStatuses = hasOrganizationAccess ? ['HR_REVIEW', 'FINAL_APPROVAL'] : ['EMPLOYEE_REVIEW'];
     const pendingReviewsList = await prisma.performanceReview.findMany({
       where: {
         status: { in: pendingReviewStatuses as any },
-        ...(isAdmin ? {} : isManager ? { employee: { managerId: currentUser.employeeId! } } : { employeeId: currentUser.employeeId! })
+        ...(hasOrganizationAccess ? {} : { employeeId: currentUser.employeeId! })
       },
       include: { employee: { select: { firstName: true, lastName: true } } },
       take: 5
@@ -140,11 +189,25 @@ export class DashboardService {
         dueDate: null,
         action: 'Complete review stage',
         priority: 'high',
-        link: '/performance'
+        link: '/performance',
+        sortDate: review.createdAt
       });
     }
 
-    needsAttention.splice(5);
+    needsAttention.sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime());
+    // Keep at least the oldest pending Travel and Office Expense request visible
+    // even when older leave/performance items would otherwise fill the whole queue.
+    const reservedApprovalItems = ['Travel', 'Office Expense']
+      .map((module) => needsAttention.find((item) => item.module === module))
+      .filter((item): item is (typeof needsAttention)[number] => Boolean(item));
+    const reservedIds = new Set(reservedApprovalItems.map((item) => item.id));
+    const visibleNeedsAttention = [
+      ...reservedApprovalItems,
+      ...needsAttention.filter((item) => !reservedIds.has(item.id))
+    ]
+      .slice(0, 5)
+      .sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime());
+    const needsAttentionItems = visibleNeedsAttention.map(({ sortDate: _sortDate, ...item }) => item);
 
     // 3. Module Overview Stats
     const moduleOverview = {
@@ -163,20 +226,20 @@ export class DashboardService {
         total: totalReviews
       },
       leave: {
-          pendingApprovals: await prisma.leave.count({ where: { status: 'PENDING', ...(isAdmin ? {} : isManager ? { employee: { managerId: currentUser.employeeId! } } : { employeeId: currentUser.employeeId! }) } })
+          pendingApprovals: await prisma.leave.count({ where: { status: 'PENDING', ...(hasOrganizationAccess ? {} : { employeeId: currentUser.employeeId! }) } })
         },
       travel: {
-        pendingApprovals: await prisma.travelRequest.count({ where: { approvalStatus: 'APPROVAL_PENDING', ...(isAdmin ? {} : isManager ? { employee: { managerId: currentUser.employeeId! } } : { employeeId: currentUser.employeeId! }) } })
+        pendingApprovals: await prisma.travelRequest.count({ where: { approvalStatus: 'APPROVAL_PENDING', ...(hasOrganizationAccess ? {} : { employeeId: currentUser.employeeId! }) } })
       },
       expenses: {
-        pendingApprovals: await prisma.officeExpense.count({ where: { status: 'PENDING', ...(isAdmin ? {} : isManager ? { submittedBy: { managerId: currentUser.employeeId! } } : { submittedById: currentUser.employeeId! }) } })
+        pendingApprovals: await prisma.officeExpense.count({ where: { status: 'PENDING', ...(hasOrganizationAccess ? {} : { submittedById: currentUser.employeeId! }) } })
       },
         training: {
-          pendingApprovals: isAdmin || isManager ? await prisma.training.count({ where: { status: 'PENDING' } }) : 0
+          pendingApprovals: hasOrganizationAccess ? await prisma.training.count({ where: { status: 'PENDING' } }) : 0
         },
       assets: {
-        assigned: isAdmin ? await prisma.asset.count({ where: { assignedEmployeeId: { not: null } } }) : await prisma.asset.count({ where: { assignedEmployeeId: currentUser.employeeId! } }),
-        total: isAdmin ? await prisma.asset.count() : 0
+        assigned: hasOrganizationAccess ? await prisma.asset.count({ where: { assignedEmployeeId: { not: null } } }) : await prisma.asset.count({ where: { assignedEmployeeId: currentUser.employeeId! } }),
+        total: hasOrganizationAccess ? await prisma.asset.count() : 0
       }
     };
 
@@ -234,7 +297,7 @@ export class DashboardService {
         presentToday,
         absentToday,
       },
-      needsAttention,
+      needsAttention: needsAttentionItems,
       moduleOverview,
       invitedForInterview,
       selectedCandidates,
@@ -245,7 +308,7 @@ export class DashboardService {
         name: `${l.employee.firstName} ${l.employee.lastName}`,
         department: l.employee.department?.name || '',
       })),
-      upcomingInterviews: isAdmin ? await prisma.candidate.findMany({
+      upcomingInterviews: hasOrganizationAccess ? await prisma.candidate.findMany({
         where: { interviewDate: { gte: now } },
         orderBy: { interviewDate: 'asc' },
         take: 5,
@@ -263,8 +326,8 @@ export class DashboardService {
     location?: string;
     employmentType?: string;
   } = {}) {
-    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'HR') {
-      throw new Error('Only HR or Admin can access attrition data');
+    if (!hasAdminAccess(currentUser.role)) {
+      throw new Error('Only Admin, HR, or Manager can access attrition data');
     }
 
     const now = new Date();
@@ -463,8 +526,8 @@ export class DashboardService {
   }
 
   async getReport(type: string, currentUser: CurrentUser) {
-    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'HR') {
-      throw new Error('Only HR or Admin can access reports');
+    if (!hasAdminAccess(currentUser.role)) {
+      throw new Error('Only Admin, HR, or Manager can access reports');
     }
 
     switch (type) {

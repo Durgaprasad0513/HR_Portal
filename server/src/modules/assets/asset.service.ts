@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { hasAdminAccess } from '../../utils/roles';
 import { notificationService } from '../notifications/notification.service';
 import { notificationDispatcher } from '../../utils/notification.dispatcher';
 import { AssetStatus, Role, Prisma } from '@prisma/client';
@@ -127,7 +128,7 @@ export class AssetService {
     if (!existing.assignedEmployeeId) throw new Error('Asset is not currently assigned.');
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const isOwner = user?.employeeId === existing.assignedEmployeeId;
-    const isEditor = user?.role === 'ADMIN' || user?.role === 'HR';
+    const isEditor = hasAdminAccess(user?.role);
     if (!isOwner && !isEditor) throw new Error('You do not have permission to modify this asset.');
 
     const newStatus = isEditor ? AssetStatus.RETURNED : AssetStatus.RETURN_REQUESTED;

@@ -62,7 +62,6 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
       interviewerId: interviewerId || undefined,
       interviewRound: interviewRound || undefined,
       interviewLocation: interviewLocation || undefined,
-      screeningStatus: 'SHORTLISTED',
       screeningStatus: 'SHORTLISTED', // Auto-shortlist for interview
     });
   };

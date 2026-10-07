@@ -12,6 +12,8 @@ import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Select } from '@/components/ui/Select';
+import { usePermissions } from '@/hooks/usePermissions';
+const hasLockedPermissions = (role: string) => role === 'ADMIN' || role === 'HR';
 
 const ROLES = ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'];
 const ROLE_LABELS: Record<string, string> = {
@@ -27,11 +29,17 @@ const PERMISSION_FLAGS = [
  { key: 'canDelete', label: 'Delete' },
  { key: 'canApprove', label: 'Approve' },
  { key: 'canExport', label: 'Export' },
+ { key: 'canViewRestricted', label: 'Restricted data' },
 ];
 
-function PermissionToggle({ checked, disabled, onChange }: { checked: boolean; disabled?: boolean; onChange: () => void }) {
+function PermissionToggle({ checked, disabled, label, onChange }: { checked: boolean; disabled?: boolean; label: string; onChange: () => void }) {
  return (
  <button
+ type="button"
+ role="switch"
+ aria-label={label}
+ aria-checked={checked}
+ title={label}
  onClick={onChange}
  disabled={disabled}
  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
@@ -42,13 +50,15 @@ function PermissionToggle({ checked, disabled, onChange }: { checked: boolean; d
  : 'bg-surface border-slate-border hover:border-primary-400'
  }`}
  >
- {(checked || disabled) && <CheckCircle className={`w-3 h-3 ${disabled ? 'text-primary-500 dark:text-primary-400' : 'text-white'}`} />}
+ {checked && <CheckCircle className={`w-3 h-3 ${disabled ? 'text-primary-500 dark:text-primary-400' : 'text-white'}`} />}
  </button>
  );
 }
 
 function PermissionsMatrix() {
  const queryClient = useQueryClient();
+ const { canEdit } = usePermissions();
+ const mayEditRoles = canEdit('roles');
 
  const { data, isLoading } = useQuery({
  queryKey: ['permissions-matrix'],
@@ -73,7 +83,8 @@ function PermissionsMatrix() {
  if (isLoading) return <div className="py-16"><LoadingSpinner /></div>;
  if (!data) return null;
 
- const { modules, permissions } = data;
+ const { modules, permissions, roles } = data;
+ const matrixRoles = roles.map((entry: { role: string }) => entry.role);
 
  const getPermission = (role: string, moduleKey: string) =>
  permissions.find((p: any) => p.role === role && p.module === moduleKey);
@@ -90,10 +101,10 @@ function PermissionsMatrix() {
  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300 bg-surface sticky left-0 z-10 min-w-[180px]">
  Module
  </th>
- {ROLES.map(role => (
+ {matrixRoles.map((role: string) => (
  <th key={role} colSpan={PERMISSION_FLAGS.length} className="py-3 px-2 text-center font-semibold text-gray-700 dark:text-gray-300 bg-surface border-l border-slate-border">
  <div className="flex items-center justify-center gap-1">
- {(role === 'ADMIN' || role === 'HR') && <Lock className="w-3 h-3 text-primary-500" />}
+ {hasLockedPermissions(role) && <Lock className="w-3 h-3 text-primary-500" />}
  {ROLE_LABELS[role]}
  </div>
  </th>
@@ -101,7 +112,7 @@ function PermissionsMatrix() {
  </tr>
  <tr>
  <th className="sticky left-0 z-10 bg-surface border-b border-slate-border" />
- {ROLES.flatMap(role =>
+ {matrixRoles.flatMap((role: string) =>
  PERMISSION_FLAGS.map(flag => (
  <th key={`${role}-${flag.key}`} className="py-2 px-1 text-center text-gray-400 font-normal border-b border-slate-border whitespace-nowrap">
  {flag.label}
@@ -116,15 +127,16 @@ function PermissionsMatrix() {
  <td className="py-3 px-4 font-medium text-gray-800 dark:text-gray-200 sticky left-0 bg-inherit border-r border-slate-border">
  {mod.label}
  </td>
- {ROLES.flatMap(role => {
+ {matrixRoles.flatMap((role: string) => {
  const perm = getPermission(role, mod.key);
- const isAdmin = role === 'ADMIN' || role === 'HR';
+ const isAdmin = hasLockedPermissions(role);
  return PERMISSION_FLAGS.map(flag => (
  <td key={`${role}-${mod.key}-${flag.key}`} className="py-3 px-1 text-center">
  <PermissionToggle
+ label={`${ROLE_LABELS[role]}: ${mod.label} — ${flag.label}`}
  checked={isAdmin ? true : Boolean(perm?.[flag.key])}
- disabled={isAdmin}
- onChange={() => !isAdmin && toggle(role, mod.key, flag.key, Boolean(perm?.[flag.key]))}
+ disabled={isAdmin || !mayEditRoles || updateMutation.isPending}
+ onChange={() => !isAdmin && mayEditRoles && toggle(role, mod.key, flag.key, Boolean(perm?.[flag.key]))}
  />
  </td>
  ));
@@ -139,6 +151,9 @@ function PermissionsMatrix() {
 
 function UserAccountsTab() {
  const queryClient = useQueryClient();
+ const { canAdd, canEdit } = usePermissions();
+ const mayAddUsers = canAdd('roles');
+ const mayEditUsers = canEdit('roles');
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 500);
  const [roleFilter, setRoleFilter] = useState('');
@@ -215,7 +230,7 @@ function UserAccountsTab() {
  {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
  </Select>
  </div>
- <Button onClick={() => setIsAddModalOpen(true)} className="gap-2"><Plus className="w-4 h-4" /> Add User</Button>
+ {mayAddUsers && <Button onClick={() => setIsAddModalOpen(true)} className="gap-2"><Plus className="w-4 h-4" /> Add User</Button>}
  </div>
 
 
@@ -257,7 +272,7 @@ function UserAccountsTab() {
  aria-label={`Change role for ${u.email}`}
  value={u.role}
  onChange={e => roleMutation.mutate({ id: u.id, role: e.target.value })}
- disabled={u.role === 'ADMIN'}
+ disabled={u.role === 'ADMIN' || !mayEditUsers}
  className="text-xs py-1 px-2 rounded border border-slate-border bg-surface focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
  >
  {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
@@ -266,7 +281,7 @@ function UserAccountsTab() {
  <td className="px-4 py-3">
  <button
  onClick={() => statusMutation.mutate({ id: u.id, isActive: !u.isActive })}
- disabled={u.role === 'ADMIN'}
+ disabled={u.role === 'ADMIN' || !mayEditUsers}
  className="disabled:opacity-50 disabled:cursor-not-allowed"
  >
  {u.isActive ? (
@@ -280,12 +295,12 @@ function UserAccountsTab() {
  {u.lastLogin ? formatDateTime(u.lastLogin) : 'Never'}
  </td>
  <td className="px-4 py-3">
- <button
+ {mayEditUsers && <button
  onClick={() => setResetModal(u)}
  className="text-xs text-gray-400 hover:text-navy-900 dark:text-gray-500 dark:hover:text-white transition-colors font-medium flex items-center gap-1"
  >
  <Lock className="w-3 h-3" /> Reset Password
- </button>
+ </button>}
  </td>
  </tr>
  ))}
@@ -296,7 +311,7 @@ function UserAccountsTab() {
  )}
 
  
- {isAddModalOpen && (
+ {mayAddUsers && isAddModalOpen && (
  <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Create Management User">
  <div className="space-y-4 py-2">
  <p className="text-sm text-slate-500">Create a standalone user account that is not linked to an employee profile.</p>
@@ -336,7 +351,7 @@ function UserAccountsTab() {
  </Modal>
  )}
 
-      {resetModal && (
+      {mayEditUsers && resetModal && (
  <Modal isOpen={!!resetModal} onClose={() => { setResetModal(null); setNewPassword(''); }} title={`Reset Password — ${resetModal.email}`}>
  <div className="space-y-4">
  <p className="text-sm text-gray-600 dark:text-gray-400">Set a new temporary password for this user. Their active sessions will be invalidated.</p>
@@ -367,33 +382,33 @@ export default function RoleManagementPage() {
  const [activeTab, setActiveTab] = useState<'users' | 'permissions'>('users');
 
  return (
- <div className="space-y-6 p-6">
+ <div className="space-y-6">
  <PageHeader
  title="User & Role Management"
  description="Manage accounts and permission boundaries."
  />
 
  {/* Tabs */}
- <div className="flex gap-1 bg-surface rounded-lg p-1 w-full overflow-x-auto whitespace-nowrap custom-scrollbar sm:w-fit">
+ <div className="grid w-full grid-cols-2 gap-1 rounded-lg bg-surface p-1 sm:flex sm:w-fit">
  <button
  onClick={() => setActiveTab('users')}
- className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+ className={`flex min-w-0 items-center justify-center gap-2 rounded-md px-2 py-2 text-center text-xs font-medium transition-all sm:px-4 sm:text-sm ${
  activeTab === 'users'
  ? 'bg-accent-600 text-white shadow-md dark:bg-accent-500'
  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
  }`}
  >
- <Users className="w-4 h-4" /> User Accounts
+ <Users className="h-4 w-4 shrink-0" /> <span>User Accounts</span>
  </button>
  <button
  onClick={() => setActiveTab('permissions')}
- className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+ className={`flex min-w-0 items-center justify-center gap-2 rounded-md px-2 py-2 text-center text-xs font-medium transition-all sm:px-4 sm:text-sm ${
  activeTab === 'permissions'
  ? 'bg-accent-600 text-white shadow-md dark:bg-accent-500'
  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
  }`}
  >
- <Shield className="w-4 h-4" /> Role Permissions Matrix
+ <Shield className="h-4 w-4 shrink-0" /> <span>Role Permissions Matrix</span>
  </button>
  </div>
 
@@ -401,7 +416,7 @@ export default function RoleManagementPage() {
  <div className="space-y-4">
  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-300 flex items-center gap-2">
  <Lock className="w-4 h-4 flex-shrink-0" />
- ADMIN and HR role permissions are locked (always full access). Changes to other roles take effect on the user&apos;s next page load.
+ ADMIN and HR role permissions are locked (always full access). Manager permissions are editable. Changes take effect on the user&apos;s next page load.
  </div>
  <div className="bg-surface rounded-xl border border-slate-border overflow-hidden">
  <PermissionsMatrix />

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { employeeController } from './employee.controller';
-import { authenticate, requirePermission } from '../../middleware/auth.middleware';
+import { authenticate, authorize, requirePermission } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validate.middleware';
 import { createEmployeeSchema, updateEmployeeSchema } from './employee.schema';
 
@@ -46,7 +46,7 @@ router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single(
 import prisma from '../../config/database';
 import bcrypt from 'bcryptjs';
 
-router.post('/fix-users', async (req, res) => {
+router.post('/fix-users', authorize('ADMIN'), async (req, res) => {
   try {
     const employees = await prisma.employee.findMany({ where: { user: null } });
     let created = 0;
@@ -71,7 +71,7 @@ router.post('/fix-users', async (req, res) => {
 });
 
 
-router.post('/reactivate-and-fix', async (req, res) => {
+router.post('/reactivate-and-fix', authorize('ADMIN'), async (req, res) => {
   try {
     const employees = await prisma.employee.findMany();
     let fixed = 0;
@@ -105,7 +105,7 @@ router.post('/reactivate-and-fix', async (req, res) => {
 });
 
 
-router.post('/clear-history', async (req, res) => {
+router.post('/clear-history', authorize('ADMIN'), async (req, res) => {
   try {
     const deletedAudit = await prisma.auditLog.deleteMany({});
     const deletedLogin = await prisma.loginHistory.deleteMany({});

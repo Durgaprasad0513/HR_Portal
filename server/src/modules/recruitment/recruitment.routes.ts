@@ -4,6 +4,7 @@ import { authenticate, requirePermission } from '../../middleware/auth.middlewar
 import { validateRequest } from '../../middleware/validate.middleware';
 import { 
   createRequisitionSchema, 
+  updateRequisitionSchema,
   updateRequisitionStatusSchema, 
   createCandidateSchema, 
   screenCandidateSchema,
@@ -18,6 +19,7 @@ router.use(authenticate);
 // Requisitions
 router.post('/requisitions', requirePermission('recruitment', 'add'), validateRequest({ body: createRequisitionSchema }), (req, res) => recruitmentController.createRequisition(req, res));
 router.get('/requisitions', requirePermission('recruitment', 'view'), (req, res) => recruitmentController.getRequisitions(req, res));
+router.put('/requisitions/:id', requirePermission('recruitment', 'edit'), validateRequest({ body: updateRequisitionSchema }), (req, res) => recruitmentController.updateRequisition(req, res));
 router.put('/requisitions/:id/status', requirePermission('recruitment', 'edit'), validateRequest({ body: updateRequisitionStatusSchema }), (req, res) => recruitmentController.updateRequisitionStatus(req, res));
 
 // Interviews

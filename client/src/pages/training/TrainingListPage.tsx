@@ -18,10 +18,11 @@ import { Plus, Download, BookOpen, Clock, IndianRupee, Star, CheckCircle, Calend
 import { Card, CardContent } from '@/components/ui/Card';
 import apiClient from '@/api/client';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { hasAdminAccess } from '@/utils/roles';
 
 export default function TrainingListPage() {
  const { user } = useAuth();
- const { canExport } = usePermissions();
+ const { canAdd, canEdit, canExport } = usePermissions();
  const queryClient = useQueryClient();
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [selectedTraining, setSelectedTraining] = useState<any>(null);
@@ -32,7 +33,7 @@ export default function TrainingListPage() {
  const [statusFilter, setStatusFilter] = useState('ALL');
  const [typeFilter, setTypeFilter] = useState('ALL');
  const [departmentFilter, setDepartmentFilter] = useState('ALL');
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
 
  const { data: trainingData, isLoading } = useQuery({
  queryKey: ['trainings'],
@@ -163,12 +164,12 @@ export default function TrainingListPage() {
  <Button variant="outline" size="sm" onClick={() => setSelectedTraining(row)}>
  Manage
  </Button>
- <Button variant="ghost" size="sm" onClick={() => {
+ {canEdit('training') && <Button variant="ghost" size="sm" onClick={() => {
  setSelectedTrainingForEdit(row);
  setIsModalOpen(true);
  }}>
  Edit
- </Button>
+ </Button>}
  </div>
  )
  },
@@ -276,7 +277,7 @@ export default function TrainingListPage() {
  };
 
  return (
- <div className="p-6">
+ <div className="space-y-6">
  <PageHeader
  title="Training Sessions"
  description="Plan learning, track attendance, and measure outcomes."
@@ -286,12 +287,12 @@ export default function TrainingListPage() {
  {canExport('training') && <Button variant="outline" onClick={handleExport} className="gap-2">
  <Download className="w-4 h-4" /> Export Register
  </Button>}
- <Button onClick={() => {
+ {canAdd('training') && <Button onClick={() => {
  setSelectedTrainingForEdit(null);
  setIsModalOpen(true);
  }}>
  <Plus className="w-4 h-4 mr-2" /> New Training
- </Button>
+ </Button>}
  </>
  )}
  </div>}
@@ -466,7 +467,7 @@ export default function TrainingListPage() {
  renderCalendarView()
  )}
 
- <Modal isOpen={isModalOpen} onClose={() => {
+ <Modal isOpen={isModalOpen && (selectedTrainingForEdit ? canEdit('training') : canAdd('training'))} onClose={() => {
  setIsModalOpen(false);
  setSelectedTrainingForEdit(null);
  }} title={selectedTrainingForEdit ? "Edit Training Session" : "New Training Session"}>
@@ -483,7 +484,7 @@ export default function TrainingListPage() {
  ))}
  </Select>
  <Input name="trainerName" label="Trainer Name" required defaultValue={selectedTrainingForEdit?.trainerName} />
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <DatePicker type="date" name="trainingDate" label="Start Date *" required defaultValue={selectedTrainingForEdit?.trainingDate?.split('T')[0]} />
  <DatePicker type="date" name="trainingEndDate" label="End Date" defaultValue={selectedTrainingForEdit?.trainingEndDate?.split('T')[0]} />
  </div>
@@ -532,6 +533,7 @@ export default function TrainingListPage() {
  <div className="flex justify-between items-center mb-4">
  <h3 className="text-lg font-medium">Participants & Feedback</h3>
  <div className="flex gap-2">
+ {canEdit('training') && <>
  <Select
  aria-label="Employee to add to training"
  className="p-1 border rounded-md text-sm bg-surface "
@@ -553,12 +555,13 @@ export default function TrainingListPage() {
  >
  Add
  </Button>
+ </>}
  </div>
  </div>
 
  {selectedTraining.participants?.length > 0 ? (
  <div className="overflow-x-auto border dark:border-slate-border rounded-lg">
- <table className="w-full text-sm text-left">
+ <table className="w-full min-w-[40rem] text-left text-sm">
  <thead className="bg-surface text-gray-500 uppercase">
  <tr>
  <th className="px-4 py-3">Employee</th>
@@ -584,7 +587,7 @@ export default function TrainingListPage() {
  </td>
  
  <td className="px-4 py-3">
- <Button variant="ghost" size="sm" onClick={() => setEditingParticipant(p)}>Edit</Button>
+ {canEdit('training') && <Button variant="ghost" size="sm" onClick={() => setEditingParticipant(p)}>Edit</Button>}
  </td>
  </tr>
  ))}
@@ -606,7 +609,7 @@ export default function TrainingListPage() {
  )}
 
  {/* Participant Edit Modal */}
- {editingParticipant && (
+ {editingParticipant && canEdit('training') && (
  <Modal isOpen={true} onClose={() => setEditingParticipant(null)} title={`Update: ${editingParticipant.employee?.firstName || ''} ${editingParticipant.employee?.lastName || ''}`}>
  <form onSubmit={(e) => {
  e.preventDefault();

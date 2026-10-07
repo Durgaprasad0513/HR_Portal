@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import { DigitalIDCardModal } from './components/DigitalIDCardModal';
+import { hasAdminAccess } from '@/utils/roles';
+import { usePermissions } from '@/hooks/usePermissions';
 
 function DetailBlock({ label, value }: { label: string, value: React.ReactNode }) {
   return (
@@ -27,7 +29,8 @@ export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isHR = user?.role === 'ADMIN' || user?.role === 'HR';
+  const isHR = hasAdminAccess(user?.role);
+  const { canEdit: hasEditPermission, canApprove, canExport } = usePermissions();
   const queryClient = useQueryClient();
   const [isDigitalIDModalOpen, setIsDigitalIDModalOpen] = useState(false);
 
@@ -50,7 +53,7 @@ export default function EmployeeDetailPage() {
   if (!empData?.data) return <div className="p-6 text-red-500">Employee not found.</div>;
 
   const emp = empData.data;
-  const canEdit = isHR || user?.employeeId === emp.id;
+  const canEdit = hasEditPermission('employees');
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-32">
@@ -175,7 +178,7 @@ export default function EmployeeDetailPage() {
                         <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded-md">
                           Pending Review
                         </span>
-                        {isHR && (
+                        {canApprove('employees') && (
                           <Button size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => verifyDocumentMutation.mutate(doc.id)} isLoading={verifyDocumentMutation.isPending}>
                             Verify
                           </Button>
@@ -199,7 +202,7 @@ export default function EmployeeDetailPage() {
             <MonitorPlay className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Assigned Assets</h2>
           </div>
-          {(emp.assignedAssets?.length ?? 0) > 0 && (
+          {(emp.assignedAssets?.length ?? 0) > 0 && canExport('assets') && (
             <Button variant="ghost" size="sm" className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20" onClick={() => {
               const csvContent = "data:text/csv;charset=utf-8," + "Asset ID,Type,Brand/Model,Serial Number,Purchase Date,Purchase Value,Issue Date,Condition,Status\n" + (emp.assignedAssets || []).map((a: any) => `${a.id},${a.assetType},${a.brandModel || ''},${a.serialNumber || ''},${a.purchaseDate ? formatDate(a.purchaseDate) : ''},${a.purchaseValue || ''},${a.issueDate ? formatDate(a.issueDate) : ''},${a.issueCondition || ''},${a.status}`).join("\n");
               const encodedUri = encodeURI(csvContent);

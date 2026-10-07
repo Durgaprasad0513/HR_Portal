@@ -13,6 +13,8 @@ import apiClient from '@/api/client';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PageHeader } from '@/components/ui/PageHeader';
 import toast from 'react-hot-toast';
+import { hasAdminAccess } from '@/utils/roles';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const CATEGORIES = [
  { value: 'HR_POLICY', label: 'HR Policies' },
@@ -33,6 +35,7 @@ const CATEGORIES = [
 
 export default function PolicyListPage() {
  const { user } = useAuth();
+ const { canAdd } = usePermissions();
  const queryClient = useQueryClient();
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [recordsModalOpen, setRecordsModalOpen] = useState(false);
@@ -42,7 +45,8 @@ export default function PolicyListPage() {
  const [search, setSearch] = useState('');
  const [categoryFilter, setCategoryFilter] = useState('ALL');
 
- const isAdminOrHR = user?.role === 'ADMIN' || user?.role === 'HR';
+ const isAdminOrHR = hasAdminAccess(user?.role);
+ const mayAddPolicy = canAdd('policies');
 
  const { data: policiesData, isLoading } = useQuery({
  queryKey: ['policies'],
@@ -89,6 +93,8 @@ export default function PolicyListPage() {
  const formData = new FormData(e.currentTarget);
  const uploadData = new FormData();
  uploadData.append('files', file);
+ uploadData.append('module', 'policies');
+ uploadData.append('action', 'add');
 
  const res = await apiClient.post('/upload', uploadData, {
  headers: { 'Content-Type': 'multipart/form-data' }
@@ -137,11 +143,11 @@ export default function PolicyListPage() {
  ];
 
  return (
- <div className="space-y-6 p-6">
+ <div className="space-y-6">
  <PageHeader
  title="Documents & Policies"
  description="View, download, and acknowledge HR documents."
- actions={isAdminOrHR && (
+ actions={mayAddPolicy && (
  <Button onClick={() => setIsModalOpen(true)} className="gap-2">
  <Plus className="w-4 h-4" /> Upload Document
  </Button>
@@ -280,7 +286,7 @@ export default function PolicyListPage() {
  )}
 
  {/* Upload Modal */}
- <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Upload HR Document">
+ <Modal isOpen={isModalOpen && mayAddPolicy} onClose={() => setIsModalOpen(false)} title="Upload HR Document">
  <form onSubmit={handleUpload} className="space-y-4">
  <Input name="policyName" label="Document Name" required />
  <Select name="policyCategory" label="Category" required>

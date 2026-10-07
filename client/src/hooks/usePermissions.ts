@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/api/client';
+import type { ModuleKey } from '@/types';
 
 interface ModulePermission {
  canView: boolean;
@@ -23,33 +24,38 @@ export function usePermissions() {
  staleTime: 5 * 60 * 1000, // Cache for 5 minutes
  });
 
+ const canView = (module: ModuleKey | string): boolean => {
+ return data?.[module]?.canView ?? false;
+ };
+
  const canExport = (module: string): boolean => {
- return data?.[module]?.canExport ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canExport;
  };
 
  const canAdd = (module: string): boolean => {
- return data?.[module]?.canAdd ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canAdd;
  };
 
  const canEdit = (module: string): boolean => {
- return data?.[module]?.canEdit ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canEdit;
  };
 
  const canDelete = (module: string): boolean => {
- return data?.[module]?.canDelete ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canDelete;
  };
 
  const canApprove = (module: string): boolean => {
- return data?.[module]?.canApprove ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canApprove;
  };
 
  const canViewRestricted = (module: string): boolean => {
- return data?.[module]?.canViewRestricted ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canViewRestricted;
  };
 
  return {
  permissions: data,
  isLoading,
+ canView,
  canExport,
  canAdd,
  canEdit,

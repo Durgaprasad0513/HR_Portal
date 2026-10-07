@@ -48,7 +48,7 @@ export const interviewCandidateSchema = z.object({
   interviewDate: z.string().optional(),
   interviewFeedback: z.string().optional(),
   interviewScore: z.number().optional(),
-  selectionStatus: z.enum(['SELECTED', 'SELECTION_REJECTED', 'SELECTION_ON_HOLD']).optional(),
+  selectionStatus: z.enum(['SELECTED', 'SELECTION_REJECTED', 'SELECTION_ON_HOLD']).nullable().optional(),
   interviewerId: z.string().optional()
 });
 
