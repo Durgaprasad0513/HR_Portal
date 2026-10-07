@@ -10,10 +10,12 @@ import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import { Trash2, CheckCheck, ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function NotificationListPage() {
  const queryClient = useQueryClient();
  const navigate = useNavigate();
+ const { canEdit, canDelete } = usePermissions();
 
  const { data: notifs, isLoading } = useQuery({
  queryKey: ['notifications'],
@@ -53,12 +55,12 @@ export default function NotificationListPage() {
  description="Review alerts and keep important updates moving."
  actions={(
  <div className="flex gap-2">
- <Button variant="outline" onClick={() => clearReadMutation.mutate()} disabled={clearReadMutation.isPending || !notifs?.some((n: any) => n.isRead)}>
+ {canDelete('notifications') && <Button variant="outline" onClick={() => clearReadMutation.mutate()} disabled={clearReadMutation.isPending || !notifs?.some((n: any) => n.isRead)}>
  <Trash2 className="w-4 h-4 mr-2" /> Clear Read
- </Button>
- <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending || !notifs?.some((n: any) => !n.isRead)}>
+ </Button>}
+ {canEdit('notifications') && <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending || !notifs?.some((n: any) => !n.isRead)}>
  <CheckCheck className="w-4 h-4 mr-2" /> Mark All as Read
- </Button>
+ </Button>}
  </div>
  )}
  />
@@ -69,26 +71,26 @@ export default function NotificationListPage() {
  <div className="space-y-4">
  {notifs?.map((notification: any) => (
  <Card key={notification.id} className={!notification.isRead ? 'bg-blue-50/50 border-blue-200' : ''}>
- <CardContent className="p-4 flex justify-between items-start">
- <div>
- <div className="flex items-center space-x-2 mb-1">
- <h3 className="font-semibold">{notification.title}</h3>
+ <CardContent className="flex min-w-0 flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
+ <div className="min-w-0 flex-1">
+ <div className="mb-1 flex min-w-0 flex-wrap items-center gap-2">
+ <h3 className="min-w-0 break-words font-semibold">{notification.title}</h3>
  {!notification.isRead && <Badge variant="info">New</Badge>}
  </div>
- <p className="text-gray-600 dark:text-gray-400 text-sm">{notification.message}</p>
+ <p className="break-words text-sm text-gray-600 dark:text-gray-400">{notification.message}</p>
  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
  {formatDateTime(notification.createdAt)}
  </p>
  </div>
- <div className="flex space-x-2">
- {!notification.isRead && (
+ <div className="flex shrink-0 gap-2 self-end sm:self-start">
+ {!notification.isRead && canEdit('notifications') && (
  <Button variant="outline" size="sm" onClick={() => markReadMutation.mutate(notification.id)}>
  Mark Read
  </Button>
  )}
- <Button variant="ghost" size="sm" className="text-red-500" onClick={() => deleteMutation.mutate(notification.id)}>
+ {canDelete('notifications') && <Button variant="ghost" size="sm" className="text-red-500" onClick={() => deleteMutation.mutate(notification.id)}>
  <Trash2 className="w-4 h-4" />
- </Button>
+ </Button>}
  </div>
  </CardContent>
  </Card>

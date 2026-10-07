@@ -88,13 +88,23 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  )}
  </Button>
  
+ <Button
+ variant="ghost"
+ size="sm"
+ className="text-gray-500 hover:text-navy-900 dark:text-gray-400 dark:hover:text-white md:hidden"
+ onClick={() => setCmdOpen(true)}
+ aria-label="Search employees or modules"
+ >
+ <Search className="h-5 w-5" aria-hidden="true" />
+ </Button>
+
  <button 
  onClick={() => setCmdOpen(true)}
  className="hidden md:flex items-center text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-slate-800/50 px-4 py-2.5 rounded-full hover:bg-gray-200 dark:hover:bg-slate-800 transition-colors border border-transparent w-80 lg:w-[480px] justify-between focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-700 outline-none"
  >
  <div className="flex items-center text-gray-400 dark:text-gray-500 font-medium">
  <Search className="h-4 w-4 mr-3" strokeWidth={2.5} />
- <span>Search</span>
+ <span>Search employees or modules</span>
  </div>
  <kbd className="hidden sm:flex items-center justify-center text-[11px] font-semibold px-2 py-0.5 rounded bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 shadow-sm gap-0.5">
  <span className="text-[12px] font-sans">⌘</span>K

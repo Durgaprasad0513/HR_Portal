@@ -141,7 +141,7 @@ export default function AttritionDashboardPage() {
  const classifiedExitLabel = totalExits === 1 ? 'exit' : 'exits';
 
  return (
- <div className="space-y-6 p-4 sm:p-6">
+ <div className="space-y-6">
  <header className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
  <div>
  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent-600 dark:text-accent-400">People analytics</p>

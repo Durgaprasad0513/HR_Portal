@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'HR' | 'MANAGER' | 'HR_EXECUTIVE' | 'EMPLOYEE';
+export type Role = 'ADMIN' | 'HR' | 'MANAGER' | 'EMPLOYEE';
 export type ModuleKey = 'dashboard' | 'employees' | 'travel' | 'leave' | 'expenses' | 'assets' | 'recruitment' | 'attrition' | 'performance' | 'training' | 'requests' | 'policies' | 'departments' | 'audit' | 'notifications' | 'roles' | 'settings' | 'loginHistory';
 export type EmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | 'RESIGNED' | 'TERMINATED';
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';

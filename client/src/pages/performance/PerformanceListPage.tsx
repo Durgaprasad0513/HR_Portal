@@ -18,10 +18,12 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { DataTable } from '@/components/ui/DataTable';
 import { Select } from '@/components/ui/Select';
 import { hasAdminAccess } from '@/utils/roles';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function PerformanceListPage() {
  const { user } = useAuth();
  const isAdminOrHR = hasAdminAccess(user?.role);
+ const { canAdd } = usePermissions();
  const secondTabName: Tab = isAdminOrHR ? 'Team/Company Reviews' : 'Team/Company Reviews'; // Simplified for type matching
  const [activeTab, setActiveTab] = useState<Tab>('My Performance');
  const [selectedReview, setSelectedReview] = useState<any>(null);
@@ -128,13 +130,13 @@ export default function PerformanceListPage() {
  title="Performance"
  description="Track review progress, feedback, and next approvals."
  actions={<>
- {hasAdminAccess(user?.role) && (
+ {isAdminOrHR && canAdd('performance') && (
  <Button onClick={() => setIsCreateModalOpen(true)}>
  Initiate Review
  </Button>
  )}
  <div className="flex gap-1 bg-surface p-1 rounded-full w-full overflow-x-auto whitespace-nowrap custom-scrollbar sm:w-auto">
- {(['My Performance', 'Team/Company Reviews'] as Tab[]).map((tab) => (
+ {(['My Performance', ...(isAdminOrHR ? ['Team/Company Reviews'] : [])] as Tab[]).map((tab) => (
  <button
  key={tab}
  onClick={() => setActiveTab(tab)}
@@ -205,8 +207,8 @@ export default function PerformanceListPage() {
  ? 'Start a review cycle to set goals, collect feedback, and track approvals.'
  : 'Your assigned review cycles will appear here when they are initiated.'
  }
- actionLabel={hasActiveFilters ? 'Clear filters' : isAdminOrHR ? 'Initiate review' : undefined}
- onAction={hasActiveFilters ? clearFilters : isAdminOrHR ? () => setIsCreateModalOpen(true) : undefined}
+ actionLabel={hasActiveFilters ? 'Clear filters' : isAdminOrHR && canAdd('performance') ? 'Initiate review' : undefined}
+ onAction={hasActiveFilters ? clearFilters : isAdminOrHR && canAdd('performance') ? () => setIsCreateModalOpen(true) : undefined}
  />
  ) : renderReviewList()}
  </div>

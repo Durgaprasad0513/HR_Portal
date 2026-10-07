@@ -34,13 +34,13 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  const debouncedSearch = useDebounce(search.trim(), 250);
 
  const isAdminOrHR = hasAdminAccess(user?.role);
- const { canView, isLoading: permissionsLoading } = usePermissions();
- const canShow = (module: ModuleKey) => permissionsLoading || canView(module);
+ const { canView, canAdd, isLoading: permissionsLoading } = usePermissions();
+ const canShow = (module: ModuleKey) => !permissionsLoading && canView(module);
 
  const { data: employeeResponse, isFetching: isSearchingEmployees } = useQuery({
  queryKey: ['global-employee-search', debouncedSearch],
  queryFn: () => employeesApi.getAll({ search: debouncedSearch, limit: 6 }),
- enabled: open && debouncedSearch.length >= 2,
+ enabled: open && debouncedSearch.length >= 2 && canShow('employees'),
  staleTime: 30_000,
  });
  const employeeResults = employeeResponse?.data || [];
@@ -69,12 +69,12 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  // Flattened sidebar navigation mapping
  const mainNav = [
  ...(canShow('dashboard') ? [{ name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }] : []),
- ...(isAdminOrHR && canShow('attrition') ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
+ ...(canShow('attrition') ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus }] : []),
  ...(canShow('employees') ? [{ name: 'Employees', path: '/employees', icon: Users }] : []),
  ...(canShow('performance') ? [{ name: 'Performance', path: '/performance', icon: Target }] : []),
- ...(canShow('leave') ? [{ name: 'Apply for leave', path: '/leaves', icon: Calendar }] : []),
+ ...(canShow('leave') && canAdd('leave') ? [{ name: 'Apply for leave', path: '/leaves', icon: Calendar }] : []),
  ...(isAdminOrHR && canShow('leave') ? [{ name: 'Leave approvals', path: '/leaves/approvals', icon: ClipboardList }] : []),
- ...(isAdminOrHR && canShow('recruitment') ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
+ ...(canShow('recruitment') ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase }] : []),
  ...(canShow('training') ? [{ name: 'Training', path: '/training', icon: GraduationCap }] : []),
  ...(canShow('assets') ? [{ name: 'Assets', path: '/assets', icon: Laptop }] : []),
  ...(canShow('travel') ? [{ name: 'Travel', path: '/travel', icon: Plane }] : []),
@@ -84,10 +84,11 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
  ];
 
  const accountNav = [
- ...(isAdminOrHR ? [
+ ...([
  ...(canShow('roles') ? [{ name: 'Role Management', path: '/roles', icon: Shield }] : []),
  ...(canShow('audit') ? [{ name: 'Audit Log', path: '/audit', icon: History }] : []),
- ] : [])
+ ...(canShow('settings') ? [{ name: 'System Settings', path: '/settings', icon: Settings }] : []),
+ ])
  ];
 
  return (

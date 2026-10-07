@@ -138,7 +138,7 @@ export default function AuditLogPage() {
  };
 
  return (
- <div className="space-y-6 p-6">
+ <div className="space-y-6">
  <PageHeader
  title="Audit Trail"
  description="Investigate changes, access, and operational events."
@@ -193,8 +193,8 @@ export default function AuditLogPage() {
 
  {/* Filters */}
  <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
- <div className="relative lg:col-span-2">
+ <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-5">
+ <div className="relative 2xl:col-span-2">
  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
  <input
  aria-label="Search audit actions and records"
@@ -237,8 +237,8 @@ export default function AuditLogPage() {
  ) : logs.length === 0 ? (
  <div className="py-16 text-center text-gray-400">No audit records found.</div>
  ) : (
- <div className="overflow-x-auto">
- <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+ <div className="overflow-x-auto" role="region" aria-label="Audit records. Scroll horizontally for more columns." tabIndex={0}>
+ <table className="min-w-[52rem] divide-y divide-gray-200 dark:divide-gray-700">
  <thead className="bg-surface">
  <tr>
  {['Timestamp', 'User', 'Action', 'Module', 'Record ID', 'IP Address', 'Changes', ''].map(h => (
@@ -295,9 +295,9 @@ export default function AuditLogPage() {
 
  {/* Pagination */}
  {pagination && pagination.totalPages > 1 && (
- <div className="flex items-center justify-between text-sm text-gray-500">
+ <div className="flex flex-col gap-3 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
  <span>Showing {((page - 1) * 50) + 1}–{Math.min(page * 50, pagination.total)} of {pagination.total} records</span>
- <div className="flex gap-2">
+ <div className="flex flex-wrap items-center gap-2">
  <Button variant="outline" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
  Previous
  </Button>

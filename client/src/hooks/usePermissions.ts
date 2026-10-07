@@ -29,27 +29,27 @@ export function usePermissions() {
  };
 
  const canExport = (module: string): boolean => {
- return data?.[module]?.canExport ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canExport;
  };
 
  const canAdd = (module: string): boolean => {
- return data?.[module]?.canAdd ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canAdd;
  };
 
  const canEdit = (module: string): boolean => {
- return data?.[module]?.canEdit ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canEdit;
  };
 
  const canDelete = (module: string): boolean => {
- return data?.[module]?.canDelete ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canDelete;
  };
 
  const canApprove = (module: string): boolean => {
- return data?.[module]?.canApprove ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canApprove;
  };
 
  const canViewRestricted = (module: string): boolean => {
- return data?.[module]?.canViewRestricted ?? false;
+ return !!data?.[module]?.canView && !!data?.[module]?.canViewRestricted;
  };
 
  return {

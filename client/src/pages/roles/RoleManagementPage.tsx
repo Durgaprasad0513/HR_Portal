@@ -15,12 +15,11 @@ import { Select } from '@/components/ui/Select';
 import { usePermissions } from '@/hooks/usePermissions';
 const hasLockedPermissions = (role: string) => role === 'ADMIN' || role === 'HR';
 
-const ROLES = ['ADMIN', 'HR', 'MANAGER', 'HR_EXECUTIVE', 'EMPLOYEE'];
+const ROLES = ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'];
 const ROLE_LABELS: Record<string, string> = {
  ADMIN: 'Admin',
  HR: 'HR',
  MANAGER: 'Manager',
- HR_EXECUTIVE: 'HR Executive',
   EMPLOYEE: 'Employee',
 };
 const PERMISSION_FLAGS = [
@@ -383,33 +382,33 @@ export default function RoleManagementPage() {
  const [activeTab, setActiveTab] = useState<'users' | 'permissions'>('users');
 
  return (
- <div className="space-y-6 p-6">
+ <div className="space-y-6">
  <PageHeader
  title="User & Role Management"
  description="Manage accounts and permission boundaries."
  />
 
  {/* Tabs */}
- <div className="flex gap-1 bg-surface rounded-lg p-1 w-full overflow-x-auto whitespace-nowrap custom-scrollbar sm:w-fit">
+ <div className="grid w-full grid-cols-2 gap-1 rounded-lg bg-surface p-1 sm:flex sm:w-fit">
  <button
  onClick={() => setActiveTab('users')}
- className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+ className={`flex min-w-0 items-center justify-center gap-2 rounded-md px-2 py-2 text-center text-xs font-medium transition-all sm:px-4 sm:text-sm ${
  activeTab === 'users'
  ? 'bg-accent-600 text-white shadow-md dark:bg-accent-500'
  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
  }`}
  >
- <Users className="w-4 h-4" /> User Accounts
+ <Users className="h-4 w-4 shrink-0" /> <span>User Accounts</span>
  </button>
  <button
  onClick={() => setActiveTab('permissions')}
- className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+ className={`flex min-w-0 items-center justify-center gap-2 rounded-md px-2 py-2 text-center text-xs font-medium transition-all sm:px-4 sm:text-sm ${
  activeTab === 'permissions'
  ? 'bg-accent-600 text-white shadow-md dark:bg-accent-500'
  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
  }`}
  >
- <Shield className="w-4 h-4" /> Role Permissions Matrix
+ <Shield className="h-4 w-4 shrink-0" /> <span>Role Permissions Matrix</span>
  </button>
  </div>
 

@@ -18,4 +18,8 @@ export const authApi = {
  const { data } = await apiClient.get<ApiResponse<MeResponse>>('/auth/me');
  return data;
  },
+ changePassword: async (currentPassword: string, newPassword: string) => {
+ const { data } = await apiClient.post<ApiResponse<null>>('/auth/change-password', { currentPassword, newPassword });
+ return data;
+ },
 };

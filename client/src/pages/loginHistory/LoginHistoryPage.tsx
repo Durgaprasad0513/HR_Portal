@@ -20,13 +20,15 @@ export default function LoginHistoryPage() {
  : [];
 
  return (
- <div className="space-y-6 p-6">
+ <div className="space-y-6">
  <PageHeader
  title="Activity & Login History"
  description="Review account access and system activity."
  />
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border dark:border-slate-border overflow-hidden">
- <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+ <div className="overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm">
+ <p className="border-b border-slate-border px-4 py-2 text-xs text-text-muted sm:hidden">Scroll horizontally to see all columns.</p>
+ <div className="overflow-x-auto" role="region" tabIndex={0} aria-label="Activity and login history table. Scroll horizontally for more columns.">
+ <table className="min-w-[48rem] divide-y divide-gray-200 dark:divide-gray-700">
  <thead className="bg-surface">
  <tr>
  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Timestamp</th>
@@ -65,6 +67,7 @@ export default function LoginHistoryPage() {
  )}
  </tbody>
  </table>
+ </div>
  </div>
  </div>
  );

@@ -28,6 +28,7 @@ const AttritionDashboardPage = lazy(() => import('@/pages/attrition/AttritionDas
 const AuditLogPage = lazy(() => import('@/pages/audit/AuditLogPage'));
 const LoginHistoryPage = lazy(() => import('@/pages/loginHistory/LoginHistoryPage'));
 const RoleManagementPage = lazy(() => import('@/pages/roles/RoleManagementPage'));
+const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const DesignSystemPage = lazy(() => import('@/pages/design/DesignSystemPage'));
 
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -52,9 +53,9 @@ const AppRoutes = () => {
  
  <Route element={<ProtectedRoute requiredModule="employees" />}>
  <Route path="/employees" element={<EmployeeListPage />} />
- <Route path="/employees/new" element={<EmployeeFormPage />} />
  <Route path="/employees/:id" element={<EmployeeDetailPage />} />
- <Route path="/employees/:id/edit" element={<EmployeeFormPage />} />
+ <Route element={<ProtectedRoute requiredModule="employees" requiredAction="canAdd" />}><Route path="/employees/new" element={<EmployeeFormPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="employees" requiredAction="canEdit" />}><Route path="/employees/:id/edit" element={<EmployeeFormPage />} /></Route>
  </Route>
  
  <Route element={<ProtectedRoute requiredModule="performance" />}><Route path="/performance" element={<PerformanceListPage />} /></Route>
@@ -65,19 +66,18 @@ const AppRoutes = () => {
  
  <Route element={<ProtectedRoute requiredModule="departments" />}>
  <Route path="/departments" element={<DepartmentListPage />} />
- <Route path="/departments/new" element={<DepartmentFormPage />} />
- <Route path="/departments/:id/edit" element={<DepartmentFormPage />} />
+ <Route element={<ProtectedRoute requiredModule="departments" requiredAction="canAdd" />}><Route path="/departments/new" element={<DepartmentFormPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="departments" requiredAction="canEdit" />}><Route path="/departments/:id/edit" element={<DepartmentFormPage />} /></Route>
  </Route>
  
  <Route element={<ProtectedRoute requiredModule="training" />}><Route path="/training" element={<TrainingListPage />} /></Route>
  <Route element={<ProtectedRoute requiredModule="requests" />}><Route path="/requests" element={<RequestListPage />} /></Route>
- <Route element={<ProtectedRoute requiredModule="leave" />}><Route path="/leaves" element={<LeaveApplicationPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="leave" requiredAction="canAdd" />}><Route path="/leaves" element={<LeaveApplicationPage />} /></Route>
 
  <Route path="/policies" element={<Navigate to="/documents" replace />} />
  <Route path="/profile" element={<Navigate to="/" replace />} />
  <Route element={<ProtectedRoute requiredModule="notifications" />}><Route path="/notifications" element={<NotificationListPage />} /></Route>
 
- <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'HR', 'MANAGER']} />}>
  <Route element={<ProtectedRoute requiredModule="recruitment" />}>
  <Route path="/recruitment" element={<RecruitmentPage />} />
  <Route path="/recruitment/interviews" element={<InterviewCalendarPage />} />
@@ -86,9 +86,9 @@ const AppRoutes = () => {
  <Route element={<ProtectedRoute requiredModule="audit" />}><Route path="/audit" element={<AuditLogPage />} /></Route>
  <Route element={<ProtectedRoute requiredModule="loginHistory" />}><Route path="/login-history" element={<LoginHistoryPage />} /></Route>
  <Route element={<ProtectedRoute requiredModule="roles" />}><Route path="/roles" element={<RoleManagementPage />} /></Route>
+ <Route element={<ProtectedRoute requiredModule="settings" />}><Route path="/settings" element={<SettingsPage />} /></Route>
  <Route element={<ProtectedRoute requiredModule="attrition" />}><Route path="/dashboard/attrition" element={<AttritionDashboardPage />} /></Route>
  <Route path="/attrition" element={<Navigate to="/dashboard/attrition" replace />} />
- </Route>
 
  <Route path="*" element={<NotFoundPage />} />
  </Route>

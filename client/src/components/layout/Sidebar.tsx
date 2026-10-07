@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { hasAdminAccess } from '@/utils/roles';
 import { usePermissions } from '@/hooks/usePermissions';
 import type { ModuleKey } from '@/types';
 
@@ -32,9 +31,8 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  const { user } = useAuth();
  const location = useLocation();
  const navigate = useNavigate();
- const isAdminOrHR = hasAdminAccess(user?.role);
- const { canView, isLoading: permissionsLoading } = usePermissions();
- const canShow = (module: ModuleKey) => permissionsLoading || canView(module);
+ const { canView, canAdd, isLoading: permissionsLoading } = usePermissions();
+ const canShow = (module: ModuleKey) => !permissionsLoading && canView(module);
  
  const [openNavGroups, setOpenNavGroups] = useState<Record<string, boolean>>({
  'nav-group-leave-requests': true,
@@ -46,15 +44,15 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
 
  const mainNav: SidebarNavItem[] = [
  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, module: 'dashboard' as ModuleKey },
- ...(isAdminOrHR && canShow('attrition') ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus, module: 'attrition' as ModuleKey }] : []),
+ ...(canShow('attrition') ? [{ name: 'Attrition', path: '/dashboard/attrition', icon: UserMinus, module: 'attrition' as ModuleKey }] : []),
  { name: 'Employees', path: '/employees', icon: Users, module: 'employees' as ModuleKey },
- ...(isAdminOrHR && canShow('recruitment') ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase, module: 'recruitment' as ModuleKey }] : []),
-  ...(isAdminOrHR && canShow('recruitment') ? [{ name: 'Interview Calendar', path: '/recruitment/interviews', icon: CalendarDays, module: 'recruitment' as ModuleKey }] : []),
+ ...(canShow('recruitment') ? [{ name: 'Recruitment', path: '/recruitment', icon: Briefcase, module: 'recruitment' as ModuleKey }] : []),
+  ...(canShow('recruitment') ? [{ name: 'Interview Calendar', path: '/recruitment/interviews', icon: CalendarDays, module: 'recruitment' as ModuleKey }] : []),
  {
  name: 'Leave Requests',
  icon: Calendar,
  children: [
- { name: 'Apply for leave', path: '/leaves', icon: Calendar, module: 'leave' as ModuleKey },
+ ...(canAdd('leave') ? [{ name: 'Apply for leave', path: '/leaves', icon: Calendar, module: 'leave' as ModuleKey }] : []),
  ...(user?.role !== 'EMPLOYEE' && canShow('leave') ? [{ name: 'Leave approval\'s', path: '/leaves/approvals', icon: History, module: 'leave' as ModuleKey }] : []),
  ],
  },
@@ -72,10 +70,11 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
  .filter((item) => !item.module || canShow(item.module));
 
  const accountNav: SidebarNavItem[] = [
- ...(isAdminOrHR ? [
+ ...([
  { name: 'Role Management', path: '/roles', icon: Shield, module: 'roles' as ModuleKey },
  { name: 'Audit Log', path: '/audit', icon: History, module: 'audit' as ModuleKey },
- ].filter((item) => canShow(item.module)) : [])
+ { name: 'System Settings', path: '/settings', icon: Settings, module: 'settings' as ModuleKey },
+ ].filter((item) => canShow(item.module)))
  ];
 
  const isNavItemActive = (path: string) => (
