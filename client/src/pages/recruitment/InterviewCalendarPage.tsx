@@ -14,12 +14,15 @@ import { Select } from '@/components/ui/Select';
 import { ScheduleInterviewModal } from '@/pages/dashboard/components/ScheduleInterviewModal';
 import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal, Download, XCircle, History } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function InterviewCalendarPage() {
+  const { canEdit, canExport } = usePermissions();
     const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [stageFilter, setStageFilter] = useState('ALL');
 
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -78,11 +81,14 @@ export default function InterviewCalendarPage() {
 
   const filteredInterviews = useMemo(() => {
     if (!interviewsData) return [];
-    if (showHistory) {
-      return interviewsData.filter((cand: any) => cand.selectionStatus === 'SELECTION_REJECTED');
-    }
-    return interviewsData.filter((cand: any) => cand.selectionStatus !== 'SELECTION_REJECTED');
-  }, [interviewsData, showHistory]);
+    return interviewsData.filter((cand: any) => {
+      const matchesHistory = showHistory
+        ? cand.selectionStatus === 'SELECTION_REJECTED'
+        : cand.selectionStatus !== 'SELECTION_REJECTED';
+      const matchesStage = stageFilter === 'ALL' || cand.interviewRound === stageFilter;
+      return matchesHistory && matchesStage;
+    });
+  }, [interviewsData, showHistory, stageFilter]);
 
   const handleReject = (id: string) => {
     if (window.confirm('Are you sure you want to reject this candidate and move them to history?')) {
@@ -117,38 +123,64 @@ export default function InterviewCalendarPage() {
         description="Coordinate panel interviews, technical rounds, video meeting links, and track scoring outcomes all in one place."
         actions={
           <div className="flex gap-2">
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700/50">
-              <button 
-                onClick={() => setViewMode('calendar')} 
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-surface shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-              >
-                Calendar View
-              </button>
-              <button 
-                onClick={() => setViewMode('list')} 
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-surface shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-              >
-                List View
-              </button>
-            </div>
             <Button variant="outline" onClick={() => setShowHistory(!showHistory)} className={`gap-2 ${showHistory ? 'bg-slate-100 dark:bg-slate-800' : ''}`}>
               <History className="w-4 h-4" /> {showHistory ? 'Hide History' : 'Show History'}
             </Button>
-            <Button variant="outline" onClick={handleExport} className="gap-2">
+            {canExport('recruitment') && <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="w-4 h-4" /> Export Excel
-            </Button>
-            <Button onClick={() => setIsScheduleModalOpen(true)} className="gap-2">
+            </Button>}
+            {canEdit('recruitment') && <Button onClick={() => setIsScheduleModalOpen(true)} className="gap-2">
               <Plus className="w-4 h-4" /> Schedule Interview
-            </Button>
+            </Button>}
           </div>
         }
       />
+
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface px-4 py-3">
+        <div className="flex shrink-0 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Choose calendar or list view">
+          <button
+            type="button"
+            aria-pressed={viewMode === 'calendar'}
+            onClick={() => setViewMode('calendar')}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'calendar' ? 'bg-white text-slate-900 shadow-sm dark:bg-surface dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+          >
+            Calendar View
+          </button>
+          <button
+            type="button"
+            aria-pressed={viewMode === 'list'}
+            onClick={() => setViewMode('list')}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm dark:bg-surface dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+          >
+            List View
+          </button>
+        </div>
+        <div className="flex min-w-0 max-w-full flex-wrap justify-end gap-2" role="group" aria-label="Filter interviews by opening stage">
+          {[
+            { value: 'ALL', label: 'All' },
+            { value: 'TELEPHONIC', label: 'Telephonic' },
+            { value: 'HR_INTERVIEW', label: 'HR Interview' },
+            { value: 'MANAGEMENT', label: 'Management Interview' },
+            { value: 'OFFER', label: 'Offer' },
+          ].map((stage) => (
+            <button
+              key={stage.value}
+              type="button"
+              aria-pressed={stageFilter === stage.value}
+              onClick={() => setStageFilter(stage.value)}
+              className={`rounded-full px-3 py-2 text-xs font-semibold transition-colors ${stageFilter === stage.value ? 'bg-brand-primary text-white' : 'bg-tint text-text-muted hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+            >
+              {stage.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Content Area */}
       <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden min-h-[400px]">
         {viewMode === 'list' ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full min-w-[64rem] text-left text-sm">
               <thead className="bg-tint border-b border-slate-border">
                 <tr>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Candidate & Role</th>
@@ -191,7 +223,7 @@ export default function InterviewCalendarPage() {
                           className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1.5 outline-none cursor-pointer"
                           value={cand.selectionStatus || 'IN_PROGRESS'}
                           onChange={(event) => handleSetStatus(cand.id, event.target.value)}
-                          disabled={updateCandidateMutation.isPending}
+                          disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}
                         >
                           <option value="IN_PROGRESS">In progress</option>
                           <option value="SELECTION_ON_HOLD">On hold</option>
@@ -205,7 +237,7 @@ export default function InterviewCalendarPage() {
                             className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 outline-none cursor-pointer"
                             value={cand.interviewRound || 'HR_INTERVIEW'}
                             onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                            disabled={updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
+                            disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
                           >
                             <option value="TELEPHONIC">Telephonic</option>
                             <option value="HR_INTERVIEW">HR Interview</option>
@@ -218,7 +250,7 @@ export default function InterviewCalendarPage() {
                               <CheckCircle2 className="w-3 h-3" /> Finished
                             </span>
                           ) : (
-                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={updateCandidateMutation.isPending}>
+                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}>
                               Mark Finish
                             </Button>
                           )}
@@ -237,9 +269,9 @@ export default function InterviewCalendarPage() {
                         <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mb-6">
                           There are currently no interviews awaiting conduct. Click the button below to schedule one.
                         </p>
-                        <Button onClick={() => setIsScheduleModalOpen(true)} className="rounded-xl shadow-sm">
+                        {canEdit('recruitment') && <Button onClick={() => setIsScheduleModalOpen(true)} className="rounded-xl shadow-sm">
                           Schedule Interview
-                        </Button>
+                        </Button>}
                       </div>
                     </td>
                   </tr>
@@ -279,9 +311,9 @@ export default function InterviewCalendarPage() {
                         {cand.interviewFeedback === 'Finished' ? (
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Finished</span>
                         ) : (
-                          <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={updateCandidateMutation.isPending}>Mark Finish</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}>Mark Finish</Button>
                         )}
-                        {!showHistory && (
+                        {!showHistory && canEdit('recruitment') && (
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
@@ -297,7 +329,7 @@ export default function InterviewCalendarPage() {
                           className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
                           value={cand.interviewRound || 'HR_INTERVIEW'}
                           onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                          disabled={updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
+                          disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
                         >
                           <option value="TELEPHONIC">Telephonic</option>
                           <option value="HR_INTERVIEW">HR Interview</option>
@@ -310,7 +342,7 @@ export default function InterviewCalendarPage() {
                           className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
                           value={cand.selectionStatus || 'IN_PROGRESS'}
                           onChange={(event) => handleSetStatus(cand.id, event.target.value)}
-                          disabled={updateCandidateMutation.isPending}
+                          disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}
                         >
                           <option value="IN_PROGRESS">In progress</option>
                           <option value="SELECTION_ON_HOLD">On hold</option>
@@ -337,7 +369,7 @@ export default function InterviewCalendarPage() {
       </div>
 
       {/* Schedule Interview Modal */}
-      <ScheduleInterviewModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} initialRequisitionId={reqId || undefined} />
+      <ScheduleInterviewModal isOpen={isScheduleModalOpen && canEdit('recruitment')} onClose={() => setIsScheduleModalOpen(false)} initialRequisitionId={reqId || undefined} />
 
     </div>
   );

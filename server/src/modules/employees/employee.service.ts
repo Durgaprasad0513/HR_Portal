@@ -46,12 +46,19 @@ export class EmployeeService {
       ]
     };
 
-    if (query.search) {
-      baseWhere.OR = [
-        { firstName: { contains: query.search, mode: 'insensitive' } },
-        { lastName: { contains: query.search, mode: 'insensitive' } },
-        { email: { contains: query.search, mode: 'insensitive' } },
-        { employeeCode: { contains: query.search, mode: 'insensitive' } },
+    const searchTerms = query.search?.trim().split(/\s+/).filter(Boolean) ?? [];
+    if (searchTerms.length) {
+      baseWhere.AND = [
+        { isActive: true },
+        scopeQuery,
+        ...searchTerms.map((term): Prisma.EmployeeWhereInput => ({
+          OR: [
+            { firstName: { contains: term, mode: 'insensitive' } },
+            { lastName: { contains: term, mode: 'insensitive' } },
+            { email: { contains: term, mode: 'insensitive' } },
+            { employeeCode: { contains: term, mode: 'insensitive' } },
+          ],
+        })),
       ];
     }
 

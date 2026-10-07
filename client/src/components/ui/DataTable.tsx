@@ -172,7 +172,7 @@ export function DataTable<T>({
  Scroll horizontally to see all columns.
  </p>
  <div className="w-full overflow-auto focus:outline-none dark:" tabIndex={0} role="region" aria-label={`${caption}. Scroll horizontally for more columns.`}>
- <table className="w-full text-sm text-left">
+ <table className="w-full min-w-[40rem] text-left text-sm">
  <caption className="sr-only">{caption}</caption>
  <thead>
  {table.getHeaderGroups().map((headerGroup: any) => (
@@ -226,11 +226,11 @@ export function DataTable<T>({
 
  {/* Pagination */}
  {table.getPageCount() > 1 && (
- <div className="flex items-center justify-between px-4 py-3 border-t border-slate-border ">
+ <div className="flex flex-col gap-3 border-t border-slate-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
  <p className="text-sm text-gray-500 dark:text-gray-400">
  Show {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)} of {data.length} results
  </p>
- <div className="flex items-center gap-1">
+ <div className="flex flex-wrap items-center gap-1">
  <button
  aria-label="Previous page"
  onClick={() => table.previousPage()}

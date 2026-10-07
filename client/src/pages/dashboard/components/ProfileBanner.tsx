@@ -4,15 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Plane, MessageSquare, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export function ProfileBanner() {
   const { user } = useAuth();
+  const { canAdd } = usePermissions();
   const navigate = useNavigate();
-
-  // Only show for HR and EMPLOYEE. Exclude ADMIN and MANAGER.
-  if (user?.role === 'HR') {
-    return null;
-  }
 
   const employee = user?.employee;
   const firstName = employee?.firstName || user?.email?.split('@')[0] || 'User';
@@ -54,26 +51,30 @@ export function ProfileBanner() {
       </div>
 
       <div className="flex flex-wrap justify-center md:justify-end items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
-        <Button variant="primary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/leaves')}>
-          <Calendar className="w-4 h-4" />
-          Apply Leave
-        </Button>
-        {user?.role === 'EMPLOYEE' && (
-          <>
+        {user?.role !== 'MANAGER' && canAdd('leave') && (
+          <Button variant="primary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/leaves')}>
+            <Calendar className="w-4 h-4" />
+            Apply Leave
+          </Button>
+        )}
+        {user?.role === 'EMPLOYEE' && canAdd('travel') && (
             <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/travel')}>
               <Plane className="w-4 h-4" />
               Travel Claim
             </Button>
+        )}
+        {user?.role === 'EMPLOYEE' && canAdd('expenses') && (
             <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/office-expenses')}>
               <Receipt className="w-4 h-4" />
               Submit Expense
             </Button>
-          </>
         )}
-        <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/requests')}>
-          <MessageSquare className="w-4 h-4" />
-          HR Query
-        </Button>
+        {user?.role !== 'MANAGER' && canAdd('requests') && (
+          <Button variant="secondary" className="rounded-full shadow-sm text-sm h-9 px-4 flex items-center gap-2" onClick={() => navigate('/requests')}>
+            <MessageSquare className="w-4 h-4" />
+            HR Query
+          </Button>
+        )}
       </div>
     </div>
   );

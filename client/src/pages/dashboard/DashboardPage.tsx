@@ -185,6 +185,16 @@ export default function DashboardPage() {
  const joinExitTrend = attritionData?.joinExitTrend || [];
  const activeRequisitions = reqData.filter((requisition: any) => requisition.status !== 'JOINED_REJECTED');
  const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
+ const vacancyStageCounts = [
+   { label: 'Telephonic', status: 'TELEPHONIC' },
+   { label: 'HR Interview', status: 'HR_INTERVIEW' },
+   { label: 'Management Interview', status: 'MANAGEMENT' },
+   { label: 'Offer', status: 'OFFER' },
+ ].map((stage) => ({
+   ...stage,
+   count: activeRequisitions.filter((requisition: any) => requisition.status === stage.status)
+     .reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0),
+ }));
  const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
    activeRequisitions.filter((requisition: any) => getCompletedRecruitmentLevels(requisition.status) > levelIndex).length
  );
@@ -210,7 +220,7 @@ export default function DashboardPage() {
 
  {/* 1. Four Headline Metrics */}
  <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%">
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+ <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
  {/* Active Employees / Today's Attendance */}
  <div 
    onClick={() => navigate('/employees')}
@@ -305,8 +315,13 @@ export default function DashboardPage() {
  <Briefcase className="w-5 h-5" />
  </div>
  </div>
- <div className="text-xs text-text-muted">
- <span className="font-medium text-text-heading">{stats.invitedForInterview || 0}</span> screening, <span className="font-medium text-text-heading">{stats.offersAccepted || 0}</span> accepted
+ <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-1 text-[11px] leading-4 text-text-muted">
+ {vacancyStageCounts.map((stage) => (
+   <span key={stage.status} className="flex min-w-0 items-start justify-between gap-1">
+     <span className="min-w-0 break-words">{stage.label}</span>
+     <span className="shrink-0 font-semibold text-text-heading">{stage.count}</span>
+   </span>
+ ))}
  </div>
  </Link>
 
@@ -441,15 +456,15 @@ export default function DashboardPage() {
  </BoxReveal>
  )}
 
- <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+ <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[repeat(2,minmax(0,1fr))] lg:gap-8">
  
  {/* Left Column: Needs Attention & Trend */}
  
           {/* Attendance Trend Chart (Only for HR/Admin) */}
           {isAdminOrHR && stats?.attendanceTrend && (
-            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
+            <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5">
               <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
-              <div className="h-48 w-full">
+              <div className="h-48 w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={stats.attendanceTrend} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
                     <defs>
@@ -479,7 +494,7 @@ export default function DashboardPage() {
           )}
 
             {/* Office Expenses Chart */}
-            <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
+            <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Office Expenses</h3>
@@ -490,7 +505,7 @@ export default function DashboardPage() {
                 </button>
               </div>
               
-              <div className="flex-1 flex flex-col xl:flex-row items-center justify-center gap-6 xl:gap-8 w-full mt-4">
+              <div className="flex-1 flex flex-col 2xl:flex-row items-center justify-center gap-6 2xl:gap-8 w-full min-w-0 mt-4">
                 <div className="w-56 h-56 relative shrink-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -532,7 +547,7 @@ export default function DashboardPage() {
 
             {/* Recruitment Progress */}
             {isAdminOrHR && (
-              <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full lg:col-span-2 xl:col-span-3">
+              <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full lg:col-span-2">
                 <div className="flex flex-wrap justify-between items-start gap-3 mb-5">
                   <div>
                     <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Recruitment Progress</h3>
@@ -615,7 +630,7 @@ export default function DashboardPage() {
                             <div><span className="block text-text-muted">Opening date</span><span className="font-semibold text-text-heading">{formatDate(requisition.requisitionDate)}</span></div>
                             <div><span className="block text-text-muted">Current stage since</span><span className="font-semibold text-text-heading">{formatDate(stageDate)}</span></div>
                             <div><span className="block text-text-muted">Days in stage</span><span className="font-semibold text-text-heading">{daysInStage}</span></div>
-                            <button type="button" onClick={() => navigate('/recruitment')} className="justify-self-start self-center font-semibold text-blue-600 hover:text-blue-700">Open recruitment tracker</button>
+                            <button type="button" onClick={() => navigate('/recruitment?tab=vacancies')} className="justify-self-start self-center font-semibold text-blue-600 hover:text-blue-700">Open recruitment tracker</button>
                           </div>
                         )}
                       </div>

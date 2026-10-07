@@ -20,9 +20,11 @@ import { hasAdminAccess } from '@/utils/roles';
 
 export default function OfficeExpensesPage() {
  const { user } = useAuth();
- const { canExport } = usePermissions();
+ const { canExport, canAdd, canApprove } = usePermissions();
  const queryClient = useQueryClient();
  const isAdminOrHR = hasAdminAccess(user?.role);
+ const mayCreateExpense = canAdd('expenses');
+ const mayApproveExpense = canApprove('expenses');
  
  const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -117,7 +119,7 @@ export default function OfficeExpensesPage() {
  header: 'Action', 
  accessor: (row: any) => (
  <div className="flex items-center gap-2">
- {row.status === 'PENDING' && isAdminOrHR && (
+ {row.status === 'PENDING' && mayApproveExpense && (
  <>
  <button 
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-28" 
@@ -139,7 +141,7 @@ export default function OfficeExpensesPage() {
  </button>
  </>
  )}
- {row.status === 'APPROVED' && isAdminOrHR && (
+ {row.status === 'APPROVED' && mayApproveExpense && (
  <button 
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[100px]" 
  title="Mark as Paid"
@@ -173,12 +175,12 @@ export default function OfficeExpensesPage() {
  title="Office Expenses"
  description="Log and track petty cash and office reimbursements."
  actions={<div className="flex gap-2">
- {canExport('reports') && <Button variant="outline" onClick={handleExport} className="gap-2">
+ {canExport('expenses') && <Button variant="outline" onClick={handleExport} className="gap-2">
  <Download className="w-4 h-4" /> Export Register
  </Button>}
- <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+ {mayCreateExpense && <Button onClick={() => setIsModalOpen(true)} className="gap-2">
  <Plus className="w-4 h-4" /> Submit Expense
- </Button>
+ </Button>}
  </div>}
  />
 
@@ -209,8 +211,8 @@ export default function OfficeExpensesPage() {
  icon={Wallet}
  title="No expenses logged"
  description="There are no office expenses found."
- actionLabel="Submit Expense"
- onAction={() => setIsModalOpen(true)}
+ actionLabel={mayCreateExpense ? "Submit Expense" : undefined}
+ onAction={mayCreateExpense ? () => setIsModalOpen(true) : undefined}
  />
  ) : (
  <DataTable 
@@ -222,9 +224,9 @@ export default function OfficeExpensesPage() {
  )}
  </div>
 
- <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Submit Office Expense">
+ <Modal isOpen={isModalOpen && mayCreateExpense} onClose={() => setIsModalOpen(false)} title="Submit Office Expense">
  <form onSubmit={handleSubmit} className="space-y-4">
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <DatePicker name="expenseDate" label="Date incurred" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
  <div className="flex flex-col">
  <label htmlFor="office-expense-category" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Category</label>
@@ -241,7 +243,7 @@ export default function OfficeExpensesPage() {
  
  <Input name="description" label="Description" placeholder="e.g. Printer ink cartridges" required />
  <Input name="amount" label="Amount (₹)" type="number" step="1" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required />
- <FileUpload name="billUpload" label="Upload Receipt" />
+ <FileUpload name="billUpload" label="Upload Receipt" module="expenses" action="add" />
  
  <div className="flex justify-end space-x-2 pt-4">
  <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>

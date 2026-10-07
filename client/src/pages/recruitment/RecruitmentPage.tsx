@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '@/api/recruitment';
 import { departmentsApi } from '@/api/departments';
@@ -17,9 +17,10 @@ import { hasAdminAccess } from '@/utils/roles';
 
 export default function RecruitmentPage() {
   const navigate = useNavigate();
+ const [searchParams] = useSearchParams();
  const { user } = useAuth();
  const queryClient = useQueryClient();
- const { canExport, canEdit } = usePermissions();
+ const { canExport, canEdit, canAdd } = usePermissions();
  const isAdminOrHR = hasAdminAccess(user?.role);
  
  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
@@ -47,6 +48,13 @@ export default function RecruitmentPage() {
 
  
  const data = reqResponse?.data || [];
+
+ React.useEffect(() => {
+   if (searchParams.get('tab') === 'vacancies') {
+     setSelectedReq(null);
+     setViewMode('list');
+   }
+ }, [searchParams]);
 
  const createReqMutation = useMutation({
  mutationFn: (payload: any) => recruitmentApi.createRequisition(payload),
@@ -138,7 +146,7 @@ export default function RecruitmentPage() {
  {viewMode === 'board' && (
  <Button variant="outline" onClick={() => setViewMode('list')}>Back to List</Button>
  )}
- {isAdminOrHR && viewMode === 'list' && (
+ {canAdd('recruitment') && viewMode === 'list' && (
  <Button onClick={() => { setEditingReq(null); setIsReqModalOpen(true); }} className="gap-2">
  <Plus className="w-4 h-4" /> New Requisition
  </Button>
@@ -169,8 +177,9 @@ export default function RecruitmentPage() {
  {isCandidatesLoading ? (
  <div className="py-12"><LoadingSpinner /></div>
  ) : (
- <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
- <table className="w-full text-left text-sm">
+ <div className="overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm">
+ <div className="overflow-x-auto" role="region" tabIndex={0} aria-label="Candidate pipeline. Scroll horizontally for more columns.">
+ <table className="w-full min-w-[40rem] text-left text-sm">
  <thead className="bg-surface text-gray-500">
  <tr>
  <th className="px-6 py-4 font-medium">Candidate Name</th>
@@ -191,6 +200,7 @@ export default function RecruitmentPage() {
  )}
  </tbody>
  </table>
+ </div>
  </div>
  )}
  </div>
@@ -298,8 +308,9 @@ export default function RecruitmentPage() {
                 {isCandidatesLoading ? (
                   <div className="py-12"><LoadingSpinner /></div>
                 ) : (
-                  <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden">
-                    <table className="w-full text-left text-sm">
+                  <div className="overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm">
+                    <div className="overflow-x-auto" role="region" tabIndex={0} aria-label="Candidate pipeline. Scroll horizontally for more columns.">
+                    <table className="w-full min-w-[40rem] text-left text-sm">
                       <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                         <tr>
                           <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Candidate Name</th>
@@ -324,6 +335,7 @@ export default function RecruitmentPage() {
                         )}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 )}
               </div>
@@ -344,7 +356,7 @@ export default function RecruitmentPage() {
  ))}
  </Select>
  </div>
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <Input name="location" label="Location" placeholder="e.g. Remote" required defaultValue={editingReq?.location} />
  <Input name="numberOfVacancies" label="Vacancies" type="number" min="1" required defaultValue={editingReq?.numberOfVacancies} />
  </div>
@@ -365,14 +377,14 @@ export default function RecruitmentPage() {
  <h3 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq?.positionTitle}</h3>
  <p className="text-sm font-medium text-gray-500 mt-1">{selectedReq?.department?.name} • {selectedReq?.location}</p>
  </div>
- {isAdminOrHR && (
+ {canEdit('recruitment') && (
  <Button variant="outline" onClick={() => { setEditingReq(selectedReq); setSelectedReq(null); setIsReqModalOpen(true); }} size="sm">
  Edit
  </Button>
  )}
  </div>
  
- <div className="grid grid-cols-2 gap-4 mt-6">
+ <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div className="bg-surface rounded-lg p-3">
  <span className="text-xs text-gray-500 uppercase font-semibold">Vacancies</span>
  <p className="text-lg font-bold text-navy-900 dark:text-white">{selectedReq?.numberOfVacancies}</p>

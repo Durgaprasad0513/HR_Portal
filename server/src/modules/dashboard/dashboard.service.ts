@@ -94,7 +94,17 @@ export class DashboardService {
     const presentToday = Math.max(0, activeEmployees - absentToday);
 
     // 2. Needs Attention Queue
-    const needsAttention = [];
+    const needsAttention: Array<{
+      id: string;
+      module: string;
+      title: string;
+      owner: string;
+      dueDate: string | null;
+      action: string;
+      priority: string;
+      link: string;
+      sortDate: Date;
+    }> = [];
 
     if (hasOrganizationAccess) {
       const pendingLeaves = await prisma.leave.findMany({
@@ -112,7 +122,51 @@ export class DashboardService {
           dueDate: leave.startDate.toISOString(),
           action: 'Approve or Reject',
           priority: 'high',
-          link: '/leaves/approvals'
+          link: '/leaves/approvals',
+          sortDate: leave.createdAt
+        });
+      }
+
+      const [pendingTravel, pendingExpenses] = await Promise.all([
+        prisma.travelRequest.findMany({
+          where: { approvalStatus: 'APPROVAL_PENDING' },
+          include: { employee: { select: { firstName: true, lastName: true } } },
+          orderBy: { createdAt: 'asc' },
+          take: 5
+        }),
+        prisma.officeExpense.findMany({
+          where: { status: 'PENDING' },
+          include: { submittedBy: { select: { firstName: true, lastName: true } } },
+          orderBy: { createdAt: 'asc' },
+          take: 5
+        })
+      ]);
+
+      for (const request of pendingTravel) {
+        needsAttention.push({
+          id: `travel-${request.id}`,
+          module: 'Travel',
+          title: `Travel to ${request.destination} for ${request.employee.firstName} ${request.employee.lastName}`,
+          owner: currentUser.userId,
+          dueDate: request.startDate.toISOString(),
+          action: 'Review travel request',
+          priority: 'high',
+          link: '/travel',
+          sortDate: request.createdAt
+        });
+      }
+
+      for (const expense of pendingExpenses) {
+        needsAttention.push({
+          id: `expense-${expense.id}`,
+          module: 'Office Expense',
+          title: `${expense.category.replace(/_/g, ' ')} expense from ${expense.submittedBy.firstName} ${expense.submittedBy.lastName}`,
+          owner: currentUser.userId,
+          dueDate: expense.expenseDate.toISOString(),
+          action: 'Review expense approval',
+          priority: 'high',
+          link: '/office-expenses',
+          sortDate: expense.createdAt
         });
       }
     }
@@ -135,11 +189,25 @@ export class DashboardService {
         dueDate: null,
         action: 'Complete review stage',
         priority: 'high',
-        link: '/performance'
+        link: '/performance',
+        sortDate: review.createdAt
       });
     }
 
-    needsAttention.splice(5);
+    needsAttention.sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime());
+    // Keep at least the oldest pending Travel and Office Expense request visible
+    // even when older leave/performance items would otherwise fill the whole queue.
+    const reservedApprovalItems = ['Travel', 'Office Expense']
+      .map((module) => needsAttention.find((item) => item.module === module))
+      .filter((item): item is (typeof needsAttention)[number] => Boolean(item));
+    const reservedIds = new Set(reservedApprovalItems.map((item) => item.id));
+    const visibleNeedsAttention = [
+      ...reservedApprovalItems,
+      ...needsAttention.filter((item) => !reservedIds.has(item.id))
+    ]
+      .slice(0, 5)
+      .sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime());
+    const needsAttentionItems = visibleNeedsAttention.map(({ sortDate: _sortDate, ...item }) => item);
 
     // 3. Module Overview Stats
     const moduleOverview = {
@@ -229,7 +297,7 @@ export class DashboardService {
         presentToday,
         absentToday,
       },
-      needsAttention,
+      needsAttention: needsAttentionItems,
       moduleOverview,
       invitedForInterview,
       selectedCandidates,

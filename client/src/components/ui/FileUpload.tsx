@@ -1,14 +1,17 @@
 import React, { useId, useState } from 'react';
 import apiClient from '@/api/client';
 import { UploadCloud, Loader2, CheckCircle2 } from 'lucide-react';
+import type { ModuleKey } from '@/types';
 
 interface FileUploadProps {
  name: string;
  label: string;
  required?: boolean;
+ module: ModuleKey;
+ action: 'add' | 'edit';
 }
 
-export function FileUpload({ name, label, required }: FileUploadProps) {
+export function FileUpload({ name, label, required, module, action }: FileUploadProps) {
  const [uploading, setUploading] = useState(false);
  const [fileUrls, setFileUrls] = useState<string[]>([]);
  const generatedId = useId();
@@ -21,6 +24,8 @@ export function FileUpload({ name, label, required }: FileUploadProps) {
 
  setUploading(true);
  const formData = new FormData();
+ formData.append('module', module);
+ formData.append('action', action);
  for (let i = 0; i < files.length; i++) {
  formData.append('files', files[i]);
  }

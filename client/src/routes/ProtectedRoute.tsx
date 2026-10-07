@@ -9,9 +9,10 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 interface ProtectedRouteProps {
  allowedRoles?: Role[];
  requiredModule?: ModuleKey;
+ requiredAction?: 'canAdd' | 'canEdit' | 'canDelete' | 'canApprove' | 'canExport';
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, requiredModule }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, requiredModule, requiredAction }) => {
  const { user, token, isLoading } = useAuth();
  const { permissions, isLoading: permissionsLoading } = usePermissions();
 
@@ -32,6 +33,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, re
  }
 
  if (requiredModule && permissions?.[requiredModule]?.canView !== true) {
+ return <Navigate to="/dashboard" replace />;
+ }
+
+ if (requiredModule && requiredAction && permissions?.[requiredModule]?.[requiredAction] !== true) {
  return <Navigate to="/dashboard" replace />;
  }
 

@@ -9,6 +9,7 @@ import { Check, X, Plus, X as CloseIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Select } from '@/components/ui/Select';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function LeaveRequestPage() {
  const queryClient = useQueryClient();
@@ -81,21 +82,15 @@ export default function LeaveRequestPage() {
 
  return (
  <div className="space-y-6">
- <div className="flex items-center justify-between mb-8">
- <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white">Leave Request</h1>
- <button
- onClick={() => setIsAddLeaveModalOpen(true)}
- className="bg-[#4b4e7c] hover:bg-[#3d3f66] text-white px-4 py-2 rounded-md flex items-center gap-2 font-medium transition-colors"
- >
- <Plus className="w-4 h-4" /> Add Leave
- </button>
- </div>
+ <PageHeader title="Leave Request" actions={<Button onClick={() => setIsAddLeaveModalOpen(true)} className="gap-2"><Plus className="h-4 w-4" />Add Leave</Button>} />
  
  {isLoading ? (
  <LoadingSpinner />
  ) : (
- <div className="w-full sm:w-48 py-2 px-3 h-[42px] rounded-[1.25rem] border border-slate-200 dark:border-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-[13px] focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all bg-white dark:bg-surface text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-600">
- <table className="w-full text-left border-collapse">
+ <div className="overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm">
+ <p className="border-b border-slate-border px-4 py-2 text-xs text-text-muted sm:hidden">Scroll horizontally to see all columns.</p>
+ <div className="overflow-x-auto" role="region" tabIndex={0} aria-label="Leave requests table. Scroll horizontally for more columns.">
+ <table className="w-full min-w-[64rem] border-collapse text-left">
  <thead>
  <tr className="bg-surface border-b border-slate-border text-xs font-bold text-gray-700 uppercase tracking-wider">
  <th className="py-4 px-6">EMPLOYEE ID</th>
@@ -174,6 +169,7 @@ export default function LeaveRequestPage() {
  </tbody>
  </table>
  </div>
+ </div>
  )}
 
  {isAddLeaveModalOpen && (
@@ -204,7 +200,7 @@ export default function LeaveRequestPage() {
  <option value="On Duty">On Duty</option> </Select>
  </div>
 
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div className="space-y-2">
  <label className="block text-sm font-medium text-gray-700">Leave From Date</label>
  <DatePicker type="date" 
