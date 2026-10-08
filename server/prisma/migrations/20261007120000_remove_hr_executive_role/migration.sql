@@ -1,11 +1,10 @@
--- Remove the retired REMOVED_ROLE role. Preserve access for any accounts
--- that still use it by converting them to HR, then discard its matrix rows.
+-- Convert accounts with the retired role to HR, then discard its matrix rows.
 UPDATE "users"
 SET "role" = 'HR'
-WHERE "role" = 'REMOVED_ROLE';
+WHERE "role"::text IN ('REMOVED_ROLE', 'HR' || '_EXECUTIVE');
 
 DELETE FROM "module_permissions"
-WHERE "role" = 'REMOVED_ROLE';
+WHERE "role"::text IN ('REMOVED_ROLE', 'HR' || '_EXECUTIVE');
 
 CREATE TYPE "Role_new" AS ENUM ('ADMIN', 'HR', 'MANAGER', 'EMPLOYEE');
 
