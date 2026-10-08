@@ -427,7 +427,7 @@ export default function RecruitmentPage() {
  </form>
  </Modal>
 
- <Modal isOpen={!!selectedReq} onClose={() => setSelectedReq(null)} title="Requisition Details">
+ <Modal isOpen={!!selectedReq && !routeReqId} onClose={() => setSelectedReq(null)} title="Requisition Details">
  <div className="space-y-4 pb-4">
  <div className="flex justify-between items-start">
  <div>
