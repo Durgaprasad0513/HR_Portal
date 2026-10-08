@@ -629,7 +629,9 @@ export default function DashboardPage() {
                 <div className="flex-1 flex flex-col gap-2">
                   {trackedRequisitions.map((requisition: any) => {
                     const completedLevels = getCompletedRecruitmentLevels(requisition.currentStage);
-                    const progress = completedLevels * 25;
+                    const openingCount = Math.max(0, Number(requisition.numberOfVacancies) || 0);
+                    const filledOpenings = Math.min(openingCount, Math.max(0, Number(requisition.selectedCount) || 0));
+                    const progress = openingCount ? Math.round((filledOpenings / openingCount) * 100) : 0;
                     const isExpanded = expandedRequisitionId === requisition.id;
                     const stageDate = requisition.currentStageUpdatedAt;
                     const stageStart = stageDate ? new Date(stageDate) : null;
@@ -665,7 +667,7 @@ export default function DashboardPage() {
                             ))}
                           </span>
                           <span>
-                            <span className="flex justify-between text-[11px] font-semibold text-text-muted mb-1"><span>Work done</span><span>{progress}%</span></span>
+                            <span className="flex justify-between text-[11px] font-semibold text-text-muted mb-1"><span>Openings filled</span><span>{progress}%</span></span>
                             <span className="block h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                               <span className="block h-full rounded-full bg-blue-500" style={{ width: `${progress}%` }} />
                             </span>
