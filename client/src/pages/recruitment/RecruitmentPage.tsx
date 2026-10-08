@@ -193,9 +193,9 @@ export default function RecruitmentPage() {
            const complete = index < candidateStageIndex;
            const current = index === candidateStageIndex;
            return (
-             <li key={stage.value} className={`rounded-xl border p-4 ${current ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30' : complete ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30' : 'border-slate-border bg-surface'}`}>
+             <li key={stage.value} className={`rounded-xl border p-4 ${current ? 'border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30' : complete ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30' : 'border-slate-border bg-surface'}`}>
                <div className="flex items-center gap-2">
-                 <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${current ? 'bg-primary-600 text-white' : complete ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'}`}>
+                 <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${current ? 'bg-orange-500 text-white' : complete ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'}`}>
                    {complete ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
                  </span>
                  <span className="font-semibold text-navy-900 dark:text-white">{stage.label}</span>
