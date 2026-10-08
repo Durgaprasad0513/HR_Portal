@@ -182,6 +182,7 @@ export default function InterviewCalendarPage() {
             { value: 'ALL', label: 'All' },
             { value: 'TELEPHONIC', label: 'Telephonic' },
             { value: 'HR_INTERVIEW', label: 'HR Interview' },
+            { value: 'TECHNICAL', label: 'Technical Interview' },
             { value: 'MANAGEMENT', label: 'Management Interview' },
             { value: 'OFFER', label: 'Offer' },
           ].map((stage) => (
