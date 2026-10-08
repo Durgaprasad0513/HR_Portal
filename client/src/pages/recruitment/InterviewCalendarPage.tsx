@@ -17,6 +17,14 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PaginationControls } from '@/components/ui/PaginationControls';
 
+const interviewRoundColors: Record<string, string> = {
+  TELEPHONIC: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
+  HR_INTERVIEW: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  TECHNICAL: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+  MANAGEMENT: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
+  OFFER: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+};
+
 export default function InterviewCalendarPage() {
   const { canEdit, canExport } = usePermissions();
   const navigate = useNavigate();
@@ -247,8 +255,8 @@ export default function InterviewCalendarPage() {
                         {cand.interviewer ? `${cand.interviewer.firstName} ${cand.interviewer.lastName}` : 'Unassigned'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                          {cand.interviewRound ? cand.interviewRound.replace('_', ' ') : 'HR INTERVIEW'}
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${interviewRoundColors[cand.interviewRound || 'HR_INTERVIEW'] || interviewRoundColors.HR_INTERVIEW}`}>
+                          {(cand.interviewRound || 'HR_INTERVIEW').replaceAll('_', ' ')}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -333,8 +341,8 @@ export default function InterviewCalendarPage() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <button type="button" className="font-bold text-primary-700 hover:underline dark:text-primary-300" onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`)}>{cand.candidateName}</button>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
-                            {cand.interviewRound ? cand.interviewRound.replace('_', ' ') : 'HR INTERVIEW'}
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${interviewRoundColors[cand.interviewRound || 'HR_INTERVIEW'] || interviewRoundColors.HR_INTERVIEW}`}>
+                            {(cand.interviewRound || 'HR_INTERVIEW').replaceAll('_', ' ')}
                           </span>
                         </div>
                         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{cand.requisition?.positionTitle || 'Unknown Role'}</p>
