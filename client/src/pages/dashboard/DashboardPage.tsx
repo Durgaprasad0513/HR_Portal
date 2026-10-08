@@ -61,16 +61,27 @@ const getCurrentRequisitionProgress = (requisition: any) => {
         : candidate.selectionStatus === 'SELECTED'
           ? 'SELECTED'
           : interviewStage;
-      return { stage, updatedAt: candidate.updatedAt };
+      const isOpeningFilled = candidate.selectionStatus === 'SELECTED'
+        || ['RELEASED', 'OFFER_ACCEPTED'].includes(candidate.offerStatus || '');
+      return { stage, updatedAt: candidate.updatedAt, isOpeningFilled };
     })
     .filter((candidate: any) => RECRUITMENT_STAGE_ORDER.includes(candidate.stage));
 
-  const currentStage = candidateProgress.length
-    ? candidateProgress.reduce((latest: any, candidate: any) =>
+  const vacancyCount = Math.max(0, Number(requisition.numberOfVacancies) || 0);
+  const filledOpeningCount = Math.min(
+    vacancyCount,
+    candidateProgress.filter((candidate: any) => candidate.isOpeningFilled).length
+  );
+  const queueCandidates = vacancyCount > filledOpeningCount
+    ? candidateProgress.filter((candidate: any) => !candidate.isOpeningFilled)
+    : [];
+  const stageCandidates = queueCandidates.length ? queueCandidates : candidateProgress;
+  const currentStage = stageCandidates.length
+    ? stageCandidates.reduce((latest: any, candidate: any) =>
         RECRUITMENT_STAGE_ORDER.indexOf(candidate.stage) > RECRUITMENT_STAGE_ORDER.indexOf(latest.stage) ? candidate : latest
       ).stage
     : normalizeRecruitmentStage(requisition.status);
-  const currentStageCandidates = candidateProgress.filter((candidate: any) => candidate.stage === currentStage);
+  const currentStageCandidates = stageCandidates.filter((candidate: any) => candidate.stage === currentStage);
   const latestCandidateUpdate = currentStageCandidates
     .map((candidate: any) => candidate.updatedAt)
     .filter(Boolean)
