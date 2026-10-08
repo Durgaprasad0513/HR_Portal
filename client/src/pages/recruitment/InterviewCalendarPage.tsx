@@ -271,9 +271,9 @@ export default function InterviewCalendarPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <select
+                        <Select
                           aria-label={`Status for ${cand.candidateName}`}
-                          className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1.5 outline-none cursor-pointer"
+                          className="h-10 w-full min-w-[9rem] rounded-lg px-3 text-sm font-medium"
                           value={cand.selectionStatus || 'IN_PROGRESS'}
                           onChange={(event) => handleSetStatus(cand.id, event.target.value)}
                           disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}
@@ -282,12 +282,13 @@ export default function InterviewCalendarPage() {
                           <option value="SELECTION_ON_HOLD">On hold</option>
                           <option value="SELECTED">Selected</option>
                           <option value="SELECTION_REJECTED">Rejected</option>
-                        </select>
+                        </Select>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                            <select 
-                            className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 outline-none cursor-pointer"
+                            <Select
+                            aria-label={`Interview round for ${cand.candidateName}`}
+                            className="h-10 w-full min-w-[9rem] rounded-lg px-3 text-sm font-medium"
                             value={normalizeInterviewRound(cand.interviewRound)}
                             onChange={(e) => handleSetPhase(cand.id, e.target.value)}
                             disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
@@ -297,7 +298,7 @@ export default function InterviewCalendarPage() {
                             <option value="TECHNICAL">Technical</option>
                             <option value="MANAGEMENT">Management</option>
                             <option value="OFFER">Offer</option>
-                          </select>
+                          </Select>
                           {cand.interviewFeedback === 'Finished' ? (
                             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" /> Finished
@@ -380,8 +381,9 @@ export default function InterviewCalendarPage() {
                                 <XCircle className="w-4 h-4" />
                               </Button>
                             )}
-                            <select 
-                          className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
+                            <Select
+                          aria-label={`Interview round for ${cand.candidateName}`}
+                          className="h-10 w-full min-w-[8rem] rounded-lg px-3 text-sm font-medium"
                           value={normalizeInterviewRound(cand.interviewRound)}
                           onChange={(e) => handleSetPhase(cand.id, e.target.value)}
                           disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
@@ -391,10 +393,10 @@ export default function InterviewCalendarPage() {
                           <option value="TECHNICAL">Technical</option>
                           <option value="MANAGEMENT">Management</option>
                           <option value="OFFER">Offer</option>
-                        </select>
-                        <select
+                        </Select>
+                        <Select
                           aria-label={`Status for ${cand.candidateName}`}
-                          className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
+                          className="h-10 w-full min-w-[8rem] rounded-lg px-3 text-sm font-medium"
                           value={cand.selectionStatus || 'IN_PROGRESS'}
                           onChange={(event) => handleSetStatus(cand.id, event.target.value)}
                           disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}
@@ -403,7 +405,7 @@ export default function InterviewCalendarPage() {
                           <option value="SELECTION_ON_HOLD">On hold</option>
                           <option value="SELECTED">Selected</option>
                           <option value="SELECTION_REJECTED">Rejected</option>
-                        </select>
+                        </Select>
                       </div>
                     </div>
                   ))
