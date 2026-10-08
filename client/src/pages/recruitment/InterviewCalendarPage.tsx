@@ -141,7 +141,7 @@ export default function InterviewCalendarPage() {
       
       <PageHeader
         title={selectedRequisition?.positionTitle || 'Interview Calendar'}
-        description={reqId ? `Scheduled interviews for this opening${selectedRequisition?.department?.name ? ` · ${selectedRequisition.department.name}` : ''}. Select a candidate to view their stage tracker.` : 'Coordinate panel interviews, technical rounds, video meeting links, and track scoring outcomes all in one place.'}
+        description={reqId ? `Scheduled interviews for this opening${selectedRequisition?.department?.name ? ` · ${selectedRequisition.department.name}` : ''}. Select a candidate to view their stage tracker.` : 'View and manage candidate interviews.'}
         actions={
           <div className="flex flex-wrap gap-2">
             {reqId && <Button variant="outline" onClick={() => navigate('/recruitment?tab=vacancies')} className="gap-2"><CalendarDays className="h-4 w-4" /> All openings</Button>}
