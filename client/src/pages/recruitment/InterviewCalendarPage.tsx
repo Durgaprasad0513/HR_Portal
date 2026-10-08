@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '@/api/recruitment';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -19,6 +19,7 @@ import { PaginationControls } from '@/components/ui/PaginationControls';
 
 export default function InterviewCalendarPage() {
   const { canEdit, canExport } = usePermissions();
+  const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -30,6 +31,12 @@ export default function InterviewCalendarPage() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const reqId = searchParams.get('reqId');
+  const { data: requisitionsData } = useQuery({
+    queryKey: ['requisitions'],
+    queryFn: recruitmentApi.getRequisitions,
+    enabled: !!reqId,
+  });
+  const selectedRequisition = requisitionsData?.data?.find((req: any) => req.id === reqId);
 
   const updateCandidateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string, payload: any }) => recruitmentApi.interviewCandidate(id, payload),
@@ -85,11 +92,12 @@ export default function InterviewCalendarPage() {
   const filteredInterviews = useMemo(() => {
     if (!interviewsData) return [];
     return interviewsData.filter((cand: any) => {
+      const hasScheduledInterview = Boolean(cand.interviewDate);
       const matchesHistory = showHistory
         ? cand.selectionStatus === 'SELECTION_REJECTED'
         : cand.selectionStatus !== 'SELECTION_REJECTED';
       const matchesStage = stageFilter === 'ALL' || cand.interviewRound === stageFilter;
-      return matchesHistory && matchesStage;
+      return hasScheduledInterview && matchesHistory && matchesStage;
     });
   }, [interviewsData, showHistory, stageFilter]);
   const displayedInterviews = filteredInterviews.slice((page - 1) * pageSize, page * pageSize);
@@ -124,10 +132,11 @@ export default function InterviewCalendarPage() {
     <div className="space-y-6">
       
       <PageHeader
-        title="Interview Calendar"
-        description="Coordinate panel interviews, technical rounds, video meeting links, and track scoring outcomes all in one place."
+        title={selectedRequisition?.positionTitle || 'Interview Calendar'}
+        description={reqId ? `Scheduled interviews for this opening${selectedRequisition?.department?.name ? ` · ${selectedRequisition.department.name}` : ''}. Select a candidate to view their stage tracker.` : 'Coordinate panel interviews, technical rounds, video meeting links, and track scoring outcomes all in one place.'}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            {reqId && <Button variant="outline" onClick={() => navigate('/recruitment?tab=vacancies')} className="gap-2"><CalendarDays className="h-4 w-4" /> All openings</Button>}
             <Button variant="outline" onClick={() => setShowHistory(!showHistory)} className={`gap-2 ${showHistory ? 'bg-slate-100 dark:bg-slate-800' : ''}`}>
               <History className="w-4 h-4" /> {showHistory ? 'Hide History' : 'Show History'}
             </Button>
@@ -206,7 +215,9 @@ export default function InterviewCalendarPage() {
                   displayedInterviews.map((cand: any) => (
                     <tr key={cand.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-slate-900 dark:text-white">{cand.candidateName}</p>
+                        <button type="button" className="text-left font-semibold text-primary-700 hover:underline dark:text-primary-300" onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`)}>
+                          {cand.candidateName}
+                        </button>
                         <p className="text-xs text-slate-500">{cand.requisition?.positionTitle || 'Unknown Role'}</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
@@ -301,10 +312,10 @@ export default function InterviewCalendarPage() {
               <div className="space-y-4">
                 {filteredInterviews && filteredInterviews.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).length > 0 ? (
                   filteredInterviews.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).map((cand: any) => (
-                    <div key={cand.id} className="flex items-start justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow">
+                    <div key={cand.id} className="flex items-start justify-between rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-slate-900 dark:text-white">{cand.candidateName}</span>
+                          <button type="button" className="font-bold text-primary-700 hover:underline dark:text-primary-300" onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`)}>{cand.candidateName}</button>
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
                             {cand.interviewRound ? cand.interviewRound.replace('_', ' ') : 'HR INTERVIEW'}
                           </span>
