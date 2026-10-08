@@ -238,7 +238,7 @@ export default function InterviewCalendarPage() {
                       tabIndex={0}
                       aria-label={`Open stage tracker for ${cand.candidateName}`}
                       onClick={(event) => {
-                        if ((event.target as HTMLElement).closest('button, select, a, input')) return;
+                        if ((event.target as HTMLElement).closest('button, select, a, input, [data-select-control]')) return;
                         navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`);
                       }}
                       onKeyDown={(event) => {
