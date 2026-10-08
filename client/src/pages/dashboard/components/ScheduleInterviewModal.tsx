@@ -17,6 +17,7 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
   React.useEffect(() => { if (isOpen && initialRequisitionId) setRequisitionId(initialRequisitionId); }, [isOpen, initialRequisitionId]);
   const queryClient = useQueryClient();
   const [candidateName, setCandidateName] = useState('');
+  const [candidateEmail, setCandidateEmail] = useState('');
   const [requisitionId, setRequisitionId] = useState('');
   const [interviewDate, setInterviewDate] = useState('');
   const [interviewerId, setInterviewerId] = useState('');
@@ -43,6 +44,7 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
       queryClient.invalidateQueries({ queryKey: ['interviews'] });
       onClose();
       setCandidateName('');
+      setCandidateEmail('');
       setRequisitionId('');
       setInterviewDate('');
       setInterviewerId('');
@@ -57,6 +59,7 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
     
     mutation.mutate({
       candidateName,
+      email: candidateEmail || undefined,
       requisitionId,
       interviewDate: new Date(interviewDate).toISOString(),
       interviewerId: interviewerId || undefined,
@@ -75,6 +78,13 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
           onChange={(e) => setCandidateName(e.target.value)}
           placeholder="Enter candidate name"
           required
+        />
+        <Input
+          label="Candidate Email"
+          type="email"
+          value={candidateEmail}
+          onChange={(e) => setCandidateEmail(e.target.value)}
+          placeholder="Enter candidate email"
         />
         <Select
           label="Position (Requisition)"
