@@ -93,6 +93,9 @@ export class RecruitmentService {
         department: true,
         raisedBy: { select: { id: true, firstName: true, lastName: true } },
         candidates: { select: {
+          id: true,
+          candidateName: true,
+          email: true,
           selectionStatus: true,
           interviewRound: true,
           interviewDate: true,
