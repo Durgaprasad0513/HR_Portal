@@ -125,25 +125,6 @@ export default function RecruitmentPage() {
  document.body.removeChild(link);
  };
 
- const getStatusLabel = (status: string) => {
- if (status === 'JOINED_REJECTED') return 'Completed';
- return status?.replace('_', ' ') || 'Unknown';
- };
-
- const getStatusClasses = (status: string) => {
- if (status === 'REQUIREMENT') return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400';
- if (status === 'SOURCING') return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
- if (status === 'SCREENING') return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
- if (status === 'TELEPHONIC') return 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400';
- if (status === 'HR_INTERVIEW') return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
- if (status === 'TECHNICAL') return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-400';
- if (status === 'MANAGEMENT') return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400';
- if (status === 'SELECTED') return 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400';
- if (status === 'OFFER') return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
- if (status === 'JOINED_REJECTED') return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400';
- return 'bg-gray-100 text-gray-800 bg-surface dark:text-gray-300';
- };
-
  const handleSubmitReq = (e: React.FormEvent<HTMLFormElement>) => {
  e.preventDefault();
  const formData = new FormData(e.currentTarget);
@@ -310,9 +291,6 @@ export default function RecruitmentPage() {
  </dl>
 
  <div className="flex items-center justify-between gap-3 border-t border-slate-border pt-4 dark:border-slate-border md:justify-end md:border-l md:border-t-0 md:py-1 md:pl-6">
- <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClasses(req.status)}`}>
- {getStatusLabel(req.status)}
- </span>
  {canEdit('recruitment') && (
  <Button
  type="button"
