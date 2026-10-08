@@ -106,7 +106,11 @@ export class RecruitmentService {
     return requisitions.map(({ candidates, ...requisition }) => ({
       ...requisition,
       candidates,
-      selectedCount: candidates.filter(candidate => candidate.selectionStatus === 'SELECTED').length
+      selectedCount: candidates.filter(candidate =>
+        candidate.selectionStatus === 'SELECTED'
+        || candidate.offerStatus === 'RELEASED'
+        || candidate.offerStatus === 'OFFER_ACCEPTED'
+      ).length
     }));
   }
 
