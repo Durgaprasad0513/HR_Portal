@@ -35,10 +35,10 @@ const RECRUITMENT_STAGE_ORDER = [
 ];
 
 const RECRUITMENT_LEVELS = [
-  { label: 'L1', name: 'Telephonic', completeAt: 'HR_INTERVIEW' },
-  { label: 'L2', name: 'HR', completeAt: 'TECHNICAL' },
-  { label: 'L3', name: 'Technical', completeAt: 'MANAGEMENT' },
-  { label: 'L4', name: 'Management', completeAt: 'SELECTED' }
+  { label: 'L1', name: 'Telephonic', stage: 'TELEPHONIC', completeAt: 'HR_INTERVIEW' },
+  { label: 'L2', name: 'HR Interview', stage: 'HR_INTERVIEW', completeAt: 'TECHNICAL' },
+  { label: 'L3', name: 'Technical Interview', stage: 'TECHNICAL', completeAt: 'MANAGEMENT' },
+  { label: 'L4', name: 'Management Interview', stage: 'MANAGEMENT', completeAt: 'SELECTED' }
 ];
 
 const normalizeRecruitmentStage = (value?: string | null) => {
@@ -249,8 +249,19 @@ export default function DashboardPage() {
    .filter((requisition: any) => requisition.currentStage !== 'JOINED_REJECTED' && requisition.status !== 'CLOSED');
  const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
  const openVacanciesCount = reqResponse?.data ? totalOpenVacancies : headline.openVacancies || 0;
- const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
-   activeRequisitions.filter((requisition: any) => getCompletedRecruitmentLevels(requisition.currentStage) > levelIndex).length
+ const currentStageCandidateCounts = RECRUITMENT_LEVELS.map((level) =>
+   activeRequisitions.reduce((count: number, requisition: any) => {
+     const candidates = (requisition.candidates || []).filter((candidate: any) => {
+       if (candidate.selectionStatus === 'SELECTION_REJECTED') return false;
+       const stage = candidate.offerStatus && candidate.offerStatus !== 'NOT_RELEASED'
+         ? 'OFFER'
+         : candidate.selectionStatus === 'SELECTED'
+           ? 'SELECTED'
+           : normalizeRecruitmentStage(candidate.interviewRound);
+       return stage === level.stage;
+     });
+     return count + candidates.length;
+   }, 0)
  );
  const overallRecruitmentProgress = activeRequisitions.length
    ? Math.round(activeRequisitions.reduce((total: number, requisition: any) => total + getCompletedRecruitmentLevels(requisition.currentStage) * 25, 0) / activeRequisitions.length)
@@ -621,9 +632,9 @@ export default function DashboardPage() {
                   </div>
                   {RECRUITMENT_LEVELS.map((level, index) => (
                     <div key={level.label} className="rounded-lg bg-tint p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">{level.label} completed</p>
-                      <p className="mt-1 text-xl font-bold text-text-heading">{levelCompletionCounts[index]}</p>
-                      <p className="text-[11px] text-text-muted">{level.name}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">{level.name} candidates</p>
+                      <p className="mt-1 text-xl font-bold text-text-heading">{currentStageCandidateCounts[index]}</p>
+                      <p className="text-[11px] text-text-muted">Currently in stage</p>
                     </div>
                   ))}
                   <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-950/30">
