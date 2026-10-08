@@ -230,20 +230,6 @@ export default function DashboardPage() {
  const activeRequisitions = reqData
    .map(getCurrentRequisitionProgress)
    .filter((requisition: any) => requisition.currentStage !== 'JOINED_REJECTED');
- const trackedCandidates = activeRequisitions.flatMap((requisition: any) =>
-   (requisition.candidates || [])
-     .filter((candidate: any) => candidate.selectionStatus !== 'SELECTION_REJECTED')
-     .map((candidate: any) => {
-       const progress = getCurrentRequisitionProgress({ ...requisition, candidates: [candidate] });
-       return {
-         ...candidate,
-         requisitionId: requisition.id,
-         positionTitle: requisition.positionTitle,
-         currentStage: progress.currentStage,
-         currentStageUpdatedAt: progress.currentStageUpdatedAt,
-       };
-     })
- ).sort((first: any, second: any) => new Date(second.currentStageUpdatedAt).getTime() - new Date(first.currentStageUpdatedAt).getTime()).slice(0, 8);
  const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
  const openVacanciesCount = reqResponse?.data ? totalOpenVacancies : headline.openVacancies || 0;
  const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
@@ -688,37 +674,6 @@ export default function DashboardPage() {
                       </div>
                     );
                   })}
-                  <div className="mt-3 border-t border-slate-border pt-4">
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-text-heading">Candidate-wise progress</h4>
-                      <span className="text-[11px] text-text-muted">Latest {trackedCandidates.length}</span>
-                    </div>
-                    {trackedCandidates.length ? (
-                      <div className="flex flex-col gap-2">
-                        {trackedCandidates.map((candidate: any) => {
-                          const progress = getCompletedRecruitmentLevels(candidate.currentStage) * 25;
-                          return (
-                            <button
-                              key={candidate.id}
-                              type="button"
-                              onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(candidate.requisitionId)}&candidateId=${encodeURIComponent(candidate.id)}`)}
-                              className="grid w-full grid-cols-1 gap-2 rounded-lg border border-slate-border p-3 text-left transition-colors hover:bg-tint sm:grid-cols-[minmax(0,1fr)_minmax(7rem,0.8fr)_auto] sm:items-center"
-                            >
-                              <span className="min-w-0">
-                                <span className="block truncate text-sm font-semibold text-text-heading">{candidate.candidateName}</span>
-                                <span className="block truncate text-xs text-text-muted">{candidate.positionTitle}</span>
-                              </span>
-                              <span>
-                                <span className="mb-1 flex justify-between gap-2 text-[10px] text-text-muted"><span>Rounds complete</span><span>{progress}%</span></span>
-                                <span className="block h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"><span className="block h-full rounded-full bg-blue-500" style={{ width: `${progress}%` }} /></span>
-                              </span>
-                              <span className={`justify-self-start rounded-full px-2.5 py-1 text-[10px] font-semibold ${getStatusClasses(candidate.currentStage)}`}>{getStatusLabel(candidate.currentStage)}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : <p className="rounded-lg bg-tint px-3 py-4 text-center text-xs text-text-muted">No active candidates in the current openings.</p>}
-                  </div>
                   {activeRequisitions.length === 0 && (
                     <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
                       <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
