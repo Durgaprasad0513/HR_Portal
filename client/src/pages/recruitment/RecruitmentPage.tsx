@@ -21,6 +21,7 @@ export default function RecruitmentPage() {
  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
  const [selectedReq, setSelectedReq] = useState<any>(null);
  const [editingReq, setEditingReq] = useState<any>(null);
+ const [showHistory, setShowHistory] = useState(false);
  
  const { data: deptData } = useQuery({
  queryKey: ['departments'],
@@ -40,6 +41,12 @@ export default function RecruitmentPage() {
 
  
  const data = reqResponse?.data || [];
+ const historyRequisitions = data.filter((req: any) => ['CLOSED', 'JOINED_REJECTED'].includes(req.status));
+ const visibleRequisitions = data.filter((req: any) =>
+   showHistory
+     ? ['CLOSED', 'JOINED_REJECTED'].includes(req.status)
+     : !['CLOSED', 'JOINED_REJECTED'].includes(req.status)
+ );
  const routeReqId = searchParams.get('reqId');
  const routeCandidateId = searchParams.get('candidateId');
  const routeCandidate = candidatesData.find((candidate: any) => candidate.id === routeCandidateId);
@@ -192,14 +199,22 @@ export default function RecruitmentPage() {
  <div className="py-12"><LoadingSpinner /></div>
  ) : (
  <section aria-label="Job requisitions" className="space-y-3">
- <p className="border-b border-slate-border px-4 py-2 text-xs text-gray-500 dark:border-slate-border dark:text-gray-400 sm:hidden">
- Tap a requisition to view its scheduled interviews.
- </p>
- {data.length === 0 ? (
- <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-slate-border bg-surface px-6 text-center text-gray-600 dark:text-gray-400">
- No requisitions found.
+ <div className="flex w-fit max-w-full items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Vacancy status">
+   <button type="button" role="tab" aria-selected={!showHistory} onClick={() => setShowHistory(false)} className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${!showHistory ? 'bg-white text-primary-700 shadow-sm dark:bg-slate-700 dark:text-primary-300' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100'}`}>
+     Open vacancies ({data.length - historyRequisitions.length})
+   </button>
+   <button type="button" role="tab" aria-selected={showHistory} onClick={() => setShowHistory(true)} className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${showHistory ? 'bg-white text-primary-700 shadow-sm dark:bg-slate-700 dark:text-primary-300' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100'}`}>
+     History ({historyRequisitions.length})
+   </button>
  </div>
- ) : data.map((req: any) => (
+ <p className="border-b border-slate-border px-4 py-2 text-xs text-gray-500 dark:border-slate-border dark:text-gray-400 sm:hidden">
+ Tap an opening to view its scheduled interviews.
+ </p>
+ {visibleRequisitions.length === 0 ? (
+ <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-slate-border bg-surface px-6 text-center text-gray-600 dark:text-gray-400">
+ {showHistory ? 'No closed vacancies in history.' : 'No open vacancies found.'}
+ </div>
+ ) : visibleRequisitions.map((req: any) => (
  <article
  key={req.id}
  role="button"

@@ -235,7 +235,7 @@ export default function DashboardPage() {
  const joinExitTrend = attritionData?.joinExitTrend || [];
  const activeRequisitions = reqData
    .map(getCurrentRequisitionProgress)
-   .filter((requisition: any) => requisition.currentStage !== 'JOINED_REJECTED');
+   .filter((requisition: any) => requisition.currentStage !== 'JOINED_REJECTED' && requisition.status !== 'CLOSED');
  const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
  const openVacanciesCount = reqResponse?.data ? totalOpenVacancies : headline.openVacancies || 0;
  const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
