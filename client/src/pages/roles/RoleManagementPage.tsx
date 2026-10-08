@@ -15,12 +15,11 @@ import { Select } from '@/components/ui/Select';
 import { usePermissions } from '@/hooks/usePermissions';
 const hasLockedPermissions = (role: string) => role === 'ADMIN' || role === 'HR';
 
-const ROLES = ['ADMIN', 'HR', 'MANAGER', 'REMOVED_ROLE', 'EMPLOYEE'];
+const ROLES = ['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'];
 const ROLE_LABELS: Record<string, string> = {
  ADMIN: 'Admin',
  HR: 'HR',
  MANAGER: 'Manager',
- REMOVED_ROLE: 'REMOVED_ROLE',
   EMPLOYEE: 'Employee',
 };
 const PERMISSION_FLAGS = [
