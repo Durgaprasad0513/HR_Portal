@@ -110,6 +110,11 @@ export class RecruitmentService {
         candidate.selectionStatus === 'SELECTED'
         || candidate.offerStatus === 'RELEASED'
         || candidate.offerStatus === 'OFFER_ACCEPTED'
+      ).length,
+      offerCount: candidates.filter(candidate =>
+        candidate.interviewRound?.trim().toUpperCase().replace(/[\s-]+/g, '_') === 'OFFER'
+        || candidate.offerStatus === 'RELEASED'
+        || candidate.offerStatus === 'OFFER_ACCEPTED'
       ).length
     }));
   }

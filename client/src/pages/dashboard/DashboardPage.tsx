@@ -650,7 +650,7 @@ export default function DashboardPage() {
                         >
                           <span className="min-w-0">
                             <span className="block text-sm font-semibold text-text-heading truncate">{requisition.positionTitle}</span>
-                            <span className="block text-xs text-text-muted truncate">{requisition.department?.name || requisition.location || 'Department not specified'} · {requisition.selectedCount || 0} selected</span>
+                            <span className="block text-xs text-text-muted truncate">{requisition.department?.name || requisition.location || 'Department not specified'} · {requisition.offerCount || 0} offer{requisition.offerCount === 1 ? '' : 's'}</span>
                           </span>
                           <span className="text-sm font-semibold text-text-heading md:text-center">{requisition.numberOfVacancies || 0}</span>
                           <span className="flex items-center gap-2" aria-label={`${completedLevels} of 4 interview levels completed`}>
