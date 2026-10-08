@@ -110,10 +110,11 @@ export default function InterviewCalendarPage() {
   const filteredInterviews = useMemo(() => {
     if (!interviewsData) return [];
     return interviewsData.filter((cand: any) => {
-      const hasScheduledInterview = Boolean(cand.interviewDate);
-      const matchesHistory = showHistory
-        ? cand.selectionStatus === 'SELECTION_REJECTED'
-        : cand.selectionStatus !== 'SELECTION_REJECTED';
+      const isHistoryCandidate = cand.selectionStatus === 'SELECTION_REJECTED'
+        || normalizeInterviewRound(cand.interviewRound) === 'OFFER'
+        || ['RELEASED', 'OFFER_ACCEPTED', 'OFFER_DECLINED'].includes(cand.offerStatus);
+      const hasScheduledInterview = Boolean(cand.interviewDate) || isHistoryCandidate;
+      const matchesHistory = showHistory ? isHistoryCandidate : !isHistoryCandidate;
       const matchesStage = stageFilter === 'ALL' || normalizeInterviewRound(cand.interviewRound) === stageFilter;
       return hasScheduledInterview && matchesHistory && matchesStage;
     });

@@ -153,7 +153,11 @@ export class RecruitmentService {
     const scope = getModuleScope(currentUser.role as Role, 'recruitment');
     
     const whereClause: any = {
-      interviewDate: { not: null }
+      OR: [
+        { interviewDate: { not: null } },
+        { interviewRound: 'OFFER' },
+        { offerStatus: { in: ['RELEASED', 'OFFER_ACCEPTED', 'OFFER_DECLINED'] } },
+      ]
     };
 
     if (scope === 'SELF') {
