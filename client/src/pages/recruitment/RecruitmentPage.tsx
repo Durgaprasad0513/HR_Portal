@@ -14,6 +14,7 @@ import { Select } from '@/components/ui/Select';
 import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, Search, PhoneCall, UserCheck, Award, TrendingUp, Calendar, Clock, MapPin, CheckCircle2, ArrowRight, Pencil } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 import { hasAdminAccess } from '@/utils/roles';
+import { PaginationControls } from '@/components/ui/PaginationControls';
 
 export default function RecruitmentPage() {
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ export default function RecruitmentPage() {
  const [selectedBoardReqId, setSelectedBoardReqId] = useState<string | null>(null);
  const [trackerMode, setTrackerMode] = useState<'kanban' | 'table'>('kanban');
  const [editingReq, setEditingReq] = useState<any>(null);
+ const [candidatePage, setCandidatePage] = useState(1);
+ const candidatePageSize = 10;
  
  const { data: deptData } = useQuery({
  queryKey: ['departments'],
@@ -45,6 +48,8 @@ export default function RecruitmentPage() {
  enabled: !!selectedReq,
  });
  const candidatesData = candidatesResponse?.data || [];
+ const displayedCandidates = candidatesData.slice((candidatePage - 1) * candidatePageSize, candidatePage * candidatePageSize);
+ React.useEffect(() => setCandidatePage(1), [selectedReq?.id, selectedBoardReqId]);
 
  
  const data = reqResponse?.data || [];
@@ -188,7 +193,7 @@ export default function RecruitmentPage() {
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-border">
- {candidatesData?.map((c: any) => (
+ {displayedCandidates.map((c: any) => (
  <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
  <td className="px-6 py-4 font-medium text-navy-900 dark:text-white">{c.candidateName}</td>
  <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{c.email}</td>
@@ -201,6 +206,7 @@ export default function RecruitmentPage() {
  </tbody>
  </table>
  </div>
+ <PaginationControls page={candidatePage} pageSize={candidatePageSize} total={candidatesData.length} onPageChange={setCandidatePage} itemLabel="candidates" />
  </div>
  )}
  </div>
@@ -319,7 +325,7 @@ export default function RecruitmentPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-border">
-                        {candidatesData?.map((c: any) => (
+                        {displayedCandidates.map((c: any) => (
                           <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                             <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{c.candidateName}</td>
                             <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{c.email}</td>
@@ -336,6 +342,7 @@ export default function RecruitmentPage() {
                       </tbody>
                     </table>
                     </div>
+                    <PaginationControls page={candidatePage} pageSize={candidatePageSize} total={candidatesData.length} onPageChange={setCandidatePage} itemLabel="candidates" />
                   </div>
                 )}
               </div>

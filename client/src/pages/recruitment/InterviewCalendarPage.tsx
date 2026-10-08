@@ -15,6 +15,7 @@ import { ScheduleInterviewModal } from '@/pages/dashboard/components/ScheduleInt
 import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, List, Search, MoreHorizontal, Download, XCircle, History } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { usePermissions } from '@/hooks/usePermissions';
+import { PaginationControls } from '@/components/ui/PaginationControls';
 
 export default function InterviewCalendarPage() {
   const { canEdit, canExport } = usePermissions();
@@ -23,6 +24,8 @@ export default function InterviewCalendarPage() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [stageFilter, setStageFilter] = useState('ALL');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -89,6 +92,8 @@ export default function InterviewCalendarPage() {
       return matchesHistory && matchesStage;
     });
   }, [interviewsData, showHistory, stageFilter]);
+  const displayedInterviews = filteredInterviews.slice((page - 1) * pageSize, page * pageSize);
+  React.useEffect(() => setPage(1), [showHistory, stageFilter, reqId]);
 
   const handleReject = (id: string) => {
     if (window.confirm('Are you sure you want to reject this candidate and move them to history?')) {
@@ -179,6 +184,7 @@ export default function InterviewCalendarPage() {
       {/* Content Area */}
       <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden min-h-[400px]">
         {viewMode === 'list' ? (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[64rem] text-left text-sm">
               <thead className="bg-tint border-b border-slate-border">
@@ -197,7 +203,7 @@ export default function InterviewCalendarPage() {
                 {isLoading ? (
                   <tr><td colSpan={7} className="py-10"><LoadingSpinner /></td></tr>
                 ) : filteredInterviews && filteredInterviews.length > 0 ? (
-                  filteredInterviews.map((cand: any) => (
+                  displayedInterviews.map((cand: any) => (
                     <tr key={cand.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-slate-900 dark:text-white">{cand.candidateName}</p>
@@ -280,6 +286,8 @@ export default function InterviewCalendarPage() {
 
             </table>
           </div>
+          <PaginationControls page={page} pageSize={pageSize} total={filteredInterviews.length} onPageChange={setPage} itemLabel="interviews" />
+          </>
         ) : (
 
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-border">
