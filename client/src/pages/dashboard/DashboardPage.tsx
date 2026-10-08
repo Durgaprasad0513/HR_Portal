@@ -34,6 +34,13 @@ const RECRUITMENT_STAGE_ORDER = [
   'JOINED_REJECTED'
 ];
 
+const RECRUITMENT_PROGRESS_STATUSES = new Set([
+  'TELEPHONIC',
+  'HR_INTERVIEW',
+  'MANAGEMENT',
+  'OFFER',
+]);
+
 const RECRUITMENT_LEVELS = [
   { label: 'L1', name: 'Telephonic', completeAt: 'HR_INTERVIEW' },
   { label: 'L2', name: 'HR', completeAt: 'TECHNICAL' },
@@ -183,7 +190,7 @@ export default function DashboardPage() {
 
  const moduleOverview = stats.moduleOverview || {};
  const joinExitTrend = attritionData?.joinExitTrend || [];
- const activeRequisitions = reqData.filter((requisition: any) => requisition.status !== 'JOINED_REJECTED');
+ const activeRequisitions = reqData.filter((requisition: any) => RECRUITMENT_PROGRESS_STATUSES.has(requisition.status));
  const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
  const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
    activeRequisitions.filter((requisition: any) => getCompletedRecruitmentLevels(requisition.status) > levelIndex).length
