@@ -230,17 +230,6 @@ export default function DashboardPage() {
    .filter((requisition: any) => requisition.currentStage !== 'JOINED_REJECTED');
  const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
  const openVacanciesCount = reqResponse?.data ? totalOpenVacancies : headline.openVacancies || 0;
- const vacancyStageCounts = [
-   { label: 'Telephonic', status: 'TELEPHONIC' },
-   { label: 'HR Interview', status: 'HR_INTERVIEW' },
-   { label: 'Technical Interview', status: 'TECHNICAL' },
-   { label: 'Management Interview', status: 'MANAGEMENT' },
-   { label: 'Offer', status: 'OFFER' },
- ].map((stage) => ({
-   ...stage,
-   count: activeRequisitions.filter((requisition: any) => requisition.currentStage === stage.status)
-     .reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0),
- }));
  const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
    activeRequisitions.filter((requisition: any) => getCompletedRecruitmentLevels(requisition.currentStage) > levelIndex).length
  );
@@ -361,13 +350,14 @@ export default function DashboardPage() {
  <Briefcase className="w-5 h-5" />
  </div>
  </div>
- <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-1 text-[11px] leading-4 text-text-muted">
- {vacancyStageCounts.map((stage) => (
-   <span key={stage.status} className="flex min-w-0 items-start justify-between gap-1">
-     <span className="min-w-0 break-words">{stage.label}</span>
-     <span className="shrink-0 font-semibold text-text-heading">{stage.count}</span>
-   </span>
- ))}
+ <div className="space-y-2">
+ <div className="flex items-center justify-between gap-2 text-xs text-text-muted">
+   <span>Overall rounds completion</span>
+   <span className="shrink-0 font-semibold text-text-heading">{overallRecruitmentProgress}%</span>
+ </div>
+ <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700" role="progressbar" aria-label="Overall recruitment rounds completion" aria-valuenow={overallRecruitmentProgress} aria-valuemin={0} aria-valuemax={100}>
+   <span className="block h-full rounded-full bg-purple-500 transition-all" style={{ width: `${overallRecruitmentProgress}%` }} />
+ </div>
  </div>
  </Link>
 
