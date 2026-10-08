@@ -46,7 +46,7 @@ export default function RecruitmentPage() {
  const candidateStages = [
    { value: 'TELEPHONIC', label: 'Telephonic' },
    { value: 'HR_INTERVIEW', label: 'HR interview' },
-   { value: 'TECHNICAL', label: 'Technical' },
+   { value: 'TECHNICAL', label: 'Technical Interview' },
    { value: 'MANAGEMENT', label: 'Management interview' },
    { value: 'OFFER', label: 'Offer' },
  ];
