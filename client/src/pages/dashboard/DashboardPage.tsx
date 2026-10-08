@@ -119,6 +119,8 @@ export default function DashboardPage() {
  queryKey: ['requisitions'],
  queryFn: recruitmentApi.getRequisitions,
  enabled: isAdminOrHR,
+ refetchInterval: 5000,
+ refetchOnMount: 'always',
  });
  const reqData = reqResponse?.data || [];
  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -704,7 +706,7 @@ export default function DashboardPage() {
                             >
                               <span className="min-w-0">
                                 <span className="block truncate text-sm font-semibold text-text-heading">{candidate.candidateName}</span>
-                                <span className="block truncate text-xs text-text-muted">{candidate.positionTitle}{candidate.email ? ` · ${candidate.email}` : ''}</span>
+                                <span className="block truncate text-xs text-text-muted">{candidate.positionTitle}</span>
                               </span>
                               <span>
                                 <span className="mb-1 flex justify-between gap-2 text-[10px] text-text-muted"><span>Rounds complete</span><span>{progress}%</span></span>

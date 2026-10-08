@@ -95,11 +95,8 @@ export class RecruitmentService {
         candidates: { select: {
           id: true,
           candidateName: true,
-          email: true,
           selectionStatus: true,
           interviewRound: true,
-          interviewDate: true,
-          screeningStatus: true,
           offerStatus: true,
           updatedAt: true
         } },
@@ -110,6 +107,7 @@ export class RecruitmentService {
 
     return requisitions.map(({ candidates, ...requisition }) => ({
       ...requisition,
+      candidates,
       selectedCount: candidates.filter(candidate => candidate.selectionStatus === 'SELECTED').length
     }));
   }
