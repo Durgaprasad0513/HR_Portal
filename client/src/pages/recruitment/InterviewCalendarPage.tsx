@@ -213,7 +213,24 @@ export default function InterviewCalendarPage() {
                   <tr><td colSpan={7} className="py-10"><LoadingSpinner /></td></tr>
                 ) : filteredInterviews && filteredInterviews.length > 0 ? (
                   displayedInterviews.map((cand: any) => (
-                    <tr key={cand.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <tr
+                      key={cand.id}
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`Open stage tracker for ${cand.candidateName}`}
+                      onClick={(event) => {
+                        if ((event.target as HTMLElement).closest('button, select, a, input')) return;
+                        navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.target !== event.currentTarget) return;
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`);
+                        }
+                      }}
+                      className="cursor-pointer hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500 dark:hover:bg-slate-800/50"
+                    >
                       <td className="px-6 py-4">
                         <button type="button" className="text-left font-semibold text-primary-700 hover:underline dark:text-primary-300" onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`)}>
                           {cand.candidateName}
