@@ -187,9 +187,6 @@ export default function RecruitmentPage() {
            <h3 className="text-lg font-bold text-navy-900 dark:text-white">{routeCandidate.candidateName}</h3>
            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{routeCandidate.email || 'No email provided'}{routeCandidate.interviewDate ? ` · Interview ${new Date(routeCandidate.interviewDate).toLocaleString()}` : ''}</p>
          </div>
-         <Button variant="outline" onClick={() => navigate(`/recruitment/interviews?reqId=${encodeURIComponent(selectedReq.id)}`)}>
-           <ChevronLeft className="mr-1 h-4 w-4" /> Back to interviews
-         </Button>
        </div>
        <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
          {candidateStages.map((stage, index) => {
