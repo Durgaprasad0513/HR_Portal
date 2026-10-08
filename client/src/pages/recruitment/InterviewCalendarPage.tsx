@@ -25,6 +25,16 @@ const interviewRoundColors: Record<string, string> = {
   OFFER: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
 };
 
+const normalizeInterviewRound = (round?: string | null) => {
+  const normalized = round?.trim().toUpperCase().replace(/[\s-]+/g, '_') || 'HR_INTERVIEW';
+  const aliases: Record<string, string> = {
+    HR_ROUND: 'HR_INTERVIEW',
+    TECHNICAL_ROUND: 'TECHNICAL',
+    MANAGEMENT_ROUND: 'MANAGEMENT',
+  };
+  return aliases[normalized] || normalized;
+};
+
 export default function InterviewCalendarPage() {
   const { canEdit, canExport } = usePermissions();
   const navigate = useNavigate();
@@ -58,7 +68,7 @@ export default function InterviewCalendarPage() {
 
   const handleMarkFinish = (id: string, currentRound: string) => {
     const rounds = ['TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT', 'OFFER'];
-    const currentIndex = rounds.indexOf(currentRound || 'TELEPHONIC');
+    const currentIndex = rounds.indexOf(normalizeInterviewRound(currentRound));
     
     if (currentIndex >= 0 && currentIndex < rounds.length - 1) {
       const nextRound = rounds[currentIndex + 1];
@@ -104,7 +114,7 @@ export default function InterviewCalendarPage() {
       const matchesHistory = showHistory
         ? cand.selectionStatus === 'SELECTION_REJECTED'
         : cand.selectionStatus !== 'SELECTION_REJECTED';
-      const matchesStage = stageFilter === 'ALL' || cand.interviewRound === stageFilter;
+      const matchesStage = stageFilter === 'ALL' || normalizeInterviewRound(cand.interviewRound) === stageFilter;
       return hasScheduledInterview && matchesHistory && matchesStage;
     });
   }, [interviewsData, showHistory, stageFilter]);
@@ -256,8 +266,8 @@ export default function InterviewCalendarPage() {
                         {cand.interviewer ? `${cand.interviewer.firstName} ${cand.interviewer.lastName}` : 'Unassigned'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${interviewRoundColors[cand.interviewRound || 'HR_INTERVIEW'] || interviewRoundColors.HR_INTERVIEW}`}>
-                          {(cand.interviewRound || 'HR_INTERVIEW').replaceAll('_', ' ')}
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${interviewRoundColors[normalizeInterviewRound(cand.interviewRound)] || interviewRoundColors.HR_INTERVIEW}`}>
+                          {normalizeInterviewRound(cand.interviewRound).replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -278,7 +288,7 @@ export default function InterviewCalendarPage() {
                         <div className="flex items-center gap-2">
                             <select 
                             className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 outline-none cursor-pointer"
-                            value={cand.interviewRound || 'HR_INTERVIEW'}
+                            value={normalizeInterviewRound(cand.interviewRound)}
                             onChange={(e) => handleSetPhase(cand.id, e.target.value)}
                             disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
                           >
@@ -342,8 +352,8 @@ export default function InterviewCalendarPage() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <button type="button" className="font-bold text-primary-700 hover:underline dark:text-primary-300" onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`)}>{cand.candidateName}</button>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${interviewRoundColors[cand.interviewRound || 'HR_INTERVIEW'] || interviewRoundColors.HR_INTERVIEW}`}>
-                            {(cand.interviewRound || 'HR_INTERVIEW').replaceAll('_', ' ')}
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${interviewRoundColors[normalizeInterviewRound(cand.interviewRound)] || interviewRoundColors.HR_INTERVIEW}`}>
+                            {normalizeInterviewRound(cand.interviewRound).replace(/_/g, ' ')}
                           </span>
                         </div>
                         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{cand.requisition?.positionTitle || 'Unknown Role'}</p>
@@ -372,7 +382,7 @@ export default function InterviewCalendarPage() {
                             )}
                             <select 
                           className="text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none cursor-pointer max-w-[120px]"
-                          value={cand.interviewRound || 'HR_INTERVIEW'}
+                          value={normalizeInterviewRound(cand.interviewRound)}
                           onChange={(e) => handleSetPhase(cand.id, e.target.value)}
                           disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
                         >

@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '@/api/recruitment';
 import { departmentsApi } from '@/api/departments';
-import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -11,27 +10,17 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, Search, PhoneCall, UserCheck, Award, TrendingUp, Calendar, Clock, MapPin, CheckCircle2, ArrowRight, Pencil } from 'lucide-react';
-import { KanbanBoard } from './KanbanBoard';
-import { hasAdminAccess } from '@/utils/roles';
-import { PaginationControls } from '@/components/ui/PaginationControls';
+import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, CheckCircle2, Pencil } from 'lucide-react';
 
 export default function RecruitmentPage() {
   const navigate = useNavigate();
  const [searchParams] = useSearchParams();
- const { user } = useAuth();
  const queryClient = useQueryClient();
  const { canExport, canEdit, canAdd } = usePermissions();
- const isAdminOrHR = hasAdminAccess(user?.role);
  
  const [isReqModalOpen, setIsReqModalOpen] = useState(false);
  const [selectedReq, setSelectedReq] = useState<any>(null);
- const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
- const [selectedBoardReqId, setSelectedBoardReqId] = useState<string | null>(null);
- const [trackerMode, setTrackerMode] = useState<'kanban' | 'table'>('kanban');
  const [editingReq, setEditingReq] = useState<any>(null);
- const [candidatePage, setCandidatePage] = useState(1);
- const candidatePageSize = 10;
  
  const { data: deptData } = useQuery({
  queryKey: ['departments'],
@@ -48,8 +37,6 @@ export default function RecruitmentPage() {
  enabled: !!selectedReq,
  });
  const candidatesData = candidatesResponse?.data || [];
- const displayedCandidates = candidatesData.slice((candidatePage - 1) * candidatePageSize, candidatePage * candidatePageSize);
- React.useEffect(() => setCandidatePage(1), [selectedReq?.id, selectedBoardReqId]);
 
  
  const data = reqResponse?.data || [];
@@ -74,9 +61,14 @@ export default function RecruitmentPage() {
  }, [routeReqId, data]);
 
  React.useEffect(() => {
+   if (routeReqId && !routeCandidateId) {
+     navigate(`/recruitment/interviews?reqId=${encodeURIComponent(routeReqId)}`, { replace: true });
+   }
+ }, [routeReqId, routeCandidateId, navigate]);
+
+ React.useEffect(() => {
    if (searchParams.get('tab') === 'vacancies') {
      setSelectedReq(null);
-     setViewMode('list');
    }
  }, [searchParams]);
 
@@ -97,17 +89,6 @@ export default function RecruitmentPage() {
  setEditingReq(null);
  }
  });
-
- const updateReqStatusMutation = useMutation({
- mutationFn: ({ id, col }: any) => recruitmentApi.updateRequisitionStatus(id, { status: col }),
- onSuccess: () => {
- queryClient.invalidateQueries({ queryKey: ['requisitions'] });
- }
- });
-
- const handleStatusChange = (id: string, newStatus: string) => {
- updateReqStatusMutation.mutate({ id, col: newStatus });
- };
 
  const handleExportCandidates = () => {
  if (!candidatesData?.length) return;
@@ -146,12 +127,9 @@ export default function RecruitmentPage() {
  <div className="space-y-6 flex flex-col h-full h-[calc(100vh-6rem)]">
  <PageHeader
  title="Recruitment Tracker"
- description="Manage job requisitions and candidate pipelines."
+ description="Manage job openings and scheduled interviews."
  actions={<div className="flex items-center gap-3">
- {viewMode === 'board' && (
- <Button variant="outline" onClick={() => setViewMode('list')}>Back to List</Button>
- )}
- {canAdd('recruitment') && viewMode === 'list' && (
+ {canAdd('recruitment') && (
  <Button onClick={() => { setEditingReq(null); setIsReqModalOpen(true); }} className="gap-2">
  <Plus className="w-4 h-4" /> New Requisition
  </Button>
@@ -208,40 +186,11 @@ export default function RecruitmentPage() {
        {routeCandidate.selectionStatus && <p className="text-sm text-gray-600 dark:text-gray-300">Selection status: <span className="font-semibold">{routeCandidate.selectionStatus.replaceAll('_', ' ')}</span></p>}
      </section>
    ) : <div className="rounded-xl border border-dashed border-slate-border p-8 text-center text-gray-500">Candidate not found for this requisition.</div>
- ) : isCandidatesLoading ? (
- <div className="py-12"><LoadingSpinner /></div>
- ) : (
- <div className="overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm">
- <div className="overflow-x-auto" role="region" tabIndex={0} aria-label="Candidate pipeline. Scroll horizontally for more columns.">
- <table className="w-full min-w-[40rem] text-left text-sm">
- <thead className="bg-surface text-gray-500">
- <tr>
- <th className="px-6 py-4 font-medium">Candidate Name</th>
- <th className="px-6 py-4 font-medium">Email</th>
- <th className="px-6 py-4 font-medium">Status</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-border">
- {displayedCandidates.map((c: any) => (
- <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
- <td className="px-6 py-4 font-medium text-navy-900 dark:text-white">{c.candidateName}</td>
- <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{c.email}</td>
- <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{c.selectionStatus || c.screeningStatus || 'APPLIED'}</td>
- </tr>
- ))}
- {!candidatesData?.length && (
- <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-500">No candidates found.</td></tr>
- )}
- </tbody>
- </table>
- </div>
- <PaginationControls page={candidatePage} pageSize={candidatePageSize} total={candidatesData.length} onPageChange={setCandidatePage} itemLabel="candidates" />
- </div>
- )}
+ ) : <div className="py-12"><LoadingSpinner /></div>}
  </div>
  ) : isLoading ? (
  <div className="py-12"><LoadingSpinner /></div>
- ) : viewMode === 'list' ? (
+ ) : (
  <section aria-label="Job requisitions" className="space-y-3">
  <p className="border-b border-slate-border px-4 py-2 text-xs text-gray-500 dark:border-slate-border dark:text-gray-400 sm:hidden">
  Tap a requisition to view its scheduled interviews.
@@ -312,67 +261,6 @@ export default function RecruitmentPage() {
  </article>
  ))}
  </section>
- ) : (
-           <div className="flex flex-col gap-4 h-full">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-              {canExport('recruitment') && (
-                <Button variant="outline" onClick={handleExportCandidates} className="shadow-sm">
-                  <Download className="w-4 h-4 mr-2" /> Export Register
-                </Button>
-              )}
-            </div>
-
-            {trackerMode === 'kanban' ? (
-              <KanbanBoard 
-                items={data.filter((req: any) => req.id === selectedBoardReqId).map((req: any) => ({
-                  id: req.id,
-                  title: req.positionTitle,
-                  subtitle: req.department?.name || req.location,
-                  status: req.status, // maps directly to the Kanban stages
-                  originalData: req
-                }))} 
-                onStatusChange={handleStatusChange} 
-                onItemClick={(item) => navigate('/recruitment/interviews?reqId=' + item.id)}
-              />
-            ) : (
-              <div className="mt-2">
-                {isCandidatesLoading ? (
-                  <div className="py-12"><LoadingSpinner /></div>
-                ) : (
-                  <div className="overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm">
-                    <div className="overflow-x-auto" role="region" tabIndex={0} aria-label="Candidate pipeline. Scroll horizontally for more columns.">
-                    <table className="w-full min-w-[40rem] text-left text-sm">
-                      <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                        <tr>
-                          <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Candidate Name</th>
-                          <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Email</th>
-                          <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-border">
-                        {displayedCandidates.map((c: any) => (
-                          <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                            <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">{c.candidateName}</td>
-                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{c.email}</td>
-                            <td className="px-6 py-4">
-                              <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold">
-                                {c.selectionStatus || c.screeningStatus || 'APPLIED'}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                        {!candidatesData?.length && (
-                          <tr><td colSpan={3} className="px-6 py-12 text-center text-slate-500 font-medium">No candidates found in the pipeline.</td></tr>
-                        )}
-                      </tbody>
-                    </table>
-                    </div>
-                    <PaginationControls page={candidatePage} pageSize={candidatePageSize} total={candidatesData.length} onPageChange={setCandidatePage} itemLabel="candidates" />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
  )}
  </div>
 
@@ -400,33 +288,6 @@ export default function RecruitmentPage() {
  </Button>
  </div>
  </form>
- </Modal>
-
- <Modal isOpen={!!selectedReq && !routeReqId} onClose={() => setSelectedReq(null)} title="Requisition Details">
- <div className="space-y-4 pb-4">
- <div className="flex justify-between items-start">
- <div>
- <h3 className="text-xl font-bold text-navy-900 dark:text-white">{selectedReq?.positionTitle}</h3>
- <p className="text-sm font-medium text-gray-500 mt-1">{selectedReq?.department?.name} • {selectedReq?.location}</p>
- </div>
- {canEdit('recruitment') && (
- <Button variant="outline" onClick={() => { setEditingReq(selectedReq); setSelectedReq(null); setIsReqModalOpen(true); }} size="sm">
- Edit
- </Button>
- )}
- </div>
- 
- <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
- <div className="bg-surface rounded-lg p-3">
- <span className="text-xs text-gray-500 uppercase font-semibold">Vacancies</span>
- <p className="text-lg font-bold text-navy-900 dark:text-white">{selectedReq?.numberOfVacancies}</p>
- </div>
- <div className="bg-surface rounded-lg p-3">
- <span className="text-xs text-gray-500 uppercase font-semibold">Current Stage</span>
- <p className="text-lg font-bold text-navy-900 dark:text-white">{selectedReq?.status?.replace('_', ' ')}</p>
- </div>
- </div>
- </div>
  </Modal>
 
  

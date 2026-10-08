@@ -92,7 +92,14 @@ export class RecruitmentService {
       include: {
         department: true,
         raisedBy: { select: { id: true, firstName: true, lastName: true } },
-        candidates: { select: { selectionStatus: true } },
+        candidates: { select: {
+          selectionStatus: true,
+          interviewRound: true,
+          interviewDate: true,
+          screeningStatus: true,
+          offerStatus: true,
+          updatedAt: true
+        } },
         _count: { select: { candidates: true } }
       },
       orderBy: { createdAt: 'desc' }

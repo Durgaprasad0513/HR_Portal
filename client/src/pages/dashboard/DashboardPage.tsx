@@ -34,19 +34,54 @@ const RECRUITMENT_STAGE_ORDER = [
   'JOINED_REJECTED'
 ];
 
-const RECRUITMENT_PROGRESS_STATUSES = new Set([
-  'TELEPHONIC',
-  'HR_INTERVIEW',
-  'MANAGEMENT',
-  'OFFER',
-]);
-
 const RECRUITMENT_LEVELS = [
   { label: 'L1', name: 'Telephonic', completeAt: 'HR_INTERVIEW' },
   { label: 'L2', name: 'HR', completeAt: 'TECHNICAL' },
   { label: 'L3', name: 'Technical', completeAt: 'MANAGEMENT' },
   { label: 'L4', name: 'Management', completeAt: 'SELECTED' }
 ];
+
+const normalizeRecruitmentStage = (value?: string | null) => {
+  const stage = value?.trim().toUpperCase().replace(/[\s-]+/g, '_') || '';
+  const aliases: Record<string, string> = {
+    'HR_ROUND': 'HR_INTERVIEW',
+    'TECHNICAL_ROUND': 'TECHNICAL',
+    'MANAGEMENT_ROUND': 'MANAGEMENT',
+  };
+  return aliases[stage] || stage;
+};
+
+const getCurrentRequisitionProgress = (requisition: any) => {
+  const candidateProgress = (requisition.candidates || [])
+    .filter((candidate: any) => candidate.selectionStatus !== 'SELECTION_REJECTED')
+    .map((candidate: any) => {
+      const interviewStage = normalizeRecruitmentStage(candidate.interviewRound);
+      const stage = candidate.offerStatus && candidate.offerStatus !== 'NOT_RELEASED'
+        ? 'OFFER'
+        : candidate.selectionStatus === 'SELECTED'
+          ? 'SELECTED'
+          : interviewStage;
+      return { stage, updatedAt: candidate.updatedAt };
+    })
+    .filter((candidate: any) => RECRUITMENT_STAGE_ORDER.includes(candidate.stage));
+
+  const currentStage = candidateProgress.length
+    ? candidateProgress.reduce((latest: any, candidate: any) =>
+        RECRUITMENT_STAGE_ORDER.indexOf(candidate.stage) > RECRUITMENT_STAGE_ORDER.indexOf(latest.stage) ? candidate : latest
+      ).stage
+    : normalizeRecruitmentStage(requisition.status);
+  const currentStageCandidates = candidateProgress.filter((candidate: any) => candidate.stage === currentStage);
+  const latestCandidateUpdate = currentStageCandidates
+    .map((candidate: any) => candidate.updatedAt)
+    .filter(Boolean)
+    .sort((first: string, second: string) => new Date(second).getTime() - new Date(first).getTime())[0];
+
+  return {
+    ...requisition,
+    currentStage,
+    currentStageUpdatedAt: latestCandidateUpdate || requisition.stageUpdatedAt || requisition.updatedAt,
+  };
+};
 
 const getCompletedRecruitmentLevels = (status: string) => {
   const stageIndex = RECRUITMENT_STAGE_ORDER.indexOf(status);
@@ -190,26 +225,30 @@ export default function DashboardPage() {
 
  const moduleOverview = stats.moduleOverview || {};
  const joinExitTrend = attritionData?.joinExitTrend || [];
- const activeRequisitions = reqData.filter((requisition: any) => RECRUITMENT_PROGRESS_STATUSES.has(requisition.status));
+ const activeRequisitions = reqData
+   .map(getCurrentRequisitionProgress)
+   .filter((requisition: any) => requisition.currentStage !== 'JOINED_REJECTED');
  const totalOpenVacancies = activeRequisitions.reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0);
+ const openVacanciesCount = reqResponse?.data ? totalOpenVacancies : headline.openVacancies || 0;
  const vacancyStageCounts = [
    { label: 'Telephonic', status: 'TELEPHONIC' },
    { label: 'HR Interview', status: 'HR_INTERVIEW' },
+   { label: 'Technical Interview', status: 'TECHNICAL' },
    { label: 'Management Interview', status: 'MANAGEMENT' },
    { label: 'Offer', status: 'OFFER' },
  ].map((stage) => ({
    ...stage,
-   count: activeRequisitions.filter((requisition: any) => requisition.status === stage.status)
+   count: activeRequisitions.filter((requisition: any) => requisition.currentStage === stage.status)
      .reduce((total: number, requisition: any) => total + (requisition.numberOfVacancies || 0), 0),
  }));
  const levelCompletionCounts = RECRUITMENT_LEVELS.map((_, levelIndex) =>
-   activeRequisitions.filter((requisition: any) => getCompletedRecruitmentLevels(requisition.status) > levelIndex).length
+   activeRequisitions.filter((requisition: any) => getCompletedRecruitmentLevels(requisition.currentStage) > levelIndex).length
  );
  const overallRecruitmentProgress = activeRequisitions.length
-   ? Math.round(activeRequisitions.reduce((total: number, requisition: any) => total + getCompletedRecruitmentLevels(requisition.status) * 25, 0) / activeRequisitions.length)
+   ? Math.round(activeRequisitions.reduce((total: number, requisition: any) => total + getCompletedRecruitmentLevels(requisition.currentStage) * 25, 0) / activeRequisitions.length)
    : 0;
  const trackedRequisitions = [...activeRequisitions]
-   .sort((first: any, second: any) => new Date(first.stageUpdatedAt || first.updatedAt).getTime() - new Date(second.stageUpdatedAt || second.updatedAt).getTime())
+   .sort((first: any, second: any) => new Date(first.currentStageUpdatedAt).getTime() - new Date(second.currentStageUpdatedAt).getTime())
    .slice(0, 6);
 
  return (
@@ -316,7 +355,7 @@ export default function DashboardPage() {
  <div className="flex justify-between items-start mb-4">
  <div>
  <p className="text-sm font-medium text-text-muted mb-1">Open vacancies</p>
- <h3 className="text-3xl font-bold text-text-heading group-hover:text-accent-600 transition-colors">{headline.openVacancies || 0}</h3>
+ <h3 className="text-3xl font-bold text-text-heading group-hover:text-accent-600 transition-colors">{openVacanciesCount}</h3>
  </div>
  <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
  <Briefcase className="w-5 h-5" />
@@ -591,10 +630,10 @@ export default function DashboardPage() {
 
                 <div className="flex-1 flex flex-col gap-2">
                   {trackedRequisitions.map((requisition: any) => {
-                    const completedLevels = getCompletedRecruitmentLevels(requisition.status);
+                    const completedLevels = getCompletedRecruitmentLevels(requisition.currentStage);
                     const progress = completedLevels * 25;
                     const isExpanded = expandedRequisitionId === requisition.id;
-                    const stageDate = requisition.stageUpdatedAt || requisition.updatedAt;
+                    const stageDate = requisition.currentStageUpdatedAt;
                     const daysInStage = Math.max(0, Math.floor((Date.now() - new Date(stageDate).getTime()) / 86400000));
 
                     return (
@@ -627,8 +666,8 @@ export default function DashboardPage() {
                               <span className="block h-full rounded-full bg-blue-500" style={{ width: `${progress}%` }} />
                             </span>
                           </span>
-                          <span className={`justify-self-start rounded-full px-2.5 py-1 text-[10px] font-semibold ${getStatusClasses(requisition.status)}`}>
-                            {getStatusLabel(requisition.status)}
+                          <span className={`justify-self-start rounded-full px-2.5 py-1 text-[10px] font-semibold ${getStatusClasses(requisition.currentStage)}`}>
+                            {getStatusLabel(requisition.currentStage)}
                           </span>
                           <ChevronRight className={`h-4 w-4 text-text-muted transition-transform ${isExpanded ? 'rotate-90' : ''}`} aria-hidden="true" />
                         </button>

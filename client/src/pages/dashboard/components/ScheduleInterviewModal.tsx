@@ -121,10 +121,10 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
             required
           >
             <option value="">Select interview type...</option>
-            <option value="Telephonic">Telephonic</option>
-            <option value="HR Round">HR Round</option>
-            <option value="Management Round">Management Round</option>
-            <option value="Technical Round">Technical Round</option>
+            <option value="TELEPHONIC">Telephonic</option>
+            <option value="HR_INTERVIEW">HR Interview</option>
+            <option value="TECHNICAL">Technical Interview</option>
+            <option value="MANAGEMENT">Management Interview</option>
           </Select>
           <Input
             label="Place of Interview"
