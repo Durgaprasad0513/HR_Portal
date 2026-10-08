@@ -92,6 +92,7 @@ export default function DashboardPage() {
  const navigate = useNavigate();
  const { user } = useAuth();
  const isAdminOrHR = hasAdminAccess(user?.role);
+ const [clockNow, setClockNow] = useState(() => Date.now());
  const [showAbsent, setShowAbsent] = useState(false);
  const [expandedRequisitionId, setExpandedRequisitionId] = useState<string | null>(null);
  
@@ -103,6 +104,11 @@ export default function DashboardPage() {
  }
  return false;
  });
+
+ React.useEffect(() => {
+   const timer = window.setInterval(() => setClockNow(Date.now()), 60_000);
+   return () => window.clearInterval(timer);
+ }, []);
 
  const { data: statsData, isLoading: isStatsLoading, error: statsError } = useQuery({
  queryKey: ['dashboard-stats'],
@@ -626,7 +632,13 @@ export default function DashboardPage() {
                     const progress = completedLevels * 25;
                     const isExpanded = expandedRequisitionId === requisition.id;
                     const stageDate = requisition.currentStageUpdatedAt;
-                    const daysInStage = Math.max(0, Math.floor((Date.now() - new Date(stageDate).getTime()) / 86400000));
+                    const stageStart = stageDate ? new Date(stageDate) : null;
+                    const stageStartDay = stageStart && !Number.isNaN(stageStart.getTime())
+                      ? new Date(stageStart.getFullYear(), stageStart.getMonth(), stageStart.getDate()).getTime()
+                      : clockNow;
+                    const today = new Date(clockNow);
+                    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+                    const daysInStage = Math.max(0, Math.floor((todayStart - stageStartDay) / 86400000));
 
                     return (
                       <div key={requisition.id} className="rounded-lg border border-slate-border overflow-hidden">
