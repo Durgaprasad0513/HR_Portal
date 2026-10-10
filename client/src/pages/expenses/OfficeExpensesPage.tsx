@@ -234,34 +234,43 @@ export default function OfficeExpensesPage() {
  </div>
 
  <Modal isOpen={detailsModalOpen} onClose={() => setDetailsModalOpen(false)} title="Office Expense Details" className="max-w-2xl">
-   {selectedExpense && <div className="space-y-5">
-     <section>
-       <h3 className="font-semibold text-text-heading mb-3">Expense information</h3>
-       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-         {[
-           ['Category', statusLabel(selectedExpense.category)],
-           ['Description', selectedExpense.description || '—'],
-           ['Amount', money(selectedExpense.amount)],
-           ['Expense date', formatDate(selectedExpense.expenseDate)],
-           ['Submitted by', [selectedExpense.submittedBy?.firstName, selectedExpense.submittedBy?.lastName].filter(Boolean).join(' ') || '—'],
-           ['Request ID', selectedExpense.id],
-           ['Created', formatDateTime(selectedExpense.createdAt)],
-           ['Last updated', formatDateTime(selectedExpense.updatedAt)],
-         ].map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="text-text-heading break-words whitespace-pre-wrap">{value}</dd></div>)}
+   {selectedExpense && <div className="space-y-4 text-sm">
+     <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:p-5">
+       <div className="flex items-start gap-3">
+         <div className="rounded-xl bg-teal-100 dark:bg-teal-900/40 p-2.5 text-teal-600 dark:text-teal-300"><Wallet className="h-5 w-5" /></div>
+         <div className="min-w-0 flex-1">
+           <p className="text-xs font-medium uppercase tracking-wide text-text-muted">{statusLabel(selectedExpense.category).toLowerCase()}</p>
+           <h3 className="mt-0.5 text-2xl font-semibold text-text-heading">{money(selectedExpense.amount)}</h3>
+           <p className="mt-1 text-text-muted">Expense on {formatDate(selectedExpense.expenseDate)}</p>
+         </div>
+       </div>
+       <div className="mt-4">
+         <Badge className="capitalize" variant={selectedExpense.status === 'PAID' || selectedExpense.status === 'APPROVED' ? 'success' : selectedExpense.status === 'REJECTED' ? 'danger' : 'warning'}>{statusLabel(selectedExpense.status).toLowerCase()}</Badge>
+       </div>
+     </div>
+     <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+       <h3 className="font-semibold text-text-heading mb-4">Expense information</h3>
+       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+         <div className="sm:col-span-2"><dt className="text-xs text-text-muted">Description</dt><dd className="mt-1 font-medium text-text-heading break-words whitespace-pre-wrap">{selectedExpense.description || '—'}</dd></div>
+         <div><dt className="text-xs text-text-muted">Submitted by</dt><dd className="mt-1 font-medium text-text-heading break-words">{[selectedExpense.submittedBy?.firstName, selectedExpense.submittedBy?.lastName].filter(Boolean).join(' ') || '—'}</dd></div>
+         <div><dt className="text-xs text-text-muted">Date incurred</dt><dd className="mt-1 font-medium text-text-heading">{formatDate(selectedExpense.expenseDate)}</dd></div>
        </dl>
      </section>
-     <section className="border-t border-slate-border pt-4">
-       <h3 className="font-semibold text-text-heading mb-3">Approval & payment</h3>
-       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-         <div><dt className="text-text-muted">Status</dt><dd className="text-text-heading">{statusLabel(selectedExpense.status)}</dd></div>
-         <div><dt className="text-text-muted">Approved by</dt><dd className="text-text-heading">{[selectedExpense.approvedBy?.firstName, selectedExpense.approvedBy?.lastName].filter(Boolean).join(' ') || '—'}</dd></div>
+     <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+       <h3 className="font-semibold text-text-heading mb-4">Approval & payment</h3>
+       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+         <div><dt className="text-xs text-text-muted">Current status</dt><dd className="mt-1 font-medium text-text-heading capitalize">{statusLabel(selectedExpense.status).toLowerCase()}</dd></div>
+         <div><dt className="text-xs text-text-muted">Reviewed by</dt><dd className="mt-1 font-medium text-text-heading break-words">{[selectedExpense.approvedBy?.firstName, selectedExpense.approvedBy?.lastName].filter(Boolean).join(' ') || '—'}</dd></div>
        </dl>
      </section>
-     <section className="border-t border-slate-border pt-4">
-       <h3 className="font-semibold text-text-heading mb-2">Receipt & attachments</h3>
-       {selectedExpense.billUpload ? <ul className="space-y-2 text-sm">{selectedExpense.billUpload.split(',').filter(Boolean).map((file: string, index: number) => <li key={index}><a className="text-brand-primary underline break-all" href={file.trim()} target="_blank" rel="noopener noreferrer">View receipt {index + 1}</a></li>)}</ul> : <p className="text-sm text-text-muted">No receipt attached.</p>}
+     <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+       <h3 className="font-semibold text-text-heading mb-3">Receipt & attachments</h3>
+       {selectedExpense.billUpload ? <ul className="space-y-2">{selectedExpense.billUpload.split(',').filter(Boolean).map((file: string, index: number) => <li key={index}><a className="text-brand-primary underline break-all" href={file.trim()} target="_blank" rel="noopener noreferrer">View receipt {index + 1}</a></li>)}</ul> : <p className="text-text-muted">No receipt attached.</p>}
      </section>
-     <div className="flex justify-end border-t border-slate-border pt-4"><Button variant="outline" onClick={() => setDetailsModalOpen(false)}>Close</Button></div>
+     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-border pt-4">
+       <p className="text-xs text-text-muted break-all">Expense ID: {selectedExpense.id} · Created {formatDateTime(selectedExpense.createdAt)}</p>
+       <Button variant="outline" onClick={() => setDetailsModalOpen(false)}>Close</Button>
+     </div>
    </div>}
  </Modal>
 

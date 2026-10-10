@@ -15,9 +15,10 @@ import { PaginationControls } from '@/components/ui/PaginationControls';
 
 const PAGE_SIZE = 10;
 
-const MODULES = [
- 'employees', 'travel', 'assets', 'recruitment', 'performance',
- 'training', 'requests', 'policies', 'auth', 'departments', 'expenses'
+const AUDIT_MODULES = [
+ 'employees', 'travel', 'leave', 'expenses', 'assets', 'recruitment',
+ 'attrition', 'performance', 'training', 'requests', 'policies',
+ 'departments', 'roles', 'settings',
 ];
 
 const ACTION_COLORS: Record<string, string> = {
@@ -86,7 +87,7 @@ function DiffViewer({ oldVal, newVal }: { oldVal?: string | null; newVal?: strin
 }
 
 export default function AuditLogPage() {
- const { canExport } = usePermissions();
+ const { canExport, canView } = usePermissions();
  const [page, setPage] = useState(1);
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 500);
@@ -128,9 +129,9 @@ export default function AuditLogPage() {
  const handleExport = () => {
  if (!logs.length) return;
  const csv = 'data:text/csv;charset=utf-8,'
- + 'Timestamp,User,Action,Module,Record ID,IP Address,Old Value,New Value\n'
+ + 'Timestamp,User,Action,Module,Old Value,New Value\n'
  + logs.map((l: any) =>
- `"${formatDateTime(l.createdAt)}","${l.user?.email || ''}","${l.actionPerformed}","${l.moduleAffected}","${l.recordIdAffected || ''}","${l.ipAddress || ''}","${(l.oldValue || '').replace(/"/g, '""')}","${(l.newValue || '').replace(/"/g, '""')}"`
+ `"${formatDateTime(l.createdAt)}","${l.user?.email || ''}","${l.actionPerformed}","${l.moduleAffected}","${(l.oldValue || '').replace(/"/g, '""')}","${(l.newValue || '').replace(/"/g, '""')}"`
  ).join('\n');
  const link = document.createElement('a');
  link.setAttribute('href', encodeURI(csv));
@@ -200,8 +201,8 @@ export default function AuditLogPage() {
  <div className="relative 2xl:col-span-2">
  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
  <input
- aria-label="Search audit actions and records"
- placeholder="Search actions, records..."
+ aria-label="Search audit actions and modules"
+ placeholder="Search actions, modules..."
  value={search}
  onChange={e => { setSearch(e.target.value); setPage(1); }}
  className="w-full pl-9 pr-4 py-2 h-[42px] rounded-[1.25rem] border border-slate-200 dark:border-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-[13px] focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all bg-white dark:bg-surface text-slate-900 dark:text-white"
@@ -214,7 +215,7 @@ export default function AuditLogPage() {
  className="py-2 px-3 bg-surface border border-slate-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
  >
  <option value="">All Modules</option>
- {MODULES.map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>)}
+ {AUDIT_MODULES.filter(canView).map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>)}
  </Select>
  <DatePicker type="date"
  aria-label="Audit logs from date"
@@ -241,10 +242,10 @@ export default function AuditLogPage() {
  <div className="py-16 text-center text-gray-400">No audit records found.</div>
  ) : (
  <div className="overflow-x-auto" role="region" aria-label="Audit records" tabIndex={0}>
- <table className="w-full min-w-0 divide-y divide-gray-200 dark:divide-gray-700 md:min-w-[52rem]">
+ <table className="w-full min-w-0 divide-y divide-gray-200 dark:divide-gray-700 md:min-w-[42rem]">
  <thead className="hidden bg-surface md:table-header-group">
  <tr>
- {['Timestamp', 'User', 'Action', 'Module', 'Record ID', 'IP Address', 'Changes', ''].map(h => (
+ {['Timestamp', 'User', 'Action', 'Module', 'Changes', ''].map(h => (
  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
  ))}
  </tr>
@@ -265,12 +266,6 @@ export default function AuditLogPage() {
  </td>
  <td data-label="Module" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs text-gray-600 dark:text-gray-400 capitalize md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden">
  {log.moduleAffected}
- </td>
- <td data-label="Record ID" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs font-mono text-gray-500 md:table-cell md:px-4 md:py-3 md:max-w-[120px] md:truncate before:font-medium before:font-sans before:text-text-muted before:content-[attr(data-label)] md:before:hidden break-all md:break-normal">
- {log.recordIdAffected || '—'}
- </td>
- <td data-label="IP Address" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs text-text-muted md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden break-all md:break-normal">
- {log.ipAddress || '—'}
  </td>
  <td data-label="Changes" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden">
  {log.oldValue || log.newValue ? (
@@ -321,14 +316,6 @@ export default function AuditLogPage() {
  <div>
  <p className="text-xs text-text-muted mb-1 font-medium">Module</p>
  <p className="font-medium capitalize">{selectedLog.moduleAffected}</p>
- </div>
- <div>
- <p className="text-xs text-text-muted mb-1 font-medium">IP Address</p>
- <p className="font-medium">{selectedLog.ipAddress || '—'}</p>
- </div>
- <div className="col-span-2">
- <p className="text-xs text-text-muted mb-1 font-medium">Record ID</p>
- <p className="font-mono text-xs break-all">{selectedLog.recordIdAffected || '—'}</p>
  </div>
  </div>
 
