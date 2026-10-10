@@ -182,7 +182,7 @@ export default function InterviewCalendarPage() {
     return day;
   });
   const visible =
-    view !== "month"
+    view === "agenda" ? filtered : view === "week"
       ? filtered.filter((a: any) =>
           week.some((day) => dayKey(day) === dayKey(a.interviewDate)),
         )
@@ -191,7 +191,7 @@ export default function InterviewCalendarPage() {
     const next = new URLSearchParams();
     Object.entries({
       reqId,
-      date: dayKey(date),
+      date: view === "agenda" ? "" : dayKey(date),
       search,
       round,
       status,
@@ -201,7 +201,7 @@ export default function InterviewCalendarPage() {
     });
     if (next.toString() !== params.toString())
       setParams(next, { replace: true });
-  }, [reqId, date, search, round, status, panel, params, setParams]);
+  }, [reqId, date, view, search, round, status, panel, params, setParams]);
   const changeRange = (direction: number) => {
     const next = new Date(date);
     if (view === "month") next.setMonth(next.getMonth() + direction);
@@ -391,7 +391,7 @@ export default function InterviewCalendarPage() {
             </Button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
+        {view !== "agenda" && <div className="flex items-center gap-2">
           <Button
             variant="outline"
             aria-label="Previous range"
@@ -409,9 +409,9 @@ export default function InterviewCalendarPage() {
           >
             Next
           </Button>
-        </div>
+        </div>}
         <p className="text-sm text-text-muted">
-          {view !== "month"
+          {view === "agenda" ? "All interview dates" : view !== "month"
             ? `${week[0].toLocaleDateString("en-IN")} - ${week[6].toLocaleDateString("en-IN")}`
             : date.toLocaleDateString("en-IN")}{" "}
           / Asia/Kolkata
@@ -551,7 +551,7 @@ export default function InterviewCalendarPage() {
             {visible.map(card)}
             {!visible.length && (
               <p className="rounded-xl border border-dashed border-slate-border p-8 text-text-muted">
-                No interviews match this date and these filters.
+                No interviews match these filters.
               </p>
             )}
           </div>
