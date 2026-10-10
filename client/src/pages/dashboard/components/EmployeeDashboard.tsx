@@ -138,7 +138,7 @@ export const EmployeeDashboard = () => {
       {/* ROW 1: Performance & Assets */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Performance Overview */}
-        <BoxReveal duration={0.6} disabled={!shouldAnimate} width="100%" className="h-full">
+        <BoxReveal duration={0.6} disabled={!shouldAnimate} boxColor="var(--skeleton)" width="100%" className="h-full">
           <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-text-heading">My Performance</h3>
@@ -182,7 +182,7 @@ export const EmployeeDashboard = () => {
         </BoxReveal>
 
         {/* Assigned Assets */}
-        <BoxReveal duration={0.7} disabled={!shouldAnimate} width="100%" className="h-full">
+        <BoxReveal duration={0.7} disabled={!shouldAnimate} boxColor="var(--skeleton)" width="100%" className="h-full">
           <div className="bg-surface rounded-xl p-6 border border-slate-border shadow-sm flex flex-col h-full">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-text-heading">Assigned Assets</h3>
@@ -220,7 +220,7 @@ export const EmployeeDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Card 3: Recent Requests Tracker */}
-        <BoxReveal duration={0.7} disabled={!shouldAnimate} width="100%" className="h-full">
+        <BoxReveal duration={0.7} disabled={!shouldAnimate} boxColor="var(--skeleton)" width="100%" className="h-full">
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-text-heading">Recent Requests</h3>
@@ -260,7 +260,7 @@ export const EmployeeDashboard = () => {
         </BoxReveal>
 
 {/* Card 2 (Middle): My Recent Leave History */}
-        <BoxReveal duration={0.6} disabled={!shouldAnimate} width="100%" className="h-full">
+        <BoxReveal duration={0.6} disabled={!shouldAnimate} boxColor="var(--skeleton)" width="100%" className="h-full">
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-text-heading">My Leave History</h3>

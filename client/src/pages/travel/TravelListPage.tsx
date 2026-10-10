@@ -265,7 +265,14 @@ export default function TravelListPage() {
  <div className="bg-surface rounded-xl shadow-sm border border-slate-border p-5">
  <p className="text-sm text-text-muted mb-1 font-medium">Total Settled Expenses</p>
  <p className="text-2xl font-bold text-text-heading">
- ₹{data.filter((d:any) => d.settlementStatus === 'SETTLED').reduce((sum:number, d:any) => sum + Number(d.totalExpenseClaimed || 0), 0)}
+ ₹{data.filter((d:any) => d.settlementStatus === 'SETTLED').reduce((sum:number, d:any) => {
+   const expenses = [d.hotelExpense, d.foodAllowance, d.localConveyance, d.otherExpenses];
+   // Components remain authoritative when older saved totals were concatenated.
+   const total = expenses.some(value => value != null)
+     ? expenses.reduce((subtotal:number, value:any) => subtotal + Number(value ?? 0), 0)
+     : Number(d.totalExpenseClaimed ?? 0);
+   return sum + total;
+ }, 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
  </p>
  </div>
  </div>

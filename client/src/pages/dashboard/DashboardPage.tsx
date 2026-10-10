@@ -206,7 +206,9 @@ export default function DashboardPage() {
   if (!isAdminOrHR) {
     return (
       <div className="space-y-6">
-        <ProfileBanner />
+        <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.4} width="100%">
+          <ProfileBanner />
+        </BoxReveal>
         <EmployeeDashboard />
       </div>
     );
@@ -528,6 +530,7 @@ export default function DashboardPage() {
  
           {/* Attendance Trend Chart (Only for HR/Admin) */}
           {isAdminOrHR && stats?.attendanceTrend && (
+            <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full">
             <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5">
               <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
               <div className="h-48 w-full min-w-0">
@@ -557,9 +560,11 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
             </div>
+            </BoxReveal>
           )}
 
             {/* Office Expenses Chart */}
+            <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full">
             <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -610,9 +615,11 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+            </BoxReveal>
 
             {/* Recruitment Progress */}
             {isAdminOrHR && (
+              <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full lg:col-span-2">
               <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full lg:col-span-2">
                 <div className="flex flex-wrap justify-between items-start gap-3 mb-5">
                   <div>
@@ -720,6 +727,7 @@ export default function DashboardPage() {
                   )}
                 </div>
               </div>
+              </BoxReveal>
             )}
 
           </div>

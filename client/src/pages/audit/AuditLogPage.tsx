@@ -240,46 +240,46 @@ export default function AuditLogPage() {
  ) : logs.length === 0 ? (
  <div className="py-16 text-center text-gray-400">No audit records found.</div>
  ) : (
- <div className="overflow-x-auto" role="region" aria-label="Audit records. Scroll horizontally for more columns." tabIndex={0}>
- <table className="min-w-[52rem] divide-y divide-gray-200 dark:divide-gray-700">
- <thead className="bg-surface">
+ <div className="overflow-x-auto" role="region" aria-label="Audit records" tabIndex={0}>
+ <table className="w-full min-w-0 divide-y divide-gray-200 dark:divide-gray-700 md:min-w-[52rem]">
+ <thead className="hidden bg-surface md:table-header-group">
  <tr>
  {['Timestamp', 'User', 'Action', 'Module', 'Record ID', 'IP Address', 'Changes', ''].map(h => (
  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
  ))}
  </tr>
  </thead>
- <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+ <tbody className="block divide-y divide-gray-200 dark:divide-gray-700 md:table-row-group">
  {logs.map((log: any) => (
- <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
- <td className="px-4 py-3 text-xs text-text-muted whitespace-nowrap">
+ <tr key={log.id} className="mb-3 block rounded-lg border border-slate-border bg-surface p-2 last:mb-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors md:mb-0 md:table-row md:rounded-none md:border-0 md:p-0">
+ <td data-label="Timestamp" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs text-text-muted md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden">
  {formatDateTime(log.createdAt)}
  </td>
- <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap">
+ <td data-label="User" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden break-all md:break-normal">
  {log.user?.email || '—'}
  </td>
- <td className="px-4 py-3 whitespace-nowrap">
+ <td data-label="Action" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden">
  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getActionColor(log.actionPerformed)}`}>
  {formatAction(log.actionPerformed)}
  </span>
  </td>
- <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 capitalize whitespace-nowrap">
+ <td data-label="Module" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs text-gray-600 dark:text-gray-400 capitalize md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden">
  {log.moduleAffected}
  </td>
- <td className="px-4 py-3 text-xs font-mono text-gray-500 max-w-[120px] truncate">
+ <td data-label="Record ID" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs font-mono text-gray-500 md:table-cell md:px-4 md:py-3 md:max-w-[120px] md:truncate before:font-medium before:font-sans before:text-text-muted before:content-[attr(data-label)] md:before:hidden break-all md:break-normal">
  {log.recordIdAffected || '—'}
  </td>
- <td className="px-4 py-3 text-xs text-text-muted whitespace-nowrap">
+ <td data-label="IP Address" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs text-text-muted md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden break-all md:break-normal">
  {log.ipAddress || '—'}
  </td>
- <td className="px-4 py-3 text-xs whitespace-nowrap">
+ <td data-label="Changes" className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 px-3 py-2 text-xs md:table-cell md:px-4 md:py-3 md:whitespace-nowrap before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden">
  {log.oldValue || log.newValue ? (
  <span className="text-blue-500 font-medium">Has diff</span>
  ) : (
  <span className="text-gray-400">—</span>
  )}
  </td>
- <td className="px-4 py-3">
+ <td data-label="Details" className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-3 px-3 py-2 md:table-cell md:px-4 md:py-3 before:font-medium before:text-text-muted before:content-[attr(data-label)] md:before:hidden">
  <button
  onClick={() => setSelectedLog(log)}
  className="p-1 text-gray-400 hover:text-primary-500 transition-colors"

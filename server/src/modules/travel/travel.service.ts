@@ -202,14 +202,13 @@ export class TravelService {
     const existing = await prisma.travelRequest.findUnique({ where: { id } });
     if (!existing) throw new Error('Request not found');
 
-    const totalClaimed = Number(existing.totalExpenseClaimed || 0);
-    const hotelExpense = data.hotelExpense ?? existing.hotelExpense ?? 0;
-    const foodAllowance = data.foodAllowance ?? existing.foodAllowance ?? 0;
-    const localConveyance = data.localConveyance ?? existing.localConveyance ?? 0;
-    const otherExpenses = data.otherExpenses ?? existing.otherExpenses ?? 0;
-    const computedTotalClaimed = hotelExpense + foodAllowance + localConveyance + otherExpenses;
-    const advanceApproved = Number(existing.advanceApproved || 0);
-    const amountPayable = (computedTotalClaimed || totalClaimed) - advanceApproved;
+    const hotelExpense = new Prisma.Decimal(data.hotelExpense ?? existing.hotelExpense ?? 0);
+    const foodAllowance = new Prisma.Decimal(data.foodAllowance ?? existing.foodAllowance ?? 0);
+    const localConveyance = new Prisma.Decimal(data.localConveyance ?? existing.localConveyance ?? 0);
+    const otherExpenses = new Prisma.Decimal(data.otherExpenses ?? existing.otherExpenses ?? 0);
+    const computedTotalClaimed = hotelExpense.plus(foodAllowance).plus(localConveyance).plus(otherExpenses);
+    const advanceApproved = new Prisma.Decimal(existing.advanceApproved ?? 0);
+    const amountPayable = computedTotalClaimed.minus(advanceApproved);
 
     const request = await prisma.$transaction(async (tx) => {
       return tx.travelRequest.update({
@@ -219,7 +218,7 @@ export class TravelService {
           foodAllowance,
           localConveyance,
           otherExpenses,
-          totalExpenseClaimed: computedTotalClaimed || totalClaimed,
+          totalExpenseClaimed: computedTotalClaimed,
           settlementStatus: 'SETTLED',
           amountPayable: amountPayable,
           settlementDate: new Date()
