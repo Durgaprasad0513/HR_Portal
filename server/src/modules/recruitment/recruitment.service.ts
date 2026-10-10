@@ -1,6 +1,6 @@
 import prisma from '../../config/database';
 import { notificationService } from '../notifications/notification.service';
-import { Role, Prisma } from '@prisma/client';
+import { Role, Prisma, RequisitionStatus } from '@prisma/client';
 import { getModuleScope } from '../../utils/authorization';
 
 interface CurrentUser {
@@ -12,29 +12,43 @@ interface CurrentUser {
 }
 
 export class RecruitmentService {
-  private async closeRequisitionWhenOffersComplete(requisitionId: string, userId: string, ipAddress?: string) {
-    const candidates = await prisma.candidate.findMany({
-      where: { requisitionId },
-      select: { interviewRound: true, offerStatus: true, selectionStatus: true }
+  private async closeFilledRequisition(tx: Prisma.TransactionClient, requisitionId: string, userId: string, ipAddress?: string) {
+    const requisition = await tx.requisition.findUniqueOrThrow({ where: { id: requisitionId } });
+    const selectedCount = await tx.candidate.count({ where: {
+      requisitionId,
+      selectionStatus: 'SELECTED',
+      OR: [{ offerStatus: null }, { offerStatus: { not: 'OFFER_DECLINED' } }],
+    } });
+    if (selectedCount > requisition.numberOfVacancies) throw new Error('All vacancies are already filled. Increase the vacancy count before selecting another candidate.');
+    if (selectedCount < requisition.numberOfVacancies) {
+      if (requisition.status === 'CLOSED') {
+        const lastClosure = await tx.auditLog.findFirst({
+          where: { moduleAffected: 'recruitment', recordIdAffected: requisitionId,
+            actionPerformed: { in: ['CLOSE_FILLED_REQUISITION', 'UPDATE_REQUISITION_STATUS'] } },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (lastClosure?.actionPerformed === 'CLOSE_FILLED_REQUISITION') {
+          let previousStatus: string | undefined;
+          try { previousStatus = JSON.parse(lastClosure.oldValue || '{}').status; } catch { /* Legacy audit data falls back to REQUIREMENT. */ }
+          const restoredStatus = previousStatus && Object.values(RequisitionStatus).includes(previousStatus as RequisitionStatus)
+            && !['CLOSED', 'JOINED_REJECTED'].includes(previousStatus) ? previousStatus as RequisitionStatus : 'REQUIREMENT';
+          await tx.requisition.update({ where: { id: requisitionId }, data: { status: restoredStatus, stageUpdatedAt: new Date() } });
+          await tx.auditLog.create({ data: { actionPerformed: 'REOPEN_UNFILLED_REQUISITION', moduleAffected: 'recruitment',
+            recordIdAffected: requisitionId, userId, ipAddress } });
+        }
+      }
+      return;
+    }
+    const { count: closedCount } = await tx.requisition.updateMany({
+      where: { id: requisitionId, status: { notIn: ['CLOSED', 'JOINED_REJECTED'] } },
+      data: { status: 'CLOSED', stageUpdatedAt: new Date() },
     });
-    const activeCandidates = candidates.filter(candidate => candidate.selectionStatus !== 'SELECTION_REJECTED');
-    const allActiveCandidatesAtOffer = activeCandidates.length > 0 && activeCandidates.every(candidate => {
-      const round = candidate.interviewRound?.trim().toUpperCase().replace(/[\s-]+/g, '_');
-      return round === 'OFFER' || ['RELEASED', 'OFFER_ACCEPTED', 'OFFER_DECLINED'].includes(candidate.offerStatus || '');
-    });
-
-    if (!allActiveCandidatesAtOffer) return;
-
-    const closedCount = await prisma.$executeRaw`
-      UPDATE "requisitions"
-      SET "status" = 'CLOSED'::"RequisitionStatus", "stageUpdatedAt" = CURRENT_TIMESTAMP
-      WHERE "id" = ${requisitionId} AND "status" <> 'CLOSED'::"RequisitionStatus"
-    `;
     if (!closedCount) return;
 
-    await prisma.auditLog.create({
+    await tx.auditLog.create({
       data: {
-        actionPerformed: 'CLOSE_REQUISITION_AFTER_OFFERS',
+        actionPerformed: 'CLOSE_FILLED_REQUISITION',
+        oldValue: JSON.stringify({ status: requisition.status }),
         moduleAffected: 'recruitment',
         recordIdAffected: requisitionId,
         userId,
@@ -74,6 +88,7 @@ export class RecruitmentService {
     }
 
     return prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM requisitions WHERE id = ${id} FOR UPDATE`;
       const updated = await tx.requisition.update({
         where: { id },
         data: {
@@ -92,6 +107,10 @@ export class RecruitmentService {
           ipAddress: reqContext.ipAddress,
         }
       });
+      if (data.numberOfVacancies !== undefined) {
+        await this.closeFilledRequisition(tx, id, userId, reqContext.ipAddress);
+        return tx.requisition.findUniqueOrThrow({ where: { id } });
+      }
       return updated;
     });
   }
@@ -137,11 +156,12 @@ export class RecruitmentService {
     return requisitions.map(({ candidates, ...requisition }) => ({
       ...requisition,
       candidates,
-      selectedCount: candidates.filter(candidate =>
+      selectedCount: candidates.filter(candidate => candidate.selectionStatus !== 'SELECTION_REJECTED'
+        && candidate.offerStatus !== 'OFFER_DECLINED' && (
         candidate.selectionStatus === 'SELECTED'
         || candidate.offerStatus === 'RELEASED'
         || candidate.offerStatus === 'OFFER_ACCEPTED'
-      ).length,
+      )).length,
       offerCount: candidates.filter(candidate =>
         candidate.interviewRound?.trim().toUpperCase().replace(/[\s-]+/g, '_') === 'OFFER'
         || candidate.offerStatus === 'RELEASED'
@@ -174,6 +194,10 @@ export class RecruitmentService {
 
   async createCandidate(data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
     return prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "requisitions" WHERE "id" = ${data.requisitionId} FOR UPDATE`;
+      const requisition = await tx.requisition.findUnique({ where: { id: data.requisitionId } });
+      if (!requisition) throw new Error('Requisition not found.');
+      if (['CLOSED', 'JOINED_REJECTED'].includes(requisition.status)) throw new Error('This requisition is closed. Reopen it before scheduling a candidate.');
       const candidate = await tx.candidate.create({ data });
       await tx.auditLog.create({
         data: {
@@ -264,23 +288,23 @@ export class RecruitmentService {
   async interviewCandidate(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
     const candidate = await prisma.candidate.findUnique({ where: { id } });
     if (!candidate) throw new Error('Candidate not found.');
-      if (candidate.screeningStatus === 'SCREENING_PENDING') {
-        await prisma.candidate.update({ where: { id }, data: { screeningStatus: 'SHORTLISTED' } });
-      }
 
     const updated = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "requisitions" WHERE "id" = ${candidate.requisitionId} FOR UPDATE`;
+      const current = await tx.candidate.findUniqueOrThrow({ where: { id } });
       const updated = await tx.candidate.update({
         where: { id },
         data: {
-          
-          interviewRound: data.interviewRound ?? candidate.interviewRound,
-          interviewDate: data.interviewDate ? new Date(data.interviewDate) : candidate.interviewDate,
-          interviewFeedback: data.interviewFeedback ?? candidate.interviewFeedback,
-          interviewScore: data.interviewScore ?? candidate.interviewScore,
+          screeningStatus: current.screeningStatus === 'SCREENING_PENDING' ? 'SHORTLISTED' : current.screeningStatus,
+          interviewRound: data.interviewRound ?? current.interviewRound,
+          interviewDate: data.interviewDate ? new Date(data.interviewDate) : current.interviewDate,
+          interviewLocation: data.interviewLocation ?? current.interviewLocation,
+          interviewFeedback: data.interviewFeedback ?? current.interviewFeedback,
+          interviewScore: data.interviewScore ?? current.interviewScore,
           selectionStatus: Object.prototype.hasOwnProperty.call(data, 'selectionStatus')
             ? data.selectionStatus
-            : candidate.selectionStatus,
-          interviewerId: data.interviewerId ?? candidate.interviewerId
+            : current.selectionStatus,
+          interviewerId: data.interviewerId ?? current.interviewerId
         }
       });
       await tx.auditLog.create({
@@ -292,9 +316,9 @@ export class RecruitmentService {
           ipAddress: reqContext.ipAddress,
         }
       });
+      await this.closeFilledRequisition(tx, candidate.requisitionId, userId, reqContext.ipAddress);
       return updated;
     });
-    await this.closeRequisitionWhenOffersComplete(candidate.requisitionId, userId, reqContext.ipAddress);
     return updated;
   }
 
@@ -303,16 +327,18 @@ export class RecruitmentService {
     if (!candidate) throw new Error('Candidate not found.');
 
     const updated = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "requisitions" WHERE "id" = ${candidate.requisitionId} FOR UPDATE`;
+      const current = await tx.candidate.findUniqueOrThrow({ where: { id } });
       const updated = await tx.candidate.update({
         where: { id },
         data: {
           screeningStatus: 'SHORTLISTED',
           selectionStatus: 'SELECTED', // Auto-select if moving straight to offer
-          interviewRound: data.offerStatus === 'NOT_RELEASED' ? candidate.interviewRound : 'OFFER',
+          interviewRound: data.offerStatus === 'NOT_RELEASED' ? current.interviewRound : 'OFFER',
           offerStatus: data.offerStatus,
-          offerDate: data.offerDate ? new Date(data.offerDate) : candidate.offerDate,
-          offeredSalary: data.offeredSalary ?? candidate.offeredSalary,
-          joiningDate: data.joiningDate ? new Date(data.joiningDate) : candidate.joiningDate,
+          offerDate: data.offerDate ? new Date(data.offerDate) : current.offerDate,
+          offeredSalary: data.offeredSalary ?? current.offeredSalary,
+          joiningDate: data.joiningDate ? new Date(data.joiningDate) : current.joiningDate,
         }
       });
       await tx.auditLog.create({
@@ -324,9 +350,9 @@ export class RecruitmentService {
           ipAddress: reqContext.ipAddress,
         }
       });
+      await this.closeFilledRequisition(tx, candidate.requisitionId, userId, reqContext.ipAddress);
       return updated;
     });
-    await this.closeRequisitionWhenOffersComplete(candidate.requisitionId, userId, reqContext.ipAddress);
     return updated;
   }
 }

@@ -1,18 +1,20 @@
 import { z } from 'zod';
+const interviewRoundSchema = z.enum(['TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT', 'OFFER']);
+const dateSchema = z.string().datetime({ offset: true });
 
 export const createRequisitionSchema = z.object({
   positionTitle: z.string().min(1),
   location: z.string().min(1),
-  numberOfVacancies: z.number().min(1),
-  requisitionDate: z.string().optional(), // Or we can let server set it
+  numberOfVacancies: z.number().int().min(1),
+  requisitionDate: dateSchema.optional(),
   departmentId: z.string()
 });
 
 export const updateRequisitionSchema = z.object({
-  positionTitle: z.string().optional(),
-  departmentId: z.string().optional(),
-  location: z.string().optional(),
-  numberOfVacancies: z.number().optional()
+  positionTitle: z.string().trim().min(1).optional(),
+  departmentId: z.string().min(1).optional(),
+  location: z.string().trim().min(1).optional(),
+  numberOfVacancies: z.number().int().min(1).optional()
 });
 
 export const updateRequisitionStatusSchema = z.object({
@@ -31,10 +33,10 @@ export const createCandidateSchema = z.object({
   noticePeriod: z.number().optional(),
   source: z.string().optional(),
   requisitionId: z.string(),
-  interviewDate: z.string().optional(),
-  screeningStatus: z.string().optional(),
+  interviewDate: dateSchema.optional(),
+  screeningStatus: z.enum(['SCREENING_PENDING', 'SHORTLISTED', 'SCREENING_REJECTED']).optional(),
   interviewerId: z.string().optional(),
-  interviewRound: z.string().optional(),
+  interviewRound: interviewRoundSchema.optional(),
   interviewLocation: z.string().optional(),
 });
 
@@ -44,18 +46,19 @@ export const screenCandidateSchema = z.object({
 });
 
 export const interviewCandidateSchema = z.object({
-  interviewRound: z.string().min(1).optional(),
-  interviewDate: z.string().optional(),
+  interviewRound: interviewRoundSchema.optional(),
+  interviewDate: dateSchema.optional(),
+  interviewLocation: z.string().trim().min(1).optional(),
   interviewFeedback: z.string().optional(),
-  interviewScore: z.number().optional(),
+  interviewScore: z.number().int().min(0).optional(),
   selectionStatus: z.enum(['SELECTED', 'SELECTION_REJECTED', 'SELECTION_ON_HOLD']).nullable().optional(),
   interviewerId: z.string().optional()
 });
 
 export const offerCandidateSchema = z.object({
   offerStatus: z.enum(['NOT_RELEASED', 'RELEASED', 'OFFER_ACCEPTED', 'OFFER_DECLINED']),
-  offerDate: z.string().optional(),
-  offeredSalary: z.number().optional(),
-  joiningDate: z.string().optional()
+  offerDate: dateSchema.optional(),
+  offeredSalary: z.number().min(0).optional(),
+  joiningDate: dateSchema.optional()
 });
 
