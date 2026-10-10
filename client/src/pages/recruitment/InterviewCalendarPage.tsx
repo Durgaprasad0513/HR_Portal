@@ -1,452 +1,606 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { recruitmentApi } from '@/api/recruitment';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { formatDate, formatDateTime } from '@/utils/dateFormat';
-import { Calendar as CalendarPicker } from '@/components/ui/Calendar';
-import { isSameDay } from 'date-fns';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { ScheduleInterviewModal } from '@/pages/dashboard/components/ScheduleInterviewModal';
-import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, Clock, List, Search, MoreHorizontal, Download, XCircle, History } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { usePermissions } from '@/hooks/usePermissions';
-import { PaginationControls } from '@/components/ui/PaginationControls';
-import { interviewCsv } from './interviewExport';
-
-const interviewRoundColors: Record<string, string> = {
-  TELEPHONIC: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
-  HR_INTERVIEW: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  TECHNICAL: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
-  MANAGEMENT: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
-  OFFER: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+import React, { useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { recruitmentApi } from "@/api/recruitment";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Calendar } from "@/components/ui/Calendar";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInterviewModal";
+import { usePermissions } from "@/hooks/usePermissions";
+import { interviewCsv } from "./interviewExport";
+import toast from "react-hot-toast";
+const zone = "Asia/Kolkata";
+const dayKey = (date: string | Date) =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: zone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(date));
+const time = (date: string) =>
+  new Date(date).toLocaleTimeString("en-IN", {
+    timeZone: zone,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+const label = (value?: string) =>
+  (value || "").replace(/_/g, " ").toLowerCase();
+const colors: Record<string, string> = {
+  SCHEDULED: "bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+  COMPLETED:
+    "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+  CANCELLED:
+    "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+  NO_SHOW: "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
 };
-
-const normalizeInterviewRound = (round?: string | null) => {
-  const normalized = round?.trim().toUpperCase().replace(/[\s-]+/g, '_') || 'HR_INTERVIEW';
-  const aliases: Record<string, string> = {
-    HR_ROUND: 'HR_INTERVIEW',
-    TECHNICAL_ROUND: 'TECHNICAL',
-    MANAGEMENT_ROUND: 'MANAGEMENT',
-  };
-  return aliases[normalized] || normalized;
-};
-
 export default function InterviewCalendarPage() {
-  const { canEdit, canExport, canAdd } = usePermissions();
   const navigate = useNavigate();
-    const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [reschedulingCandidate, setReschedulingCandidate] = useState<any>(null);
-  const [showHistory, setShowHistory] = useState(false);
-  const [stageFilter, setStageFilter] = useState('ALL');
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
-
-  const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
-  const reqId = searchParams.get('reqId');
-  const { data: requisitionsData } = useQuery({
-    queryKey: ['requisitions'],
+  const [params, setParams] = useSearchParams();
+  const reqId = params.get("reqId") || "";
+  const { canAdd, canEdit, canExport } = usePermissions();
+  const cache = useQueryClient();
+  const [view, setView] = useState<"agenda" | "week" | "month">(() => {
+    const saved = localStorage.getItem("recruitment-calendar-view");
+    return saved === "agenda" || saved === "week" || saved === "month"
+      ? saved
+      : window.innerWidth < 768
+        ? "agenda"
+        : "week";
+  });
+  const [date, setDate] = useState(() =>
+    params.get("date")
+      ? new Date(params.get("date")! + "T12:00:00+05:30")
+      : new Date(),
+  );
+  const [search, setSearch] = useState(params.get("search") || "");
+  const [round, setRound] = useState(params.get("round") || "");
+  const [status, setStatus] = useState(params.get("status") || "");
+  const [panel, setPanel] = useState(params.get("panel") || "");
+  const [schedule, setSchedule] = useState<{ candidate?: any } | null>(null);
+  const [decision, setDecision] = useState<{
+    interview: any;
+    status: string;
+  } | null>(null);
+  const [reason, setReason] = useState("");
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["interviews", reqId],
+    queryFn: () =>
+      reqId
+        ? recruitmentApi.getCandidates(reqId).then((r) => r.data)
+        : recruitmentApi.getInterviews().then((r) => r.data),
+  });
+  const { data: requisitions } = useQuery({
+    queryKey: ["requisitions"],
     queryFn: recruitmentApi.getRequisitions,
-    enabled: !!reqId,
   });
-  const selectedRequisition = requisitionsData?.data?.find((req: any) => req.id === reqId);
-
-  const updateCandidateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string, payload: any }) => recruitmentApi.interviewCandidate(id, payload),
+  const refresh = () =>
+    [
+      "interviews",
+      "candidates",
+      "candidate-register",
+      "requisitions",
+      "dashboard-stats",
+    ].forEach((key) => cache.invalidateQueries({ queryKey: [key] }));
+  const appointmentMutation = useMutation({
+    mutationFn: ({ id, payload }: any) =>
+      recruitmentApi.updateInterviewStatus(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['interviews'] });
-      queryClient.invalidateQueries({ queryKey: ['requisitions'] });
-      queryClient.invalidateQueries({ queryKey: ['candidates'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      toast.success('Candidate updated');
+      refresh();
+      setDecision(null);
+      setReason("");
+      toast.success("Interview updated");
     },
-    onError: (error: any) => toast.error(error?.response?.data?.message || 'Could not update candidate')
+    onError: (error: any) =>
+      toast.error(
+        error?.response?.data?.message || "Could not update interview",
+      ),
   });
-
-  const handleMarkFinish = (id: string, currentRound: string) => {
-    const rounds = ['TELEPHONIC', 'HR_INTERVIEW', 'TECHNICAL', 'MANAGEMENT', 'OFFER'];
-    const currentIndex = rounds.indexOf(normalizeInterviewRound(currentRound));
-    
-    if (currentIndex >= 0 && currentIndex < rounds.length - 1) {
-      const nextRound = rounds[currentIndex + 1];
-      updateCandidateMutation.mutate({ 
-        id, 
-        payload: { 
-          interviewRound: nextRound,
-          interviewFeedback: 'Pending'
-        } 
-      });
-    } else {
-      updateCandidateMutation.mutate({ 
-        id, 
-        payload: { 
-          interviewFeedback: 'Finished'
-        } 
-      });
-    }
-  };
-
-  const handleSetPhase = (id: string, phase: string) => {
-    updateCandidateMutation.mutate({ id, payload: { interviewRound: phase, interviewFeedback: 'Pending' } });
-  };
-
-  const handleSetStatus = (id: string, status: string) => {
-    updateCandidateMutation.mutate({
-      id,
-      payload: { selectionStatus: status === 'IN_PROGRESS' ? null : status }
-    });
-  };
-
-  const { data: interviewsData, isLoading, isError } = useQuery({
-    queryKey: ['interviews', reqId],
-    queryFn: () => reqId 
-      ? recruitmentApi.getCandidates(reqId).then((res: any) => res.data)
-      : recruitmentApi.getInterviews().then((res: any) => res.data)
+  const outcomeMutation = useMutation({
+    mutationFn: ({ id, selectionStatus }: any) =>
+      recruitmentApi.interviewCandidate(id, {
+        selectionStatus:
+          selectionStatus === "IN_PROGRESS" ? null : selectionStatus,
+      }),
+    onSuccess: () => {
+      refresh();
+      toast.success("Candidate outcome updated");
+    },
+    onError: (error: any) =>
+      toast.error(
+        error?.response?.data?.message || "Could not update candidate",
+      ),
   });
-
-  const filteredInterviews = useMemo(() => {
-    if (!interviewsData) return [];
-    return interviewsData.filter((cand: any) => {
-      const isHistoryCandidate = cand.selectionStatus === 'SELECTION_REJECTED'
-        || normalizeInterviewRound(cand.interviewRound) === 'OFFER'
-        || ['RELEASED', 'OFFER_ACCEPTED', 'OFFER_DECLINED'].includes(cand.offerStatus);
-      const hasScheduledInterview = Boolean(cand.interviewDate) || isHistoryCandidate;
-      const matchesHistory = showHistory ? isHistoryCandidate : !isHistoryCandidate;
-      const matchesStage = stageFilter === 'ALL' || normalizeInterviewRound(cand.interviewRound) === stageFilter;
-      return hasScheduledInterview && matchesHistory && matchesStage;
+  const appointments = useMemo(
+    () =>
+      (data || [])
+        .flatMap((candidate: any) =>
+          candidate.interviews?.length
+            ? candidate.interviews.map((interview: any) => ({
+                ...candidate,
+                interviewId: interview.id,
+                interviewDate: interview.startsAt,
+                startsAt: interview.startsAt,
+                endsAt: interview.endsAt,
+                interviewRound: interview.round,
+                interviewLocation: interview.location,
+                mode: interview.mode,
+                status: interview.status,
+                interviewFeedback: interview.feedback,
+                interviewerId: interview.interviewerId,
+                interviewer: interview.interviewer,
+              }))
+            : candidate.interviewDate
+              ? [
+                  {
+                    ...candidate,
+                    status:
+                      candidate.status ||
+                      (candidate.interviewFeedback === "Finished"
+                        ? "COMPLETED"
+                        : "SCHEDULED"),
+                  },
+                ]
+              : [],
+        )
+        .sort(
+          (a: any, b: any) =>
+            new Date(a.interviewDate).getTime() -
+            new Date(b.interviewDate).getTime(),
+        ),
+    [data],
+  );
+  const interviewers = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          appointments
+            .filter((a: any) => a.interviewerId)
+            .map((a: any) => [a.interviewerId, a.interviewer]),
+        ).entries(),
+      ) as [string, any][],
+    [appointments],
+  );
+  const filtered = appointments.filter(
+    (a: any) =>
+      (!search ||
+        `${a.candidateName} ${a.email || ""} ${a.requisition?.positionTitle || ""}`
+          .toLowerCase()
+          .includes(search.toLowerCase())) &&
+      (!round || a.interviewRound === round) &&
+      (!status || a.status === status) &&
+      (!panel || a.interviewerId === panel),
+  );
+  const start = new Date(dayKey(date) + "T12:00:00+05:30");
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(start);
+    day.setDate(day.getDate() + i);
+    return day;
+  });
+  const visible =
+    view !== "month"
+      ? filtered.filter((a: any) =>
+          week.some((day) => dayKey(day) === dayKey(a.interviewDate)),
+        )
+      : filtered.filter((a: any) => dayKey(a.interviewDate) === dayKey(date));
+  React.useEffect(() => {
+    const next = new URLSearchParams();
+    Object.entries({
+      reqId,
+      date: dayKey(date),
+      search,
+      round,
+      status,
+      panel,
+    }).forEach(([key, value]) => {
+      if (value) next.set(key, value);
     });
-  }, [interviewsData, showHistory, stageFilter]);
-  const displayedInterviews = filteredInterviews.slice((page - 1) * pageSize, page * pageSize);
-  React.useEffect(() => setPage(1), [showHistory, stageFilter, reqId]);
-
-  const handleReject = (id: string) => {
-    if (window.confirm('Are you sure you want to reject this candidate and move them to history?')) {
-      updateCandidateMutation.mutate({ 
-        id, 
-        payload: { selectionStatus: 'SELECTION_REJECTED' } 
-      });
-    }
+    if (next.toString() !== params.toString())
+      setParams(next, { replace: true });
+  }, [reqId, date, search, round, status, panel, params, setParams]);
+  const changeRange = (direction: number) => {
+    const next = new Date(date);
+    if (view === "month") next.setMonth(next.getMonth() + direction);
+    else next.setDate(next.getDate() + direction * 7);
+    setDate(next);
   };
-
-  const handleExport = () => {
-    if (!filteredInterviews?.length) return;
-    const encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(interviewCsv(filteredInterviews));
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "Interview_Calendar.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
+  const card = (a: any) => (
+    <article
+      key={a.interviewId || a.id}
+      className="min-w-0 space-y-3 rounded-xl border border-slate-border bg-surface p-4 shadow-sm"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <button
+          className="text-left font-semibold text-primary-700 hover:underline dark:text-primary-300"
+          onClick={() =>
+            navigate(
+              `/recruitment?tab=candidates&reqId=${encodeURIComponent(a.requisitionId)}&candidateId=${encodeURIComponent(a.id)}`,
+            )
+          }
+        >
+          {a.candidateName}
+        </button>
+        <span
+          className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${colors[a.status] || colors.SCHEDULED}`}
+        >
+          {label(a.status)}
+        </span>
+      </div>
+      <p className="text-sm text-text-muted">
+        {a.requisition?.positionTitle || "Opening"} /{" "}
+        <span className="capitalize">{label(a.interviewRound)}</span>
+      </p>
+      <dl className="space-y-1 text-sm">
+        <div>
+          <dt className="inline text-text-muted">When: </dt>
+          <dd className="inline">
+            {new Date(a.interviewDate).toLocaleDateString("en-IN", {
+              timeZone: zone,
+              day: "numeric",
+              month: "short",
+            })}{" "}
+            / {time(a.interviewDate)}
+            {a.endsAt ? ` - ${time(a.endsAt)}` : ""}
+          </dd>
+        </div>
+        <div>
+          <dt className="inline text-text-muted">Interviewer: </dt>
+          <dd className="inline">
+            {a.interviewer
+              ? `${a.interviewer.firstName} ${a.interviewer.lastName}`
+              : "Unassigned"}
+          </dd>
+        </div>
+        <div>
+          <dt className="inline text-text-muted">Mode / venue: </dt>
+          <dd className="inline break-words">
+            {label(a.mode || "IN_PERSON")} /{" "}
+            {a.interviewLocation || "Not provided"}
+          </dd>
+        </div>
+      </dl>
+      {a.status === "COMPLETED" && (
+        <p className="text-sm text-text-muted">
+          {a.interviewFeedback ||
+            "Awaiting feedback - open candidate details to submit"}
+        </p>
+      )}
+      {canEdit("recruitment") && (
+        <>
+          <Select
+            label="Candidate outcome"
+            value={a.selectionStatus || "IN_PROGRESS"}
+            disabled={outcomeMutation.isPending}
+            onChange={(e) =>
+              outcomeMutation.mutate({
+                id: a.id,
+                selectionStatus: e.target.value,
+              })
+            }
+          >
+            <option value="IN_PROGRESS">In progress</option>
+            <option value="SELECTION_ON_HOLD">On hold</option>
+            <option value="SELECTED">Selected</option>
+            <option value="SELECTION_REJECTED">Rejected</option>
+          </Select>
+          {a.status === "SCHEDULED" && a.interviewId && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSchedule({ candidate: a })}
+              >
+                Reschedule
+              </Button>
+              <Button
+                size="sm"
+                disabled={appointmentMutation.isPending}
+                onClick={() =>
+                  appointmentMutation.mutate({
+                    id: a.interviewId,
+                    payload: { status: "COMPLETED" },
+                  })
+                }
+              >
+                Complete
+              </Button>
+              {["CANCELLED", "NO_SHOW"].map((value) => (
+                <Button
+                  key={value}
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setReason("");
+                    setDecision({ interview: a, status: value });
+                  }}
+                >
+                  {value === "CANCELLED" ? "Cancel" : "No-show"}
+                </Button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </article>
+  );
   return (
-    <div className="space-y-6">
-      
+    <div className="space-y-5">
       <PageHeader
-        title={selectedRequisition?.positionTitle || 'Interview Calendar'}
-        description={reqId ? `Scheduled interviews for this opening${selectedRequisition?.department?.name ? ` · ${selectedRequisition.department.name}` : ''}. Select a candidate to view their stage tracker.` : 'View and manage candidate interviews.'}
+        title={
+          requisitions?.data?.find((r: any) => r.id === reqId)?.positionTitle ||
+          "Interview calendar"
+        }
+        description="Schedule interviews, track appointment status and submit round feedback."
         actions={
           <div className="flex flex-wrap gap-2">
-            {reqId && <Button variant="outline" onClick={() => navigate('/recruitment?tab=vacancies')} className="gap-2"><CalendarDays className="h-4 w-4" /> All openings</Button>}
-            <Button variant="outline" onClick={() => setShowHistory(!showHistory)} className={`gap-2 ${showHistory ? 'bg-slate-100 dark:bg-slate-800' : ''}`}>
-              <History className="w-4 h-4" /> {showHistory ? 'Hide History' : 'Show History'}
-            </Button>
-            {canExport('recruitment') && <Button variant="outline" onClick={handleExport} className="gap-2">
-              <Download className="w-4 h-4" /> Export Excel
-            </Button>}
-            {canAdd('recruitment') && <Button onClick={() => { setReschedulingCandidate(null); setIsScheduleModalOpen(true); }} className="gap-2">
-              <Plus className="w-4 h-4" /> Schedule Interview
-            </Button>}
+            {reqId && (
+              <Button
+                variant="outline"
+                onClick={() => navigate("/recruitment")}
+              >
+                All openings
+              </Button>
+            )}
+            {canExport("recruitment") && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(
+                    new Blob([interviewCsv(visible)], {
+                      type: "text/csv;charset=utf-8",
+                    }),
+                  );
+                  link.download = "Interview_Calendar.csv";
+                  link.click();
+                  URL.revokeObjectURL(link.href);
+                }}
+              >
+                Export CSV
+              </Button>
+            )}
+            {canAdd("recruitment") && (
+              <Button onClick={() => setSchedule({})}>
+                Schedule interview
+              </Button>
+            )}
           </div>
         }
       />
-      {isError && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">Could not load interviews. Please refresh to try again.</div>}
-
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface px-4 py-3">
-        <div className="flex shrink-0 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Choose calendar or list view">
-          <button
-            type="button"
-            aria-pressed={viewMode === 'calendar'}
-            onClick={() => setViewMode('calendar')}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'calendar' ? 'bg-white text-slate-900 shadow-sm dark:bg-surface dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-          >
-            Calendar View
-          </button>
-          <button
-            type="button"
-            aria-pressed={viewMode === 'list'}
-            onClick={() => setViewMode('list')}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm dark:bg-surface dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-          >
-            List View
-          </button>
-        </div>
-        <div className="flex min-w-0 max-w-full flex-wrap justify-end gap-2" role="group" aria-label="Filter interviews by opening stage">
-          {[
-            { value: 'ALL', label: 'All' },
-            { value: 'TELEPHONIC', label: 'Telephonic' },
-            { value: 'HR_INTERVIEW', label: 'HR Interview' },
-            { value: 'TECHNICAL', label: 'Technical Interview' },
-            { value: 'MANAGEMENT', label: 'Management Interview' },
-            { value: 'OFFER', label: 'Offer' },
-          ].map((stage) => (
-            <button
-              key={stage.value}
-              type="button"
-              aria-pressed={stageFilter === stage.value}
-              onClick={() => setStageFilter(stage.value)}
-              className={`rounded-full px-3 py-2 text-xs font-semibold transition-colors ${stageFilter === stage.value ? 'bg-brand-primary text-white' : 'bg-tint text-text-muted hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface p-3">
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label="Calendar view"
+        >
+          {(["agenda", "week", "month"] as const).map((value) => (
+            <Button
+              key={value}
+              variant={view === value ? "primary" : "outline"}
+              aria-pressed={view === value}
+              onClick={() => {
+                setView(value);
+                localStorage.setItem("recruitment-calendar-view", value);
+              }}
             >
-              {stage.label}
-            </button>
+              {value[0].toUpperCase() + value.slice(1)}
+            </Button>
           ))}
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            aria-label="Previous range"
+            onClick={() => changeRange(-1)}
+          >
+            Previous
+          </Button>
+          <Button variant="outline" onClick={() => setDate(new Date())}>
+            Today
+          </Button>
+          <Button
+            variant="outline"
+            aria-label="Next range"
+            onClick={() => changeRange(1)}
+          >
+            Next
+          </Button>
+        </div>
+        <p className="text-sm text-text-muted">
+          {view !== "month"
+            ? `${week[0].toLocaleDateString("en-IN")} - ${week[6].toLocaleDateString("en-IN")}`
+            : date.toLocaleDateString("en-IN")}{" "}
+          / Asia/Kolkata
+        </p>
       </div>
-
-      {/* Content Area */}
-      <div className="bg-surface rounded-xl shadow-sm border border-slate-border overflow-hidden min-h-[400px]">
-        {viewMode === 'list' ? (
-          <>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[64rem] text-left text-sm">
-              <thead className="bg-tint border-b border-slate-border">
-                <tr>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Candidate & Role</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Date & Time</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Mode & Venue</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Panel</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Round</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Status</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-text-muted">Actions</th>
-                </tr>
-              </thead>
-              
-              <tbody className="divide-y divide-slate-border">
-                {isLoading ? (
-                  <tr><td colSpan={7} className="py-10"><LoadingSpinner /></td></tr>
-                ) : filteredInterviews && filteredInterviews.length > 0 ? (
-                  displayedInterviews.map((cand: any) => (
-                    <tr
-                      key={cand.id}
-                      role="link"
-                      tabIndex={0}
-                      aria-label={`Open stage tracker for ${cand.candidateName}`}
-                      onClick={(event) => {
-                        if ((event.target as HTMLElement).closest('button, select, a, input, [data-select-control]')) return;
-                        navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`);
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.target !== event.currentTarget) return;
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`);
-                        }
-                      }}
-                      className="cursor-pointer hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500 dark:hover:bg-slate-800/50"
-                    >
-                      <td className="px-6 py-4">
-                        <button type="button" className="text-left font-semibold text-primary-700 hover:underline dark:text-primary-300" onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`)}>
-                          {cand.candidateName}
-                        </button>
-                        <p className="text-xs text-slate-500">{cand.requisition?.positionTitle || 'Unknown Role'}</p>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                        {cand.interviewDate ? (
-                          <div className="inline-flex min-w-[6.5rem] flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 dark:border-slate-700 dark:bg-slate-800/70" aria-label={`Interview scheduled ${formatDateTime(cand.interviewDate)}`}>
-                            <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-slate-700 dark:text-slate-200">
-                              <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-primary-600 dark:text-primary-300" />
-                              {formatDate(cand.interviewDate)}
-                            </span>
-                            <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                              <Clock className="h-3.5 w-3.5 shrink-0" />
-                              {formatDateTime(cand.interviewDate).split(' ')[1]}
-                            </span>
-                          </div>
-                        ) : <span className="text-xs text-slate-400">Not scheduled</span>}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                        {cand.interviewLocation || 'In-person'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                        {cand.interviewer ? `${cand.interviewer.firstName} ${cand.interviewer.lastName}` : 'Unassigned'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${interviewRoundColors[normalizeInterviewRound(cand.interviewRound)] || interviewRoundColors.HR_INTERVIEW}`}>
-                          {normalizeInterviewRound(cand.interviewRound).replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Select
-                          aria-label={`Status for ${cand.candidateName}`}
-                          className="h-10 w-full min-w-[9rem] rounded-lg px-3 text-sm font-medium"
-                          value={cand.selectionStatus || 'IN_PROGRESS'}
-                          onChange={(event) => handleSetStatus(cand.id, event.target.value)}
-                          disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}
-                        >
-                          <option value="IN_PROGRESS">In progress</option>
-                          <option value="SELECTION_ON_HOLD">On hold</option>
-                          <option value="SELECTED">Selected</option>
-                          <option value="SELECTION_REJECTED">Rejected</option>
-                        </Select>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {!showHistory && canEdit('recruitment') && <Button variant="outline" size="sm" onClick={() => { setReschedulingCandidate(cand); setIsScheduleModalOpen(true); }}>Reschedule</Button>}
-                            <Select
-                            aria-label={`Interview round for ${cand.candidateName}`}
-                            className="h-10 w-full min-w-[9rem] rounded-lg px-3 text-sm font-medium"
-                            value={normalizeInterviewRound(cand.interviewRound)}
-                            onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                            disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
-                          >
-                            <option value="TELEPHONIC">Telephonic</option>
-                            <option value="HR_INTERVIEW">HR Interview</option>
-                            <option value="TECHNICAL">Technical</option>
-                            <option value="MANAGEMENT">Management</option>
-                            <option value="OFFER">Offer</option>
-                          </Select>
-                          {cand.interviewFeedback === 'Finished' ? (
-                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> Finished
-                            </span>
-                          ) : (
-                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}>
-                              Mark Finish
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-16 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-700">
-                          <CalendarIcon className="w-8 h-8 text-slate-400" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">No interviews scheduled</h3>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mb-6">
-                          There are currently no interviews awaiting conduct. Click the button below to schedule one.
-                        </p>
-                        {canAdd('recruitment') && <Button onClick={() => { setReschedulingCandidate(null); setIsScheduleModalOpen(true); }} className="rounded-xl shadow-sm">
-                          Schedule Interview
-                        </Button>}
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-
-            </table>
-          </div>
-          <PaginationControls page={page} pageSize={pageSize} total={filteredInterviews.length} onPageChange={setPage} itemLabel="interviews" />
-          </>
-        ) : (
-
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-border">
-            <div className="p-6 bg-slate-50 dark:bg-slate-900/50 flex flex-col items-center">
-              <CalendarPicker value={selectedDate} onChange={setSelectedDate} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm" />
-            </div>
-            <div className="md:col-span-2 p-6">
-              <h3 className="font-bold text-lg mb-4 text-slate-900 dark:text-white">
-                Interviews on {formatDate(selectedDate.toISOString())}
-              </h3>
-              <div className="space-y-4">
-                {filteredInterviews && filteredInterviews.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).length > 0 ? (
-                  filteredInterviews.filter((cand: any) => cand.interviewDate && isSameDay(new Date(cand.interviewDate), selectedDate)).map((cand: any) => (
-                    <div key={cand.id} className="flex items-start justify-between rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <button type="button" className="font-bold text-primary-700 hover:underline dark:text-primary-300" onClick={() => navigate(`/recruitment?reqId=${encodeURIComponent(reqId || cand.requisitionId)}&candidateId=${encodeURIComponent(cand.id)}`)}>{cand.candidateName}</button>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${interviewRoundColors[normalizeInterviewRound(cand.interviewRound)] || interviewRoundColors.HR_INTERVIEW}`}>
-                            {normalizeInterviewRound(cand.interviewRound).replace(/_/g, ' ')}
-                          </span>
-                        </div>
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{cand.requisition?.positionTitle || 'Unknown Role'}</p>
-                        <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                          <span className="flex items-center gap-1.5"><CalendarIcon className="w-3.5 h-3.5" /> {formatDateTime(cand.interviewDate)}</span>
-                          <span className="flex items-center gap-1.5">Panel: {cand.interviewer ? `${cand.interviewer.firstName} ${cand.interviewer.lastName}` : 'Unassigned'}</span>
-                        </div>
-                      </div>
-                        <div className="flex flex-col gap-2 shrink-0 items-end">
-                        {!showHistory && canEdit('recruitment') && <Button variant="outline" size="sm" onClick={() => { setReschedulingCandidate(cand); setIsScheduleModalOpen(true); }}>Reschedule</Button>}
-                        {cand.interviewFeedback === 'Finished' ? (
-                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Finished</span>
-                        ) : (
-                          <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}>Mark Finish</Button>
-                        )}
-                        {!showHistory && canEdit('recruitment') && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleReject(cand.id)} 
-                                disabled={updateCandidateMutation.isPending}
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-2"
-                                title="Reject Candidate"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
-                            )}
-                            <Select
-                          aria-label={`Interview round for ${cand.candidateName}`}
-                          className="h-10 w-full min-w-[8rem] rounded-lg px-3 text-sm font-medium"
-                          value={normalizeInterviewRound(cand.interviewRound)}
-                          onChange={(e) => handleSetPhase(cand.id, e.target.value)}
-                          disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}
-                        >
-                          <option value="TELEPHONIC">Telephonic</option>
-                          <option value="HR_INTERVIEW">HR Interview</option>
-                          <option value="TECHNICAL">Technical</option>
-                          <option value="MANAGEMENT">Management</option>
-                          <option value="OFFER">Offer</option>
-                        </Select>
-                        <Select
-                          aria-label={`Status for ${cand.candidateName}`}
-                          className="h-10 w-full min-w-[8rem] rounded-lg px-3 text-sm font-medium"
-                          value={cand.selectionStatus || 'IN_PROGRESS'}
-                          onChange={(event) => handleSetStatus(cand.id, event.target.value)}
-                          disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}
-                        >
-                          <option value="IN_PROGRESS">In progress</option>
-                          <option value="SELECTION_ON_HOLD">On hold</option>
-                          <option value="SELECTED">Selected</option>
-                          <option value="SELECTION_REJECTED">Rejected</option>
-                        </Select>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-12 flex flex-col items-center justify-center text-center">
-                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3">
-                      <CalendarDays className="w-6 h-6 text-slate-400" />
-                    </div>
-                    <p className="font-medium text-slate-900 dark:text-white">No interviews</p>
-                    <p className="text-sm text-slate-500">There are no interviews scheduled for this date.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-        )}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <Input
+          label="Search"
+          placeholder="Candidate or opening"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <Select
+          label="Opening"
+          value={reqId}
+          onChange={(e) => {
+            const next = new URLSearchParams(params);
+            e.target.value
+              ? next.set("reqId", e.target.value)
+              : next.delete("reqId");
+            setParams(next);
+          }}
+        >
+          <option value="">All openings</option>
+          {requisitions?.data?.map((r: any) => (
+            <option key={r.id} value={r.id}>
+              {r.positionTitle}
+            </option>
+          ))}
+        </Select>
+        <Select
+          label="Round"
+          value={round}
+          onChange={(e) => setRound(e.target.value)}
+        >
+          <option value="">All rounds</option>
+          {["TELEPHONIC", "HR_INTERVIEW", "TECHNICAL", "MANAGEMENT"].map(
+            (r) => (
+              <option key={r} value={r}>
+                {label(r)}
+              </option>
+            ),
+          )}
+        </Select>
+        <Select
+          label="Status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option value="">All statuses</option>
+          {["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"].map((r) => (
+            <option key={r} value={r}>
+              {label(r)}
+            </option>
+          ))}
+        </Select>
+        <Select
+          label="Interviewer"
+          value={panel}
+          onChange={(e) => setPanel(e.target.value)}
+        >
+          <option value="">All interviewers</option>
+          {interviewers.map(([id, person]) => (
+            <option key={id} value={id}>
+              {person?.firstName} {person?.lastName}
+            </option>
+          ))}
+        </Select>
       </div>
-
-      {/* Schedule Interview Modal */}
-      <ScheduleInterviewModal isOpen={isScheduleModalOpen && (reschedulingCandidate ? canEdit('recruitment') : canAdd('recruitment'))} onClose={() => { setIsScheduleModalOpen(false); setReschedulingCandidate(null); }} initialRequisitionId={reqId || undefined} existingCandidate={reschedulingCandidate} />
-
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-text-muted">
+        <p>
+          {visible.length} appointments /{" "}
+          {
+            appointments.filter(
+              (a: any) =>
+                a.status === "SCHEDULED" &&
+                dayKey(a.interviewDate) === dayKey(new Date()),
+            ).length
+          }{" "}
+          scheduled today /{" "}
+          {
+            appointments.filter(
+              (a: any) => a.status === "COMPLETED" && !a.interviewFeedback,
+            ).length
+          }{" "}
+          awaiting feedback
+        </p>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setSearch("");
+            setRound("");
+            setStatus("");
+            setPanel("");
+          }}
+        >
+          Clear filters
+        </Button>
+      </div>
+      {isError ? (
+        <div role="alert">
+          Could not load interviews.{" "}
+          <Button variant="outline" onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      ) : isLoading ? (
+        <LoadingSpinner />
+      ) : view === "week" ? (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 min-[2200px]:grid-cols-7">
+          {week.map((day) => (
+            <section key={dayKey(day)} className="min-w-0 space-y-3">
+              <h2 className="rounded-lg bg-tint p-3 text-sm font-semibold">
+                {day.toLocaleDateString("en-IN", {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                })}
+              </h2>
+              {filtered
+                .filter((a: any) => dayKey(a.interviewDate) === dayKey(day))
+                .map(card)}
+              {!filtered.some(
+                (a: any) => dayKey(a.interviewDate) === dayKey(day),
+              ) && <p className="p-3 text-sm text-text-muted">No interviews</p>}
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div
+          className={
+            view === "month" ? "grid gap-5 md:grid-cols-[20rem_1fr]" : ""
+          }
+        >
+          {view === "month" && <Calendar value={date} onChange={setDate} getDayCount={day => filtered.filter((a: any) => dayKey(a.interviewDate) === dayKey(day)).length} />}
+          <div className="grid gap-3 lg:grid-cols-2">
+            {visible.map(card)}
+            {!visible.length && (
+              <p className="rounded-xl border border-dashed border-slate-border p-8 text-text-muted">
+                No interviews match this date and these filters.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+      <ScheduleInterviewModal
+        isOpen={!!schedule}
+        onClose={() => setSchedule(null)}
+        initialRequisitionId={reqId || undefined}
+        existingCandidate={schedule?.candidate}
+      />
+      <Modal
+        isOpen={!!decision}
+        onClose={() => setDecision(null)}
+        title={
+          decision?.status === "NO_SHOW"
+            ? "Mark interview as no-show"
+            : "Cancel interview"
+        }
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (decision)
+              appointmentMutation.mutate({
+                id: decision.interview.interviewId,
+                payload: { status: decision.status, reason },
+              });
+          }}
+        >
+          <p>
+            {decision?.interview.candidateName} / This updates the appointment
+            status.
+          </p>
+          <Input
+            label="Reason"
+            required
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+          <Button
+            type="submit"
+            disabled={appointmentMutation.isPending || !reason.trim()}
+          >
+            Save status
+          </Button>
+        </form>
+      </Modal>
     </div>
   );
 }
-
-
-
-
-

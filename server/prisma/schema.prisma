@@ -189,6 +189,19 @@ enum OfferStatus {
   OFFER_DECLINED
 }
 
+enum InterviewAppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InterviewMode {
+  IN_PERSON
+  VIDEO
+  PHONE
+}
+
 enum ReviewPeriod {
   MONTHLY
   QUARTERLY
@@ -381,6 +394,7 @@ model Employee {
   assignedAssets         Asset[]               @relation("AssetAssignee")
   raisedRequisitions     Requisition[]         @relation("RequisitionRaiser")
   interviewedCandidates  Candidate[]           @relation("CandidateInterviewer")
+  assignedInterviews     Interview[]            @relation("InterviewPanelMember")
   performanceReviews     PerformanceReview[]   @relation("EmployeeReviews")
   approvedReviews        PerformanceReview[]   @relation("ReviewApprover")
   trainingParticipations TrainingParticipant[]
@@ -583,6 +597,8 @@ model Requisition {
   requisitionDate   DateTime          @default(now())
   status            RequisitionStatus @default(REQUIREMENT)
   stageUpdatedAt    DateTime          @default(now())
+  closureSource     String?
+  closureReason     String?
 
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
@@ -623,6 +639,8 @@ model Candidate {
   offerDate         DateTime?
   offeredSalary     Decimal?
   joiningDate       DateTime?
+  joiningStatus     String           @default("PENDING")
+  actualJoiningDate DateTime?
   rejectionStage    String?
   rejectionReason   String?
   recruitmentCost   Decimal?
@@ -632,11 +650,43 @@ model Candidate {
 
   interviewerId String?
   interviewer   Employee? @relation("CandidateInterviewer", fields: [interviewerId], references: [id])
+  interviews    Interview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("candidates")
+}
+
+model Interview {
+  id             String                     @id @default(cuid())
+  candidateId    String
+  candidate      Candidate                  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  round          String
+  startsAt       DateTime
+  endsAt         DateTime
+  timezone       String                     @default("Asia/Kolkata")
+  mode           InterviewMode              @default(IN_PERSON)
+  location       String?
+  status         InterviewAppointmentStatus @default(SCHEDULED)
+  feedback       String?
+  draftFeedback  String?
+  draftScore     Int?
+  draftRecommendation String?
+  feedbackSubmittedAt DateTime?
+  feedbackSubmittedById String?
+  score          Int?
+  recommendation String?
+  interviewerId  String?
+  interviewer    Employee?                  @relation("InterviewPanelMember", fields: [interviewerId], references: [id])
+  createdById    String?
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  @@index([startsAt, status])
+  @@index([candidateId, round, startsAt])
+  @@index([interviewerId, startsAt])
+  @@map("recruitment_interviews")
 }
 
 // --- Performance Review ---

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
  format,
@@ -24,10 +24,12 @@ export interface CalendarProps {
  value?: Date;
  onChange?: (date: Date) => void;
  className?: string;
+ getDayCount?: (date: Date) => number;
 }
 
-export function Calendar({ value, onChange, className }: CalendarProps) {
+export function Calendar({ value, onChange, className, getDayCount }: CalendarProps) {
  const [currentMonth, setCurrentMonth] = useState(value || new Date());
+ useEffect(() => { if (value) setCurrentMonth(value); }, [value]);
 
  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -138,9 +140,10 @@ export function Calendar({ value, onChange, className }: CalendarProps) {
  <button
  type="button"
  key={day.toString()}
+ aria-label={getDayCount ? `${format(day, 'd MMMM yyyy')}, ${getDayCount(day)} interviews` : undefined}
  onClick={() => onDateClick(cloneDay)}
  className={cn(
- "h-8 w-8 flex items-center justify-center rounded-full text-sm transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900",
+ "relative h-8 w-8 flex items-center justify-center rounded-full text-sm transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900",
  !isCurrentMonth ? "text-slate-300 dark:text-slate-600 cursor-not-allowed pointer-events-none" : "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300",
  isTodayDate && !isSelected && "bg-slate-100 dark:bg-slate-800 font-semibold text-brand-primary",
  isSelected && isCurrentMonth && "bg-brand-primary text-white font-semibold hover:bg-brand-hover shadow-sm"
@@ -148,6 +151,7 @@ export function Calendar({ value, onChange, className }: CalendarProps) {
  disabled={!isCurrentMonth}
  >
  <span>{formattedDate}</span>
+ {!!getDayCount?.(day) && <span aria-hidden="true" className="absolute bottom-0 h-1 w-1 rounded-full bg-current" />}
  </button>
  );
  day = addDays(day, 1);

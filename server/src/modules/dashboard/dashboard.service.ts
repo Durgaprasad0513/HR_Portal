@@ -56,10 +56,14 @@ export class DashboardService {
 
     // Open Vacancies
     const openVacancies = hasOrganizationAccess
-      ? await prisma.requisition.aggregate({
+      ? (await prisma.requisition.findMany({
           where: { status: { notIn: ['JOINED_REJECTED', 'CLOSED'] } },
-          _sum: { numberOfVacancies: true }
-        }).then(r => r._sum?.numberOfVacancies || 0)
+          select: { numberOfVacancies: true, candidates: { select: { selectionStatus: true, offerStatus: true } } },
+        })).reduce((total, requisition) => {
+          const filled = requisition.candidates.filter(candidate => candidate.selectionStatus === 'SELECTED'
+            && candidate.offerStatus !== 'OFFER_DECLINED').length;
+          return total + Math.max(0, requisition.numberOfVacancies - filled);
+        }, 0)
       : 0;
 
     // Reviews Completed
@@ -308,15 +312,22 @@ export class DashboardService {
         name: `${l.employee.firstName} ${l.employee.lastName}`,
         department: l.employee.department?.name || '',
       })),
-      upcomingInterviews: hasOrganizationAccess ? await prisma.candidate.findMany({
-        where: { interviewDate: { gte: now } },
-        orderBy: { interviewDate: 'asc' },
+      upcomingInterviews: hasOrganizationAccess ? (await prisma.interview.findMany({
+        where: { startsAt: { gte: now }, status: 'SCHEDULED' },
+        orderBy: { startsAt: 'asc' },
         take: 5,
         include: { 
-          requisition: { select: { positionTitle: true } },
+          candidate: { select: { candidateName: true, requisition: { select: { positionTitle: true } } } },
           interviewer: { select: { firstName: true, lastName: true } }
         }
-      }) : [],
+      })).map(interview => ({
+        id: interview.id,
+        candidateName: interview.candidate.candidateName,
+        requisition: interview.candidate.requisition,
+        interviewer: interview.interviewer,
+        interviewDate: interview.startsAt,
+        interviewRound: interview.round,
+      })) : [],
     };
   }
 
