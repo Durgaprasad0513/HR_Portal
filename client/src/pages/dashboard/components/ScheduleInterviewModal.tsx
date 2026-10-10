@@ -6,15 +6,27 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { recruitmentApi } from '@/api/recruitment';
 import { employeesApi } from '@/api/employees';
+import toast from 'react-hot-toast';
+import { format } from 'date-fns';
 
 interface ScheduleInterviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialRequisitionId?: string;
+  existingCandidate?: any;
 }
 
-export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }: ScheduleInterviewModalProps) {
-  React.useEffect(() => { if (isOpen && initialRequisitionId) setRequisitionId(initialRequisitionId); }, [isOpen, initialRequisitionId]);
+export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId, existingCandidate }: ScheduleInterviewModalProps) {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    setCandidateName(existingCandidate?.candidateName || '');
+    setCandidateEmail(existingCandidate?.email || '');
+    setRequisitionId(existingCandidate?.requisitionId || initialRequisitionId || '');
+    setInterviewDate(existingCandidate?.interviewDate ? format(new Date(existingCandidate.interviewDate), "yyyy-MM-dd'T'HH:mm") : '');
+    setInterviewerId(existingCandidate?.interviewerId || '');
+    setInterviewRound(existingCandidate?.interviewRound || '');
+    setInterviewLocation(existingCandidate?.interviewLocation || '');
+  }, [isOpen, initialRequisitionId, existingCandidate]);
   const queryClient = useQueryClient();
   const [candidateName, setCandidateName] = useState('');
   const [candidateEmail, setCandidateEmail] = useState('');
@@ -37,11 +49,18 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
   });
 
   const mutation = useMutation({
-    mutationFn: recruitmentApi.createCandidate,
+    mutationFn: (payload: any) => existingCandidate
+      ? recruitmentApi.interviewCandidate(existingCandidate.id, {
+        interviewDate: payload.interviewDate, interviewerId: payload.interviewerId,
+        interviewRound: payload.interviewRound, interviewLocation: payload.interviewLocation,
+      })
+      : recruitmentApi.createCandidate(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       queryClient.invalidateQueries({ queryKey: ['interviews'] });
+      queryClient.invalidateQueries({ queryKey: ['candidates'] });
+      toast.success(existingCandidate ? 'Interview rescheduled' : 'Interview scheduled');
       onClose();
       setCandidateName('');
       setCandidateEmail('');
@@ -51,6 +70,7 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
       setInterviewRound('');
       setInterviewLocation('');
     },
+    onError: (error: any) => toast.error(error?.response?.data?.message || 'Could not save interview. Please try again.'),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -70,7 +90,7 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Schedule Interview">
+    <Modal isOpen={isOpen} onClose={onClose} title={existingCandidate ? 'Reschedule Interview' : 'Schedule Interview'}>
       <form onSubmit={handleSubmit} className="space-y-4 py-2">
         <Input
           label="Candidate Name"
@@ -78,6 +98,7 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
           onChange={(e) => setCandidateName(e.target.value)}
           placeholder="Enter candidate name"
           required
+          disabled={!!existingCandidate}
         />
         <Input
           label="Candidate Email"
@@ -85,15 +106,17 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
           value={candidateEmail}
           onChange={(e) => setCandidateEmail(e.target.value)}
           placeholder="Enter candidate email"
+          disabled={!!existingCandidate}
         />
         <Select
           label="Position (Requisition)"
           value={requisitionId}
           onChange={(e) => setRequisitionId(e.target.value)}
           required
+          disabled={!!existingCandidate}
         >
           <option value="">Select a position...</option>
-          {reqData?.data?.map((r: any) => (
+          {reqData?.data?.filter((r: any) => r.id === existingCandidate?.requisitionId || !['CLOSED', 'JOINED_REJECTED'].includes(r.status)).map((r: any) => (
             <option key={r.id} value={r.id}>
               {r.positionTitle}
             </option>
@@ -147,7 +170,7 @@ export function ScheduleInterviewModal({ isOpen, onClose, initialRequisitionId }
             Cancel
           </Button>
           <Button type="submit" isLoading={mutation.isPending}>
-            Schedule
+            {existingCandidate ? 'Save Changes' : 'Schedule'}
           </Button>
         </div>
       </form>

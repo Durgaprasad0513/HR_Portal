@@ -11,6 +11,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Plus, Briefcase, Users, ChevronLeft, ChevronRight, Download, CheckCircle2, Pencil } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { candidateCsv } from './interviewExport';
 
 export default function RecruitmentPage() {
   const navigate = useNavigate();
@@ -83,28 +85,27 @@ export default function RecruitmentPage() {
  mutationFn: (payload: any) => recruitmentApi.createRequisition(payload),
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  setIsReqModalOpen(false);
  setEditingReq(null);
- }
+ },
+ onError: (error: any) => toast.error(error?.response?.data?.message || 'Could not create requisition'),
  });
 
  const updateReqMutation = useMutation({
  mutationFn: ({ id, payload }: { id: string, payload: any }) => recruitmentApi.updateRequisition(id, payload),
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  setIsReqModalOpen(false);
  setEditingReq(null);
- }
+ },
+ onError: (error: any) => toast.error(error?.response?.data?.message || 'Could not update requisition'),
  });
 
  const handleExportCandidates = () => {
  if (!candidatesData?.length) return;
- const csvContent = "data:text/csv;charset=utf-8," 
- + "Name,Email,Mobile,Qualification,Total Exp (Yrs),Current Co.,Current Salary,Expected Salary,Notice Period (Days),Screening Status,Interview Status,Offer Status\n"
- + candidatesData.map((c: any) => 
- `"${c.candidateName}","${c.email}","${c.mobile}","${c.qualification || ''}",${c.totalExperience || 0},"${c.currentCompany || ''}",${c.currentSalary || 0},${c.expectedSalary || 0},${c.noticePeriod || 0},"${c.screeningStatus}","${c.selectionStatus}","${c.offerStatus}"`
- ).join("\n");
- const encodedUri = encodeURI(csvContent);
+ const encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(candidateCsv(candidatesData));
  const link = document.createElement("a");
  link.setAttribute("href", encodedUri);
  link.setAttribute("download", `Candidates_${selectedReq?.positionTitle?.replace(/\s+/g, '_') || 'Pipeline'}.csv`);

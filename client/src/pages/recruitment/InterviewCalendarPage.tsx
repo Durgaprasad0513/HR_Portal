@@ -16,6 +16,7 @@ import { Calendar as CalendarIcon, CheckCircle2, Award, Plus, CalendarDays, Cloc
 import toast from 'react-hot-toast';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PaginationControls } from '@/components/ui/PaginationControls';
+import { interviewCsv } from './interviewExport';
 
 const interviewRoundColors: Record<string, string> = {
   TELEPHONIC: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
@@ -36,11 +37,12 @@ const normalizeInterviewRound = (round?: string | null) => {
 };
 
 export default function InterviewCalendarPage() {
-  const { canEdit, canExport } = usePermissions();
+  const { canEdit, canExport, canAdd } = usePermissions();
   const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [reschedulingCandidate, setReschedulingCandidate] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [stageFilter, setStageFilter] = useState('ALL');
   const [page, setPage] = useState(1);
@@ -61,6 +63,8 @@ export default function InterviewCalendarPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interviews'] });
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['candidates'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast.success('Candidate updated');
     },
     onError: (error: any) => toast.error(error?.response?.data?.message || 'Could not update candidate')
@@ -100,7 +104,7 @@ export default function InterviewCalendarPage() {
     });
   };
 
-  const { data: interviewsData, isLoading } = useQuery({
+  const { data: interviewsData, isLoading, isError } = useQuery({
     queryKey: ['interviews', reqId],
     queryFn: () => reqId 
       ? recruitmentApi.getCandidates(reqId).then((res: any) => res.data)
@@ -133,12 +137,7 @@ export default function InterviewCalendarPage() {
 
   const handleExport = () => {
     if (!filteredInterviews?.length) return;
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + "Candidate Name,Role,Interview Date,Location,Interviewer,Round,Status\n"
-      + filteredInterviews.map((cand: any) => 
-          `${cand.candidateName},${cand.requisition?.positionTitle || ''},${cand.interviewDate || 'Not Scheduled'},${cand.interviewLocation || 'In-person'},${cand.interviewer ? cand.interviewer.firstName + ' ' + cand.interviewer.lastName : 'Unassigned'},${cand.interviewRound || 'HR_INTERVIEW'},${cand.interviewFeedback || 'Pending'}`
-        ).join("\n");
-    const encodedUri = encodeURI(csvContent);
+    const encodedUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(interviewCsv(filteredInterviews));
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", "Interview_Calendar.csv");
@@ -162,12 +161,13 @@ export default function InterviewCalendarPage() {
             {canExport('recruitment') && <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="w-4 h-4" /> Export Excel
             </Button>}
-            {canEdit('recruitment') && <Button onClick={() => setIsScheduleModalOpen(true)} className="gap-2">
+            {canAdd('recruitment') && <Button onClick={() => { setReschedulingCandidate(null); setIsScheduleModalOpen(true); }} className="gap-2">
               <Plus className="w-4 h-4" /> Schedule Interview
             </Button>}
           </div>
         }
       />
+      {isError && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">Could not load interviews. Please refresh to try again.</div>}
 
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface px-4 py-3">
         <div className="flex shrink-0 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Choose calendar or list view">
@@ -298,6 +298,7 @@ export default function InterviewCalendarPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
+                          {!showHistory && canEdit('recruitment') && <Button variant="outline" size="sm" onClick={() => { setReschedulingCandidate(cand); setIsScheduleModalOpen(true); }}>Reschedule</Button>}
                             <Select
                             aria-label={`Interview round for ${cand.candidateName}`}
                             className="h-10 w-full min-w-[9rem] rounded-lg px-3 text-sm font-medium"
@@ -316,7 +317,7 @@ export default function InterviewCalendarPage() {
                               <CheckCircle2 className="w-3 h-3" /> Finished
                             </span>
                           ) : (
-                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}>
+                            <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}>
                               Mark Finish
                             </Button>
                           )}
@@ -335,7 +336,7 @@ export default function InterviewCalendarPage() {
                         <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mb-6">
                           There are currently no interviews awaiting conduct. Click the button below to schedule one.
                         </p>
-                        {canEdit('recruitment') && <Button onClick={() => setIsScheduleModalOpen(true)} className="rounded-xl shadow-sm">
+                        {canAdd('recruitment') && <Button onClick={() => { setReschedulingCandidate(null); setIsScheduleModalOpen(true); }} className="rounded-xl shadow-sm">
                           Schedule Interview
                         </Button>}
                       </div>
@@ -376,10 +377,11 @@ export default function InterviewCalendarPage() {
                         </div>
                       </div>
                         <div className="flex flex-col gap-2 shrink-0 items-end">
+                        {!showHistory && canEdit('recruitment') && <Button variant="outline" size="sm" onClick={() => { setReschedulingCandidate(cand); setIsScheduleModalOpen(true); }}>Reschedule</Button>}
                         {cand.interviewFeedback === 'Finished' ? (
                           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Finished</span>
                         ) : (
-                          <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending}>Mark Finish</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleMarkFinish(cand.id, cand.interviewRound || 'TELEPHONIC')} disabled={!canEdit('recruitment') || updateCandidateMutation.isPending || cand.selectionStatus === 'SELECTION_REJECTED'}>Mark Finish</Button>
                         )}
                         {!showHistory && canEdit('recruitment') && (
                               <Button 
@@ -438,7 +440,7 @@ export default function InterviewCalendarPage() {
       </div>
 
       {/* Schedule Interview Modal */}
-      <ScheduleInterviewModal isOpen={isScheduleModalOpen && canEdit('recruitment')} onClose={() => setIsScheduleModalOpen(false)} initialRequisitionId={reqId || undefined} />
+      <ScheduleInterviewModal isOpen={isScheduleModalOpen && (reschedulingCandidate ? canEdit('recruitment') : canAdd('recruitment'))} onClose={() => { setIsScheduleModalOpen(false); setReschedulingCandidate(null); }} initialRequisitionId={reqId || undefined} existingCandidate={reschedulingCandidate} />
 
     </div>
   );
