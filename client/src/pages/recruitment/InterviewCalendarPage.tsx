@@ -70,7 +70,7 @@ export default function InterviewCalendarPage() {
     [
       "interviews",
       "candidates",
-      "candidate-register",
+      "candidate-register", "candidate-pipeline",
       "requisitions",
       "dashboard-stats",
     ].forEach((key) => cache.invalidateQueries({ queryKey: [key] }));

@@ -615,6 +615,9 @@ model Requisition {
 }
 
 model Candidate {
+  currentStage      String @default("SCREENING")
+  stageEnteredAt    DateTime @default(now())
+  stageHistory      CandidateStageHistory[]
   id                String           @id @default(cuid())
   candidateName     String
   mobile            String?
@@ -656,6 +659,20 @@ model Candidate {
   updatedAt DateTime @updatedAt
 
   @@map("candidates")
+  @@index([currentStage, stageEnteredAt])
+}
+
+model CandidateStageHistory {
+  id String @id @default(cuid())
+  candidateId String
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  fromStage String
+  toStage String
+  actorId String
+  reason String?
+  createdAt DateTime @default(now())
+  @@index([candidateId, createdAt])
+  @@map("candidate_stage_history")
 }
 
 model Interview {

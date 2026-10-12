@@ -3,6 +3,8 @@ import { notificationService } from "../notifications/notification.service";
 import { Role, Prisma, RequisitionStatus } from "@prisma/client";
 import { getModuleScope } from "../../utils/authorization";
 import { permissionService } from "../permissions/permission.service";
+import { candidateStages } from "./recruitment.schema";
+import { assertStageTransition } from "./candidate-stage";
 
 interface CurrentUser {
   id: string;
@@ -13,6 +15,40 @@ interface CurrentUser {
 }
 
 export class RecruitmentService {
+  private async setCandidateStage(tx: Prisma.TransactionClient, candidate: any, stage: string, userId: string, reason?: string) {
+    if (candidate.currentStage === stage) return;
+    const enteredAt = new Date();
+    await tx.candidate.update({ where: { id: candidate.id }, data: { currentStage: stage, stageEnteredAt: enteredAt } });
+    await tx.candidateStageHistory.create({ data: { candidateId: candidate.id, fromStage: candidate.currentStage, toStage: stage, actorId: userId, reason, createdAt: enteredAt } });
+  }
+
+  private async validateStageMove(tx: Prisma.TransactionClient, candidate: any, stage: string, reason?: string) {
+    const feedback = await tx.interview.findFirst({ where: {
+      candidateId: candidate.id, round: candidate.currentStage, status: "COMPLETED", feedbackSubmittedAt: { not: null },
+    }, select: { id: true } });
+    assertStageTransition(candidate, stage, reason, !!feedback);
+  }
+
+  async transitionCandidateStage(id: string, data: {stage: string; expectedStage: string; reason?: string}, userId: string, reqContext: {ipAddress?: string} = {}) {
+    await this.assertCandidateAccess(id, userId);
+    return prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "candidates" WHERE "id" = ${id} FOR UPDATE`;
+      const candidate = await tx.candidate.findUniqueOrThrow({ where: { id } });
+      if (candidate.currentStage !== data.expectedStage) throw new Error("This candidate stage changed. Refresh and try again.");
+      await this.validateStageMove(tx, candidate, data.stage, data.reason);
+      await this.setCandidateStage(tx, candidate, data.stage, userId, data.reason);
+      if (candidate.currentStage !== data.stage) await tx.auditLog.create({ data: { actionPerformed: "MOVE_CANDIDATE_STAGE", moduleAffected: "recruitment", recordIdAffected: id, userId, ipAddress: reqContext.ipAddress, oldValue: JSON.stringify({stage: candidate.currentStage}), newValue: JSON.stringify({stage: data.stage, reason: data.reason}) } });
+      return tx.candidate.findUniqueOrThrow({where: {id}, include: {stageHistory: {orderBy: {createdAt: "desc"}}}});
+    });
+  }
+
+  async getPipeline(currentUser: CurrentUser, filters: any = {}) {
+    const columns = await Promise.all(candidateStages.map(async stage => {
+      const result = await this.getCandidates(currentUser, {...filters, stage, page: 1, pageSize: 100, pipeline: true});
+      return {stage, total: result.total, items: result.items, truncated: result.total > result.items.length};
+    }));
+    return {columns};
+  }
   async protectCandidateCompensation<T extends Record<string, any>>(
     rows: T[],
     role: Role,
@@ -39,9 +75,12 @@ export class RecruitmentService {
     });
     if (!user || !candidate) throw new Error("Candidate not found.");
     const scope = getModuleScope(user.role, "recruitment");
+    const employee = scope === "TEAM" && user.employeeId
+      ? await prisma.employee.findUnique({where: {id: user.employeeId}, select: {departmentId: true}})
+      : null;
     if (
       scope !== "ORG" &&
-      (!user.employeeId || candidate.requisition.raisedById !== user.employeeId)
+      (!user.employeeId || (scope === "TEAM" ? !employee?.departmentId || candidate.requisition.departmentId !== employee.departmentId : candidate.requisition.raisedById !== user.employeeId))
     ) {
       throw new Error("Unauthorized to access this candidate.");
     }
@@ -376,7 +415,13 @@ export class RecruitmentService {
         interviewMode = "IN_PERSON",
         ...candidateData
       } = data;
-      const candidate = await tx.candidate.create({ data: candidateData });
+      if (candidateData.interviewDate && candidateData.screeningStatus === "SCREENING_REJECTED")
+        throw new Error("A rejected candidate cannot be scheduled.");
+      const candidate = await tx.candidate.create({ data: {
+        ...candidateData,
+        currentStage: candidateData.interviewDate ? candidateData.interviewRound || "TELEPHONIC" : "SCREENING",
+        screeningStatus: candidateData.interviewDate ? "SHORTLISTED" : candidateData.screeningStatus,
+      } });
       if (candidate.interviewDate) {
         const endsAt = new Date(
           candidate.interviewDate.getTime() + interviewDurationMinutes * 60000,
@@ -516,7 +561,7 @@ export class RecruitmentService {
   async getCandidates(currentUser: CurrentUser, filters: any = {}) {
     const role = currentUser.role as Role;
     const scope = getModuleScope(role, "recruitment");
-    if (scope !== "ORG" && !currentUser.employeeId)
+    if (scope === "NONE" || (scope !== "ORG" && !currentUser.employeeId))
       return { items: [], total: 0, page: 1, pageSize: 50 };
     const departmentId =
       scope === "TEAM"
@@ -540,19 +585,12 @@ export class RecruitmentService {
       ...(scope === "SELF"
         ? { requisition: { raisedById: currentUser.employeeId! } }
         : scope === "TEAM"
-          ? { requisition: { departmentId } }
+          ? { requisition: { departmentId: departmentId || "__no_department__" } }
           : {}),
       ...(filters.requisitionId
         ? { requisitionId: String(filters.requisitionId) }
         : {}),
-      ...(filters.stage === "SCREENING"
-        ? {
-            interviewRound: null,
-            screeningStatus: { in: ["SCREENING_PENDING", "SHORTLISTED"] },
-          }
-        : filters.stage
-          ? { interviewRound: String(filters.stage) }
-          : {}),
+      ...(filters.stage ? { currentStage: String(filters.stage) } : {}),
       ...(filters.outcome === "IN_PROGRESS"
         ? { selectionStatus: null }
         : filters.outcome
@@ -579,12 +617,13 @@ export class RecruitmentService {
             select: { id: true, firstName: true, lastName: true },
           },
           interviews: {
-            where: { status: "SCHEDULED" },
+            where: filters.pipeline ? {} : { status: "SCHEDULED" },
             orderBy: { startsAt: "asc" },
-            take: 1,
+            ...(filters.pipeline ? {} : {take: 1}),
+            include: {interviewer: {select: {id: true, firstName: true, lastName: true}}},
           },
         },
-        orderBy: { updatedAt: "desc" },
+        orderBy: filters.pipeline ? {stageEnteredAt: "asc"} : { updatedAt: "desc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -617,6 +656,7 @@ export class RecruitmentService {
     const rows = await prisma.candidate.findMany({
       where: { requisitionId },
       include: {
+        stageHistory: { orderBy: { createdAt: "desc" } },
         interviewer: { select: { id: true, firstName: true, lastName: true } },
         requisition: { select: { id: true, positionTitle: true } },
         interviews: {
@@ -667,8 +707,9 @@ export class RecruitmentService {
         where: { id: candidateId },
       });
       if (!candidate) throw new Error("Candidate not found.");
-      if (candidate.selectionStatus === "SELECTION_REJECTED")
-        throw new Error("A rejected candidate cannot be scheduled.");
+      if (candidate.selectionStatus === "SELECTION_REJECTED" || candidate.selectionStatus === "SELECTION_ON_HOLD" || candidate.screeningStatus === "SCREENING_REJECTED" || candidate.offerStatus === "OFFER_DECLINED" || candidate.joiningStatus === "NOT_JOINED")
+        throw new Error("Restore the candidate's decision before scheduling an interview.");
+      await this.validateStageMove(tx, candidate, data.round, data.reason);
       if (data.interviewerId) {
         await tx.$queryRaw`SELECT "id" FROM "employees" WHERE "id" = ${data.interviewerId} FOR UPDATE`;
         const conflict = await tx.interview.findFirst({
@@ -718,6 +759,7 @@ export class RecruitmentService {
           interviewerId: data.interviewerId || null,
         },
       });
+      await this.setCandidateStage(tx, candidate, data.round, userId, data.reason || "Interview scheduled");
       return interview;
     });
   }
@@ -740,6 +782,8 @@ export class RecruitmentService {
       });
       if (!existing || existing.status !== "SCHEDULED")
         throw new Error("Only a scheduled interview can be rescheduled.");
+      const candidate = await tx.candidate.findUniqueOrThrow({where: {id: existing.candidateId}});
+      await this.validateStageMove(tx, candidate, data.round, data.reason);
       if (data.interviewerId) {
         await tx.$queryRaw`SELECT "id" FROM "employees" WHERE "id" = ${data.interviewerId} FOR UPDATE`;
         const conflict = await tx.interview.findFirst({
@@ -785,6 +829,7 @@ export class RecruitmentService {
           createdById: userId,
         },
       });
+      await this.setCandidateStage(tx, candidate, data.round, userId, data.reason);
       await tx.candidate.update({
         where: { id: existing.candidateId },
         data: {
@@ -964,6 +1009,7 @@ export class RecruitmentService {
     if (!candidate) throw new Error("Candidate not found.");
 
     return prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "candidates" WHERE "id" = ${id} FOR UPDATE`;
       const updated = await tx.candidate.update({
         where: { id },
         data: {
@@ -996,7 +1042,12 @@ export class RecruitmentService {
 
     const updated = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "requisitions" WHERE "id" = ${candidate.requisitionId} FOR UPDATE`;
+      await tx.$queryRaw`SELECT "id" FROM "candidates" WHERE "id" = ${id} FOR UPDATE`;
       const current = await tx.candidate.findUniqueOrThrow({ where: { id } });
+      if (data.interviewRound && data.interviewRound !== current.currentStage) {
+        await this.validateStageMove(tx, current, data.interviewRound, data.reason);
+        await this.setCandidateStage(tx, current, data.interviewRound, userId, data.reason || "Interview round updated");
+      }
       const updated = await tx.candidate.update({
         where: { id },
         data: {
@@ -1095,7 +1146,7 @@ export class RecruitmentService {
         userId,
         reqContext.ipAddress,
       );
-      return updated;
+      return tx.candidate.findUniqueOrThrow({where: {id}});
     });
     return updated;
   }
@@ -1111,6 +1162,7 @@ export class RecruitmentService {
       const candidate = await tx.candidate.findUnique({ where: { id } });
       if (!candidate) throw new Error("Candidate not found.");
       await tx.$queryRaw`SELECT "id" FROM "requisitions" WHERE "id" = ${candidate.requisitionId} FOR UPDATE`;
+      await tx.$queryRaw`SELECT "id" FROM "candidates" WHERE "id" = ${id} FOR UPDATE`;
       const current = await tx.candidate.findUniqueOrThrow({ where: { id } });
       if (
         ["RELEASED", "OFFER_ACCEPTED", "OFFER_DECLINED"].includes(
@@ -1123,6 +1175,20 @@ export class RecruitmentService {
       ) {
         throw new Error("Select the candidate before creating an offer.");
       }
+      if (current.currentStage === "JOINED" && (data.offerStatus !== "OFFER_ACCEPTED" || (data.joiningStatus && data.joiningStatus !== "JOINED")))
+        throw new Error("A joined candidate's accepted offer and joining outcome cannot be reverted.");
+      if (data.offerStatus !== "NOT_RELEASED" && current.currentStage !== "JOINED") {
+        // Releasing a fresh offer explicitly restores a declined offer. The
+        // requisition lock and closeFilledRequisition recheck available capacity.
+        const restored = {
+          ...current,
+          offerStatus: current.offerStatus === "OFFER_DECLINED" && data.offerStatus === "RELEASED" ? "NOT_RELEASED" : current.offerStatus,
+          joiningStatus: data.joiningStatus === "PENDING" ? "PENDING" : current.joiningStatus,
+        };
+        await this.validateStageMove(tx, restored, "OFFER", "Offer workflow updated");
+      }
+      if (data.offerStatus === "OFFER_ACCEPTED" && current.offerStatus === "OFFER_DECLINED")
+        throw new Error("Release a new offer before recording acceptance of a previously declined offer.");
       if (
         ["OFFER_ACCEPTED", "OFFER_DECLINED"].includes(data.offerStatus) &&
         !["RELEASED", "OFFER_ACCEPTED", "OFFER_DECLINED"].includes(
@@ -1165,6 +1231,11 @@ export class RecruitmentService {
             : current.actualJoiningDate,
         },
       });
+      if (data.joiningStatus === "JOINED") {
+        await this.setCandidateStage(tx, current, "JOINED", userId, "Accepted offer and actual joining recorded");
+      } else if (data.offerStatus !== "NOT_RELEASED" && current.currentStage !== "JOINED") {
+        await this.setCandidateStage(tx, current, "OFFER", userId, "Offer workflow updated");
+      }
       await tx.auditLog.create({
         data: {
           actionPerformed: "OFFER_CANDIDATE",
@@ -1180,7 +1251,7 @@ export class RecruitmentService {
         userId,
         reqContext.ipAddress,
       );
-      return updated;
+      return tx.candidate.findUniqueOrThrow({where: {id}});
     });
     return updated;
   }

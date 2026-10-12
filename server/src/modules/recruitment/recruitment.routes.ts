@@ -10,6 +10,7 @@ import {
 } from "../../middleware/auth.middleware";
 import { validateRequest } from "../../middleware/validate.middleware";
 import {
+  candidateStageSchema,
   createRequisitionSchema,
   updateRequisitionSchema,
   updateRequisitionStatusSchema,
@@ -81,6 +82,8 @@ router.put(
 );
 
 // Interviews
+router.get("/pipeline", requirePermission("recruitment", "view"), (req, res) => recruitmentController.getPipeline(req, res));
+router.put("/candidates/:id/stage", requirePermission("recruitment", "edit"), validateRequest({body: candidateStageSchema}), (req, res) => recruitmentController.transitionCandidateStage(req, res));
 router.get(
   "/interviews",
   requirePermission("recruitment", "view"),

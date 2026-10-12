@@ -2,6 +2,14 @@ import apiClient from "./client";
 import { ApiResponse } from "../types";
 
 export const recruitmentApi = {
+  getPipeline: async (filters: Record<string, string> = {}) => {
+    const { data } = await apiClient.get<ApiResponse<any>>("/recruitment/pipeline", { params: filters });
+    return data;
+  },
+  moveCandidateStage: async (id: string, payload: { stage: string; expectedStage: string; reason?: string }) => {
+    const { data } = await apiClient.put<ApiResponse<any>>(`/recruitment/candidates/${id}/stage`, payload);
+    return data;
+  },
   getInterviews: async () => {
     const { data } = await apiClient.get<ApiResponse<any[]>>(
       "/recruitment/interviews",

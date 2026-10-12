@@ -101,6 +101,7 @@ export function ScheduleInterviewModal({
       queryClient.invalidateQueries({ queryKey: ["interviews"] });
       queryClient.invalidateQueries({ queryKey: ["candidates"] });
       queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
+      queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
       toast.success(
         existingCandidate?.interviewId
           ? "Interview rescheduled"
@@ -151,9 +152,7 @@ export function ScheduleInterviewModal({
             mode: interviewMode,
             location: interviewLocation || undefined,
             interviewerId: interviewerId || undefined,
-            reason: existingCandidate?.interviewId
-              ? rescheduleReason
-              : undefined,
+            reason: rescheduleReason || undefined,
           }
         : undefined,
     });
@@ -273,10 +272,10 @@ export function ScheduleInterviewModal({
           onChange={(e) => setInterviewDate(e.target.value)}
           required
         />
-        {existingCandidate?.interviewId && (
+        {existingCandidate && (
           <Input
-            label="Reason for rescheduling"
-            required
+            label={existingCandidate.interviewId ? "Reason for rescheduling" : "Reason for skipping or returning to a stage"}
+            required={!!existingCandidate.interviewId}
             value={rescheduleReason}
             onChange={(e) => setRescheduleReason(e.target.value)}
           />

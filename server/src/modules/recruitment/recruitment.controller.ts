@@ -5,6 +5,16 @@ import { Role } from "@prisma/client";
 import { AuthRequest } from "../../middleware/auth.middleware";
 
 export class RecruitmentController {
+  async getPipeline(req: AuthRequest, res: Response) {
+    try { return sendSuccess(res, await recruitmentService.getPipeline(req.user!, req.query), "Pipeline retrieved"); }
+    catch (error: any) { return sendError(res, error.message, 400); }
+  }
+  async transitionCandidateStage(req: AuthRequest, res: Response) {
+    try {
+      const result = await recruitmentService.transitionCandidateStage(req.params.id as string, req.body, req.user!.userId, {ipAddress: req.ip});
+      return sendSuccess(res, (await recruitmentService.protectCandidateCompensation([result], req.user!.role as Role))[0], "Candidate stage updated");
+    } catch (error: any) { return sendError(res, error.message, error.message.includes("stage changed") ? 409 : 400); }
+  }
   async createRequisition(req: AuthRequest, res: Response) {
     try {
       const result = await recruitmentService.createRequisition(

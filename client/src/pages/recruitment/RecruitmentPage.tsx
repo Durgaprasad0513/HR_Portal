@@ -24,6 +24,10 @@ import toast from "react-hot-toast";
 import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInterviewModal";
 import { candidateCsv } from "./interviewExport";
 
+import { CandidatePipeline } from "./CandidatePipeline";
+import { CandidateStageControls } from "./CandidateStageControls";
+import { CANDIDATE_STAGES } from "./pipelineModel";
+
 const EMPTY_REQUISITIONS: any[] = [];
 
 export default function RecruitmentPage() {
@@ -37,7 +41,7 @@ export default function RecruitmentPage() {
   const [editingReq, setEditingReq] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [activeTab, setActiveTab] = useState(
-    searchParams.get("tab") === "candidates"
+    searchParams.get("tab") === "pipeline" ? "pipeline" : searchParams.get("tab") === "candidates"
       ? "candidates"
       : searchParams.get("tab") === "history"
         ? "history"
@@ -53,6 +57,10 @@ export default function RecruitmentPage() {
   const [applicationOpen, setApplicationOpen] = useState(false);
   const [scheduleCandidate, setScheduleCandidate] = useState<any>(null);
   const [screeningNotes, setScreeningNotes] = useState("");
+  React.useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (["openings", "pipeline", "candidates", "history"].includes(tab || "")) setActiveTab(tab!);
+  }, [searchParams]);
 
   const { data: deptData } = useQuery({
     queryKey: ["departments"],
@@ -123,25 +131,8 @@ export default function RecruitmentPage() {
   React.useEffect(() => {
     setScreeningNotes(routeCandidate?.screeningNotes || "");
   }, [routeCandidate?.id, routeCandidate?.screeningNotes]);
-  const candidateStages = [
-    { value: "SCREENING", label: "Screening" },
-    { value: "TELEPHONIC", label: "Telephonic" },
-    { value: "HR_INTERVIEW", label: "HR interview" },
-    { value: "TECHNICAL", label: "Technical Interview" },
-    { value: "MANAGEMENT", label: "Management interview" },
-    { value: "OFFER", label: "Offer" },
-  ];
-  const currentCandidateStage = routeCandidate
-    ? routeCandidate.offerStatus &&
-      routeCandidate.offerStatus !== "NOT_RELEASED"
-      ? "OFFER"
-      : routeCandidate.screeningStatus === "SCREENING_PENDING" ||
-          routeCandidate.screeningStatus === "SCREENING_REJECTED"
-        ? "SCREENING"
-        : routeCandidate.interviews?.find(
-            (interview: any) => interview.status === "SCHEDULED",
-          )?.round || "TELEPHONIC"
-    : "";
+  const candidateStages = CANDIDATE_STAGES;
+  const currentCandidateStage = routeCandidate?.currentStage || "SCREENING";
   const candidateStageIndex = routeCandidate
     ? Math.max(
         0,
@@ -207,6 +198,7 @@ export default function RecruitmentPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["candidates"] });
       queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
+      queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
       toast.success("Screening updated");
     },
     onError: (error: any) =>
@@ -220,6 +212,7 @@ export default function RecruitmentPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["candidates"] });
       queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
+      queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
       queryClient.invalidateQueries({ queryKey: ["requisitions"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       toast.success("Offer status updated");
@@ -233,6 +226,7 @@ export default function RecruitmentPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["candidates"] });
       queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
+      queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
       queryClient.invalidateQueries({ queryKey: ["interviews"] });
       toast.success("Interview feedback saved");
     },
@@ -260,6 +254,7 @@ export default function RecruitmentPage() {
       setApplicationOpen(false);
       queryClient.invalidateQueries({ queryKey: ["requisitions"] });
       queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
+      queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
       navigate(
         `/recruitment?tab=candidates&reqId=${response.data.requisitionId}&candidateId=${response.data.id}`,
       );
@@ -277,6 +272,7 @@ export default function RecruitmentPage() {
       [
         "requisitions",
         "candidate-register",
+        "candidate-pipeline",
         "candidates",
         "interviews",
         "dashboard-stats",
@@ -430,7 +426,9 @@ export default function RecruitmentPage() {
                   variant="ghost"
                   onClick={() =>
                     navigate(
-                      `/recruitment?tab=${activeTab === "candidates" ? "candidates" : "openings"}`,
+                      activeTab === "pipeline"
+                        ? `/recruitment?tab=pipeline&q=${encodeURIComponent(searchParams.get("q") || "")}&opening=${encodeURIComponent(searchParams.get("opening") || "")}`
+                        : `/recruitment?tab=${activeTab === "candidates" ? "candidates" : "openings"}`,
                     )
                   }
                   className="px-2"
@@ -559,11 +557,13 @@ export default function RecruitmentPage() {
                       )}
                     </dl>
                   </div>
+                  <CandidateStageControls candidate={routeCandidate} editable={canEdit("recruitment")} />
                   <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
                     {candidateStages.map((stage, index) => {
                       const complete =
                         stage.value === "SCREENING"
                           ? routeCandidate.screeningStatus === "SHORTLISTED"
+                          : stage.value === "JOINED" ? routeCandidate.joiningStatus === "JOINED"
                           : stage.value === "OFFER"
                             ? ["OFFER_ACCEPTED", "OFFER_DECLINED"].includes(
                                 routeCandidate.offerStatus,
@@ -571,10 +571,9 @@ export default function RecruitmentPage() {
                             : (routeCandidate.interviews || []).some(
                                 (interview: any) =>
                                   interview.round === stage.value &&
-                                  interview.status === "COMPLETED",
+                                  interview.status === "COMPLETED" && !!interview.feedbackSubmittedAt,
                               );
-                      const current =
-                        index === candidateStageIndex && !complete;
+                      const current = index === candidateStageIndex && currentCandidateStage !== "JOINED";
                       return (
                         <li
                           key={stage.value}
@@ -599,7 +598,7 @@ export default function RecruitmentPage() {
                               ? "Current stage"
                               : complete
                                 ? "Completed"
-                                : "Upcoming"}
+                                : index < candidateStageIndex ? "No completed review recorded" : "Upcoming"}
                           </p>
                         </li>
                       );
@@ -1026,11 +1025,11 @@ export default function RecruitmentPage() {
         ) : (
           <>
             <nav
-              className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1 dark:bg-slate-800"
+              className="grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 sm:flex sm:w-fit sm:max-w-full"
               role="tablist"
               aria-label="Recruitment workspace"
             >
-              {(["openings", "candidates", "history"] as const).map((tab) => (
+              {(["openings", "pipeline", "candidates", "history"] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
@@ -1041,17 +1040,19 @@ export default function RecruitmentPage() {
                     setShowHistory(tab === "history");
                     navigate(`/recruitment?tab=${tab}`);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-semibold capitalize ${activeTab === tab ? "bg-white text-primary-700 shadow-sm dark:bg-slate-700 dark:text-primary-300" : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"}`}
+                  className={`shrink-0 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold capitalize ${activeTab === tab ? "bg-white text-primary-700 shadow-sm dark:bg-slate-700 dark:text-primary-300" : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"}`}
                 >
                   {tab === "openings"
                     ? `Openings (${activeRequisitions.length})`
                     : tab === "history"
                       ? `History (${historyRequisitions.length})`
-                      : "Candidates"}
+                      : tab === "pipeline" ? "Pipeline" : "Candidates"}
                 </button>
               ))}
             </nav>
-            {activeTab === "candidates" ? (
+            {activeTab === "pipeline" ? (
+              <CandidatePipeline requisitions={data} />
+            ) : activeTab === "candidates" ? (
               <section aria-label="Candidate register" className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-[minmax(14rem,1fr)_12rem_12rem]">
                   <Input
@@ -1078,6 +1079,7 @@ export default function RecruitmentPage() {
                     <option value="TECHNICAL">Technical</option>
                     <option value="MANAGEMENT">Management</option>
                     <option value="OFFER">Offer</option>
+                    <option value="JOINED">Joined</option>
                   </Select>
                   <Select
                     aria-label="Filter by candidate outcome"
@@ -1110,11 +1112,7 @@ export default function RecruitmentPage() {
                   <div className="grid gap-3 lg:grid-cols-2">
                     {candidateRegister.map((candidate: any) => {
                       const next = candidate.interviews?.[0];
-                      const round =
-                        candidate.interviewRound ||
-                        (candidate.screeningStatus === "SHORTLISTED"
-                          ? "TELEPHONIC"
-                          : "SCREENING");
+                      const round = candidate.currentStage || "SCREENING";
                       return (
                         <article
                           key={candidate.id}

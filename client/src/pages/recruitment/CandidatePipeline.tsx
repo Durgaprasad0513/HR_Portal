@@ -1,0 +1,67 @@
+import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { recruitmentApi } from "@/api/recruitment";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Button } from "@/components/ui/Button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { CANDIDATE_STAGES, candidateNextAction, stageAge } from "./pipelineModel";
+
+export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
+  const [params, setParams] = useSearchParams();
+  const search = params.get("q") || "";
+  const requisitionId = params.get("opening") || "";
+  const updateFilter = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value); else next.delete(key);
+    setParams(next, { replace: true });
+  };
+  const query = useQuery({
+    queryKey: ["candidate-pipeline", search, requisitionId],
+    queryFn: () => recruitmentApi.getPipeline({ search, requisitionId }),
+  });
+  return (
+    <section aria-label="Candidate pipeline" className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <Input label="Search candidates" placeholder="Name or email" value={search} onChange={(event) => updateFilter("q", event.target.value)} />
+        <Select label="Opening" value={requisitionId} onChange={(event) => updateFilter("opening", event.target.value)}>
+          <option value="">All openings</option>
+          {requisitions.map((opening) => <option key={opening.id} value={opening.id}>{opening.positionTitle}</option>)}
+        </Select>
+        <Button variant="outline" className="self-end" onClick={() => { const next = new URLSearchParams(params); next.delete("q"); next.delete("opening"); setParams(next, { replace: true }); }}>Clear filters</Button>
+      </div>
+      <p className="text-sm text-text-muted">Select a candidate to review feedback and move stage. Existing records show age from the start of tracking.</p>
+      {query.isLoading ? <LoadingSpinner /> : query.isError ? (
+        <div role="alert" className="rounded-xl border border-slate-border p-4">Could not load the pipeline. <Button variant="outline" onClick={() => query.refetch()}>Retry</Button></div>
+      ) : (
+        <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {CANDIDATE_STAGES.map((stage) => {
+            const column = query.data?.data?.columns?.find((item: any) => item.stage === stage.value);
+            return (
+              <section key={stage.value} aria-label={`${stage.label} candidates`} className="min-w-0 rounded-xl border border-slate-border bg-tint p-3">
+                <h2 className="mb-3 flex items-center justify-between font-semibold text-text-heading">{stage.label}<span className="rounded-full bg-surface px-2 py-0.5 text-sm">{column?.total ?? 0}</span></h2>
+                <div className="space-y-3">
+                  {(column?.items || []).map((candidate: any) => {
+                    const age = stageAge(candidate.stageEnteredAt);
+                    const next = candidate.interviews?.find((item: any) => item.status === "SCHEDULED");
+                    return (
+                      <Link key={candidate.id} to={`/recruitment?tab=pipeline&q=${encodeURIComponent(search)}&opening=${encodeURIComponent(requisitionId)}&reqId=${encodeURIComponent(candidate.requisitionId)}&candidateId=${encodeURIComponent(candidate.id)}`} className="block rounded-xl border border-slate-border bg-surface p-4 shadow-sm transition hover:border-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500">
+                        <h3 className="break-words font-semibold text-text-heading">{candidate.candidateName}</h3>
+                        <p className="mt-1 break-words text-sm text-text-muted">{candidate.requisition?.positionTitle}</p>
+                        <p className="mt-3 text-xs text-text-muted">{age === null ? "Stage age unavailable" : `${age} ${age === 1 ? "day" : "days"} tracked in stage`}</p>
+                        <p className="mt-2 rounded-lg bg-tint px-2 py-1.5 text-sm font-medium text-text-heading">{candidateNextAction(candidate)}</p>
+                        {next && <p className="mt-2 text-xs text-text-muted">{new Date(next.startsAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} · Asia/Kolkata<br />{next.interviewer ? `${next.interviewer.firstName} ${next.interviewer.lastName}` : "Interviewer unassigned"}</p>}
+                      </Link>
+                    );
+                  })}
+                  {!column?.items?.length && <p className="py-4 text-center text-sm text-text-muted">No candidates</p>}
+                  {column?.truncated && <p className="text-xs text-text-muted">Showing the first 100. Narrow the opening or search to find more candidates.</p>}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}

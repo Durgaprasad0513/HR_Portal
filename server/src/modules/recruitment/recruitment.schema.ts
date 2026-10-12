@@ -1,4 +1,10 @@
 import { z } from "zod";
+export const candidateStages = ["SCREENING", "TELEPHONIC", "HR_INTERVIEW", "TECHNICAL", "MANAGEMENT", "OFFER", "JOINED"] as const;
+export const candidateStageSchema = z.object({
+  stage: z.enum(candidateStages),
+  expectedStage: z.enum(candidateStages),
+  reason: z.string().trim().min(1).max(1000).optional(),
+});
 const interviewRoundSchema = z.enum([
   "TELEPHONIC",
   "HR_INTERVIEW",
@@ -23,7 +29,7 @@ export const updateRequisitionSchema = z.object({
 });
 
 export const updateRequisitionStatusSchema = z.object({
-  reason: z.string().trim().min(1).optional(),
+  reason: z.string().trim().min(1).max(1000).optional(),
   status: z.enum([
     "REQUIREMENT",
     "SOURCING",
@@ -72,6 +78,7 @@ export const screenCandidateSchema = z.object({
 });
 
 export const interviewCandidateSchema = z.object({
+  reason: z.string().trim().min(1).max(1000).optional(),
   interviewRound: interviewRoundSchema.optional(),
   interviewDate: dateSchema.optional(),
   interviewLocation: z.string().trim().min(1).optional(),
@@ -99,6 +106,7 @@ export const offerCandidateSchema = z.object({
 });
 
 const interviewScheduleFields = z.object({
+  reason: z.string().trim().min(1).max(1000).optional(),
   round: interviewRoundSchema,
   startsAt: dateSchema,
   endsAt: dateSchema,
@@ -118,7 +126,7 @@ export const createInterviewSchema = interviewScheduleFields.refine(
 
 export const updateInterviewScheduleSchema = interviewScheduleFields
   .extend({
-    reason: z.string().trim().min(1).default("Rescheduled"),
+    reason: z.string().trim().min(1).max(1000).default("Rescheduled"),
   })
   .refine((value) => new Date(value.endsAt) > new Date(value.startsAt), {
     path: ["endsAt"],
@@ -128,7 +136,7 @@ export const updateInterviewScheduleSchema = interviewScheduleFields
 export const updateInterviewStatusSchema = z
   .object({
     status: z.enum(["SCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"]),
-    reason: z.string().trim().min(1).optional(),
+    reason: z.string().trim().min(1).max(1000).optional(),
   })
   .refine(
     (value) =>

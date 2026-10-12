@@ -87,9 +87,17 @@ suite(
       const where = {
         role_module: { role: "MANAGER" as const, module: "recruitment" },
       };
-      await prisma.modulePermission.update({ where, data: { canEdit: false } });
+      const previousPermission = await prisma.modulePermission.findUniqueOrThrow({where});
+      await prisma.modulePermission.update({ where, data: { canEdit: false, canViewRestricted: false } });
       try {
         expect((await api("MANAGER").get("/interviews")).status).toBe(200);
+        expect((await api("MANAGER").put(`/candidates/${id}/stage`, {stage: "HR_INTERVIEW", expectedStage: "TELEPHONIC"})).status).toBe(403);
+        const pipeline = await api("MANAGER").get(`/pipeline?requisitionId=${reqId}`);
+        expect(pipeline.status).toBe(200);
+        const pipelineCandidate = pipeline.body.data.columns.flatMap((column: any) => column.items).find((candidate: any) => candidate.id === id);
+        expect(pipelineCandidate).toBeDefined();
+        for (const field of ["currentSalary", "expectedSalary", "offeredSalary", "recruitmentCost"])
+          expect(pipelineCandidate).not.toHaveProperty(field);
         expect(
           (
             await api("MANAGER").put(`/candidates/${id}/interview`, {
@@ -104,7 +112,7 @@ suite(
       } finally {
         await prisma.modulePermission.update({
           where,
-          data: { canEdit: true },
+          data: { canEdit: previousPermission.canEdit, canViewRestricted: previousPermission.canViewRestricted },
         });
       }
     });
@@ -204,6 +212,43 @@ suite(
       return res.body.data.id;
     };
     let scheduleSequence = 0;
+    test("stage API persists history, rejects stale edits, and scopes pipeline counts", async () => {
+      const reqId = await opening(2);
+      const creation = await api("HR").post("/candidates", {candidateName: "Pipeline QA", requisitionId: reqId});
+      expect(creation.status).toBe(200);
+      const id = creation.body.data.id;
+      expect(creation.body.data.currentStage).toBe("SCREENING");
+      expect((await api("HR").put(`/candidates/${id}/stage`, {stage: "TELEPHONIC", expectedStage: "SCREENING"})).status).toBe(400);
+      expect((await api("HR").put(`/candidates/${id}/screen`, {screeningStatus: "SHORTLISTED"})).status).toBe(200);
+      const transitions = await Promise.all([
+        api("HR").put(`/candidates/${id}/stage`, {stage: "TELEPHONIC", expectedStage: "SCREENING"}),
+        api("HR").put(`/candidates/${id}/stage`, {stage: "HR_INTERVIEW", expectedStage: "SCREENING", reason: "Direct HR assessment for this role"}),
+      ]);
+      expect(transitions.map(result => result.status).sort()).toEqual([200, 409]);
+      const candidate = await prisma.candidate.findUniqueOrThrow({where: {id}, include: {stageHistory: true}});
+      expect(candidate.stageHistory).toHaveLength(1);
+      expect(candidate.stageHistory[0]).toMatchObject({fromStage: "SCREENING", toStage: candidate.currentStage});
+      expect((await api("HR").put(`/candidates/${id}/stage`, {stage: "MANAGEMENT", expectedStage: candidate.currentStage, reason: "Skip assessment"})).status).toBe(400);
+      const pipeline = await api("HR").get(`/pipeline?requisitionId=${reqId}`);
+      expect(pipeline.status).toBe(200);
+      expect(pipeline.body.data.columns.reduce((sum: number, column: any) => sum + column.total, 0)).toBe(1);
+      expect(pipeline.body.data.columns.find((column: any) => column.stage === candidate.currentStage).items[0].id).toBe(id);
+      const detail = await api("HR").get(`/requisitions/${reqId}/candidates`);
+      expect(detail.body.data[0].stageHistory).toHaveLength(1);
+      expect((await api("EMPLOYEE").put(`/candidates/${id}/stage`, {stage: "SCREENING", expectedStage: candidate.currentStage, reason: "Invalid access"})).status).toBe(403);
+    });
+    const submitCurrentFeedback = async (candidateId: string) => {
+      const candidate = await prisma.candidate.findUniqueOrThrow({where: {id: candidateId}});
+      const appointment = await prisma.interview.findFirst({where: {candidateId, round: candidate.currentStage, status: {not: "CANCELLED"}}, orderBy: {createdAt: "desc"}});
+      // Legacy round changes can precede appointment creation; add the same-round
+      // appointment so the journey exercises the submitted evaluation contract.
+      const interview = appointment || (await api("HR").post(`/candidates/${candidateId}/interviews`, {
+        round: candidate.currentStage, startsAt: new Date(Date.UTC(2028, 0, 1 + scheduleSequence++, 9)).toISOString(),
+        endsAt: new Date(Date.UTC(2028, 0, scheduleSequence, 10)).toISOString(),
+      })).body.data;
+      expect((await api("HR").put(`/interviews/${interview.id}/status`, {status: "COMPLETED"})).status).toBe(200);
+      expect((await api("HR").put(`/interviews/${interview.id}/feedback`, {feedback: "QA submitted evaluation", score: 8, recommendation: "YES"})).status).toBe(200);
+    };
     const schedule = async (id: string) => {
       const interviewDate = new Date(
         Date.UTC(2027, 0, 1 + scheduleSequence++, 9),
@@ -232,6 +277,7 @@ suite(
         "TECHNICAL",
         "MANAGEMENT",
       ]) {
+        await submitCurrentFeedback(id);
         const result = await api("MANAGER").put(`/candidates/${id}/interview`, {
           interviewRound,
         });
@@ -264,6 +310,7 @@ suite(
     test("one offer does not close an opening with two vacancies", async () => {
       const reqId = await opening(2);
       const id = await schedule(reqId);
+      await submitCurrentFeedback(id);
       expect(
         (
           await api("MANAGER").put(`/candidates/${id}/interview`, {
@@ -305,10 +352,12 @@ suite(
     test("creates a separate interview appointment, protects salary in register results, and preserves reschedule history", async () => {
       const reqId = await opening();
       const candidateId = await schedule(reqId);
+      await submitCurrentFeedback(candidateId);
       const create = await api("HR").post(
         `/candidates/${candidateId}/interviews`,
         {
           round: "TECHNICAL",
+          reason: "Technical assessment follows telephonic screening for this role",
           startsAt: "2026-11-04T09:00:00.000Z",
           endsAt: "2026-11-04T10:00:00.000Z",
           timezone: "Asia/Kolkata",
@@ -385,6 +434,8 @@ suite(
       const reqId = await opening(2);
       const first = await schedule(reqId);
       const second = await schedule(reqId);
+      await submitCurrentFeedback(first);
+      await submitCurrentFeedback(second);
       const make = (candidateId: string) =>
         api("HR").post(`/candidates/${candidateId}/interviews`, {
           round: "HR_INTERVIEW",
@@ -542,9 +593,10 @@ suite(
         }),
       ).toBe(1);
     });
-    test("declining an offer reopens an automatically filled opening and removes its filled count", async () => {
+    test("declining releases reserved capacity and re-releasing a fresh offer reserves it again", async () => {
       const reqId = await opening();
       const id = await schedule(reqId);
+      await submitCurrentFeedback(id);
       expect(
         (
           await api("MANAGER").put(`/candidates/${id}/interview`, {
@@ -591,6 +643,10 @@ suite(
       expect(
         list.body.data.find((r: any) => r.id === reqId).selectedCount,
       ).toBe(0);
+      expect((await api("HR").put(`/candidates/${id}/offer`, {offerStatus: "OFFER_ACCEPTED"})).status).toBe(400);
+      expect((await api("HR").put(`/candidates/${id}/offer`, {offerStatus: "RELEASED"})).status).toBe(200);
+      expect((await prisma.requisition.findUniqueOrThrow({where: {id: reqId}})).status).toBe("CLOSED");
+      expect((await prisma.candidate.findUniqueOrThrow({where: {id}})).currentStage).toBe("OFFER");
     });
     test("a manually closed requisition stays closed when a candidate is put on hold", async () => {
       const reqId = await opening();
@@ -681,9 +737,10 @@ suite(
         "Submitted evaluation",
       );
     });
-    test("joining requires acceptance and records the actual date; failure to join releases capacity", async () => {
+    test("joining requires acceptance and records the actual date; joined outcome cannot be reverted", async () => {
       const reqId = await opening();
       const id = await schedule(reqId);
+      await submitCurrentFeedback(id);
       expect(
         (
           await api("HR").put(`/candidates/${id}/offer`, {
@@ -733,11 +790,21 @@ suite(
             joiningStatus: "NOT_JOINED",
           })
         ).status,
-      ).toBe(200);
+      ).toBe(400);
       expect(
         (await prisma.requisition.findUniqueOrThrow({ where: { id: reqId } }))
           .status,
-      ).not.toBe("CLOSED");
+      ).toBe("CLOSED");
+    });
+    test("failure to join releases capacity before joining is recorded", async () => {
+      const reqId = await opening();
+      const id = await schedule(reqId);
+      await submitCurrentFeedback(id);
+      expect((await api("MANAGER").put(`/candidates/${id}/interview`, {selectionStatus: "SELECTED"})).status).toBe(200);
+      expect((await api("HR").put(`/candidates/${id}/offer`, {offerStatus: "RELEASED"})).status).toBe(200);
+      expect((await api("HR").put(`/candidates/${id}/offer`, {offerStatus: "OFFER_ACCEPTED", joiningStatus: "NOT_JOINED"})).status).toBe(200);
+      expect((await prisma.requisition.findUniqueOrThrow({where: {id: reqId}})).status).not.toBe("CLOSED");
+      expect((await prisma.candidate.findUniqueOrThrow({where: {id}})).currentStage).toBe("OFFER");
     });
     test("first appointment conflicts are rejected and cancellation requires a reason", async () => {
       const reqId = await opening(2);
