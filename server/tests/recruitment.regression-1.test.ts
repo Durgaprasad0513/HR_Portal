@@ -6,9 +6,6 @@ import bcrypt from "bcryptjs";
 import prisma from "../src/config/database";
 import app from "../src/app";
 
-jest.mock("../src/utils/email.service", () => ({
-  emailService: { sendWelcomeEmail: jest.fn() },
-}));
 const databaseUrl = new URL(
   process.env.DATABASE_URL || "postgresql://localhost/disabled",
 );

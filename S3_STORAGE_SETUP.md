@@ -62,7 +62,7 @@ review because upload and download limits are 10 MiB.
 
 Metadata deletion does not delete object bytes. Define retention, backup and
 orphan-file cleanup separately. Malware scanning is not implemented. Follow
-RENDER_RELEASE_CHECKLIST.md for Neon migrations, CORS and email configuration
+RENDER_RELEASE_CHECKLIST.md for Neon migrations and CORS configuration
 before release. Account, bucket, credential and live file round-trip verification
 are still required; local mocked SDK tests do not establish production readiness.
 

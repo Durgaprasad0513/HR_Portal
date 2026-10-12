@@ -2,7 +2,6 @@ import prisma from '../../config/database';
 import crypto from 'crypto';
 import { hashPassword } from '../../utils/password';
 import { notificationService } from '../notifications/notification.service';
-import { emailService } from '../../utils/email.service';
 import { performanceService } from '../performance/performance.service';
 import { CreateEmployeeInput, UpdateEmployeeInput } from './employee.schema';
 import { Prisma, Role } from '@prisma/client';
@@ -208,10 +207,6 @@ export class EmployeeService {
     });
 
     
-      // Send welcome email
-      const loginUrl = process.env.CLIENT_URL || 'http://localhost:5173/login';
-      emailService.sendWelcomeEmail(data.email, data.firstName, temporaryPassword, loginUrl);
-
       await notificationService.notifyHRs({
         notificationType: 'JOINING',
         message: `New employee joined: ${employee.firstName} ${employee.lastName}`,

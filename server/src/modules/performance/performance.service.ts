@@ -325,7 +325,7 @@ export class PerformanceService {
         notificationType: 'REVIEW_DUE',
         message: `Your performance review has been finalized with status: ${data.finalApprovalStatus}.`,
         triggerEvent: data.finalApprovalStatus,
-        channels: ['IN_APP', 'EMAIL']
+        channels: ['IN_APP']
       }).catch(() => {});
       return updated;
     });

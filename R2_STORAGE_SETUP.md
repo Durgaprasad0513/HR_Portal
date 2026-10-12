@@ -46,7 +46,7 @@ downloads are bounded to the same size. Old files larger than this need review.
 Database metadata deletion does not delete stored bytes; retention and orphan-file
 cleanup require a separate reviewed policy. Malware scanning is not implemented.
 
-R2 setup does not repair Neon schema drift or configure email delivery. Follow
+R2 setup does not repair Neon schema drift. Mail delivery is intentionally not supported. Follow
 [the release checklist](RENDER_RELEASE_CHECKLIST.md) before deploying production.
 
 References: [Cloudflare SDK configuration](https://developers.cloudflare.com/r2/examples/aws/aws-sdk-js-v3/),

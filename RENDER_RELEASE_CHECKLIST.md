@@ -10,13 +10,13 @@ Live commit observed: 1589915. Release branch: codex/render-production-readiness
 - Free compute; no persistent disk, pre-deploy command, SSH/shell, or configured health-check path.
 - Auto-deploy is off. Build: npm install && npm run build; start: npm start; root: server/.
 - Environment keys present: DATABASE_URL, DIRECT_URL, JWT_SECRET, NODE_ENV, PORT.
-- CORS_ORIGIN and SMTP settings absent. Secret values were not revealed.
+- CORS_ORIGIN absent. Mail delivery code and dependencies have been removed by user request. Secret values were not revealed.
 
 ## Release order
 
 1. Obtain a restorable database backup and staging copy. Inspect enum values, schema and migration history using read-only queries. Rehearse the exact upgrade against that copy. Existing history may differ after schema synchronization; reconcile it before enabling migrations.
 2. Storage is deferred per user direction. Production currently has no durable upload disk, and no S3 credentials or bucket have been configured. Do not release attachment changes or restart without a verified file-retention plan. Neon remains the database.
-3. Set CORS_ORIGIN=https://hr.pafpl.in and configure mail delivery. Keep JWT_SECRET private and stable.
+3. Set CORS_ORIGIN=https://hr.pafpl.in. Keep JWT_SECRET private and stable. No mail service or SMTP settings are required; employee credentials are shown once in the portal after account creation.
 4. Build with npm ci && npm run build. After staging rehearsal, use npx prisma migrate deploy as the pre-deploy command and /api/ready as the health-check path.
 5. Publish a reviewed release PR, wait for CI, merge, deploy its exact commit and verify all four roles and authenticated downloads. Coordinate frontend and backend release.
 6. Monitor logs and health. Application rollback does not reverse schema changes; use compatible rollbacks and validated recovery procedures.

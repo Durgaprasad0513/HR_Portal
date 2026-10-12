@@ -159,7 +159,7 @@ export class TravelService {
       notificationType: 'TRAVEL_NOTIF',
       message: `Your travel request for ${request.destination} was ${mappedStatus === ApprovalStatus.APPROVAL_APPROVED ? 'approved' : 'rejected'}.`,
       triggerEvent: mappedStatus,
-      channels: ['IN_APP', 'EMAIL'],
+      channels: ['IN_APP'],
     });
     return request;
   }

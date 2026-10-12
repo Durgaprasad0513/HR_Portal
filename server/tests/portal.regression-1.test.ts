@@ -10,7 +10,6 @@ import fs from 'fs';
 import path from 'path';
 import { uploadsDirectory } from '../src/config/storage';
 
-jest.mock('../src/utils/email.service', () => ({ emailService: { sendWelcomeEmail: jest.fn(), sendEmail: jest.fn() } }));
 jest.mock('../src/utils/notification.dispatcher', () => ({ notificationDispatcher: { dispatch: jest.fn().mockResolvedValue(undefined) } }));
 const db = new URL(process.env.DATABASE_URL || 'postgresql://localhost/disabled');
 const suite = ['localhost', '127.0.0.1'].includes(db.hostname) && db.pathname.startsWith('/hr_recruitment_qa_') ? describe : describe.skip;
