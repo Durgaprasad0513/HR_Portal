@@ -97,6 +97,20 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
     const balance=await prisma.leaveBalance.findUniqueOrThrow({where:{employeeId_year_leaveType:{employeeId:employeeIds.EMPLOYEE,year,leaveType:'CASUAL'}}});
     expect(balance.usedDays.toNumber()).toBe(1); expect(balance.remainingDays.toNumber()).toBe(9);
   });
+  it('protects receipt downloads with authentication, ownership and module permissions',async()=>{
+    const filename=`qa-private-${Date.now()}.pdf`;
+    const url=`/api/uploads/${filename}`;
+    fs.mkdirSync(path.resolve('uploads'),{recursive:true}); fs.writeFileSync(path.resolve('uploads',filename),'Synthetic receipt');
+    try {
+      await prisma.travelRequest.create({data:{employeeId:employeeIds.EMPLOYEE,travelPurpose:'Private receipt QA',destination:'QA',startDate:new Date('2032-01-05'),endDate:new Date('2032-01-05'),travelMode:'ROAD',billUpload:url}});
+      expect((await request(app).get(url)).status).toBe(403);
+      expect((await request(app).get(`/api/upload/files/travel/${filename}`)).status).toBe(401);
+      expect((await call('OTHER','get',`/upload/files/travel/${filename}`)).status).toBe(404);
+      expect((await call('EMPLOYEE','get',`/upload/files/expenses/${filename}`)).status).toBe(404);
+      expect((await call('EMPLOYEE','get',`/upload/files/travel/${filename}`)).status).toBe(200);
+      expect((await call('HR','get',`/upload/files/travel/${filename}`)).status).toBe(200);
+    } finally { fs.unlinkSync(path.resolve('uploads',filename)); }
+  });
   it('supports travel creation, approval, own expense submission and settlement with numeric totals',async()=>{
     const travel=succeeds(await call('EMPLOYEE','post','/travel',{travelPurpose:'Synthetic QA journey',destination:'QA Office',startDate:'2030-01-07',endDate:'2030-01-08',travelMode:'TRAIN',advanceRequested:100}));
     expect((await call('OTHER','get',`/travel/${travel.id}`)).status).toBe(404);

@@ -63,7 +63,7 @@ Latest targeted backend suite: 25/25 portal regression tests passed. Evidence: [
 
 | Severity | Finding | Remaining verification or repair |
 | --- | --- | --- |
-| P1 | Generic upload URLs still serve receipts and other attachments publicly | Design authenticated attachment access and migrate existing UI links; identity-document protection alone does not cover every attachment |
+| P1 | Attachment storage durability on Render remains unverified | Authenticated downloads now protect travel/expense receipts and policy files locally; inspect persistent storage and preserve existing files before deployment |
 | P1 | Production database compatibility remains unverified | Inspect production schema and legacy data, rehearse its upgrade using a copy and validate backup/recovery |
 | P2 | Travel and leave approval writes still require concurrent request testing | Check stale submissions/settlements and atomic balance changes |
 | P2 | All-role browser journeys incomplete | Remaining role-specific forms, exports, accessibility and negative paths |
@@ -73,10 +73,10 @@ Latest targeted backend suite: 25/25 portal regression tests passed. Evidence: [
 
 ## Outstanding release evidence
 
-- Browser workflows for all four roles, responsive checks and accessible interactions.
+-, deployment configuration and post-deployment smoke checks.
+- Further investigatio Browser workflows for all four roles, responsive checks and accessible interactions.
 - Production schema compatibility with existing legacy records: migration diff retains legacy enum values, numeric column types and an extra table. No destructive conversion was applied.
-- Real mail delivery, deployment configuration and post-deployment smoke checks.
-- Further investigation of public generic attachments and concurrent approval behavior; production defaults and automatic startup cleanup have been repaired locally.
+- Real mail deliveryn of public generic attachments and concurrent approval behavior; production defaults and automatic startup cleanup have been repaired locally.
 
 ## Limits
 
@@ -93,3 +93,9 @@ Passing tests establish the covered behavior only. They do not establish zero de
 Concurrent leave approvals now claim the pending status and deduct the balance in one transaction. A simultaneous HR/Admin approval regression confirms exactly one success and one day deducted from the leave-year balance. Portal regression suite: 26/26 passed; server type check passed. Cross-year leave allocation remains unverified.
 
 Production is hosted on Render from a different repository, per the user. The actual source repository and service identity are requested. No deployment changes have been applied to this repository or production.
+
+## Production repository and attachment repair
+
+Confirmed release target: https://github.com/techsupportlohitha/HR_Portal, main at 1589915. Prepared isolated release checkout C:/Users/VDurgaprasad/HR_Portal_release on codex/render-production-readiness and merged production main without conflicts. Render /api/live and /api/ready both returned 200 on 12 October 2026. This is health evidence only, not all-module readiness. Render dashboard requires user sign-in; requested.
+
+Public upload URLs now serve only referenced profile images; identity documents, receipts and policy attachments require authenticated endpoints. Receipt downloads enforce module view permission and Employee ownership. Client travel, expense and policy attachment controls fetch authenticated blobs without putting tokens in URLs. Uploads are limited to ten files of 10 MiB each. Portal suite 27/27 passed, server type check passed, frontend build, lint and all 16 tests passed. Browser owner receipt download completed without console errors. Evidence: private-attachment-download.jpg. Existing external attachment URLs and orphaned uploads require a compatibility review against production records.

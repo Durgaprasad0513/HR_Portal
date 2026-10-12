@@ -1,3 +1,4 @@
+import { AttachmentLink } from '@/components/ui/AttachmentLink';
 import { formatDate, formatDateTime } from '@/utils/dateFormat';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -385,7 +386,7 @@ export default function TravelListPage() {
            const href = filePath.startsWith('/api/')
              ? new URL(filePath, new URL(apiClient.defaults.baseURL || '/api', window.location.origin).origin).href
              : filePath;
-           return <li key={index}>{isLink ? <a className="text-brand-primary underline break-all" href={href} target="_blank" rel="noopener noreferrer">View attachment {index + 1}</a> : <span className="break-all">{filePath}</span>}</li>;
+           return <li key={index}>{isLink ? <AttachmentLink module="travel" className="text-brand-primary underline break-all" href={href} target="_blank" rel="noopener noreferrer">View attachment {index + 1}</AttachmentLink> : <span className="break-all">{filePath}</span>}</li>;
          })}</ul> : <p className="text-sm text-text-muted">No files attached.</p>}
        </section>
        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-border pt-4">
@@ -500,9 +501,9 @@ export default function TravelListPage() {
  <div><span className="text-gray-500 block mb-1">Attached Files:</span> 
  <div className="flex flex-col gap-1">
  {selectedRequest?.billUpload ? selectedRequest.billUpload.split(',').map((url: string, i: number) => (
- <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline text-sm break-all">
+ <AttachmentLink module="travel" key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline text-sm break-all">
  View File {i + 1}
- </a>
+ </AttachmentLink>
  )) : <span className="text-gray-400 text-sm">No files attached</span>}
  </div>
  </div>

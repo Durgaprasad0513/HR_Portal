@@ -1,3 +1,4 @@
+import { AttachmentLink } from '@/components/ui/AttachmentLink';
 import { formatDate, formatDateTime } from '@/utils/dateFormat';
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -246,7 +247,7 @@ export default function PolicyListPage() {
  </div>
  )}
 
- <a
+ <AttachmentLink module="policies"
  href={policy.filePath}
  target="_blank"
  rel="noreferrer"
@@ -254,7 +255,7 @@ export default function PolicyListPage() {
  aria-label={`View ${policy.policyName}`}
  >
  <Eye className="h-4 w-4" aria-hidden="true" /> View
- </a>
+ </AttachmentLink>
 
  {policy.acknowledgementRequired && !acknowledged && (
  <button

@@ -1,3 +1,4 @@
+import { AttachmentLink } from '@/components/ui/AttachmentLink';
 import { formatDate, formatDateTime } from '@/utils/dateFormat';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -107,9 +108,9 @@ export default function OfficeExpensesPage() {
  accessor: (row: any) => row.billUpload ? (
  <div className="flex flex-col">
  {row.billUpload.split(',').map((url: string, i: number) => (
- <a key={i} href={url} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()} className="text-indigo-500 hover:underline text-sm">
+ <AttachmentLink module="expenses" key={i} href={url} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()} className="text-indigo-500 hover:underline text-sm">
  File {i + 1}
- </a>
+ </AttachmentLink>
  ))}
  </div>
  ) : <span className="text-gray-400 text-sm">None</span>
@@ -265,7 +266,7 @@ export default function OfficeExpensesPage() {
      </section>
      <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
        <h3 className="font-semibold text-text-heading mb-3">Receipt & attachments</h3>
-       {selectedExpense.billUpload ? <ul className="space-y-2">{selectedExpense.billUpload.split(',').filter(Boolean).map((file: string, index: number) => <li key={index}><a className="text-brand-primary underline break-all" href={file.trim()} target="_blank" rel="noopener noreferrer">View receipt {index + 1}</a></li>)}</ul> : <p className="text-text-muted">No receipt attached.</p>}
+       {selectedExpense.billUpload ? <ul className="space-y-2">{selectedExpense.billUpload.split(',').filter(Boolean).map((file: string, index: number) => <li key={index}><AttachmentLink module="expenses" className="text-brand-primary underline break-all" href={file.trim()} target="_blank" rel="noopener noreferrer">View receipt {index + 1}</AttachmentLink></li>)}</ul> : <p className="text-text-muted">No receipt attached.</p>}
      </section>
      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-border pt-4">
        <p className="text-xs text-text-muted break-all">Expense ID: {selectedExpense.id} · Created {formatDateTime(selectedExpense.createdAt)}</p>

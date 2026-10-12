@@ -48,29 +48,22 @@ const corsOptions = {
 app.options('*', cors(corsOptions)); // Handle preflight for ALL routes
 app.use(cors(corsOptions));
 app.use(express.json());
-// Employee identity documents must use the authenticated download endpoint.
+// Only explicitly referenced profile images have a public URL. All attachments
+// require the authenticated document or module-specific download endpoints.
 app.use('/api/uploads', async (req, res, next) => {
   try {
     let filename: string;
-    try { filename = path.basename(decodeURIComponent(req.path)); }
+    try { filename = decodeURIComponent(req.path).slice(1); }
     catch { res.status(400).json({ success: false, message: 'Invalid file path.' }); return; }
-    // Multer's extensionless names are private document storage. Only explicitly
-    // referenced profile photos may be served publicly, including after a document is deleted.
-    if (/^[a-f0-9]{32}$/i.test(filename)) {
-      const photo = await prisma.employee.findFirst({ where: { profilePhoto: `/api/uploads/${filename}` }, select: { id: true } });
-      if (!photo) {
-        res.status(403).json({ success: false, message: 'Use the authenticated document download endpoint.' });
-        return;
-      }
+    if (!filename || path.basename(filename) !== filename) {
+      res.status(403).json({ success: false, message: 'Authenticated download required.' }); return;
     }
+    const photo = await prisma.employee.findFirst({ where: { profilePhoto: `/api/uploads/${filename}` }, select: { id: true } });
     const document = await prisma.employeeDocument.findFirst({
-      where: { OR: [{ filePath: { endsWith: `/${filename}` } }, { filePath: { endsWith: `\\${filename}` } }] },
-      select: { id: true },
+      where: { OR: [{ filePath: { endsWith: `/${filename}` } }, { filePath: { endsWith: `\\${filename}` } }] }, select: { id: true },
     });
-    if (document) {
-      res.status(403).json({ success: false, message: 'Use the authenticated document download endpoint.' });
-      return;
-    }
+    if (!photo || document) { res.status(403).json({ success: false, message: 'Authenticated download required.' }); return; }
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     next();
   } catch (error) { next(error); }
 }, express.static(path.join(__dirname, '../uploads')));
