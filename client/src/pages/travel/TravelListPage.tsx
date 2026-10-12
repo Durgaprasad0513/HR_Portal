@@ -1,3 +1,4 @@
+import { AttachmentLink } from '@/components/ui/AttachmentLink';
 import { formatDate, formatDateTime } from '@/utils/dateFormat';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,6 +20,10 @@ import apiClient from '@/api/client'; // Need this for custom expense put
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { hasAdminAccess } from '@/utils/roles';
+
+const TRAVEL_MODE_LABELS: Record<string, string> = {
+ AIR: 'Flight', TRAIN: 'Train', ROAD: 'Bus or cab', OWN_VEHICLE: 'Personal vehicle',
+};
 
 export default function TravelListPage() {
  const { user } = useAuth();
@@ -58,6 +63,8 @@ export default function TravelListPage() {
    : 0;
  const personName = (person: any) => person ? [person.firstName, person.lastName].filter(Boolean).join(' ') || person.email || '—' : '—';
  const statusLabel = (value: string | undefined) => value?.replace(/^APPROVAL_/, '').replace(/_/g, ' ') || '—';
+ const travelModeLabel = (value: string | undefined) => TRAVEL_MODE_LABELS[value || ''] || statusLabel(value);
+ const netAmount = expenseTotal - Number(details?.advanceApproved ?? 0);
 
  const createMutation = useMutation({
  mutationFn: (payload: any) => travelApi.create(payload),
@@ -185,7 +192,7 @@ export default function TravelListPage() {
  </button>
  )}
 
- {row.approvalStatus === 'APPROVAL_APPROVED' && row.settlementStatus === 'UNSETTLED' && row.employee?.id === user?.employeeId && mayEditTravel && (
+ {row.approvalStatus === 'APPROVAL_APPROVED' && row.settlementStatus === 'UNSETTLED' && row.employee?.id === user?.employeeId && mayCreateTravel && (
  <button 
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[130px]" 
  title="Submit Expenses"
@@ -220,7 +227,7 @@ export default function TravelListPage() {
  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
  e.preventDefault();
  const formData = new FormData(e.currentTarget);
- const file = formData.get('billUpload') as File;
+ const billUpload = formData.get('billUpload');
  const payload: any = {
  travelPurpose: formData.get('travelPurpose'),
  destination: formData.get('destination'),
@@ -229,9 +236,8 @@ export default function TravelListPage() {
  travelMode: formData.get('travelMode'),
  advanceRequested: Number(formData.get('advanceRequested')) || 0,
  };
- // Send file name as string for now if present, real implementation would upload to S3
- if (file && file.size > 0) {
- payload.billUpload = file.name;
+ if (typeof billUpload === 'string' && billUpload) {
+ payload.billUpload = billUpload;
  }
  createMutation.mutate(payload);
  };
@@ -239,15 +245,15 @@ export default function TravelListPage() {
  const handleExpenseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
  e.preventDefault();
  const formData = new FormData(e.currentTarget);
- const file = formData.get('billUpload') as File;
+ const billUpload = formData.get('billUpload');
  const payload: any = {
  hotelExpense: Number(formData.get('hotelExpense')) || 0,
  foodAllowance: Number(formData.get('foodAllowance')) || 0,
  localConveyance: Number(formData.get('localConveyance')) || 0,
  otherExpenses: Number(formData.get('otherExpenses')) || 0,
  };
- if (file && file.size > 0) {
- payload.billUpload = file.name;
+ if (typeof billUpload === 'string' && billUpload) {
+ payload.billUpload = billUpload;
  }
  expenseMutation.mutate({
  id: selectedRequest.id,
@@ -286,7 +292,7 @@ export default function TravelListPage() {
  <p className="text-2xl font-bold text-text-heading">
  ₹{data.filter((d:any) => d.settlementStatus === 'SETTLED').reduce((sum:number, d:any) => {
    const expenses = [d.hotelExpense, d.foodAllowance, d.localConveyance, d.otherExpenses];
-   // Recalculate from components because older saved totals may be concatenated.
+   // Components remain authoritative when older saved totals were concatenated.
    const total = expenses.some(value => value != null)
      ? expenses.reduce((subtotal:number, value:any) => subtotal + Number(value ?? 0), 0)
      : Number(d.totalExpenseClaimed ?? 0);
@@ -323,61 +329,70 @@ export default function TravelListPage() {
    {detailsQuery.isLoading ? <div className="py-8"><LoadingSpinner /></div> : detailsQuery.isError ? (
      <div className="space-y-3"><p role="alert">Could not load this travel request.</p><Button onClick={() => detailsQuery.refetch()}>Retry</Button></div>
    ) : details ? (
-     <div className="space-y-5">
-       <section>
-         <h3 className="font-semibold text-text-heading mb-3">Trip information</h3>
-         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+     <div className="space-y-4 text-sm">
+       <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:p-5">
+         <div className="flex items-start gap-3">
+           <div className="rounded-xl bg-indigo-100 dark:bg-indigo-900/40 p-2.5 text-indigo-600 dark:text-indigo-300"><Plane className="h-5 w-5" /></div>
+           <div className="min-w-0 flex-1">
+             <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Trip to</p>
+             <h3 className="mt-0.5 text-xl font-semibold text-text-heading break-words">{details.destination || 'Destination not specified'}</h3>
+             <p className="mt-1 text-text-muted">{formatDate(details.startDate)} – {formatDate(details.endDate)} · {travelModeLabel(details.travelMode)}</p>
+           </div>
+         </div>
+         <div className="mt-4 flex flex-wrap gap-2">
+           <Badge className="capitalize" variant={details.approvalStatus === 'APPROVAL_APPROVED' ? 'success' : details.approvalStatus === 'APPROVAL_REJECTED' ? 'danger' : 'warning'}>{statusLabel(details.approvalStatus)} approval</Badge>
+           <Badge className="capitalize" variant={details.settlementStatus === 'SETTLED' ? 'success' : details.settlementStatus === 'SUBMITTED' ? 'warning' : 'default'}>{statusLabel(details.settlementStatus)} settlement</Badge>
+         </div>
+       </div>
+       <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+         <h3 className="font-semibold text-text-heading mb-4">Trip information</h3>
+         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
            {[
              ['Employee', personName(details.employee)],
              ['Department', details.employee?.department?.name || '—'],
              ['Designation', details.employee?.designation || '—'],
-             ['Destination', details.destination],
-             ['Business purpose', details.travelPurpose],
-             ['Travel mode', statusLabel(details.travelMode)],
-             ['Start date', formatDate(details.startDate)],
-             ['End date', formatDate(details.endDate)],
-             ['Request ID', details.id],
-             ['Created', formatDateTime(details.createdAt)],
-             ['Last updated', formatDateTime(details.updatedAt)],
-           ].map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="text-text-heading break-words whitespace-pre-wrap">{value}</dd></div>)}
+             ['Business purpose', details.travelPurpose || '—'],
+           ].map(([label, value]) => <div key={label}><dt className="text-xs text-text-muted">{label}</dt><dd className="mt-1 font-medium text-text-heading break-words whitespace-pre-wrap">{value}</dd></div>)}
          </dl>
        </section>
-       <section className="border-t border-slate-border pt-4">
-         <h3 className="font-semibold text-text-heading mb-3">Approval & settlement</h3>
-         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+       <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+         <h3 className="font-semibold text-text-heading mb-4">Approval & settlement</h3>
+         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
            {[
-             ['Approval status', statusLabel(details.approvalStatus)],
-             ['Approver', personName(details.approver)],
+             ['Reviewed by', personName(details.approver)],
              ['Approval date', details.approvalDate ? formatDateTime(details.approvalDate) : '—'],
-             ['Settlement status', statusLabel(details.settlementStatus)],
              ['Verified by', details.verifiedBy?.email || '—'],
              ['Settlement date', details.settlementDate ? formatDateTime(details.settlementDate) : '—'],
-           ].map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="text-text-heading break-words">{value}</dd></div>)}
+           ].map(([label, value]) => <div key={label}><dt className="text-xs text-text-muted">{label}</dt><dd className="mt-1 font-medium text-text-heading break-words">{value}</dd></div>)}
          </dl>
        </section>
-       <section className="border-t border-slate-border pt-4">
-         <h3 className="font-semibold text-text-heading mb-3">Expenses & advances</h3>
-         <dl className="space-y-2 text-sm">
+       <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+         <h3 className="font-semibold text-text-heading mb-4">Expenses & advances</h3>
+         <dl className="space-y-3">
            {[
              ['Advance requested', details.advanceRequested], ['Advance approved', details.advanceApproved],
-             ['Hotel expense', details.hotelExpense], ['Food allowance', details.foodAllowance],
-             ['Local conveyance', details.localConveyance], ['Other expenses', details.otherExpenses],
-             ['Total expenses', expenseTotal], ['Net amount (payable / recoverable)', expenseTotal - Number(details.advanceApproved ?? 0)],
+             ['Hotel', details.hotelExpense], ['Food', details.foodAllowance],
+             ['Local transport', details.localConveyance], ['Other expenses', details.otherExpenses],
            ].map(([label, value]) => <div key={String(label)} className="flex justify-between gap-4"><dt className="text-text-muted">{label}</dt><dd className="font-medium text-text-heading whitespace-nowrap">{money(value)}</dd></div>)}
+           <div className="flex justify-between gap-4 border-t border-slate-border pt-3"><dt className="font-medium text-text-heading">Total expenses</dt><dd className="font-semibold text-text-heading whitespace-nowrap">{money(expenseTotal)}</dd></div>
+           {details.settlementStatus !== 'UNSETTLED' && <div className="flex justify-between gap-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3"><dt className="font-semibold text-text-heading">{netAmount < 0 ? 'Amount to recover' : 'Amount payable'}</dt><dd className="font-bold text-text-heading whitespace-nowrap">{money(Math.abs(netAmount))}</dd></div>}
          </dl>
        </section>
-       <section className="border-t border-slate-border pt-4">
-         <h3 className="font-semibold text-text-heading mb-2">Bills & attachments</h3>
+       <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+         <h3 className="font-semibold text-text-heading mb-3">Bills & attachments</h3>
          {details.billUpload ? <ul className="space-y-2 text-sm">{details.billUpload.split(',').filter(Boolean).map((file: string, index: number) => {
            const filePath = file.trim();
            const isLink = /^https?:\/\//i.test(filePath) || /^\/(?!\/)/.test(filePath);
            const href = filePath.startsWith('/api/')
              ? new URL(filePath, new URL(apiClient.defaults.baseURL || '/api', window.location.origin).origin).href
              : filePath;
-           return <li key={index}>{isLink ? <a className="text-brand-primary underline break-all" href={href} target="_blank" rel="noopener noreferrer">View attachment {index + 1}</a> : <span className="break-all">{filePath}</span>}</li>;
+           return <li key={index}>{isLink ? <AttachmentLink module="travel" className="text-brand-primary underline break-all" href={href} target="_blank" rel="noopener noreferrer">View attachment {index + 1}</AttachmentLink> : <span className="break-all">{filePath}</span>}</li>;
          })}</ul> : <p className="text-sm text-text-muted">No files attached.</p>}
        </section>
-       <div className="flex justify-end border-t border-slate-border pt-4"><Button variant="outline" onClick={() => setDetailsModalOpen(false)}>Close</Button></div>
+       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-border pt-4">
+         <p className="text-xs text-text-muted break-all">Request ID: {details.id} · Created {formatDateTime(details.createdAt)}</p>
+         <Button variant="outline" onClick={() => setDetailsModalOpen(false)}>Close</Button>
+       </div>
      </div>
    ) : null}
  </Modal>
@@ -401,7 +416,7 @@ export default function TravelListPage() {
  <option value="OWN_VEHICLE">Personal Vehicle</option>
  </Select>
  </div>
- <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="1" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
+ <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
  </div>
  <FileUpload name="billUpload" label="Upload Attachment (Optional)" module="travel" action="add" />
  
@@ -427,7 +442,7 @@ export default function TravelListPage() {
  </div>
  </div>
 
- <Input id="advanceApproved" label="Advance Approved (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={selectedRequest?.advanceRequested || 0} />
+ <Input id="advanceApproved" label="Advance Approved (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={selectedRequest?.advanceRequested || 0} />
  
  <div className="flex justify-end space-x-3 pt-4 border-t border-slate-border dark:border-slate-border">
  <Button variant="outline" onClick={() => setApprovalModalOpen(false)}>Cancel</Button>
@@ -453,18 +468,18 @@ export default function TravelListPage() {
  </Modal>
 
  {/* Submit Expenses Modal */}
- <Modal isOpen={expenseModalOpen && mayEditTravel} onClose={() => setExpenseModalOpen(false)} title="Submit Travel Expenses">
+ <Modal isOpen={expenseModalOpen && mayCreateTravel} onClose={() => setExpenseModalOpen(false)} title="Submit Travel Expenses">
  <form onSubmit={handleExpenseSubmit} className="space-y-4">
  <p className="text-sm text-gray-600">Fill in your expenses for this trip. The advance you received (if any) will be automatically deducted during settlement.</p>
  
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
- <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
+ <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+ <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+ <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+ <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
  </div>
 
- <FileUpload name="billUpload" label="Upload Bills/Receipts" required module="travel" action="edit" />
+ <FileUpload name="billUpload" label="Upload Bills/Receipts" required module="travel" action="add" />
  
  <div className="flex justify-end space-x-2 pt-4">
  <Button type="button" variant="outline" onClick={() => setExpenseModalOpen(false)}>Cancel</Button>
@@ -486,9 +501,9 @@ export default function TravelListPage() {
  <div><span className="text-gray-500 block mb-1">Attached Files:</span> 
  <div className="flex flex-col gap-1">
  {selectedRequest?.billUpload ? selectedRequest.billUpload.split(',').map((url: string, i: number) => (
- <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline text-sm break-all">
+ <AttachmentLink module="travel" key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline text-sm break-all">
  View File {i + 1}
- </a>
+ </AttachmentLink>
  )) : <span className="text-gray-400 text-sm">No files attached</span>}
  </div>
  </div>

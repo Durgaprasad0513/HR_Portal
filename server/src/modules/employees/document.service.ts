@@ -1,22 +1,20 @@
 import prisma from '../../config/database';
 import { hasAdminAccess } from '../../utils/roles';
 import { DocumentType } from '@prisma/client';
-import fs from 'fs';
 import path from 'path';
+import { uploadsDirectory, fileStorage, newFilename } from '../../config/storage';
 
 export class DocumentService {
   async upload(currentUser: any, file: Express.Multer.File, data: any, reqContext: { ipAddress?: string }) {
-    // Quarantine/Scanning simulation: in a real app, send to virus scanner.
-    // For Gate 1, we just save the path and log it.
-    
-    // Retention state: We store it locally in an uploads folder
+    const filename = newFilename(file.originalname);
+    await fileStorage.save(filename, file.buffer);
     const doc = await prisma.employeeDocument.create({
       data: {
         documentType: data.documentType,
         documentName: data.documentName,
         employeeId: data.employeeId,
         uploadedById: currentUser.userId,
-        filePath: file.path,
+        filePath: `uploads/${filename}`,
       }
     });
 
@@ -65,14 +63,15 @@ export class DocumentService {
       throw new Error('Not authorized to download this document');
     }
 
-    const uploadsDirectory = path.resolve(process.cwd(), 'uploads');
-    const filePath = path.resolve(doc.filePath);
+    // Relative legacy paths remain valid after files are copied to the mounted directory.
+    const storedPath = path.resolve(doc.filePath);
+    const legacyDirectory = path.resolve('uploads');
+    const isLegacy = storedPath.startsWith(`${legacyDirectory}${path.sep}`);
+    const filePath = isLegacy ? path.join(uploadsDirectory, path.basename(storedPath)) : storedPath;
     if (!filePath.startsWith(`${uploadsDirectory}${path.sep}`)) {
       throw new Error('Stored document path is invalid');
     }
-    if (!fs.existsSync(filePath)) {
-      throw new Error('Document file is unavailable. It may need to be uploaded again.');
-    }
+    const bytes = await fileStorage.read(path.basename(filePath));
 
     await prisma.auditLog.create({
       data: {
@@ -97,7 +96,7 @@ export class DocumentService {
     const contentType = contentTypes[extension] || 'application/octet-stream';
 
     return {
-      filePath,
+      bytes,
       documentName: doc.documentName,
       contentType,
       inline: contentType !== 'application/octet-stream',

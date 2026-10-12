@@ -3,14 +3,18 @@ import { ApplyLeaveInput, UpdateLeaveStatusInput } from './leave.schema';
 
 export class LeaveService {
   async apply(employeeId: string, data: ApplyLeaveInput) {
-    // Date-only inputs must be interpreted as calendar dates, not UTC instants.
+    // PostgreSQL date columns use the UTC calendar day; normalize without a local timezone shift.
     const parseDateOnly = (value: Date | string) => {
       if (value instanceof Date) {
-        return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
       }
 
       const [year, month, day] = value.slice(0, 10).split('-').map(Number);
-      return new Date(year, month - 1, day);
+      const date = new Date(Date.UTC(year, month - 1, day));
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+        throw new Error('A valid calendar date is required');
+      }
+      return date;
     };
     const startDate = parseDateOnly(data.startDate);
     const endDate = parseDateOnly(data.endDate);
@@ -23,11 +27,11 @@ export class LeaveService {
     let totalDays = 0;
     const current = new Date(startDate);
     while (current <= endDate) {
-      const dayOfWeek = current.getDay();
+      const dayOfWeek = current.getUTCDay();
       if (dayOfWeek !== 0) {
         totalDays++;
       }
-      current.setDate(current.getDate() + 1);
+      current.setUTCDate(current.getUTCDate() + 1);
     }
 
     if (totalDays === 0) {
@@ -104,29 +108,34 @@ export class LeaveService {
       throw new Error('This leave request has already been processed');
     }
 
-    const currentYear = new Date().getFullYear();
-
-    // If approved, update leave balance
-    if (data.status === 'APPROVED' && leave.leaveType !== 'UNPAID') {
-      await prisma.leaveBalance.updateMany({ where: { employeeId: leave.employeeId, year: currentYear, leaveType: leave.leaveType },
-        data: {
-          usedDays: { increment: leave.totalDays },
-          remainingDays: { decrement: leave.totalDays },
+    return prisma.$transaction(async (tx) => {
+      // Claim the pending transition before touching balances. Concurrent retries
+      // cannot charge the employee twice; every write rolls back on failure.
+      const claimed = await tx.leave.updateMany({
+        where: { id: leaveId, status: 'PENDING' },
+        data: { status: data.status as any, remarks: data.remarks, approverId },
+      });
+      if (claimed.count !== 1) throw new Error('This leave request has already been processed');
+      if (data.status === 'APPROVED' && leave.leaveType !== 'UNPAID') {
+        const year = leave.startDate.getUTCFullYear();
+        const balance = await tx.leaveBalance.findUnique({
+          where: { employeeId_year_leaveType: { employeeId: leave.employeeId, year, leaveType: leave.leaveType } },
+        });
+        if (balance) {
+          const updated = await tx.leaveBalance.updateMany({
+            where: { id: balance.id, remainingDays: { gte: leave.totalDays } },
+            data: { usedDays: { increment: leave.totalDays }, remainingDays: { decrement: leave.totalDays } },
+          });
+          if (updated.count !== 1) throw new Error('Insufficient leave balance for approval');
+        }
+      }
+      return tx.leave.findUniqueOrThrow({
+        where: { id: leaveId },
+        include: {
+          employee: { select: { firstName: true, lastName: true, email: true } },
+          approver: { select: { firstName: true, lastName: true } },
         },
       });
-    }
-
-    return prisma.leave.update({
-      where: { id: leaveId },
-      data: {
-        status: data.status as any,
-        remarks: data.remarks,
-        approverId,
-      },
-      include: {
-        employee: { select: { firstName: true, lastName: true, email: true } },
-        approver: { select: { firstName: true, lastName: true } },
-      },
     });
   }
 

@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileStorage, imageContentType } from './config/storage';
 import express from 'express';
 import cors from 'cors';
 import { config } from './config';
@@ -40,7 +41,7 @@ app.use((req, res, next) => {
 
 // Middleware
 const corsOptions = {
-  origin: true,
+  origin: config.cors.origin.split(',').map((origin) => origin.trim()).filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'],
@@ -48,7 +49,28 @@ const corsOptions = {
 app.options('*', cors(corsOptions)); // Handle preflight for ALL routes
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
+// Only explicitly referenced profile images have a public URL. All attachments
+// require the authenticated document or module-specific download endpoints.
+app.use('/api/uploads', async (req, res, next) => {
+  try {
+    let filename: string;
+    try { filename = decodeURIComponent(req.path).slice(1); }
+    catch { res.status(400).json({ success: false, message: 'Invalid file path.' }); return; }
+    if (!filename || path.basename(filename) !== filename) {
+      res.status(403).json({ success: false, message: 'Authenticated download required.' }); return;
+    }
+    const photo = await prisma.employee.findFirst({ where: { profilePhoto: `/api/uploads/${filename}` }, select: { id: true } });
+    const document = await prisma.employeeDocument.findFirst({
+      where: { OR: [{ filePath: { endsWith: `/${filename}` } }, { filePath: { endsWith: `\\${filename}` } }] }, select: { id: true },
+    });
+    if (!photo || document) { res.status(403).json({ success: false, message: 'Authenticated download required.' }); return; }
+    const bytes = await fileStorage.read(filename);
+    const contentType = imageContentType(bytes);
+    if (!contentType) { res.sendStatus(404); return; }
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.type(contentType).send(bytes);
+  } catch (error) { next(error); }
+});
 app.use(express.urlencoded({ extended: true }));
 
 // Liveness check
@@ -60,8 +82,13 @@ app.get('/api/live', (_req, res) => {
 app.get('/api/ready', async (_req, res) => {
   const correlationId = crypto.randomUUID();
   try {
-    // Check if DB is reachable and migrations are applied by querying a known table
-    await prisma.$queryRaw`SELECT 1`;
+    await Promise.all([
+      prisma.candidate.findFirst({ select: { currentStage: true, stageEnteredAt: true } }),
+      prisma.performanceReview.findFirst({ select: { status: true } }),
+      prisma.modulePermission.findFirst({ select: { canExport: true } }),
+      prisma.officeExpense.findFirst({ select: { id: true } }),
+      prisma.requisition.findFirst({ where: { status: 'CLOSED' }, select: { id: true } }),
+    ]);
     res.json({ status: 'READY', correlationId, timestamp: new Date().toISOString() });
   } catch (error) {
     res.status(503).json({ status: 'UNAVAILABLE', correlationId, timestamp: new Date().toISOString() });

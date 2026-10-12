@@ -9,14 +9,19 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://hr_user@localhost:5432/hr_recruitment_qa_ci?schema=public
+      DIRECT_URL: postgresql://hr_user@localhost:5432/hr_recruitment_qa_ci?schema=public
+      NODE_ENV: test
+      JWT_SECRET: isolated-ci-fixture-key-not-for-production
     
     services:
       postgres:
         image: postgres:15
         env:
           POSTGRES_USER: hr_user
-          POSTGRES_PASSWORD: hr_password
-          POSTGRES_DB: gate0a
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: hr_recruitment_qa_ci
         ports:
           - 5432:5432
         options: >-

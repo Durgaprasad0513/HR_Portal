@@ -2,7 +2,7 @@ import prisma from '../../config/database';
 import crypto from 'crypto';
 import { hashPassword } from '../../utils/password';
 import { notificationService } from '../notifications/notification.service';
-import { emailService } from '../../utils/email.service';
+import { performanceService } from '../performance/performance.service';
 import { CreateEmployeeInput, UpdateEmployeeInput } from './employee.schema';
 import { Prisma, Role } from '@prisma/client';
 import { getModuleScope, getEmployeeScopeQuery } from '../../utils/authorization';
@@ -132,13 +132,9 @@ export class EmployeeService {
       throw new Error('Employee not found or not accessible');
     }
 
-        // Notify HRs about new joining
-    await notificationService.notifyHRs({
-      notificationType: 'JOINING',
-      message: `New employee joined: ${employee.firstName} ${employee.lastName}`,
-      triggerEvent: employee.id
-    });
-
+    if (currentUser.role === 'EMPLOYEE') {
+      return { ...employee, performanceReviews: await performanceService.getMyReviews(employee.id) };
+    }
     return employee;
   }
 
@@ -211,9 +207,11 @@ export class EmployeeService {
     });
 
     
-      // Send welcome email
-      const loginUrl = process.env.CLIENT_URL || 'http://localhost:5173/login';
-      emailService.sendWelcomeEmail(data.email, data.firstName, temporaryPassword, loginUrl);
+      await notificationService.notifyHRs({
+        notificationType: 'JOINING',
+        message: `New employee joined: ${employee.firstName} ${employee.lastName}`,
+        triggerEvent: employee.id
+      });
 
       return { employee, temporaryPassword };
   }

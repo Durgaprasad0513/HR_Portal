@@ -30,7 +30,7 @@ interface CurrentUser {
 
 export class PerformanceService {
   async getMyReviews(employeeId: string) {
-    return prisma.performanceReview.findMany({
+    const reviews = await prisma.performanceReview.findMany({
       where: { employeeId },
       select: {
         id: true,
@@ -48,6 +48,7 @@ export class PerformanceService {
         managerMetricRatings: true,
         employeeComments: true,
         managerComments: true,
+        hrComments: true,
         strengths: true,
         areasOfImprovement: true,
         trainingRequirement: true,
@@ -61,6 +62,13 @@ export class PerformanceService {
       },
       orderBy: { createdAt: 'desc' }
     });
+
+    return reviews.map(({ managerRating, managerMetricRatings, managerComments, promotionRecommendation, salaryRevisionRecommendation, finalRating, hrComments, status, ...review }) => ({
+      ...review,
+      status,
+      finalRating: status === 'COMPLETED' ? finalRating : null,
+      hrComments: status === 'COMPLETED' ? hrComments : null
+    }));
   }
 
   async getReviews(currentUser: CurrentUser, filters: any = {}) {
@@ -74,13 +82,37 @@ export class PerformanceService {
       scopeQuery = { employeeId: currentUser.employeeId! };
     }
 
-    return prisma.performanceReview.findMany({
+    const reviews = await prisma.performanceReview.findMany({
       where: { ...filters, ...scopeQuery },
       include: {
         employee: { select: { id: true, firstName: true, lastName: true, department: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
+
+    if (currentUser.role !== 'HR') return reviews;
+
+    return reviews.map(({
+      achievedValue,
+      selfRating,
+      selfMetricRatings,
+      employeeComments,
+      strengths,
+      areasOfImprovement,
+      trainingRequirement,
+      managerRating,
+      managerMetricRatings,
+      managerComments,
+      promotionRecommendation,
+      salaryRevisionRecommendation,
+      finalRating,
+      status,
+      ...review
+    }) => ({
+      ...review,
+      status,
+      finalRating: status === 'COMPLETED' ? finalRating : null
+    }));
   }
 
   async createReview(data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
@@ -125,7 +157,7 @@ export class PerformanceService {
   }
 
   async submitSelfAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isOverride = hasAdminAccess(currentUser.role);
+    const isOverride = currentUser.role === 'ADMIN';
     
     const review = await prisma.performanceReview.findUnique({ where: { id } });
     if (!review) throw new Error('Review not found');
@@ -142,7 +174,7 @@ export class PerformanceService {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
-          status: 'MANAGER_REVIEW',
+          status: 'HR_REVIEW',
           achievedValue: data.achievedValue,
           selfRating: roundRating(selfAverage),
           selfMetricRatings: data.metricRatings,
@@ -166,7 +198,10 @@ export class PerformanceService {
   }
 
   async submitManagerAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    const isOverride = hasAdminAccess(currentUser.role);
+    const isOverride = currentUser.role === 'ADMIN';
+    if (!isOverride && currentUser.role !== 'MANAGER') {
+      throw new Error('Only the assigned manager can submit manager appraisal');
+    }
     
     const review = await prisma.performanceReview.findUnique({ 
       where: { id },
@@ -186,7 +221,7 @@ export class PerformanceService {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
-          status: 'HR_REVIEW',
+          status: 'FINAL_APPROVAL',
           managerRating: roundRating(managerAverage),
           managerMetricRatings: data.metricRatings,
           managerComments: data.managerComments,
@@ -208,12 +243,15 @@ export class PerformanceService {
   }
 
   async submitHRAppraisal(id: string, data: any, currentUser: CurrentUser, reqContext: { ipAddress?: string } = {}) {
-    if (!hasAdminAccess(currentUser.role)) {
-      throw new Error('Only Admin, HR, or Manager can submit HR appraisal');
+    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'HR') {
+      throw new Error('Only Admin or HR can submit HR appraisal');
     }
 
     const review = await prisma.performanceReview.findUnique({ where: { id } });
     if (!review) throw new Error('Review not found');
+    if (currentUser.role === 'HR' && review.employeeId === currentUser.employeeId) {
+      throw new Error('You cannot submit the HR appraisal for your own review');
+    }
     if (review.status !== 'HR_REVIEW') throw new Error('This HR review is locked');
     const hrAverage = metricAverage(data.metricRatings);
 
@@ -221,7 +259,7 @@ export class PerformanceService {
       const updated = await tx.performanceReview.update({
         where: { id },
         data: {
-          status: 'FINAL_APPROVAL',
+          status: 'MANAGER_REVIEW',
           hrRating: roundRating(hrAverage),
           hrMetricRatings: data.metricRatings,
           hrComments: data.hrComments
@@ -287,7 +325,7 @@ export class PerformanceService {
         notificationType: 'REVIEW_DUE',
         message: `Your performance review has been finalized with status: ${data.finalApprovalStatus}.`,
         triggerEvent: data.finalApprovalStatus,
-        channels: ['IN_APP', 'EMAIL']
+        channels: ['IN_APP']
       }).catch(() => {});
       return updated;
     });

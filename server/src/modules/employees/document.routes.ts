@@ -5,8 +5,7 @@ import { validate } from '../../middleware/validate.middleware';
 import { uploadDocumentSchema } from './document.schema';
 import multer from 'multer';
 
-// Dummy retention state: storing in memory / local temp folder for this gate
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const router = Router();
 

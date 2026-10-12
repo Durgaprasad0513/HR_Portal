@@ -23,6 +23,7 @@ export class NotificationController {
       const notification = await notificationService.markAsRead(req.params.id as string, employeeId);
       return sendSuccess(res, notification, 'Notification marked as read');
     } catch (error: any) {
+      if (error.code === 'P2025') return sendError(res, 'Notification not found', 404);
       return sendError(res, error.message, 500);
     }
   }
@@ -69,6 +70,7 @@ export class NotificationController {
       await notificationService.deleteNotification(req.params.id as string, employeeId);
       return sendSuccess(res, null, 'Notification deleted successfully');
     } catch (error: any) {
+      if (error.code === 'P2025') return sendError(res, 'Notification not found', 404);
       return sendError(res, error.message, 500);
     }
   }

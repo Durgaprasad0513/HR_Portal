@@ -161,7 +161,7 @@ export default function AssetListPage() {
  <span className="text-xs font-semibold opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity duration-300">View Photo</span>
  </a>
  )}
- {mayEditAssets && row.status === 'IN_USE' && row.assignedEmployee?.id === (user?.employeeId || user?.employee?.id) && (
+ {row.status === 'IN_USE' && row.assignedEmployee?.id === (user?.employeeId || user?.employee?.id) && (
  <button
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[120px]"
  title="Return Asset"

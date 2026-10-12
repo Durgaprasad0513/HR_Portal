@@ -15,7 +15,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 export default function NotificationListPage() {
  const queryClient = useQueryClient();
  const navigate = useNavigate();
- const { canEdit, canDelete } = usePermissions();
+ const { canDelete } = usePermissions();
 
  const { data: notifs, isLoading } = useQuery({
  queryKey: ['notifications'],
@@ -58,9 +58,9 @@ export default function NotificationListPage() {
  {canDelete('notifications') && <Button variant="outline" onClick={() => clearReadMutation.mutate()} disabled={clearReadMutation.isPending || !notifs?.some((n: any) => n.isRead)}>
  <Trash2 className="w-4 h-4 mr-2" /> Clear Read
  </Button>}
- {canEdit('notifications') && <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending || !notifs?.some((n: any) => !n.isRead)}>
+ <Button variant="outline" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending || !notifs?.some((n: any) => !n.isRead)}>
  <CheckCheck className="w-4 h-4 mr-2" /> Mark All as Read
- </Button>}
+ </Button>
  </div>
  )}
  />
@@ -83,7 +83,7 @@ export default function NotificationListPage() {
  </p>
  </div>
  <div className="flex shrink-0 gap-2 self-end sm:self-start">
- {!notification.isRead && canEdit('notifications') && (
+ {!notification.isRead && (
  <Button variant="outline" size="sm" onClick={() => markReadMutation.mutate(notification.id)}>
  Mark Read
  </Button>

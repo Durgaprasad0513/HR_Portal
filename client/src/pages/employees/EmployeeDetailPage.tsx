@@ -323,7 +323,7 @@ export default function EmployeeDetailPage() {
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1">{review.goalDescription || 'No goals specified'}</h4>
                 <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/50 grid grid-cols-2 gap-2 text-[11px] text-slate-500 font-medium">
                   <div>Self: {review.selfRating || '-'}</div>
-                  <div>Manager: {review.managerRating || '-'}</div>
+                  {user?.role !== 'EMPLOYEE' && <div>Manager: {review.managerRating || '-'}</div>}
                   <div className="col-span-2 text-indigo-600 dark:text-indigo-400 font-bold mt-1">Final: {review.finalRating || '-'}</div>
                 </div>
               </div>

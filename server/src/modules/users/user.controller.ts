@@ -3,13 +3,17 @@ import { AuthRequest } from '../../middleware/auth.middleware';
 import { sendSuccess, sendError } from '../../utils/response';
 import { userManagementService } from './user.service';
 
+const publicAccount = (user: { id: string; email: string; role: string; isActive: boolean }) => ({
+  id: user.id, email: user.email, role: user.role, isActive: user.isActive,
+});
+
 export class UserController {
   async createUser(req: AuthRequest, res: Response) {
     try {
       const { email, password, role } = req.body;
       if (!email || !password || !role) return sendError(res, 'Email, password and role are required', 400);
       const user = await userManagementService.createUser({ email, password, role }, req.user!.userId);
-      return sendSuccess(res, user, 'User created successfully', 201);
+      return sendSuccess(res, publicAccount(user), 'User created successfully', 201);
     } catch (error: any) {
       if (error.code === 'P2002') return sendError(res, 'Email already exists', 400);
       return sendError(res, error.message, 400);
@@ -40,7 +44,7 @@ export class UserController {
       const { role } = req.body;
       if (!role) return sendError(res, 'Role is required', 400);
       const user = await userManagementService.changeRole(req.params.id as string, role, req.user!.userId);
-      return sendSuccess(res, user, 'Role updated successfully');
+      return sendSuccess(res, publicAccount(user), 'Role updated successfully');
     } catch (error: any) {
       return sendError(res, error.message, 400);
     }
@@ -51,7 +55,7 @@ export class UserController {
       const { isActive } = req.body;
       if (isActive === undefined) return sendError(res, 'isActive is required', 400);
       const user = await userManagementService.toggleStatus(req.params.id as string, Boolean(isActive), req.user!.userId);
-      return sendSuccess(res, user, `User ${isActive ? 'activated' : 'deactivated'} successfully`);
+      return sendSuccess(res, publicAccount(user), `User ${isActive ? 'activated' : 'deactivated'} successfully`);
     } catch (error: any) {
       return sendError(res, error.message, 400);
     }

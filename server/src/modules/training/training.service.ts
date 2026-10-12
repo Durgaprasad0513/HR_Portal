@@ -121,7 +121,7 @@ export class TrainingService {
         notificationType: 'TRAINING_NOTIF',
         message: `You have been assigned to a training program. Please check the training portal.`,
         triggerEvent: 'TRAINING_ASSIGNED',
-        channels: ['IN_APP', 'EMAIL']
+        channels: ['IN_APP']
       }).catch(() => {});
       return participant;
     });

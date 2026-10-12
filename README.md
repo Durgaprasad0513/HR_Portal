@@ -59,7 +59,7 @@ npm install
 Create a `.env` file in the `server` directory (you can copy `.env.example`):
 ```env
 PORT=5000
-DATABASE_URL="postgresql://user:password@localhost:5432/hrmanagement?schema=public"
+DATABASE_URL="<your-local-postgres-connection-string>"
 JWT_SECRET="your_super_secret_jwt_key_change_in_production"
 JWT_EXPIRES_IN="7d"
 CORS_ORIGIN="http://localhost:5173"
@@ -74,7 +74,7 @@ cd server
 npx prisma db push
 
 # Run the seeder to create the default Admin account and permission catalogs
-npm run db:seed
+npm run prisma:seed
 ```
 
 ### 5. Running the Application

@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { fileStorage, newFilename, imageContentType } from '../../config/storage';
 import { employeeController } from './employee.controller';
 import { authenticate, authorize, requirePermission } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validate.middleware';
 import { createEmployeeSchema, updateEmployeeSchema } from './employee.schema';
+import { config } from '../../config';
 
 const router = Router();
 
@@ -22,23 +24,27 @@ router.put('/:id', requirePermission('employees', 'edit'), validate(updateEmploy
 );
 router.delete('/:id', requirePermission('employees', 'delete'), (req, res) => employeeController.delete(req, res));
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single('photo'), async (req, res) => {
+router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single('photo'), async (req, res, next) => {
   try {
     const employeeId = req.params.id as string;
     const file = req.file;
     if (!file) {
       return res.status(400).json({ success: false, message: 'No photo uploaded' });
     }
-    const photoUrl = `/api/uploads/${file.filename}`;
+    const contentType = imageContentType(file.buffer);
+    if (!contentType) return res.status(400).json({ success: false, message: 'Upload a PNG, JPEG, GIF or WebP image.' });
+    const filename = newFilename();
+    await fileStorage.save(filename, file.buffer, contentType);
+    const photoUrl = `/api/uploads/${filename}`;
     const updatedEmployee = await prisma.employee.update({
       where: { id: employeeId },
       data: { profilePhoto: photoUrl }
     });
     res.json({ success: true, message: 'Profile photo updated', data: updatedEmployee });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 });
 
@@ -46,7 +52,12 @@ router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single(
 import prisma from '../../config/database';
 import bcrypt from 'bcryptjs';
 
-router.post('/fix-users', authorize('ADMIN'), async (req, res) => {
+const developmentMaintenance: import('express').RequestHandler = (_req, res, next) => {
+  if (config.nodeEnv !== 'development') { res.sendStatus(404); return; }
+  next();
+};
+
+router.post('/fix-users', developmentMaintenance, authorize('ADMIN'), async (req, res) => {
   try {
     const employees = await prisma.employee.findMany({ where: { user: null } });
     let created = 0;
@@ -71,7 +82,7 @@ router.post('/fix-users', authorize('ADMIN'), async (req, res) => {
 });
 
 
-router.post('/reactivate-and-fix', authorize('ADMIN'), async (req, res) => {
+router.post('/reactivate-and-fix', developmentMaintenance, authorize('ADMIN'), async (req, res) => {
   try {
     const employees = await prisma.employee.findMany();
     let fixed = 0;
@@ -105,7 +116,7 @@ router.post('/reactivate-and-fix', authorize('ADMIN'), async (req, res) => {
 });
 
 
-router.post('/clear-history', authorize('ADMIN'), async (req, res) => {
+router.post('/clear-history', developmentMaintenance, authorize('ADMIN'), async (req, res) => {
   try {
     const deletedAudit = await prisma.auditLog.deleteMany({});
     const deletedLogin = await prisma.loginHistory.deleteMany({});

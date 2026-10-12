@@ -148,6 +148,7 @@ export class TravelService {
         data: {
           approvalStatus: mappedStatus,
           approvalDate: new Date(),
+          approverId: currentUser.employeeId,
           advanceApproved: data.advanceApproved
         }
       });
@@ -158,7 +159,7 @@ export class TravelService {
       notificationType: 'TRAVEL_NOTIF',
       message: `Your travel request for ${request.destination} was ${mappedStatus === ApprovalStatus.APPROVAL_APPROVED ? 'approved' : 'rejected'}.`,
       triggerEvent: mappedStatus,
-      channels: ['IN_APP', 'EMAIL'],
+      channels: ['IN_APP'],
     });
     return request;
   }
@@ -176,7 +177,12 @@ export class TravelService {
       throw new Error('Cannot submit expenses for an unapproved request');
     }
 
-    const totalClaimed = (data.hotelExpense || 0) + (data.foodAllowance || 0) + (data.localConveyance || 0) + (data.otherExpenses || 0);
+    if (existing.settlementStatus === SettlementStatus.SETTLED) {
+      throw new Error('Settled expenses cannot be changed');
+    }
+
+    const totalClaimed = new Prisma.Decimal(data.hotelExpense ?? 0)
+      .plus(data.foodAllowance ?? 0).plus(data.localConveyance ?? 0).plus(data.otherExpenses ?? 0);
 
     const request = await prisma.$transaction(async (tx) => {
       return tx.travelRequest.update({
@@ -202,14 +208,20 @@ export class TravelService {
     const existing = await prisma.travelRequest.findUnique({ where: { id } });
     if (!existing) throw new Error('Request not found');
 
-    const totalClaimed = Number(existing.totalExpenseClaimed || 0);
-    const hotelExpense = data.hotelExpense ?? existing.hotelExpense ?? 0;
-    const foodAllowance = data.foodAllowance ?? existing.foodAllowance ?? 0;
-    const localConveyance = data.localConveyance ?? existing.localConveyance ?? 0;
-    const otherExpenses = data.otherExpenses ?? existing.otherExpenses ?? 0;
-    const computedTotalClaimed = hotelExpense + foodAllowance + localConveyance + otherExpenses;
-    const advanceApproved = Number(existing.advanceApproved || 0);
-    const amountPayable = (computedTotalClaimed || totalClaimed) - advanceApproved;
+    if (existing.approvalStatus !== ApprovalStatus.APPROVAL_APPROVED) {
+      throw new Error('Only approved travel requests can be settled');
+    }
+    if (existing.settlementStatus === SettlementStatus.SETTLED) {
+      throw new Error('Travel request is already settled');
+    }
+
+    const hotelExpense = new Prisma.Decimal(data.hotelExpense ?? existing.hotelExpense ?? 0);
+    const foodAllowance = new Prisma.Decimal(data.foodAllowance ?? existing.foodAllowance ?? 0);
+    const localConveyance = new Prisma.Decimal(data.localConveyance ?? existing.localConveyance ?? 0);
+    const otherExpenses = new Prisma.Decimal(data.otherExpenses ?? existing.otherExpenses ?? 0);
+    const computedTotalClaimed = hotelExpense.plus(foodAllowance).plus(localConveyance).plus(otherExpenses);
+    const advanceApproved = new Prisma.Decimal(existing.advanceApproved ?? 0);
+    const amountPayable = computedTotalClaimed.minus(advanceApproved);
 
     const request = await prisma.$transaction(async (tx) => {
       return tx.travelRequest.update({
@@ -219,10 +231,11 @@ export class TravelService {
           foodAllowance,
           localConveyance,
           otherExpenses,
-          totalExpenseClaimed: computedTotalClaimed || totalClaimed,
+          totalExpenseClaimed: computedTotalClaimed,
           settlementStatus: 'SETTLED',
           amountPayable: amountPayable,
-          settlementDate: new Date()
+          settlementDate: new Date(),
+          verifiedById: currentUser.userId
         }
       });
     });

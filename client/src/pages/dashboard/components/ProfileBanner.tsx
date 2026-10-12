@@ -2,7 +2,6 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plane, MessageSquare, Receipt } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -16,13 +15,20 @@ export function ProfileBanner() {
   const lastName = employee?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim();
   const employeeCode = employee?.employeeCode || 'N/A';
+  const roleLabel = user?.role ? {
+    ADMIN: 'Admin',
+    HR: 'HR',
+    MANAGER: 'Manager',
+    EMPLOYEE: 'Employee'
+  }[user.role] : 'User';
   
   // Combine designation, department, and location
   const details = [
+    roleLabel,
     employee?.designation,
     employee?.department?.name,
     employee?.location
-  ].filter(Boolean).join(' • ');
+  ].filter(Boolean).join(' • ') || 'User';
 
   return (
     <div className="bg-surface rounded-2xl p-6 border border-slate-border shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -44,9 +50,7 @@ export function ProfileBanner() {
               </span>
             )}
           </div>
-          <p className="text-slate-500 text-sm font-medium">
-            {details || 'Employee'}
-          </p>
+          <p className="text-slate-500 text-sm font-medium">{details}</p>
         </div>
       </div>
 
