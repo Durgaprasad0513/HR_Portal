@@ -41,7 +41,10 @@ app.use((req, res, next) => {
 
 // Middleware
 const corsOptions = {
-  origin: config.cors.origin.split(',').map((origin) => origin.trim()).filter(Boolean),
+  origin: Array.from(new Set([
+    'https://hr.pafpl.in',
+    ...config.cors.origin.split(',').map((origin) => origin.trim()).filter(Boolean),
+  ])),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'],
