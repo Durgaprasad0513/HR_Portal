@@ -13,7 +13,7 @@ describe("job position cards", () => {
     const edit = vi.fn();
     render(<MemoryRouter><JobPositions requisitions={openings} editable history={false} onEdit={edit} onClose={vi.fn()} /></MemoryRouter>);
     expect(screen.getByRole("link", { name: "View applicants for Sales Manager" })).toHaveAttribute("href", "/recruitment?tab=pipeline&opening=sales");
-    expect(screen.getByText("2 new applications")).toBeInTheDocument();
+    expect(screen.getByText("2 new")).toBeInTheDocument();
     expect(screen.getByText(/6 total applicants/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Edit Sales Manager" }));
     expect(edit).toHaveBeenCalledWith(openings[0]);

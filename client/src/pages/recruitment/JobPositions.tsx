@@ -37,33 +37,43 @@ export function JobPositions({ requisitions, editable, history, onEdit, onClose 
       <p>Open a position to view its applicants.</p>
     </div>
     {!filtered.length ? <div className="rounded-xl border border-dashed border-slate-border p-10 text-center text-sm text-text-muted">{search || department ? "No positions match these filters." : history ? "No closed positions yet." : "No open positions yet. Create a new position to start recruiting."}</div> :
-      <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="overflow-hidden rounded-xl border border-slate-border bg-surface">
+        <div className="hidden grid-cols-[minmax(14rem,2fr)_minmax(8rem,1fr)_minmax(9rem,1fr)_minmax(10rem,1fr)_auto] items-center gap-4 border-b border-slate-border bg-tint px-5 py-3 text-xs font-semibold uppercase tracking-wide text-text-muted md:grid">
+          <span>Job position</span><span>Department</span><span>Location</span><span>New applications</span><span className="text-right">Vacancies</span>
+        </div>
+        <ul className="divide-y divide-slate-border">
         {filtered.map((opening) => {
           const raisedBy = opening.raisedBy ? `${opening.raisedBy.firstName} ${opening.raisedBy.lastName}` : "Not assigned";
-          return <article key={opening.id} className="group relative min-w-0 overflow-hidden rounded-xl border border-slate-border bg-surface transition hover:border-primary-500 hover:shadow-md">
-            <div className="p-5">
-              <h2 className="break-words text-lg font-semibold text-text-heading">
-                <Link to={`/recruitment?tab=pipeline&opening=${encodeURIComponent(opening.id)}`} aria-label={`View applicants for ${opening.positionTitle}`} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-primary-500">{opening.positionTitle}</Link>
+          return <li key={opening.id} className="group relative grid min-w-0 grid-cols-2 items-center gap-x-3 gap-y-3 px-4 py-4 transition hover:bg-tint/60 md:grid-cols-[minmax(14rem,2fr)_minmax(8rem,1fr)_minmax(9rem,1fr)_minmax(10rem,1fr)_auto] md:gap-4 md:px-5">
+              <div className="col-span-2 min-w-0 md:col-span-1">
+                <h2 className="truncate font-semibold text-text-heading">
+                  <Link to={`/recruitment?tab=pipeline&opening=${encodeURIComponent(opening.id)}`} aria-label={`View applicants for ${opening.positionTitle}`} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-primary-500">{opening.positionTitle}</Link>
               </h2>
-              <p className="mt-1 break-words text-sm text-text-muted">Raised by {raisedBy}</p>
-              <p className="mt-2 text-xs text-text-muted">{[opening.department?.name, opening.location].filter(Boolean).join(" · ") || "Department and location not specified"}</p>
-              <div className="mt-6 flex items-center gap-2 font-medium text-text-heading">
-                <Users aria-hidden="true" className="h-5 w-5 shrink-0 text-primary-600" />
-                <span>{opening.newApplicationCount == null ? "New application count unavailable" : `${opening.newApplicationCount} new applications`}</span>
+                <p className="mt-1 truncate text-xs text-text-muted">Raised by {raisedBy} · {opening._count?.candidates ?? 0} total applicants</p>
               </div>
-              <p className="mt-1 pl-7 text-xs text-text-muted">{opening._count?.candidates ?? 0} total applicants · {opening.filledCount ?? 0} filled / {opening.remainingCount ?? opening.numberOfVacancies} remaining</p>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-border bg-tint px-4 py-2">
-              <div className="flex gap-1">
+              <div className="min-w-0"><span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Department</span><span className="truncate text-sm text-text-body">{opening.department?.name || "—"}</span></div>
+              <div className="min-w-0"><span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Location</span><span className="truncate text-sm text-text-body">{opening.location || "—"}</span></div>
+              <div className="min-w-0">
+                <span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Applications</span>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text-heading"><Users aria-hidden="true" className="h-4 w-4 shrink-0 text-primary-600" />{opening.newApplicationCount == null ? "Unavailable" : `${opening.newApplicationCount} new`}</span>
+              </div>
+              <div className="min-w-0 md:text-right">
+                <span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Vacancies</span>
+                <span className="text-sm font-medium text-text-body">{opening.filledCount ?? 0} / {opening.remainingCount ?? opening.numberOfVacancies} remaining</span>
+              </div>
+              <div className="col-span-2 flex items-center justify-between gap-2 border-t border-slate-border pt-2 md:col-span-1 md:justify-end md:border-0 md:pt-0">
+                <span className="relative z-10 text-xs text-text-muted md:hidden">View applicants</span>
+                <div className="relative z-10 flex gap-1">
                 {editable && <>
                   <Button size="sm" variant="ghost" className="relative z-10" aria-label={`Edit ${opening.positionTitle}`} onClick={() => onEdit(opening)}><Pencil aria-hidden="true" className="mr-1 h-3.5 w-3.5" />Edit</Button>
                   <Button size="sm" variant="ghost" className="relative z-10" onClick={() => onClose(opening)}>{history ? "Reopen" : "Close"}</Button>
                 </>}
+                </div>
+                <span className="hidden items-center gap-1 text-xs font-semibold text-text-body md:inline-flex">Open <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" /></span>
               </div>
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-text-body">View applicants <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" /></span>
-            </div>
-          </article>;
+          </li>;
         })}
+        </ul>
       </div>}
     <p className="text-xs text-text-muted">New applications are applicants awaiting screening.</p>
   </section>;

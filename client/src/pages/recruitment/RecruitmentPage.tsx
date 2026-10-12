@@ -1020,7 +1020,7 @@ export default function RecruitmentPage() {
               role="tablist"
               aria-label="Recruitment workspace"
             >
-              {(["openings", "pipeline", "candidates", "history"] as const).map((tab) => (
+              {(["openings", "history"] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
@@ -1035,9 +1035,7 @@ export default function RecruitmentPage() {
                 >
                   {tab === "openings"
                     ? `Openings (${activeRequisitions.length})`
-                    : tab === "history"
-                      ? `History (${historyRequisitions.length})`
-                      : tab === "pipeline" ? "Pipeline" : "Candidates"}
+                    : `History (${historyRequisitions.length})`}
                 </button>
               ))}
             </nav>
