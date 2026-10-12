@@ -2,14 +2,10 @@ import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { uploadsDirectory } from '../../config/storage';
 import { authenticate, requirePermission, AuthRequest } from '../../middleware/auth.middleware';
 import prisma from '../../config/database';
 import { MODULES, ModuleKey, PermissionAction } from '../permissions/permission.catalog';
-
-// Ensure uploads directory exists
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024, files: 10 } });
 const router = Router();
@@ -47,7 +43,7 @@ router.get('/files/:module/:filename', authenticate, (req, res, next) => {
     if (!referenced) { res.status(404).json({ success: false, message: 'Attachment not found.' }); return; }
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.download(path.resolve('uploads', filename), filename, error => { if (error) next(error); });
+    res.download(path.join(uploadsDirectory, filename), filename, error => { if (error) next(error); });
   } catch (error) { next(error); }
 });
 
@@ -65,7 +61,7 @@ router.post('/', authenticate, upload.array('files', 10), (req, res, next) => {
   const files = req.files as Express.Multer.File[];
   const urls = files.map(f => {
     const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(f.originalname)}`;
-    fs.writeFileSync(path.join('uploads', filename), f.buffer);
+    fs.writeFileSync(path.join(uploadsDirectory, filename), f.buffer);
     return `/api/uploads/${filename}`;
   });
   res.json({ success: true, urls });

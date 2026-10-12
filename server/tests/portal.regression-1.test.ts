@@ -8,6 +8,7 @@ import app from '../src/app';
 import { performanceMetricKeys } from '../src/modules/performance/performance.schema';
 import fs from 'fs';
 import path from 'path';
+import { uploadsDirectory } from '../src/config/storage';
 
 jest.mock('../src/utils/email.service', () => ({ emailService: { sendWelcomeEmail: jest.fn(), sendEmail: jest.fn() } }));
 jest.mock('../src/utils/notification.dispatcher', () => ({ notificationDispatcher: { dispatch: jest.fn().mockResolvedValue(undefined) } }));
@@ -100,7 +101,7 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
   it('protects receipt downloads with authentication, ownership and module permissions',async()=>{
     const filename=`qa-private-${Date.now()}.pdf`;
     const url=`/api/uploads/${filename}`;
-    fs.mkdirSync(path.resolve('uploads'),{recursive:true}); fs.writeFileSync(path.resolve('uploads',filename),'Synthetic receipt');
+    fs.writeFileSync(path.join(uploadsDirectory,filename),'Synthetic receipt');
     try {
       await prisma.travelRequest.create({data:{employeeId:employeeIds.EMPLOYEE,travelPurpose:'Private receipt QA',destination:'QA',startDate:new Date('2032-01-05'),endDate:new Date('2032-01-05'),travelMode:'ROAD',billUpload:url}});
       expect((await request(app).get(url)).status).toBe(403);
@@ -109,7 +110,7 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
       expect((await call('EMPLOYEE','get',`/upload/files/expenses/${filename}`)).status).toBe(404);
       expect((await call('EMPLOYEE','get',`/upload/files/travel/${filename}`)).status).toBe(200);
       expect((await call('HR','get',`/upload/files/travel/${filename}`)).status).toBe(200);
-    } finally { fs.unlinkSync(path.resolve('uploads',filename)); }
+    } finally { fs.unlinkSync(path.join(uploadsDirectory,filename)); }
   });
   it('supports travel creation, approval, own expense submission and settlement with numeric totals',async()=>{
     const travel=succeeds(await call('EMPLOYEE','post','/travel',{travelPurpose:'Synthetic QA journey',destination:'QA Office',startDate:'2030-01-07',endDate:'2030-01-08',travelMode:'TRAIN',advanceRequested:100}));

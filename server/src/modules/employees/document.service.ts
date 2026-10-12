@@ -3,6 +3,7 @@ import { hasAdminAccess } from '../../utils/roles';
 import { DocumentType } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
+import { uploadsDirectory } from '../../config/storage';
 
 export class DocumentService {
   async upload(currentUser: any, file: Express.Multer.File, data: any, reqContext: { ipAddress?: string }) {
@@ -65,8 +66,11 @@ export class DocumentService {
       throw new Error('Not authorized to download this document');
     }
 
-    const uploadsDirectory = path.resolve(process.cwd(), 'uploads');
-    const filePath = path.resolve(doc.filePath);
+    // Relative legacy paths remain valid after files are copied to the mounted directory.
+    const storedPath = path.resolve(doc.filePath);
+    const legacyDirectory = path.resolve('uploads');
+    const isLegacy = storedPath.startsWith(`${legacyDirectory}${path.sep}`);
+    const filePath = isLegacy ? path.join(uploadsDirectory, path.basename(storedPath)) : storedPath;
     if (!filePath.startsWith(`${uploadsDirectory}${path.sep}`)) {
       throw new Error('Stored document path is invalid');
     }

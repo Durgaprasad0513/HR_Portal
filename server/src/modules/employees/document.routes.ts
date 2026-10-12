@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { uploadsDirectory } from '../../config/storage';
 import { documentController } from './document.controller';
 import { authenticate, requirePermission } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validate.middleware';
@@ -6,7 +7,7 @@ import { uploadDocumentSchema } from './document.schema';
 import multer from 'multer';
 
 // Dummy retention state: storing in memory / local temp folder for this gate
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: uploadsDirectory, limits: { fileSize: 10 * 1024 * 1024 } });
 
 const router = Router();
 

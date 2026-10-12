@@ -1,4 +1,5 @@
 import path from 'path';
+import { uploadsDirectory } from './config/storage';
 import express from 'express';
 import cors from 'cors';
 import { config } from './config';
@@ -66,7 +67,7 @@ app.use('/api/uploads', async (req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     next();
   } catch (error) { next(error); }
-}, express.static(path.join(__dirname, '../uploads')));
+}, express.static(uploadsDirectory));
 app.use(express.urlencoded({ extended: true }));
 
 // Liveness check

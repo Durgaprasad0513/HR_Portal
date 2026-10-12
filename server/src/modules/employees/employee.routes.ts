@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { uploadsDirectory } from '../../config/storage';
 import { employeeController } from './employee.controller';
 import { authenticate, authorize, requirePermission } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validate.middleware';
@@ -23,7 +24,7 @@ router.put('/:id', requirePermission('employees', 'edit'), validate(updateEmploy
 );
 router.delete('/:id', requirePermission('employees', 'delete'), (req, res) => employeeController.delete(req, res));
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: uploadsDirectory, limits: { fileSize: 10 * 1024 * 1024 } });
 
 router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single('photo'), async (req, res) => {
   try {
