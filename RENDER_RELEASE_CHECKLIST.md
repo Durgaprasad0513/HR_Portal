@@ -5,7 +5,8 @@ Live commit observed: 1589915. Release branch: codex/render-production-readiness
 
 ## Confirmed gaps
 
-- Deployment logs contain PostgreSQL 22P02: RequisitionStatus lacks CLOSED.
+- Historical deployment logs contain PostgreSQL 22P02: RequisitionStatus lacked CLOSED. Current Neon hr-db production branch has CLOSED and its migration is recorded complete; Render's last two days of logs have no matching 22P02 errors.
+- Render logs still show periodic Prisma PostgreSQL connection-closed messages; inspect connection URL pooling and reduce duplicate client pools before release.
 - Free compute; no persistent disk, pre-deploy command, SSH/shell, or configured health-check path.
 - Auto-deploy is off. Build: npm install && npm run build; start: npm start; root: server/.
 - Environment keys present: DATABASE_URL, DIRECT_URL, JWT_SECRET, NODE_ENV, PORT.

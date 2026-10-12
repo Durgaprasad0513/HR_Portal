@@ -109,6 +109,37 @@ durable upload disk; an attachment migration or service restart remains blocked 
 a retention plan. Local storage changes have regression tests, but they are not
 deployed.
 
+## Production database follow-up — 12 October
+
+Read-only inspection of Neon `hr-db` production branch (`production`, database
+`neondb`) found 9 finished Prisma migrations. The latest is
+`20261008130000_close_requisitions_after_offers`, finished 9 October 2026 10:04 UTC.
+The current `RequisitionStatus` includes `CLOSED`; `Role` is ADMIN, HR, MANAGER,
+EMPLOYEE. Render last successfully deployed code is still commit 1589915 from
+10 October. Searches in Render's available last-two-days logs found no `22P02` or
+invalid enum errors. This indicates the reported missing-enum failure is not
+currently reproducible on the inspected Neon production branch and may have been
+repaired already or may refer to a different connection target. The second Neon
+project `hr-db-new` has no `_prisma_migrations` table and did not return these enum
+types; it should not be assumed to be the live production database.
+
+Render's last-two-days logs do show repeated `prisma:error Error in PostgreSQL
+connection: Error { kind: Closed }` events. `expense.service.ts` creates a second
+PrismaClient instead of sharing `config/database.ts`, adding a redundant pool.
+Neon free compute is configured to suspend; Render free compute also sleeps. No
+evidence yet proves whether the connection-closed messages are benign idle/suspend
+disconnects or failed user requests. Consolidate to the singleton, verify the
+Render DATABASE_URL uses Neon pooled endpoint without revealing the value, then
+recheck errors and role journeys. Do not run another enum migration against a
+production database that already has CLOSED.
+
+Follow-up: ExpenseService now imports the shared Prisma singleton. Static search
+finds exactly one `new PrismaClient()` in production source. The production-role
+and expense mutation portal regression suite passed 28/28 against the isolated
+`hr_recruitment_qa_20261012_migrate3` database. Server lint and TypeScript checks
+passed. Current Render logs still need monitoring after a deployment before the
+connection-closed noise can be considered resolved.
+
 Authenticated Render logs confirmed PostgreSQL 22P02 because the deployed RequisitionStatus enum lacks CLOSED. An idempotent additive migration is prepared and passed on the isolated local migration database; production schema and migration history still require backup and rehearsal. Readiness now also queries this enum value. Render has free compute, no durable disk, no pre-deploy command or health-check path, auto-deploy off, and no CORS_ORIGIN or mail configuration among its environment keys. Production secrets were not revealed or changed.
 
 User chose external storage with Neon remaining the database. Private Cloudflare R2 support is implemented locally for receipts, policies, identity documents and photos. Stable portal URLs are preserved, download authorization precedes file access, R2 errors never fall back to temporary disk, and provider messages are sanitized. Profile uploads and public profile responses require recognized raster image signatures. SVG/HTML disguised as photos are denied. Missing objects return 404, outages 503, oversized uploads 413. Downloads are bounded to 10 MiB.

@@ -1,7 +1,6 @@
-import { PrismaClient, ExpenseStatus } from '@prisma/client';
+import { ExpenseStatus } from '@prisma/client';
 import { getModuleScope } from '../../utils/authorization';
-
-const prisma = new PrismaClient();
+import prisma from '../../config/database';
 
 interface CurrentUser {
   id: string;
