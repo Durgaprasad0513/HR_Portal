@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recruitmentApi } from "@/api/recruitment";
 import { departmentsApi } from "@/api/departments";
@@ -23,6 +23,8 @@ import {
 import toast from "react-hot-toast";
 import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInterviewModal";
 import { candidateCsv } from "./interviewExport";
+
+const EMPTY_REQUISITIONS: any[] = [];
 
 export default function RecruitmentPage() {
   const navigate = useNavigate();
@@ -93,7 +95,7 @@ export default function RecruitmentPage() {
   const candidatesData = candidatesResponse?.data || [];
   const candidateRegister = registerResponse?.data?.items || [];
 
-  const data = reqResponse?.data || [];
+  const data = reqResponse?.data ?? EMPTY_REQUISITIONS;
   const historyRequisitions = data.filter((req: any) =>
     ["CLOSED", "JOINED_REJECTED"].includes(req.status),
   );
@@ -1270,7 +1272,7 @@ export default function RecruitmentPage() {
                   visibleRequisitions.map((req: any) => (
                     <article
                       key={req.id}
-                      className="group flex flex-col gap-4 rounded-xl border border-slate-border bg-surface p-4 shadow-sm transition duration-200 hover:border-slate-border hover:shadow-md dark:hover:border-slate-600 md:grid md:grid-cols-[minmax(0,1fr)_15rem_auto] md:items-center md:gap-6 md:p-5"
+                      className="group relative flex flex-col gap-4 rounded-xl border border-slate-border bg-surface p-4 shadow-sm transition duration-200 hover:border-slate-border hover:shadow-md dark:hover:border-slate-600 md:grid md:grid-cols-[minmax(0,1fr)_15rem_auto] md:items-center md:gap-6 md:p-5"
                     >
                       <div className="flex min-w-0 items-start gap-4">
                         <div className="flex h-14 w-12 shrink-0 items-center justify-center rounded-lg border border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -1278,18 +1280,13 @@ export default function RecruitmentPage() {
                         </div>
                         <div className="min-w-0">
                           <h2 className="line-clamp-2 text-base font-semibold leading-6 text-navy-900 dark:text-white">
-                            <button
-                              type="button"
-                              className="text-left hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                              onClick={() =>
-                                navigate(
-                                  `/recruitment/interviews?reqId=${encodeURIComponent(req.id)}`,
-                                )
-                              }
+                            <Link
+                              to={`/recruitment/interviews?reqId=${encodeURIComponent(req.id)}`}
+                              className="text-left hover:underline after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-primary-500"
                               aria-label={`View scheduled interviews for ${req.positionTitle}`}
                             >
                               {req.positionTitle}
-                            </button>
+                            </Link>
                           </h2>
                           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                             {req.location}
@@ -1324,6 +1321,7 @@ export default function RecruitmentPage() {
                       <div className="flex items-center justify-between gap-3 border-t border-slate-border pt-4 dark:border-slate-border md:justify-end md:border-l md:border-t-0 md:py-1 md:pl-6">
                         {canEdit("recruitment") && (
                           <Button
+                            className="relative z-10"
                             variant="ghost"
                             size="sm"
                             onClick={() => {
@@ -1348,7 +1346,7 @@ export default function RecruitmentPage() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="gap-1.5"
+                            className="relative z-10 gap-1.5"
                             onClick={(event) => {
                               event.stopPropagation();
                               setEditingReq(req);

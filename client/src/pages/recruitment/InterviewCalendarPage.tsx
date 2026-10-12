@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recruitmentApi } from "@/api/recruitment";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Calendar } from "@/components/ui/Calendar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -13,6 +12,7 @@ import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInt
 import { usePermissions } from "@/hooks/usePermissions";
 import { interviewCsv } from "./interviewExport";
 import toast from "react-hot-toast";
+import { CalendarDays, MapPin, UserRound } from "lucide-react";
 const zone = "Asia/Kolkata";
 const dayKey = (date: string | Date) =>
   new Intl.DateTimeFormat("en-CA", {
@@ -29,6 +29,8 @@ const time = (date: string) =>
   });
 const label = (value?: string) =>
   (value || "").replace(/_/g, " ").toLowerCase();
+const readable = (value?: string) =>
+  label(value).replace(/\b\w/g, (letter) => letter.toUpperCase());
 const colors: Record<string, string> = {
   SCHEDULED: "bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
   COMPLETED:
@@ -43,19 +45,6 @@ export default function InterviewCalendarPage() {
   const reqId = params.get("reqId") || "";
   const { canAdd, canEdit, canExport } = usePermissions();
   const cache = useQueryClient();
-  const [view, setView] = useState<"agenda" | "week" | "month">(() => {
-    const saved = localStorage.getItem("recruitment-calendar-view");
-    return saved === "agenda" || saved === "week" || saved === "month"
-      ? saved
-      : window.innerWidth < 768
-        ? "agenda"
-        : "week";
-  });
-  const [date, setDate] = useState(() =>
-    params.get("date")
-      ? new Date(params.get("date")! + "T12:00:00+05:30")
-      : new Date(),
-  );
   const [search, setSearch] = useState(params.get("search") || "");
   const [round, setRound] = useState(params.get("round") || "");
   const [status, setStatus] = useState(params.get("status") || "");
@@ -119,7 +108,9 @@ export default function InterviewCalendarPage() {
       (data || [])
         .flatMap((candidate: any) =>
           candidate.interviews?.length
-            ? candidate.interviews.map((interview: any) => ({
+            ? candidate.interviews
+                .filter((interview: any) => interview.round !== "OFFER")
+                .map((interview: any) => ({
                 ...candidate,
                 interviewId: interview.id,
                 interviewDate: interview.startsAt,
@@ -133,7 +124,7 @@ export default function InterviewCalendarPage() {
                 interviewerId: interview.interviewerId,
                 interviewer: interview.interviewer,
               }))
-            : candidate.interviewDate
+            : candidate.interviewDate && candidate.interviewRound !== "OFFER"
               ? [
                   {
                     ...candidate,
@@ -174,24 +165,11 @@ export default function InterviewCalendarPage() {
       (!status || a.status === status) &&
       (!panel || a.interviewerId === panel),
   );
-  const start = new Date(dayKey(date) + "T12:00:00+05:30");
-  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
-  const week = Array.from({ length: 7 }, (_, i) => {
-    const day = new Date(start);
-    day.setDate(day.getDate() + i);
-    return day;
-  });
-  const visible =
-    view === "agenda" ? filtered : view === "week"
-      ? filtered.filter((a: any) =>
-          week.some((day) => dayKey(day) === dayKey(a.interviewDate)),
-        )
-      : filtered.filter((a: any) => dayKey(a.interviewDate) === dayKey(date));
+  const visible = filtered;
   React.useEffect(() => {
     const next = new URLSearchParams();
     Object.entries({
       reqId,
-      date: view === "agenda" ? "" : dayKey(date),
       search,
       round,
       status,
@@ -201,78 +179,77 @@ export default function InterviewCalendarPage() {
     });
     if (next.toString() !== params.toString())
       setParams(next, { replace: true });
-  }, [reqId, date, view, search, round, status, panel, params, setParams]);
-  const changeRange = (direction: number) => {
-    const next = new Date(date);
-    if (view === "month") next.setMonth(next.getMonth() + direction);
-    else next.setDate(next.getDate() + direction * 7);
-    setDate(next);
-  };
+  }, [reqId, search, round, status, panel, params, setParams]);
   const card = (a: any) => (
     <article
       key={a.interviewId || a.id}
-      className="min-w-0 space-y-3 rounded-xl border border-slate-border bg-surface p-4 shadow-sm"
+      className="min-w-0 overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm transition-shadow hover:shadow-md"
     >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <button
-          className="text-left font-semibold text-primary-700 hover:underline dark:text-primary-300"
-          onClick={() =>
-            navigate(
-              `/recruitment?tab=candidates&reqId=${encodeURIComponent(a.requisitionId)}&candidateId=${encodeURIComponent(a.id)}`,
-            )
-          }
-        >
-          {a.candidateName}
-        </button>
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${colors[a.status] || colors.SCHEDULED}`}
-        >
-          {label(a.status)}
-        </span>
-      </div>
-      <p className="text-sm text-text-muted">
-        {a.requisition?.positionTitle || "Opening"} /{" "}
-        <span className="capitalize">{label(a.interviewRound)}</span>
-      </p>
-      <dl className="space-y-1 text-sm">
-        <div>
-          <dt className="inline text-text-muted">When: </dt>
-          <dd className="inline">
-            {new Date(a.interviewDate).toLocaleDateString("en-IN", {
-              timeZone: zone,
-              day: "numeric",
-              month: "short",
-            })}{" "}
-            / {time(a.interviewDate)}
-            {a.endsAt ? ` - ${time(a.endsAt)}` : ""}
-          </dd>
+      <div className="space-y-4 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <button
+              className="text-left text-base font-semibold text-text-heading hover:text-primary-700 hover:underline dark:hover:text-primary-300"
+              onClick={() =>
+                navigate(
+                  `/recruitment?tab=candidates&reqId=${encodeURIComponent(a.requisitionId)}&candidateId=${encodeURIComponent(a.id)}`,
+                )
+              }
+            >
+              {a.candidateName}
+            </button>
+            <p className="mt-1 text-sm text-text-muted">
+              {a.requisition?.positionTitle || "Opening"}
+            </p>
+          </div>
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${colors[a.status] || colors.SCHEDULED}`}>
+            {readable(a.status)}
+          </span>
         </div>
-        <div>
-          <dt className="inline text-text-muted">Interviewer: </dt>
-          <dd className="inline">
-            {a.interviewer
-              ? `${a.interviewer.firstName} ${a.interviewer.lastName}`
-              : "Unassigned"}
-          </dd>
+
+        <div className="flex flex-wrap items-center gap-2 border-y border-slate-border py-3">
+          <span className="rounded-md bg-tint px-2.5 py-1 text-sm font-semibold capitalize text-text-heading">
+            {readable(a.interviewRound)} interview
+          </span>
+          {a.status === "COMPLETED" && a.interviewFeedback && (
+            <span className="text-xs text-text-muted">Feedback submitted{a.interviewScore != null ? ` · Score ${a.interviewScore}/10` : ""}</span>
+          )}
+          {a.status === "COMPLETED" && !a.interviewFeedback && (
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Feedback needed</span>
+          )}
         </div>
-        <div>
-          <dt className="inline text-text-muted">Mode / venue: </dt>
-          <dd className="inline break-words">
-            {label(a.mode || "IN_PERSON")} /{" "}
-            {a.interviewLocation || "Not provided"}
-          </dd>
-        </div>
-      </dl>
-      {a.status === "COMPLETED" && (
-        <p className="text-sm text-text-muted">
-          {a.interviewFeedback ||
-            "Awaiting feedback - open candidate details to submit"}
-        </p>
-      )}
-      {canEdit("recruitment") && (
+
+        <dl className="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
+            <div className="min-w-0">
+              <dt className="text-xs text-text-muted">Date · Asia/Kolkata</dt>
+              <dd className="mt-0.5 font-medium text-text-heading">
+                {new Date(a.interviewDate).toLocaleDateString("en-IN", { timeZone: zone, weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+              </dd>
+              <dd className="text-text-heading"><span className="sr-only">Time: </span>{time(a.interviewDate)}{a.endsAt ? ` – ${time(a.endsAt)}` : ""}</dd>
+            </div>
+          </div>
+          <div className="flex min-w-0 items-start gap-2.5">
+            <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
+            <div className="min-w-0">
+              <dt className="text-xs text-text-muted">Interviewer</dt>
+              <dd className="mt-0.5 break-words font-medium text-text-heading">{a.interviewer ? `${a.interviewer.firstName} ${a.interviewer.lastName}` : "Not assigned"}</dd>
+            </div>
+          </div>
+          <div className="flex min-w-0 items-start gap-2.5 sm:col-span-2">
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
+            <div className="min-w-0">
+              <dt className="text-xs text-text-muted">Format and location</dt>
+              <dd className="mt-0.5 break-words font-medium capitalize text-text-heading">{label(a.mode || "IN_PERSON")}{a.interviewLocation ? ` · ${a.interviewLocation}` : " · Location not provided"}</dd>
+            </div>
+          </div>
+        </dl>
+
+      {canEdit("recruitment") ? (
         <>
           <Select
-            label="Candidate outcome"
+            label="Candidate hiring decision"
             value={a.selectionStatus || "IN_PROGRESS"}
             disabled={outcomeMutation.isPending}
             onChange={(e) =>
@@ -288,7 +265,7 @@ export default function InterviewCalendarPage() {
             <option value="SELECTION_REJECTED">Rejected</option>
           </Select>
           {a.status === "SCHEDULED" && a.interviewId && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 border-t border-slate-border pt-3">
               <Button
                 size="sm"
                 variant="outline"
@@ -324,7 +301,10 @@ export default function InterviewCalendarPage() {
             </div>
           )}
         </>
+      ) : (
+        <p className="text-sm text-text-muted">Candidate decision: <span className="font-medium text-text-heading">{readable(a.selectionStatus || "IN_PROGRESS")}</span></p>
       )}
+      </div>
     </article>
   );
   return (
@@ -371,52 +351,7 @@ export default function InterviewCalendarPage() {
           </div>
         }
       />
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface p-3">
-        <div
-          className="flex flex-wrap gap-2"
-          role="group"
-          aria-label="Calendar view"
-        >
-          {(["agenda", "week", "month"] as const).map((value) => (
-            <Button
-              key={value}
-              variant={view === value ? "primary" : "outline"}
-              aria-pressed={view === value}
-              onClick={() => {
-                setView(value);
-                localStorage.setItem("recruitment-calendar-view", value);
-              }}
-            >
-              {value[0].toUpperCase() + value.slice(1)}
-            </Button>
-          ))}
-        </div>
-        {view !== "agenda" && <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            aria-label="Previous range"
-            onClick={() => changeRange(-1)}
-          >
-            Previous
-          </Button>
-          <Button variant="outline" onClick={() => setDate(new Date())}>
-            Today
-          </Button>
-          <Button
-            variant="outline"
-            aria-label="Next range"
-            onClick={() => changeRange(1)}
-          >
-            Next
-          </Button>
-        </div>}
-        <p className="text-sm text-text-muted">
-          {view === "agenda" ? "All interview dates" : view !== "month"
-            ? `${week[0].toLocaleDateString("en-IN")} - ${week[6].toLocaleDateString("en-IN")}`
-            : date.toLocaleDateString("en-IN")}{" "}
-          / Asia/Kolkata
-        </p>
-      </div>
+      <p className="text-sm text-text-muted">Showing interviews across all dates / Asia/Kolkata</p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Input
           label="Search"
@@ -520,41 +455,14 @@ export default function InterviewCalendarPage() {
         </div>
       ) : isLoading ? (
         <LoadingSpinner />
-      ) : view === "week" ? (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 min-[2200px]:grid-cols-7">
-          {week.map((day) => (
-            <section key={dayKey(day)} className="min-w-0 space-y-3">
-              <h2 className="rounded-lg bg-tint p-3 text-sm font-semibold">
-                {day.toLocaleDateString("en-IN", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                })}
-              </h2>
-              {filtered
-                .filter((a: any) => dayKey(a.interviewDate) === dayKey(day))
-                .map(card)}
-              {!filtered.some(
-                (a: any) => dayKey(a.interviewDate) === dayKey(day),
-              ) && <p className="p-3 text-sm text-text-muted">No interviews</p>}
-            </section>
-          ))}
-        </div>
       ) : (
-        <div
-          className={
-            view === "month" ? "grid gap-5 md:grid-cols-[20rem_1fr]" : ""
-          }
-        >
-          {view === "month" && <Calendar value={date} onChange={setDate} getDayCount={day => filtered.filter((a: any) => dayKey(a.interviewDate) === dayKey(day)).length} />}
-          <div className="grid gap-3 lg:grid-cols-2">
-            {visible.map(card)}
-            {!visible.length && (
-              <p className="rounded-xl border border-dashed border-slate-border p-8 text-text-muted">
-                No interviews match these filters.
-              </p>
-            )}
-          </div>
+        <div className="grid gap-3 lg:grid-cols-2">
+          {visible.map(card)}
+          {!visible.length && (
+            <p className="rounded-xl border border-dashed border-slate-border p-8 text-text-muted">
+              No interviews match these filters.
+            </p>
+          )}
         </div>
       )}
       <ScheduleInterviewModal

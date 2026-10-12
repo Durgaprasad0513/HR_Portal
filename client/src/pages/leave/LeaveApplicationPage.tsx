@@ -271,7 +271,7 @@ export default function LeaveApplicationPage() {
                 <div className="p-8 flex justify-center"><LoadingSpinner /></div>
               ) : myLeaves.length === 0 ? (
                 <div className="text-center p-8 text-slate-500">
-                  <p>You haven't requested any leaves yet.</p>
+                  <p>You haven&apos;t requested any leaves yet.</p>
                 </div>
               ) : (
                 <DataTable

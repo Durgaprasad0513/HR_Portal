@@ -299,7 +299,7 @@ export const EmployeeDashboard = () => {
                 <div className="p-10 text-center flex flex-col items-center justify-center text-slate-400 flex-1">
                   <Calendar className="w-12 h-12 mb-3 text-slate-300" />
                   <p className="text-sm font-semibold text-text-heading mb-1">No leave history</p>
-                  <p className="text-xs">You haven't taken any time off recently.</p>
+                  <p className="text-xs">You haven&apos;t taken any time off recently.</p>
                 </div>
               )}
             </div>
