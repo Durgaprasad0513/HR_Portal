@@ -88,6 +88,15 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
     const dashboard=succeeds(await call('MANAGER','get','/dashboard/stats'));
     expect(dashboard.needsAttention.some((item:any)=>assigned.some(r=>item.id===`perf-${r.id}`))).toBe(true);
   });
+  it('charges leave balance once when approvals race',async()=>{
+    const year=2031;
+    await prisma.leaveBalance.upsert({where:{employeeId_year_leaveType:{employeeId:employeeIds.EMPLOYEE,year,leaveType:'CASUAL'}},update:{totalDays:10,usedDays:0,remainingDays:10},create:{employeeId:employeeIds.EMPLOYEE,year,leaveType:'CASUAL',totalDays:10,usedDays:0,remainingDays:10}});
+    const leave=await prisma.leave.create({data:{employeeId:employeeIds.EMPLOYEE,leaveType:'CASUAL',startDate:new Date('2031-03-03'),endDate:new Date('2031-03-03'),totalDays:1,reason:'Concurrent approval QA'}});
+    const results=await Promise.all([call('HR','patch',`/leaves/${leave.id}/status`,{status:'APPROVED'}),call('ADMIN','patch',`/leaves/${leave.id}/status`,{status:'APPROVED'})]);
+    expect(results.filter(r=>r.status===200)).toHaveLength(1);
+    const balance=await prisma.leaveBalance.findUniqueOrThrow({where:{employeeId_year_leaveType:{employeeId:employeeIds.EMPLOYEE,year,leaveType:'CASUAL'}}});
+    expect(balance.usedDays.toNumber()).toBe(1); expect(balance.remainingDays.toNumber()).toBe(9);
+  });
   it('supports travel creation, approval, own expense submission and settlement with numeric totals',async()=>{
     const travel=succeeds(await call('EMPLOYEE','post','/travel',{travelPurpose:'Synthetic QA journey',destination:'QA Office',startDate:'2030-01-07',endDate:'2030-01-08',travelMode:'TRAIN',advanceRequested:100}));
     expect((await call('OTHER','get',`/travel/${travel.id}`)).status).toBe(404);

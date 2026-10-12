@@ -87,3 +87,9 @@ Passing tests establish the covered behavior only. They do not establish zero de
 - `2aedc10`: additive migration prerequisites and CI database setup. Verified by the empty-database migration rehearsal and backend suite against its resulting schema.
 - `6fceb3b`: permission, privacy, input, workflow and production-default repairs with permanent regression tests. Automated verification passed. The fractional travel claim was also rechecked in the browser; Employee asset/profile and Manager dashboard browser rechecks remain pending.
 - Manager and Employee sign-ins and the workflows described above are complete. No browser health score has been assigned because complete interactive/accessibility coverage has not been performed.
+
+## Further release preparation
+
+Concurrent leave approvals now claim the pending status and deduct the balance in one transaction. A simultaneous HR/Admin approval regression confirms exactly one success and one day deducted from the leave-year balance. Portal regression suite: 26/26 passed; server type check passed. Cross-year leave allocation remains unverified.
+
+Production is hosted on Render from a different repository, per the user. The actual source repository and service identity are requested. No deployment changes have been applied to this repository or production.
