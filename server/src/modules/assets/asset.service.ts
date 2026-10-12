@@ -12,8 +12,19 @@ interface CurrentUser {
 }
 
 export class AssetService {
+  private assetDates(data: any) {
+    const normalized = { ...data };
+    for (const field of ['purchaseDate', 'issueDate']) {
+      if (normalized[field] !== undefined) {
+        const date = new Date(normalized[field]);
+        if (Number.isNaN(date.getTime())) throw new Error(`Invalid ${field}`);
+        normalized[field] = date;
+      }
+    }
+    return normalized;
+  }
   async createAsset(data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
-    const asset = await prisma.asset.create({ data });
+    const asset = await prisma.asset.create({ data: this.assetDates(data) });
 
     await prisma.auditLog.create({
       data: {
@@ -29,7 +40,7 @@ export class AssetService {
   }
 
   async updateAsset(id: string, data: any, userId: string, reqContext: { ipAddress?: string } = {}) {
-    const asset = await prisma.asset.update({ where: { id }, data });
+    const asset = await prisma.asset.update({ where: { id }, data: this.assetDates(data) });
 
     await prisma.auditLog.create({
       data: {

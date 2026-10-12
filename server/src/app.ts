@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 
 // Middleware
 const corsOptions = {
-  origin: true,
+  origin: config.cors.origin.split(',').map((origin) => origin.trim()).filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'],
@@ -48,7 +48,32 @@ const corsOptions = {
 app.options('*', cors(corsOptions)); // Handle preflight for ALL routes
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
+// Employee identity documents must use the authenticated download endpoint.
+app.use('/api/uploads', async (req, res, next) => {
+  try {
+    let filename: string;
+    try { filename = path.basename(decodeURIComponent(req.path)); }
+    catch { res.status(400).json({ success: false, message: 'Invalid file path.' }); return; }
+    // Multer's extensionless names are private document storage. Only explicitly
+    // referenced profile photos may be served publicly, including after a document is deleted.
+    if (/^[a-f0-9]{32}$/i.test(filename)) {
+      const photo = await prisma.employee.findFirst({ where: { profilePhoto: `/api/uploads/${filename}` }, select: { id: true } });
+      if (!photo) {
+        res.status(403).json({ success: false, message: 'Use the authenticated document download endpoint.' });
+        return;
+      }
+    }
+    const document = await prisma.employeeDocument.findFirst({
+      where: { OR: [{ filePath: { endsWith: `/${filename}` } }, { filePath: { endsWith: `\\${filename}` } }] },
+      select: { id: true },
+    });
+    if (document) {
+      res.status(403).json({ success: false, message: 'Use the authenticated document download endpoint.' });
+      return;
+    }
+    next();
+  } catch (error) { next(error); }
+}, express.static(path.join(__dirname, '../uploads')));
 app.use(express.urlencoded({ extended: true }));
 
 // Liveness check
@@ -60,8 +85,12 @@ app.get('/api/live', (_req, res) => {
 app.get('/api/ready', async (_req, res) => {
   const correlationId = crypto.randomUUID();
   try {
-    // Check if DB is reachable and migrations are applied by querying a known table
-    await prisma.$queryRaw`SELECT 1`;
+    await Promise.all([
+      prisma.candidate.findFirst({ select: { currentStage: true, stageEnteredAt: true } }),
+      prisma.performanceReview.findFirst({ select: { status: true } }),
+      prisma.modulePermission.findFirst({ select: { canExport: true } }),
+      prisma.officeExpense.findFirst({ select: { id: true } }),
+    ]);
     res.json({ status: 'READY', correlationId, timestamp: new Date().toISOString() });
   } catch (error) {
     res.status(503).json({ status: 'UNAVAILABLE', correlationId, timestamp: new Date().toISOString() });

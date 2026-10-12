@@ -175,11 +175,15 @@ export class DashboardService {
       }
     }
 
-    const pendingReviewStatuses = hasOrganizationAccess ? ['HR_REVIEW', 'FINAL_APPROVAL'] : ['EMPLOYEE_REVIEW'];
+    const pendingReviewStatuses = currentUser.role === 'MANAGER' ? ['MANAGER_REVIEW']
+      : currentUser.role === 'ADMIN' ? ['HR_REVIEW', 'MANAGER_REVIEW', 'FINAL_APPROVAL']
+      : currentUser.role === 'HR' ? ['HR_REVIEW', 'FINAL_APPROVAL'] : ['EMPLOYEE_REVIEW'];
     const pendingReviewsList = await prisma.performanceReview.findMany({
       where: {
         status: { in: pendingReviewStatuses as any },
-        ...(hasOrganizationAccess ? {} : { employeeId: currentUser.employeeId! })
+        ...(currentUser.role === 'MANAGER'
+          ? { employee: { managerId: currentUser.employeeId ?? '__no_employee__' } }
+          : hasOrganizationAccess ? {} : { employeeId: currentUser.employeeId! })
       },
       include: { employee: { select: { firstName: true, lastName: true } } },
       take: 5

@@ -12,6 +12,8 @@ jest.mock('../src/config/database', () => ({
 
 describe('Travel settlement money calculations', () => {
   const fixture = {
+    approvalStatus: 'APPROVAL_APPROVED',
+    settlementStatus: 'SUBMITTED',
     hotelExpense: new Prisma.Decimal(100),
     foodAllowance: new Prisma.Decimal(500),
     localConveyance: new Prisma.Decimal(400),

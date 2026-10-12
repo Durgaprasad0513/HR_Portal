@@ -13,7 +13,10 @@ router.get('/', requirePermission('assets', 'view'), (req, res) => assetControll
 router.get('/:id', requirePermission('assets', 'view'), (req, res) => assetController.getAssetById(req, res));
 router.put('/:id', requirePermission('assets', 'edit'), validateRequest({ body: updateAssetSchema }), (req, res) => assetController.updateAsset(req, res));
 router.put('/:id/assign', requirePermission('assets', 'edit'), validateRequest({ body: assignAssetSchema }), (req, res) => assetController.assignAsset(req, res));
-router.put('/:id/return', requirePermission('assets', 'edit'), validateRequest({ body: returnAssetSchema }), (req, res) => assetController.returnAsset(req, res));
+router.put('/:id/return', (req, res, next) => {
+  const role = (req as import('../../middleware/auth.middleware').AuthRequest).user?.role;
+  return requirePermission('assets', role === 'ADMIN' || role === 'HR' ? 'edit' : 'view')(req, res, next);
+}, validateRequest({ body: returnAssetSchema }), (req, res) => assetController.returnAsset(req, res));
 router.put('/:id/damage', requirePermission('assets', 'edit'), (req, res) => assetController.reportDamage(req, res));
 router.put('/:id/lost', requirePermission('assets', 'edit'), (req, res) => assetController.reportLost(req, res));
 

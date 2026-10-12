@@ -63,10 +63,11 @@ export class PerformanceService {
       orderBy: { createdAt: 'desc' }
     });
 
-    return reviews.map(({ managerRating, managerMetricRatings, managerComments, promotionRecommendation, salaryRevisionRecommendation, finalRating, status, ...review }) => ({
+    return reviews.map(({ managerRating, managerMetricRatings, managerComments, promotionRecommendation, salaryRevisionRecommendation, finalRating, hrComments, status, ...review }) => ({
       ...review,
       status,
-      finalRating: status === 'COMPLETED' ? finalRating : null
+      finalRating: status === 'COMPLETED' ? finalRating : null,
+      hrComments: status === 'COMPLETED' ? hrComments : null
     }));
   }
 

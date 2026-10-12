@@ -101,7 +101,7 @@ export class NotificationService {
 
   async deleteNotification(id: string, recipientId: string) {
     return prisma.notification.delete({
-      where: { id }
+      where: { id, recipientId }
     });
   }
 }

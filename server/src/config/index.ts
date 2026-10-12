@@ -2,6 +2,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+if (process.env.NODE_ENV === 'production' &&
+    (!process.env.JWT_SECRET || ['default-secret-change-me', 'your-secret-key-change-in-production'].includes(process.env.JWT_SECRET))) {
+  throw new Error('A private JWT_SECRET must be configured for production.');
+}
+
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',

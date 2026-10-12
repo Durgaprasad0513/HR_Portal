@@ -191,7 +191,7 @@ export default function TravelListPage() {
  </button>
  )}
 
- {row.approvalStatus === 'APPROVAL_APPROVED' && row.settlementStatus === 'UNSETTLED' && row.employee?.id === user?.employeeId && mayEditTravel && (
+ {row.approvalStatus === 'APPROVAL_APPROVED' && row.settlementStatus === 'UNSETTLED' && row.employee?.id === user?.employeeId && mayCreateTravel && (
  <button 
  className="group flex items-center justify-start gap-2 rounded-full bg-slate-100 dark:bg-slate-800 p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-300 overflow-hidden w-8 hover:w-[130px]" 
  title="Submit Expenses"
@@ -226,7 +226,7 @@ export default function TravelListPage() {
  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
  e.preventDefault();
  const formData = new FormData(e.currentTarget);
- const file = formData.get('billUpload') as File;
+ const billUpload = formData.get('billUpload');
  const payload: any = {
  travelPurpose: formData.get('travelPurpose'),
  destination: formData.get('destination'),
@@ -235,9 +235,8 @@ export default function TravelListPage() {
  travelMode: formData.get('travelMode'),
  advanceRequested: Number(formData.get('advanceRequested')) || 0,
  };
- // Send file name as string for now if present, real implementation would upload to S3
- if (file && file.size > 0) {
- payload.billUpload = file.name;
+ if (typeof billUpload === 'string' && billUpload) {
+ payload.billUpload = billUpload;
  }
  createMutation.mutate(payload);
  };
@@ -245,15 +244,15 @@ export default function TravelListPage() {
  const handleExpenseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
  e.preventDefault();
  const formData = new FormData(e.currentTarget);
- const file = formData.get('billUpload') as File;
+ const billUpload = formData.get('billUpload');
  const payload: any = {
  hotelExpense: Number(formData.get('hotelExpense')) || 0,
  foodAllowance: Number(formData.get('foodAllowance')) || 0,
  localConveyance: Number(formData.get('localConveyance')) || 0,
  otherExpenses: Number(formData.get('otherExpenses')) || 0,
  };
- if (file && file.size > 0) {
- payload.billUpload = file.name;
+ if (typeof billUpload === 'string' && billUpload) {
+ payload.billUpload = billUpload;
  }
  expenseMutation.mutate({
  id: selectedRequest.id,
@@ -416,7 +415,7 @@ export default function TravelListPage() {
  <option value="OWN_VEHICLE">Personal Vehicle</option>
  </Select>
  </div>
- <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="1" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
+ <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
  </div>
  <FileUpload name="billUpload" label="Upload Attachment (Optional)" module="travel" action="add" />
  
@@ -442,7 +441,7 @@ export default function TravelListPage() {
  </div>
  </div>
 
- <Input id="advanceApproved" label="Advance Approved (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={selectedRequest?.advanceRequested || 0} />
+ <Input id="advanceApproved" label="Advance Approved (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={selectedRequest?.advanceRequested || 0} />
  
  <div className="flex justify-end space-x-3 pt-4 border-t border-slate-border dark:border-slate-border">
  <Button variant="outline" onClick={() => setApprovalModalOpen(false)}>Cancel</Button>
@@ -468,18 +467,18 @@ export default function TravelListPage() {
  </Modal>
 
  {/* Submit Expenses Modal */}
- <Modal isOpen={expenseModalOpen && mayEditTravel} onClose={() => setExpenseModalOpen(false)} title="Submit Travel Expenses">
+ <Modal isOpen={expenseModalOpen && mayCreateTravel} onClose={() => setExpenseModalOpen(false)} title="Submit Travel Expenses">
  <form onSubmit={handleExpenseSubmit} className="space-y-4">
  <p className="text-sm text-gray-600">Fill in your expenses for this trip. The advance you received (if any) will be automatically deducted during settlement.</p>
  
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
- <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="1" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
+ <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+ <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+ <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+ <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
  </div>
 
- <FileUpload name="billUpload" label="Upload Bills/Receipts" required module="travel" action="edit" />
+ <FileUpload name="billUpload" label="Upload Bills/Receipts" required module="travel" action="add" />
  
  <div className="flex justify-end space-x-2 pt-4">
  <Button type="button" variant="outline" onClick={() => setExpenseModalOpen(false)}>Cancel</Button>

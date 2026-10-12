@@ -50,8 +50,20 @@ export class ExpenseService {
     if (scope !== 'ORG') throw new Error('Not authorized to approve expenses');
     if (!currentUser.employeeId) throw new Error('Employee ID required to approve expense');
 
+    const existing = await prisma.officeExpense.findUnique({ where: { id } });
+    if (!existing) throw new Error('Expense not found');
+    const transitions: Record<ExpenseStatus, ExpenseStatus[]> = {
+      PENDING: [ExpenseStatus.APPROVED, ExpenseStatus.REJECTED],
+      APPROVED: [ExpenseStatus.PAID],
+      REJECTED: [],
+      PAID: [],
+    };
+    if (!transitions[existing.status].includes(data.status)) {
+      throw new Error('Expense status transition is not allowed');
+    }
+
     return prisma.officeExpense.update({
-      where: { id },
+      where: { id, status: existing.status },
       data: {
         status: data.status,
         approvedById: currentUser.employeeId

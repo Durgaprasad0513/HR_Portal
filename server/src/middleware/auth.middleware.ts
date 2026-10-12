@@ -48,11 +48,11 @@ export const authenticate = async (
     }
 
 req.user = {
-      id: decoded.userId,
-      userId: decoded.userId,
-      email: decoded.email,
-      role: decoded.role,
-      employeeId: decoded.employeeId
+      id: user.id,
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      employeeId: user.employeeId
     };
     next();
   } catch (error) {
