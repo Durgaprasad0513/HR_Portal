@@ -22,7 +22,7 @@ describe("job position cards", () => {
     render(<MemoryRouter><JobPositions requisitions={openings} editable={false} history={false} onEdit={vi.fn()} onClose={vi.fn()} /></MemoryRouter>);
     expect(screen.queryByRole("button", { name: /Edit Sales Manager/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Department" }));
-    fireEvent.click(screen.getByRole("option", { name: "IT", exact: true }));
+    fireEvent.click(screen.getByRole("option", { name: "IT" }));
     expect(screen.queryByRole("link", { name: "View applicants for Sales Manager" })).toBeNull();
     expect(screen.getByRole("link", { name: "View applicants for Developer" })).toBeInTheDocument();
   });
