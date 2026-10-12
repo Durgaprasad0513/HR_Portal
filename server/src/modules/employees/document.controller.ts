@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { documentService } from './document.service';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuthRequest } from '../../middleware/auth.middleware';
+import { StorageError } from '../../config/storage';
 
 export class DocumentController {
   async upload(req: AuthRequest, res: Response) {
@@ -10,7 +11,7 @@ export class DocumentController {
       const doc = await documentService.upload(req.user, req.file, req.body, { ipAddress: req.ip });
       return sendSuccess(res, doc, 'Document uploaded successfully');
     } catch (error: any) {
-      return sendError(res, error.message, 400);
+      return sendError(res, error.message, error instanceof StorageError ? error.statusCode : 400);
     }
   }
 
@@ -31,11 +32,9 @@ export class DocumentController {
       res.setHeader('Content-Disposition', `${disposition}; filename*=UTF-8''${encodeURIComponent(file.documentName)}`);
       res.setHeader('Cache-Control', 'private, no-store');
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      return res.sendFile(file.filePath, (error) => {
-        if (error && !res.headersSent) sendError(res, 'Unable to read document file', 404);
-      });
+      return res.send(file.bytes);
     } catch (error: any) {
-      const statusCode = error.message === 'Document not found' || error.message.startsWith('Document file is unavailable') ? 404 : 403;
+      const statusCode = error instanceof StorageError ? error.statusCode : error.message === 'Document not found' || error.message.startsWith('Document file is unavailable') ? 404 : 403;
       return sendError(res, error.message, statusCode);
     }
   }

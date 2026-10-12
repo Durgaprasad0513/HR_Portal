@@ -1,5 +1,5 @@
 import path from 'path';
-import { uploadsDirectory } from './config/storage';
+import { fileStorage, imageContentType } from './config/storage';
 import express from 'express';
 import cors from 'cors';
 import { config } from './config';
@@ -64,10 +64,13 @@ app.use('/api/uploads', async (req, res, next) => {
       where: { OR: [{ filePath: { endsWith: `/${filename}` } }, { filePath: { endsWith: `\\${filename}` } }] }, select: { id: true },
     });
     if (!photo || document) { res.status(403).json({ success: false, message: 'Authenticated download required.' }); return; }
+    const bytes = await fileStorage.read(filename);
+    const contentType = imageContentType(bytes);
+    if (!contentType) { res.sendStatus(404); return; }
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    next();
+    res.type(contentType).send(bytes);
   } catch (error) { next(error); }
-}, express.static(uploadsDirectory));
+});
 app.use(express.urlencoded({ extended: true }));
 
 // Liveness check
@@ -84,6 +87,7 @@ app.get('/api/ready', async (_req, res) => {
       prisma.performanceReview.findFirst({ select: { status: true } }),
       prisma.modulePermission.findFirst({ select: { canExport: true } }),
       prisma.officeExpense.findFirst({ select: { id: true } }),
+      prisma.requisition.findFirst({ where: { status: 'CLOSED' }, select: { id: true } }),
     ]);
     res.json({ status: 'READY', correlationId, timestamp: new Date().toISOString() });
   } catch (error) {

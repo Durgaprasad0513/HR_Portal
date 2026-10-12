@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { uploadsDirectory } from '../../config/storage';
+import { fileStorage, newFilename, imageContentType } from '../../config/storage';
 import { employeeController } from './employee.controller';
 import { authenticate, authorize, requirePermission } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validate.middleware';
@@ -24,23 +24,27 @@ router.put('/:id', requirePermission('employees', 'edit'), validate(updateEmploy
 );
 router.delete('/:id', requirePermission('employees', 'delete'), (req, res) => employeeController.delete(req, res));
 
-const upload = multer({ dest: uploadsDirectory, limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single('photo'), async (req, res) => {
+router.post('/:id/photo', requirePermission('employees', 'edit'), upload.single('photo'), async (req, res, next) => {
   try {
     const employeeId = req.params.id as string;
     const file = req.file;
     if (!file) {
       return res.status(400).json({ success: false, message: 'No photo uploaded' });
     }
-    const photoUrl = `/api/uploads/${file.filename}`;
+    const contentType = imageContentType(file.buffer);
+    if (!contentType) return res.status(400).json({ success: false, message: 'Upload a PNG, JPEG, GIF or WebP image.' });
+    const filename = newFilename();
+    await fileStorage.save(filename, file.buffer, contentType);
+    const photoUrl = `/api/uploads/${filename}`;
     const updatedEmployee = await prisma.employee.update({
       where: { id: employeeId },
       data: { profilePhoto: photoUrl }
     });
     res.json({ success: true, message: 'Profile photo updated', data: updatedEmployee });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 });
 

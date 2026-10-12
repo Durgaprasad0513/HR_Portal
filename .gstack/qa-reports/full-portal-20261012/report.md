@@ -73,10 +73,10 @@ Latest targeted backend suite: 25/25 portal regression tests passed. Evidence: [
 
 ## Outstanding release evidence
 
--, deployment configuration and post-deployment smoke checks.
-- Further investigatio Browser workflows for all four roles, responsive checks and accessible interactions.
+- Deployment configuration and post-deployment smoke checks.
+- Remaining browser forms, exports, responsive checks and accessible interactions across all four roles.
 - Production schema compatibility with existing legacy records: migration diff retains legacy enum values, numeric column types and an extra table. No destructive conversion was applied.
-- Real mail deliveryn of public generic attachments and concurrent approval behavior; production defaults and automatic startup cleanup have been repaired locally.
+- Real mail delivery and concurrent travel approval/settlement behavior. Public attachment access and concurrent leave approval have been repaired and regression tested locally.
 
 ## Limits
 
@@ -99,3 +99,11 @@ Production is hosted on Render from a different repository, per the user. The ac
 Confirmed release target: https://github.com/techsupportlohitha/HR_Portal, main at 1589915. Prepared isolated release checkout C:/Users/VDurgaprasad/HR_Portal_release on codex/render-production-readiness and merged production main without conflicts. Render /api/live and /api/ready both returned 200 on 12 October 2026. This is health evidence only, not all-module readiness. Render dashboard requires user sign-in; requested.
 
 Public upload URLs now serve only referenced profile images; identity documents, receipts and policy attachments require authenticated endpoints. Receipt downloads enforce module view permission and Employee ownership. Client travel, expense and policy attachment controls fetch authenticated blobs without putting tokens in URLs. Uploads are limited to ten files of 10 MiB each. Portal suite 27/27 passed, server type check passed, frontend build, lint and all 16 tests passed. Browser owner receipt download completed without console errors. Evidence: private-attachment-download.jpg. Existing external attachment URLs and orphaned uploads require a compatibility review against production records.
+
+## Render inspection and private R2 preparation
+
+Authenticated Render logs confirmed PostgreSQL 22P02 because the deployed RequisitionStatus enum lacks CLOSED. An idempotent additive migration is prepared and passed on the isolated local migration database; production schema and migration history still require backup and rehearsal. Readiness now also queries this enum value. Render has free compute, no durable disk, no pre-deploy command or health-check path, auto-deploy off, and no CORS_ORIGIN or mail configuration among its environment keys. Production secrets were not revealed or changed.
+
+User chose external storage with Neon remaining the database. Private Cloudflare R2 support is implemented locally for receipts, policies, identity documents and photos. Stable portal URLs are preserved, download authorization precedes file access, R2 errors never fall back to temporary disk, and provider messages are sanitized. Profile uploads and public profile responses require recognized raster image signatures. SVG/HTML disguised as photos are denied. Missing objects return 404, outages 503, oversized uploads 413. Downloads are bounded to 10 MiB.
+
+Verification: 28 portal regressions plus 7 storage tests passed (35 total); TypeScript and server lint passed; production dependency audit reported zero vulnerabilities. R2 SDK calls were mocked: no real account credential, bucket or network round trip has been tested. Cloudflare account inspection reached the R2 activation screen, showing $0 due now and billable excess usage. Activation requires the account owner to accept subscription terms. No R2 subscription, credential, real HR file transfer, production database mutation, push or deployment was performed. See R2_STORAGE_SETUP.md and RENDER_RELEASE_CHECKLIST.md for remaining release steps.

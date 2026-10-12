@@ -218,6 +218,27 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
     succeeds(await call('HR','delete',`/employees/${employee.id}`));
     expect((await prisma.employee.findUniqueOrThrow({where:{id:employee.id}})).isActive).toBe(false);
   });
+  it('rejects disguised profile content and serves only referenced image bytes', async()=>{
+    const original = await prisma.employee.findUniqueOrThrow({where:{id:employeeIds.EMPLOYEE},select:{profilePhoto:true}});
+    const invalid=await request(app).post(`/api/employees/${employeeIds.EMPLOYEE}/photo`).set('Authorization',`Bearer ${tokens.HR}`).attach('photo',Buffer.from('<svg onload="alert(1)"></svg>'),'photo.png');
+    expect(invalid.status).toBe(400);
+    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6xkAAAAASUVORK5CYII=','base64');
+    const uploaded=await request(app).post(`/api/employees/${employeeIds.EMPLOYEE}/photo`).set('Authorization',`Bearer ${tokens.HR}`).attach('photo',png,'photo.png');
+    const photo=succeeds(uploaded).profilePhoto;
+    try {
+      const download=await request(app).get(photo);
+      expect(download.status).toBe(200);
+      expect(download.headers['content-type']).toMatch(/^image\/png/);
+      expect(download.body).toEqual(png);
+      await prisma.employee.update({where:{id:employeeIds.EMPLOYEE},data:{profilePhoto:original.profilePhoto}});
+      expect((await request(app).get(photo)).status).toBe(403);
+    } finally {
+      await prisma.employee.update({where:{id:employeeIds.EMPLOYEE},data:{profilePhoto:original.profilePhoto}});
+      const file=path.join(uploadsDirectory,path.basename(photo));
+      if(fs.existsSync(file)) fs.unlinkSync(file);
+    }
+  });
+
   it('supports protected employee document upload, verification and download',async()=>{
     const uploaded=await request(app).post('/api/employees/documents/upload').set('Authorization',`Bearer ${tokens.HR}`).field('employeeId',employeeIds.EMPLOYEE).field('documentType','OTHER').field('documentName','synthetic.txt').attach('file',Buffer.from('Synthetic QA document only'),'synthetic.txt');
     const document=succeeds(uploaded);
@@ -232,7 +253,8 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
       expect((await request(app).get('/api/uploads/'+filename)).status).toBeGreaterThanOrEqual(400);
     } finally {
       await prisma.employeeDocument.deleteMany({where:{id:document.id}});
-      if(fs.existsSync(document.filePath)) fs.unlinkSync(document.filePath);
+      const localFile=path.join(uploadsDirectory,path.basename(document.filePath));
+      if(fs.existsSync(localFile)) fs.unlinkSync(localFile);
     }
   });
   it('produces permitted exports, audit, attrition and permission matrix results',async()=>{
