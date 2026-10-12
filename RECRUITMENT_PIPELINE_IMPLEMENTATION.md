@@ -35,3 +35,9 @@ This implementation is available in the isolated local preview at `http://localh
 ## Later roadmap
 
 Persistent activity assignments/due dates, drag-and-drop stage moves, configurable per-job pipelines, applicant website/email intake, candidate self-scheduling, external calendar invitations and electronic signatures remain later phases. This release supplies derived next actions and overdue appointment cues; it does not claim delivery of those integrations or send candidate emails.
+
+## Job positions layout update — 12 October 2026
+
+The openings page now follows the supplied Odoo job-position reference: compact search and department toolbar, responsive position cards, the person who raised the opening, and prominent new-application counts. Large summary cards were replaced with a small position/vacancy summary. The API defines new applications as candidates in Screening with screening pending and no rejected selection outcome; it does not label every applicant as new. No recruiter assignment is inferred from the opening creator.
+
+The whole position card opens its filtered applicant pipeline. Edit and Close/Reopen remain independent controls. Browser Back correctly returns to the default openings tab. Existing permissions and history actions are preserved. Browser whitespace-click navigation and desktop layout were verified; evidence is in `.gstack/qa-reports/job-positions-20261012/desktop.png`. Client tests: 13 passed; server tests: 45 passed on a separate disposable database, including count changes after screening. The isolated preview uses the updated API.

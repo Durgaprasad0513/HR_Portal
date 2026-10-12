@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recruitmentApi } from "@/api/recruitment";
 import { departmentsApi } from "@/api/departments";
@@ -12,18 +12,16 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import {
   Plus,
-  Briefcase,
-  Users,
   ChevronLeft,
   ChevronRight,
   Download,
   CheckCircle2,
-  Pencil,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInterviewModal";
 import { candidateCsv } from "./interviewExport";
 
+import { JobPositions } from "./JobPositions";
 import { CandidatePipeline } from "./CandidatePipeline";
 import { CandidateStageControls } from "./CandidateStageControls";
 import { CANDIDATE_STAGES } from "./pipelineModel";
@@ -51,7 +49,6 @@ export default function RecruitmentPage() {
   const [candidateStageFilter, setCandidateStageFilter] = useState("");
   const [candidateOutcomeFilter, setCandidateOutcomeFilter] = useState("");
   const [candidatePage, setCandidatePage] = useState(1);
-  const [requisitionSearch, setRequisitionSearch] = useState("");
   const [closureRequest, setClosureRequest] = useState<any>(null);
   const [closureReason, setClosureReason] = useState("");
   const [applicationOpen, setApplicationOpen] = useState(false);
@@ -59,7 +56,8 @@ export default function RecruitmentPage() {
   const [screeningNotes, setScreeningNotes] = useState("");
   React.useEffect(() => {
     const tab = searchParams.get("tab");
-    if (["openings", "pipeline", "candidates", "history"].includes(tab || "")) setActiveTab(tab!);
+    setActiveTab(["openings", "pipeline", "candidates", "history"].includes(tab || "") ? tab! : "openings");
+    setShowHistory(tab === "history");
   }, [searchParams]);
 
   const { data: deptData } = useQuery({
@@ -115,13 +113,6 @@ export default function RecruitmentPage() {
       activeTab === "history" || showHistory
         ? ["CLOSED", "JOINED_REJECTED"].includes(req.status)
         : !["CLOSED", "JOINED_REJECTED"].includes(req.status),
-    )
-    .filter(
-      (req: any) =>
-        !requisitionSearch ||
-        `${req.positionTitle} ${req.location || ""} ${req.department?.name || ""}`
-          .toLowerCase()
-          .includes(requisitionSearch.toLowerCase()),
     );
   const routeReqId = searchParams.get("reqId");
   const routeCandidateId = searchParams.get("candidateId");
@@ -390,8 +381,8 @@ export default function RecruitmentPage() {
   return (
     <div className="space-y-6 flex flex-col h-full h-[calc(100vh-6rem)]">
       <PageHeader
-        title="Recruitment Tracker"
-        description="Manage job openings and scheduled interviews."
+        title={!selectedReq && activeTab === "openings" ? "Job positions" : "Recruitment Tracker"}
+        description={!selectedReq && activeTab === "openings" ? "Manage positions and follow each applicant through hiring." : "Manage job openings and scheduled interviews."}
         actions={
           <div className="flex flex-wrap items-center gap-3">
             {canAdd("recruitment") && (
@@ -410,7 +401,7 @@ export default function RecruitmentPage() {
                 }}
                 className="gap-2"
               >
-                <Plus className="w-4 h-4" /> New Requisition
+                <Plus className="w-4 h-4" /> New position
               </Button>
             )}
           </div>
@@ -1216,162 +1207,16 @@ export default function RecruitmentPage() {
                 </div>
               </section>
             ) : (
-              <section aria-label="Job requisitions" className="space-y-3">
-                {activeTab === "openings" && (
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <article className="rounded-xl border border-slate-border bg-surface p-4">
-                      <p className="text-sm text-gray-500">Active openings</p>
-                      <p className="mt-1 text-2xl font-bold">
-                        {activeRequisitions.length}
-                      </p>
-                    </article>
-                    <article className="rounded-xl border border-slate-border bg-surface p-4">
-                      <p className="text-sm text-gray-500">
-                        Remaining vacancies
-                      </p>
-                      <p className="mt-1 text-2xl font-bold">
-                        {activeRequisitions.reduce(
-                          (sum: number, req: any) =>
-                            sum + (req.remainingCount ?? req.numberOfVacancies),
-                          0,
-                        )}
-                      </p>
-                    </article>
-                    <article className="rounded-xl border border-slate-border bg-surface p-4">
-                      <p className="text-sm text-gray-500">
-                        Candidates in active openings
-                      </p>
-                      <p className="mt-1 text-2xl font-bold">
-                        {activeRequisitions.reduce(
-                          (sum: number, req: any) =>
-                            sum + (req._count?.candidates || 0),
-                          0,
-                        )}
-                      </p>
-                    </article>
-                  </div>
-                )}
-                <Input
-                  aria-label="Search openings"
-                  placeholder="Search opening, location or department…"
-                  value={requisitionSearch}
-                  onChange={(e) => setRequisitionSearch(e.target.value)}
-                />
-                <p className="border-b border-slate-border px-4 py-2 text-xs text-gray-500 dark:border-slate-border dark:text-gray-400 sm:hidden">
-                  Tap an opening to view its scheduled interviews.
-                </p>
-                {visibleRequisitions.length === 0 ? (
-                  <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-slate-border bg-surface px-6 text-center text-gray-600 dark:text-gray-400">
-                    {activeTab === "history"
-                      ? "No closed vacancies in history."
-                      : "No open vacancies found."}
-                  </div>
-                ) : (
-                  visibleRequisitions.map((req: any) => (
-                    <article
-                      key={req.id}
-                      className="group relative flex flex-col gap-4 rounded-xl border border-slate-border bg-surface p-4 shadow-sm transition duration-200 hover:border-slate-border hover:shadow-md dark:hover:border-slate-600 md:grid md:grid-cols-[minmax(0,1fr)_15rem_auto] md:items-center md:gap-6 md:p-5"
-                    >
-                      <div className="flex min-w-0 items-start gap-4">
-                        <div className="flex h-14 w-12 shrink-0 items-center justify-center rounded-lg border border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-                          <Briefcase className="h-6 w-6" aria-hidden="true" />
-                        </div>
-                        <div className="min-w-0">
-                          <h2 className="line-clamp-2 text-base font-semibold leading-6 text-navy-900 dark:text-white">
-                            <Link
-                              to={`/recruitment/interviews?reqId=${encodeURIComponent(req.id)}`}
-                              className="text-left hover:underline after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-primary-500"
-                              aria-label={`View scheduled interviews for ${req.positionTitle}`}
-                            >
-                              {req.positionTitle}
-                            </Link>
-                          </h2>
-                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            {req.location}
-                          </p>
-                          <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {req.department?.name || "Department not specified"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <dl className="grid grid-cols-2 gap-4 border-t border-slate-border pt-4 dark:border-slate-border md:border-l md:border-t-0 md:py-1 md:pl-6">
-                        <div>
-                          <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Candidates
-                          </dt>
-                          <dd className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            <Users className="h-4 w-4" aria-hidden="true" />
-                            {req._count?.candidates || 0}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Filled / remaining
-                          </dt>
-                          <dd className="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {req.filledCount ?? req.selectedCount ?? 0} /{" "}
-                            {req.remainingCount ?? req.numberOfVacancies}
-                          </dd>
-                        </div>
-                      </dl>
-
-                      <div className="flex items-center justify-between gap-3 border-t border-slate-border pt-4 dark:border-slate-border md:justify-end md:border-l md:border-t-0 md:py-1 md:pl-6">
-                        {canEdit("recruitment") && (
-                          <Button
-                            className="relative z-10"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setClosureReason("");
-                              setClosureRequest({
-                                id: req.id,
-                                status: ["CLOSED", "JOINED_REJECTED"].includes(
-                                  req.status,
-                                )
-                                  ? "REQUIREMENT"
-                                  : "CLOSED",
-                              });
-                            }}
-                          >
-                            {["CLOSED", "JOINED_REJECTED"].includes(req.status)
-                              ? "Reopen"
-                              : "Close"}
-                          </Button>
-                        )}
-                        {canEdit("recruitment") && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="relative z-10 gap-1.5"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setEditingReq(req);
-                              setIsReqModalOpen(true);
-                            }}
-                            onKeyDown={(event) => event.stopPropagation()}
-                            aria-label={`Edit ${req.positionTitle} requisition`}
-                          >
-                            <Pencil
-                              className="h-3.5 w-3.5"
-                              aria-hidden="true"
-                            />{" "}
-                            Edit
-                          </Button>
-                        )}
-                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary-700 dark:text-primary-300">
-                          View interviews{" "}
-                          <ChevronRight
-                            className="h-4 w-4"
-                            aria-hidden="true"
-                          />
-                        </span>
-                      </div>
-                    </article>
-                  ))
-                )}
-              </section>
+              <JobPositions
+                requisitions={visibleRequisitions}
+                editable={canEdit("recruitment")}
+                history={activeTab === "history"}
+                onEdit={(opening) => { setEditingReq(opening); setIsReqModalOpen(true); }}
+                onClose={(opening) => {
+                  setClosureReason("");
+                  setClosureRequest({ id: opening.id, status: ["CLOSED", "JOINED_REJECTED"].includes(opening.status) ? "REQUIREMENT" : "CLOSED" });
+                }}
+              />
             )}
           </>
         )}

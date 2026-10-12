@@ -296,6 +296,8 @@ export class RecruitmentService {
         candidates: {
           select: {
             selectionStatus: true,
+            screeningStatus: true,
+            currentStage: true,
             interviewRound: true,
             offerStatus: true,
             updatedAt: true,
@@ -309,6 +311,7 @@ export class RecruitmentService {
     return requisitions.map(({ candidates, ...requisition }) => ({
       ...requisition,
       candidates,
+      newApplicationCount: candidates.filter((candidate) => candidate.currentStage === "SCREENING" && candidate.screeningStatus === "SCREENING_PENDING" && candidate.selectionStatus !== "SELECTION_REJECTED").length,
       selectedCount: candidates.filter(
         (candidate) =>
           candidate.selectionStatus === "SELECTED" &&

@@ -218,8 +218,10 @@ suite(
       expect(creation.status).toBe(200);
       const id = creation.body.data.id;
       expect(creation.body.data.currentStage).toBe("SCREENING");
+      expect((await api("HR").get("/requisitions")).body.data.find((opening: any) => opening.id === reqId).newApplicationCount).toBe(1);
       expect((await api("HR").put(`/candidates/${id}/stage`, {stage: "TELEPHONIC", expectedStage: "SCREENING"})).status).toBe(400);
       expect((await api("HR").put(`/candidates/${id}/screen`, {screeningStatus: "SHORTLISTED"})).status).toBe(200);
+      expect((await api("HR").get("/requisitions")).body.data.find((opening: any) => opening.id === reqId).newApplicationCount).toBe(0);
       const transitions = await Promise.all([
         api("HR").put(`/candidates/${id}/stage`, {stage: "TELEPHONIC", expectedStage: "SCREENING"}),
         api("HR").put(`/candidates/${id}/stage`, {stage: "HR_INTERVIEW", expectedStage: "SCREENING", reason: "Direct HR assessment for this role"}),
