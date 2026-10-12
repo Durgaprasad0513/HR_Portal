@@ -128,12 +128,16 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  );
 
  const status = review?.status;
- const canSubmitSelf = canEdit('performance') && status === 'EMPLOYEE_REVIEW' && (user?.employeeId === review.employeeId || hasAdminAccess(user?.role));
- const canSubmitManager = canEdit('performance') && status === 'MANAGER_REVIEW' && hasAdminAccess(user?.role);
- const canSubmitHR = canEdit('performance') && status === 'HR_REVIEW' && hasAdminAccess(user?.role);
+ const isOwnReview = Boolean(user?.employeeId && user.employeeId === review.employeeId);
+ const canSubmitSelf = canEdit('performance') && status === 'EMPLOYEE_REVIEW' && (isOwnReview || user?.role === 'ADMIN');
+ const canSubmitManager = canEdit('performance') && status === 'MANAGER_REVIEW' && ((user?.role === 'MANAGER' && !isOwnReview) || user?.role === 'ADMIN');
+ const canSubmitHR = canEdit('performance') && status === 'HR_REVIEW' && ((user?.role === 'HR' && !isOwnReview) || user?.role === 'ADMIN');
  const canSubmitFinal = canApprove('performance') && status === 'FINAL_APPROVAL' && hasAdminAccess(user?.role);
  const canEditCore = canEdit('performance') && hasAdminAccess(user?.role);
- const canViewHr = user?.role !== 'EMPLOYEE';
+ const canViewSelf = isOwnReview || user?.role === 'ADMIN';
+ const canViewManager = (user?.role === 'MANAGER' && !isOwnReview) || user?.role === 'ADMIN';
+ const canViewHr = (user?.role === 'HR' && !isOwnReview) || user?.role === 'ADMIN';
+ const canViewFinal = hasAdminAccess(user?.role);
 
  const renderMetricRatings = (ratings: MetricRatings, editable: boolean, idPrefix: string) => (
  <div className="space-y-3">
@@ -228,13 +232,13 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  <div><p className="text-xs font-semibold uppercase text-gray-500">KRA</p><p className="font-medium">{review.kraDescription || 'Not provided'}</p></div>
  <div><p className="text-xs font-semibold uppercase text-gray-500">Goal</p><p className="font-medium">{review.goalDescription || 'Not provided'}</p></div>
  <div><p className="text-xs font-semibold uppercase text-gray-500">Target</p><p className="font-medium">{review.targetValue || 'Not provided'}</p></div>
- {review.finalRating != null && <div><p className="text-xs font-semibold uppercase text-gray-500">Final score</p><p className="font-medium">{review.finalRating}/5</p></div>}
+ {status === 'COMPLETED' && review.finalRating != null && <div><p className="text-xs font-semibold uppercase text-gray-500">Final score</p><p className="font-medium">{review.finalRating}/5</p></div>}
  </div>
  )}
  </div>
 
  <form className="space-y-6">
- <section className="space-y-4">
+ {canViewSelf && <section className="space-y-4">
  <div className="flex items-start justify-between gap-4 border-b pb-2">
  <div><h3 className="text-lg font-semibold">Employee self-review</h3><p className="text-sm text-gray-500">Rate each shared workplace metric from 1 to 5.</p></div>
  {status !== 'EMPLOYEE_REVIEW' && <span className="text-xs font-medium text-gray-500">Submitted & locked</span>}
@@ -247,12 +251,21 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  <textarea id="employee-comments" name="employeeComments" value={formData.employeeComments || ''} onChange={handleChange} disabled={!canSubmitSelf} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 " rows={3} />
  </div>
  {canSubmitSelf && <Button type="button" onClick={() => submitWithMetrics(selfAppraisalMutation)} isLoading={selfAppraisalMutation.isPending}>Submit self-review</Button>}
- </section>
+ </section>}
 
+ {canViewHr && (
  <section className="space-y-4">
+ <div className="flex items-start justify-between gap-4 border-b pb-2"><div><h3 className="text-lg font-semibold">HR independent review</h3><p className="text-sm text-gray-500">An independent HR assessment carrying 20% of the final score.</p></div>{status !== 'HR_REVIEW' && <span className="text-xs font-medium text-gray-500">{status === 'EMPLOYEE_REVIEW' ? 'Waiting for self-review' : 'Submitted & locked'}</span>}</div>
+ {renderMetricRatings(canSubmitHR ? metricRatings : normaliseMetricRatings(review.hrMetricRatings), canSubmitHR, 'hr')}
+ <div className={canSubmitHR ? '' : 'opacity-70'}><label htmlFor="hr-comments" className="mb-1 block text-sm font-medium">HR comments <span className="font-normal text-gray-500">(optional)</span></label><textarea id="hr-comments" name="hrComments" value={formData.hrComments || ''} onChange={handleChange} disabled={!canSubmitHR} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 " rows={3} /></div>
+ {canSubmitHR && <Button type="button" onClick={() => submitWithMetrics(hrAppraisalMutation)} isLoading={hrAppraisalMutation.isPending}>Submit HR review</Button>}
+ </section>
+ )}
+
+ {canViewManager && <section className="space-y-4">
  <div className="flex items-start justify-between gap-4 border-b pb-2">
  <div><h3 className="text-lg font-semibold">Manager review</h3><p className="text-sm text-gray-500">The manager’s rating carries 60% of the final score.</p></div>
- {status !== 'MANAGER_REVIEW' && <span className="text-xs font-medium text-gray-500">{status === 'EMPLOYEE_REVIEW' ? 'Waiting for self-review' : 'Submitted & locked'}</span>}
+ {status !== 'MANAGER_REVIEW' && <span className="text-xs font-medium text-gray-500">{status === 'EMPLOYEE_REVIEW' || status === 'HR_REVIEW' ? 'Waiting for HR review' : 'Submitted & locked'}</span>}
  </div>
  {renderMetricRatings(canSubmitManager ? metricRatings : normaliseMetricRatings(review.managerMetricRatings), canSubmitManager, 'manager')}
  <div className={canSubmitManager ? '' : 'opacity-70'}>
@@ -261,18 +274,9 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  <textarea id="manager-comments" name="managerComments" value={formData.managerComments || ''} onChange={handleChange} disabled={!canSubmitManager} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 " rows={3} />
  </div>
  {canSubmitManager && <Button type="button" onClick={() => submitWithMetrics(managerAppraisalMutation)} isLoading={managerAppraisalMutation.isPending}>Submit manager review</Button>}
- </section>
+ </section>}
 
- {canViewHr && (
- <section className="space-y-4">
- <div className="flex items-start justify-between gap-4 border-b pb-2"><div><h3 className="text-lg font-semibold">HR independent review</h3><p className="text-sm text-gray-500">An independent HR assessment carrying 20% of the final score.</p></div>{status !== 'HR_REVIEW' && <span className="text-xs font-medium text-gray-500">{status === 'EMPLOYEE_REVIEW' || status === 'MANAGER_REVIEW' ? 'Waiting for manager review' : 'Submitted & locked'}</span>}</div>
- {renderMetricRatings(canSubmitHR ? metricRatings : normaliseMetricRatings(review.hrMetricRatings), canSubmitHR, 'hr')}
- <div className={canSubmitHR ? '' : 'opacity-70'}><label htmlFor="hr-comments" className="mb-1 block text-sm font-medium">HR comments <span className="font-normal text-gray-500">(optional)</span></label><textarea id="hr-comments" name="hrComments" value={formData.hrComments || ''} onChange={handleChange} disabled={!canSubmitHR} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface p-2 " rows={3} /></div>
- {canSubmitHR && <Button type="button" onClick={() => submitWithMetrics(hrAppraisalMutation)} isLoading={hrAppraisalMutation.isPending}>Submit HR review</Button>}
- </section>
- )}
-
- {canViewHr && (status === 'FINAL_APPROVAL' || status === 'COMPLETED') && (
+ {canViewFinal && (status === 'FINAL_APPROVAL' || status === 'COMPLETED') && (
  <section className="space-y-4">
  <div className="border-b pb-2"><h3 className="text-lg font-semibold">Final approval</h3><p className="text-sm text-gray-500">Calculated from self 20%, manager 60%, and HR 20%. This score cannot be entered manually.</p></div>
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Input name="finalRating" label="Calculated final rating (out of 5)" value={review.finalRating || 'Calculated after approval'} disabled /><div><label htmlFor="final-approval-status" className="mb-1 block text-sm font-medium">Approval status</label><Select id="final-approval-status" name="finalApprovalStatus" value={formData.finalApprovalStatus || 'APPROVAL_PENDING'} onChange={handleChange} disabled={!canSubmitFinal} className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm "><option value="APPROVAL_PENDING">Pending</option><option value="APPROVAL_APPROVED">Approved</option><option value="APPROVAL_REJECTED">Rejected</option></Select></div></div>
@@ -280,6 +284,27 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  </section>
  )}
  </form>
+
+ {user?.role === 'EMPLOYEE' && status === 'COMPLETED' && (
+ <section aria-labelledby="final-review-summary" className="mt-6 space-y-4 rounded-xl border border-slate-border bg-slate-50 p-5 dark:bg-slate-900/40">
+   <div className="border-b border-slate-border pb-3">
+     <h3 id="final-review-summary" className="text-lg font-semibold">Final review summary</h3>
+     <p className="text-sm text-gray-500">Your review is complete.</p>
+   </div>
+   <div>
+     <p className="text-xs font-semibold uppercase text-gray-500">Final rating</p>
+     <p className="text-2xl font-bold text-text-heading">{review.finalRating != null ? `${review.finalRating}/5` : '—'}</p>
+   </div>
+   {(review.employeeComments || review.hrComments) && <div className="space-y-3">
+     {review.employeeComments && <div><p className="text-sm font-medium text-text-heading">Your comments</p><p className="whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{review.employeeComments}</p></div>}
+     {review.hrComments && <div><p className="text-sm font-medium text-text-heading">Final reviewer comments</p><p className="whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{review.hrComments}</p></div>}
+   </div>}
+   {(review.areasOfImprovement || review.trainingRequirement) && <div className="space-y-3 border-t border-slate-border pt-3">
+     {review.areasOfImprovement && <div><p className="text-sm font-medium text-text-heading">Areas for improvement</p><p className="whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{review.areasOfImprovement}</p></div>}
+     {review.trainingRequirement && <div><p className="text-sm font-medium text-text-heading">Training requirements</p><p className="whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{review.trainingRequirement}</p></div>}
+   </div>}
+ </section>
+ )}
  </div>
  </Modal>
  );

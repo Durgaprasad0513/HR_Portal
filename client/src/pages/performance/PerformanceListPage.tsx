@@ -23,17 +23,23 @@ import { usePermissions } from '@/hooks/usePermissions';
 export default function PerformanceListPage() {
  const { user } = useAuth();
  const isAdminOrHR = hasAdminAccess(user?.role);
+ const isManager = user?.role === 'MANAGER';
  const { canAdd } = usePermissions();
- const secondTabName: Tab = isAdminOrHR ? 'Team/Company Reviews' : 'Team/Company Reviews'; // Simplified for type matching
  const [activeTab, setActiveTab] = useState<Tab>('My Performance');
+ const currentTab: Tab = isManager ? 'Team/Company Reviews' : activeTab;
+ const tabs: Tab[] = isManager
+ ? ['Team/Company Reviews']
+ : isAdminOrHR
+ ? ['My Performance', 'Team/Company Reviews']
+ : ['My Performance'];
  const [selectedReview, setSelectedReview] = useState<any>(null);
  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
  const [searchQuery, setSearchQuery] = useState('');
  const [typeFilter, setTypeFilter] = useState('All Types');
  const [statusFilter, setStatusFilter] = useState('All Status');
  const { data: rawReviews, isLoading } = useQuery({
- queryKey: ['performance', activeTab],
- queryFn: () => activeTab === 'My Performance' ? performanceApi.getMyReviews().then(res => res.data) : performanceApi.getAll().then(res => res.data)
+ queryKey: ['performance', currentTab],
+ queryFn: () => currentTab === 'My Performance' ? performanceApi.getMyReviews().then(res => res.data) : performanceApi.getAll().then(res => res.data)
  });
 
  const reviews = React.useMemo(() => {
@@ -58,7 +64,11 @@ export default function PerformanceListPage() {
  if (!rawReviews) return [];
  const actionableStatuses = user?.role === 'EMPLOYEE'
  ? ['EMPLOYEE_REVIEW']
- : ['HR_REVIEW', 'FINAL_APPROVAL'];
+ : user?.role === 'HR'
+ ? ['HR_REVIEW', 'FINAL_APPROVAL']
+ : user?.role === 'MANAGER'
+ ? ['MANAGER_REVIEW', 'FINAL_APPROVAL']
+ : ['HR_REVIEW', 'MANAGER_REVIEW', 'FINAL_APPROVAL'];
  return rawReviews.filter((review: any) => actionableStatuses.includes(review.status)).slice(0, 4);
  }, [rawReviews, user?.role]);
 
@@ -93,8 +103,8 @@ export default function PerformanceListPage() {
  const getStatusBadge = (status: string) => {
  switch(status) {
  case 'EMPLOYEE_REVIEW': return <Badge variant="default">Self Review Pending</Badge>;
- case 'MANAGER_REVIEW': return <Badge variant="info">Manager Review Pending</Badge>;
  case 'HR_REVIEW': return <Badge variant="warning">HR Review Pending</Badge>;
+ case 'MANAGER_REVIEW': return <Badge variant="info">Manager Review Pending</Badge>;
  case 'FINAL_APPROVAL': return <Badge className="bg-purple-500 text-white hover:bg-purple-600">Final Approval Pending</Badge>;
  case 'COMPLETED': return <Badge variant="success">Completed</Badge>;
  default: return <Badge>{status}</Badge>;
@@ -115,9 +125,9 @@ export default function PerformanceListPage() {
  { header: 'Employee', accessor: (review: any) => <span className="font-medium text-navy-900 dark:text-white">{getReviewEmployee(review)}</span> },
  { header: 'Review cycle', accessor: (review: any) => formatReviewPeriod(review.reviewPeriod), sortable: true },
  { header: 'Stage', accessor: (review: any) => getStatusBadge(review.status) },
- { header: 'Self', accessor: (review: any) => review.selfRating != null ? `${review.selfRating}/5` : 'Not rated' },
- { header: 'Manager', accessor: (review: any) => review.managerRating != null ? `${review.managerRating}/5` : 'Not rated' },
- { header: 'Final', accessor: (review: any) => review.finalRating != null ? `${review.finalRating}/5` : 'Pending' },
+ ...(user?.role !== 'HR' || currentTab === 'My Performance' ? [{ header: 'Self', accessor: (review: any) => review.selfRating != null ? `${review.selfRating}/5` : 'Not rated' }] : []),
+ ...(currentTab === 'Team/Company Reviews' && user?.role !== 'EMPLOYEE' && user?.role !== 'HR' ? [{ header: 'Manager', accessor: (review: any) => review.managerRating != null ? `${review.managerRating}/5` : 'Not rated' }] : []),
+ { header: 'Final', accessor: (review: any) => review.status === 'COMPLETED' && review.finalRating != null ? `${review.finalRating}/5` : 'Pending' },
  { header: 'Next action', accessor: (review: any) => <span className="font-medium text-accent-700 dark:text-accent-300">{actionLabel(review.status)}</span> }
  ]}
  />
@@ -136,13 +146,13 @@ export default function PerformanceListPage() {
  </Button>
  )}
  <div className="flex gap-1 bg-surface p-1 rounded-full w-full overflow-x-auto whitespace-nowrap custom-scrollbar sm:w-auto">
- {(['My Performance', ...(isAdminOrHR ? ['Team/Company Reviews'] : [])] as Tab[]).map((tab) => (
+ {tabs.map((tab) => (
  <button
  key={tab}
  onClick={() => setActiveTab(tab)}
  className={cn(
  "px-4 py-1.5 text-sm font-medium rounded-full transition-all flex-1 sm:flex-none text-center",
- activeTab === tab 
+ currentTab === tab
  ? "bg-accent-600 text-white shadow-md dark:bg-accent-500"
  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"
  )}
@@ -188,7 +198,7 @@ export default function PerformanceListPage() {
  <div className="mt-4 flex flex-wrap items-center gap-3">
  <div className="relative w-full sm:w-64"><Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" /><input aria-label="Search reviews" placeholder="Search reviews..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface py-2 pl-9 pr-4 text-sm shadow-sm transition-all focus:outline-none " /></div>
  <Select aria-label="Filter by review cycle" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:text-gray-400 dark:focus:ring-slate-600"><option value="All Types">All cycles</option><option value="Monthly">Monthly</option><option value="Quarterly">Quarterly</option><option value="Half Yearly">Half-yearly</option><option value="Annual">Annual</option></Select>
- <Select aria-label="Filter by review status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:text-gray-400 dark:focus:ring-slate-600"><option value="All Status">All stages</option><option value="EMPLOYEE_REVIEW">Self-review pending</option><option value="MANAGER_REVIEW">Manager review pending</option><option value="HR_REVIEW">HR review pending</option><option value="FINAL_APPROVAL">Final approval pending</option><option value="COMPLETED">Completed</option></Select>
+ <Select aria-label="Filter by review status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:text-gray-400 dark:focus:ring-slate-600"><option value="All Status">All stages</option><option value="EMPLOYEE_REVIEW">Self-review pending</option><option value="HR_REVIEW">HR review pending</option><option value="MANAGER_REVIEW">Manager review pending</option><option value="FINAL_APPROVAL">Final approval pending</option><option value="COMPLETED">Completed</option></Select>
  {hasActiveFilters && <button onClick={clearFilters} className="text-sm text-gray-500 underline underline-offset-2 hover:text-navy-900 dark:text-gray-400 dark:hover:text-white">Clear filters</button>}
  </div>
  </div>
