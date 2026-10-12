@@ -3,15 +3,15 @@ import { ApplyLeaveInput, UpdateLeaveStatusInput } from './leave.schema';
 
 export class LeaveService {
   async apply(employeeId: string, data: ApplyLeaveInput) {
-    // Date-only inputs must be interpreted as calendar dates, not UTC instants.
+    // PostgreSQL date columns use the UTC calendar day; normalize without a local timezone shift.
     const parseDateOnly = (value: Date | string) => {
       if (value instanceof Date) {
-        return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
       }
 
       const [year, month, day] = value.slice(0, 10).split('-').map(Number);
-      const date = new Date(year, month - 1, day);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      const date = new Date(Date.UTC(year, month - 1, day));
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
         throw new Error('A valid calendar date is required');
       }
       return date;
@@ -27,11 +27,11 @@ export class LeaveService {
     let totalDays = 0;
     const current = new Date(startDate);
     while (current <= endDate) {
-      const dayOfWeek = current.getDay();
+      const dayOfWeek = current.getUTCDay();
       if (dayOfWeek !== 0) {
         totalDays++;
       }
-      current.setDate(current.getDate() + 1);
+      current.setUTCDate(current.getUTCDate() + 1);
     }
 
     if (totalDays === 0) {

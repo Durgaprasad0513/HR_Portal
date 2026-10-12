@@ -77,9 +77,16 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
     await prisma.performanceReview.create({data:{employeeId:employeeIds.EMPLOYEE,reviewPeriod:'MONTHLY',status:'MANAGER_REVIEW'}});
     const unrelated=await prisma.performanceReview.create({data:{employeeId:employeeIds.OTHER,reviewPeriod:'MONTHLY',status:'MANAGER_REVIEW'}});
     const dashboard=succeeds(await call('MANAGER','get','/dashboard/stats'));
-    const assigned=await prisma.performanceReview.findMany({where:{status:'MANAGER_REVIEW',employee:{managerId:employeeIds.MANAGER}},select:{id:true}});
+    const assigned=await prisma.performanceReview.findMany({where:{status:{in:['MANAGER_REVIEW','FINAL_APPROVAL']},employee:{managerId:employeeIds.MANAGER}},select:{id:true}});
     expect(dashboard.needsAttention.some((item:any)=>assigned.some(r=>item.id===`perf-${r.id}`))).toBe(true);
     expect(dashboard.needsAttention.some((item:any)=>item.id===`perf-${unrelated.id}`)).toBe(false);
+  });
+  it('manager dashboard retains assigned reviews waiting for configured final approval',async()=>{
+    await prisma.performanceReview.updateMany({where:{employeeId:employeeIds.EMPLOYEE,status:'MANAGER_REVIEW'},data:{status:'FINAL_APPROVAL'}});
+    await prisma.performanceReview.create({data:{employeeId:employeeIds.EMPLOYEE,reviewPeriod:'MONTHLY',status:'FINAL_APPROVAL'}});
+    const assigned=await prisma.performanceReview.findMany({where:{employeeId:employeeIds.EMPLOYEE,status:'FINAL_APPROVAL'},select:{id:true}});
+    const dashboard=succeeds(await call('MANAGER','get','/dashboard/stats'));
+    expect(dashboard.needsAttention.some((item:any)=>assigned.some(r=>item.id===`perf-${r.id}`))).toBe(true);
   });
   it('supports travel creation, approval, own expense submission and settlement with numeric totals',async()=>{
     const travel=succeeds(await call('EMPLOYEE','post','/travel',{travelPurpose:'Synthetic QA journey',destination:'QA Office',startDate:'2030-01-07',endDate:'2030-01-08',travelMode:'TRAIN',advanceRequested:100}));
@@ -105,6 +112,7 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
   });
   it('supports employee leave application, HR approval and rejects overlapping dates',async()=>{
     const leave=succeeds(await call('EMPLOYEE','post','/leaves/apply',{leaveType:'UNPAID',startDate:'2030-03-04',endDate:'2030-03-05',reason:'Synthetic leave QA'}));
+    expect(leave.startDate.slice(0,10)).toBe('2030-03-04'); expect(leave.endDate.slice(0,10)).toBe('2030-03-05');
     expect((await call('EMPLOYEE','post','/leaves/apply',{leaveType:'UNPAID',startDate:'2030-03-04',endDate:'2030-03-05',reason:'Overlap'})).status).toBe(400);
     succeeds(await call('HR','patch',`/leaves/${leave.id}/status`,{status:'APPROVED'}));
     expect((await call('EMPLOYEE','patch',`/leaves/${leave.id}/status`,{status:'REJECTED'})).status).toBe(403);

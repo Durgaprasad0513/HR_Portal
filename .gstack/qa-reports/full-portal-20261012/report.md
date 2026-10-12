@@ -34,12 +34,12 @@
 - Employee performance feedback remains hidden until completion.
 - Asset date-only inputs are normalized before Prisma writes.
 - Existing authentication tokens use the account's current role; account mutation responses omit password hashes.
-- Invalid calendar dates are rejected for leave requests.
+- Invalid calendar dates are rejected for leave requests; UTC calendar normalization prevents date-only values shifting to the previous day.
 - Identity documents cannot be downloaded through the public upload route, including encoded paths and deleted document metadata.
 - Additive migration prerequisites and CI database settings repaired.
 - Profile reads no longer create joining notifications; employee profiles reuse the private performance response.
 - Shared number inputs preserve fractional values; travel currency inputs accept paise.
-- Managers see assigned pending manager reviews in dashboard attention items.
+- Managers see assigned pending manager reviews and configured final-approval reviews in dashboard attention items.
 - Employees can request return of their assigned asset; only staff editors finalize the return.
 - Production rejects missing/default signing keys, uses configured CORS origins, disables development maintenance endpoints and no longer runs department cleanup on startup.
 - Readiness detects missing workflow columns rather than merely pinging the database.
@@ -55,7 +55,9 @@ HR sign-in succeeded. Nine operational screens loaded without console errors. Th
 
 Evidence: [corrected decimal claim](decimal-claim-after.jpg), [completed HR settlement](hr-travel-settled.jpg).
 
-Manager browser sign-in is requested and pending. A synthetic assigned manager review is prepared. Employee browser journeys are still pending. API role checks do not replace these browser journeys.
+Manager browser review submission and final approval passed with a weighted final rating of 4/5. Assigned dashboard alerts and configured read-only recruitment controls were checked; temporary test permissions were restored. Employee leave submission exposed a one-day timezone shift, now repaired and rechecked: selecting 16 October stores and displays 16 October. The completed Employee review shows the final score and feedback without manager/HR rating forms. Seven additional Employee module screens loaded without console errors. Remaining forms, exports, accessibility and negative browser paths are incomplete. API role checks do not replace these browser journeys.
+
+Latest targeted backend suite: 25/25 portal regression tests passed. Evidence: [corrected leave dates](leave-date-after.jpg), [completed Manager review](manager-review-completed.jpg).
 
 ## Open findings / deployment blockers
 
@@ -64,7 +66,7 @@ Manager browser sign-in is requested and pending. A synthetic assigned manager r
 | P1 | Generic upload URLs still serve receipts and other attachments publicly | Design authenticated attachment access and migrate existing UI links; identity-document protection alone does not cover every attachment |
 | P1 | Production database compatibility remains unverified | Inspect production schema and legacy data, rehearse its upgrade using a copy and validate backup/recovery |
 | P2 | Travel and leave approval writes still require concurrent request testing | Check stale submissions/settlements and atomic balance changes |
-| P2 | All-role browser journeys incomplete | Manager and Employee handoffs; remaining HR forms, exports and negative paths |
+| P2 | All-role browser journeys incomplete | Remaining role-specific forms, exports, accessibility and negative paths |
 | P2 | Live email delivery unverified | Verify configured production SMTP, delivery and failure handling |
 | P2 | Date picker controls have incomplete accessible labels | Labels currently refer to hidden fields; keyboard and assistive-technology checks remain |
 | P3 | Production bundle has a 555.65 KB main chunk | Measure real load performance and split if measurements justify it |
@@ -84,4 +86,4 @@ Passing tests establish the covered behavior only. They do not establish zero de
 
 - `2aedc10`: additive migration prerequisites and CI database setup. Verified by the empty-database migration rehearsal and backend suite against its resulting schema.
 - `6fceb3b`: permission, privacy, input, workflow and production-default repairs with permanent regression tests. Automated verification passed. The fractional travel claim was also rechecked in the browser; Employee asset/profile and Manager dashboard browser rechecks remain pending.
-- Browser continuation: user sign-in to manager@portal-qa.test in the isolated preview is pending, followed by the Employee role. No browser health score has been assigned because complete interactive/accessibility coverage has not been performed.
+- Manager and Employee sign-ins and the workflows described above are complete. No browser health score has been assigned because complete interactive/accessibility coverage has not been performed.

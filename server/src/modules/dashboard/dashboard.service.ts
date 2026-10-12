@@ -175,7 +175,7 @@ export class DashboardService {
       }
     }
 
-    const pendingReviewStatuses = currentUser.role === 'MANAGER' ? ['MANAGER_REVIEW']
+    const pendingReviewStatuses = currentUser.role === 'MANAGER' ? ['MANAGER_REVIEW', 'FINAL_APPROVAL']
       : currentUser.role === 'ADMIN' ? ['HR_REVIEW', 'MANAGER_REVIEW', 'FINAL_APPROVAL']
       : currentUser.role === 'HR' ? ['HR_REVIEW', 'FINAL_APPROVAL'] : ['EMPLOYEE_REVIEW'];
     const pendingReviewsList = await prisma.performanceReview.findMany({
