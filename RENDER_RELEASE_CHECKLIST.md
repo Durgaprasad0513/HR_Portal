@@ -15,7 +15,7 @@ Live commit observed: 1589915. Release branch: codex/render-production-readiness
 
 1. Obtain a restorable database backup and staging copy. Inspect enum values, schema and migration history using read-only queries. Rehearse the exact upgrade against that copy. Existing history may differ after schema synchronization; reconcile it before enabling migrations.
 2. Preserve existing upload files before a restart or compute upgrade. Configure durable storage, copy files and verify counts/checksums. Code supports UPLOAD_DIR; keep existing URLs and document metadata.
-3. Set CORS_ORIGIN=https://hr.pafpl.in and configure mail delivery. Configure private R2 following R2_STORAGE_SETUP.md; Neon remains the database. Keep JWT_SECRET private and stable.
+3. Set CORS_ORIGIN=https://hr.pafpl.in and configure mail delivery. Configure private Amazon S3 following S3_STORAGE_SETUP.md; Neon remains the database. Keep JWT_SECRET private and stable.
 4. Build with npm ci && npm run build. After staging rehearsal, use npx prisma migrate deploy as the pre-deploy command and /api/ready as the health-check path.
 5. Publish a reviewed release PR, wait for CI, merge, deploy its exact commit and verify all four roles and authenticated downloads. Coordinate frontend and backend release.
 6. Monitor logs and health. Application rollback does not reverse schema changes; use compatible rollbacks and validated recovery procedures.

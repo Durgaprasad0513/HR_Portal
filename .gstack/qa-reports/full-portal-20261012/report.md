@@ -102,6 +102,14 @@ Public upload URLs now serve only referenced profile images; identity documents,
 
 ## Render inspection and private R2 preparation
 
+Update: the user subsequently selected Amazon S3. The storage adapter now supports
+STORAGE_PROVIDER=s3 with AWS region, private bucket and scoped backend credentials.
+S3_STORAGE_SETUP.md is the active setup guide. R2 activation is no longer needed.
+The S3 SDK upload/download contract test passed along with the existing regressions
+(36 tests total); server TypeScript and lint passed. Calls are mocked and live S3
+verification remains pending AWS account/bucket access. No AWS resources or
+credentials have been created and no production HR files have been transferred.
+
 Authenticated Render logs confirmed PostgreSQL 22P02 because the deployed RequisitionStatus enum lacks CLOSED. An idempotent additive migration is prepared and passed on the isolated local migration database; production schema and migration history still require backup and rehearsal. Readiness now also queries this enum value. Render has free compute, no durable disk, no pre-deploy command or health-check path, auto-deploy off, and no CORS_ORIGIN or mail configuration among its environment keys. Production secrets were not revealed or changed.
 
 User chose external storage with Neon remaining the database. Private Cloudflare R2 support is implemented locally for receipts, policies, identity documents and photos. Stable portal URLs are preserved, download authorization precedes file access, R2 errors never fall back to temporary disk, and provider messages are sanitized. Profile uploads and public profile responses require recognized raster image signatures. SVG/HTML disguised as photos are denied. Missing objects return 404, outages 503, oversized uploads 413. Downloads are bounded to 10 MiB.

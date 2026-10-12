@@ -36,10 +36,10 @@ export function imageContentType(bytes: Buffer): string | undefined {
 
 export function createFileStorage(env: NodeJS.ProcessEnv, injectedClient?: S3Client) {
   const provider = env.STORAGE_PROVIDER || 'local';
-  if (!['local', 'r2'].includes(provider)) throw new Error('STORAGE_PROVIDER must be local or r2.');
+  if (!['local', 'r2', 's3'].includes(provider)) throw new Error('STORAGE_PROVIDER must be local, r2 or s3.');
   const directory = path.resolve(env.UPLOAD_DIR || 'uploads');
   let client: S3Client | undefined;
-  const bucket = env.R2_BUCKET;
+  const bucket = provider === 's3' ? env.S3_BUCKET : env.R2_BUCKET;
   if (provider === 'r2') {
     if (!/^[a-f0-9]{32}$/.test(env.R2_ACCOUNT_ID || '') || !bucket || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY) {
       throw new Error('R2 storage requires a valid R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY.');
@@ -48,6 +48,18 @@ export function createFileStorage(env: NodeJS.ProcessEnv, injectedClient?: S3Cli
       region: 'auto', endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: { accessKeyId: env.R2_ACCESS_KEY_ID, secretAccessKey: env.R2_SECRET_ACCESS_KEY },
       requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED',
+    });
+  } else if (provider === 's3') {
+    if (!bucket || !env.AWS_REGION) throw new Error('S3 storage requires S3_BUCKET and AWS_REGION.');
+    if (!!env.AWS_ACCESS_KEY_ID !== !!env.AWS_SECRET_ACCESS_KEY) {
+      throw new Error('Set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, or use an AWS workload role.');
+    }
+    // Standard AWS endpoint and credential chain; no arbitrary endpoint or public ACL.
+    client = injectedClient || new S3Client({ region: env.AWS_REGION,
+      ...(env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY ? { credentials: {
+        accessKeyId: env.AWS_ACCESS_KEY_ID, secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+        ...(env.AWS_SESSION_TOKEN ? { sessionToken: env.AWS_SESSION_TOKEN } : {}),
+      } } : {}),
     });
   } else {
     fs.mkdirSync(directory, { recursive: true });

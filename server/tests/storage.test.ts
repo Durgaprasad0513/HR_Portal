@@ -10,7 +10,10 @@ const env = { STORAGE_PROVIDER: 'r2', R2_ACCOUNT_ID: 'a'.repeat(32), R2_BUCKET: 
 describe('Private file storage', () => {
   afterEach(() => jest.restoreAllMocks());
 
-  it('writes and reads private R2 objects with stable keys', async () => {
+  it.each([
+    ['R2', env],
+    ['S3', { STORAGE_PROVIDER: 's3', S3_BUCKET: 'synthetic-qa', AWS_REGION: 'ap-south-1', AWS_ACCESS_KEY_ID: 'synthetic', AWS_SECRET_ACCESS_KEY: 'synthetic' }],
+  ])('writes and reads private %s objects with stable keys', async (_provider, settings) => {
     const objects = new Map<string, Buffer>();
     const send = jest.spyOn(S3Client.prototype, 'send').mockImplementation((async (command: any) => {
       if (command instanceof PutObjectCommand) {
@@ -21,7 +24,7 @@ describe('Private file storage', () => {
       expect(command).toBeInstanceOf(GetObjectCommand);
       return { Body: Readable.from([objects.get(command.input.Key)!]) };
     }) as any);
-    const storage = createFileStorage(env);
+    const storage = createFileStorage(settings);
     await storage.save('synthetic.pdf', Buffer.from('private receipt'));
     expect((await storage.read('synthetic.pdf')).toString()).toBe('private receipt');
     expect(send).toHaveBeenCalledTimes(2);
@@ -31,6 +34,8 @@ describe('Private file storage', () => {
   it('fails configuration validation instead of silently using temporary disk', () => {
     expect(() => createFileStorage({ STORAGE_PROVIDER: 'r2' })).toThrow('R2 storage requires');
     expect(() => createFileStorage({ STORAGE_PROVIDER: 'other' })).toThrow('STORAGE_PROVIDER');
+    expect(() => createFileStorage({ STORAGE_PROVIDER: 's3' })).toThrow('S3 storage requires');
+    expect(() => createFileStorage({ STORAGE_PROVIDER: 's3', S3_BUCKET: 'synthetic', AWS_REGION: 'ap-south-1', AWS_ACCESS_KEY_ID: 'incomplete' })).toThrow('Set both');
   });
 
   it('blocks path traversal before any remote request', async () => {
