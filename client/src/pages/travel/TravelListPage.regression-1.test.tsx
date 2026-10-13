@@ -22,8 +22,9 @@ describe('Travel employee attachment submission',()=>{
     fireEvent.click(screen.getByRole('button',{name:/New Travel Request/i}));
     fireEvent.change(screen.getByLabelText(/Start Date/),{target:{value:'2030-01-07'}});
     fireEvent.change(screen.getByLabelText(/End Date/),{target:{value:'2030-01-08'}});
+    fireEvent.change(screen.getByLabelText(/Amount Required/),{target:{value:'1250'}});
     fireEvent.submit(screen.getByRole('button',{name:'Submit Request'}).closest('form')!);
-    await waitFor(()=>expect(travelApi.create).toHaveBeenCalledWith(expect.objectContaining({billUpload:'/api/uploads/qa-receipt.pdf'})));
+    await waitFor(()=>expect(travelApi.create).toHaveBeenCalledWith(expect.objectContaining({amountRequired:1250,billUpload:'/api/uploads/qa-receipt.pdf'})));
   });
   it('allows self-service claims and keeps their uploaded URL without staff edit permission',async()=>{
     open();

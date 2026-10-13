@@ -120,9 +120,9 @@ export default function TravelListPage() {
  const handleExport = () => {
  if (!data?.length) return;
  const csvContent = "data:text/csv;charset=utf-8," 
- + "ID,Employee,Destination,Purpose,Start Date,End Date,Mode,Advance Requested,Advance Approved,Total Expense,Amount Payable,Approval Status,Settlement Status\n"
+ + "ID,Employee,Destination,Purpose,Start Date,End Date,Mode,Amount Required,Legacy Advance Requested,Advance Approved,Total Expense,Amount Payable,Approval Status,Settlement Status\n"
  + data.map((e: any) => 
- `${e.id},${e.employee?.firstName || ''} ${e.employee?.lastName || ''},${e.destination},${e.travelPurpose},${e.startDate},${e.endDate},${e.travelMode},${e.advanceRequested || 0},${e.advanceApproved || 0},${e.totalExpenseClaimed || 0},${e.amountPayable || 0},${e.approvalStatus},${e.settlementStatus}`
+ `${e.id},${e.employee?.firstName || ''} ${e.employee?.lastName || ''},${e.destination},${e.travelPurpose},${e.startDate},${e.endDate},${e.travelMode},${e.amountRequired ?? ''},${e.advanceRequested || 0},${e.advanceApproved || 0},${e.totalExpenseClaimed || 0},${e.amountPayable || 0},${e.approvalStatus},${e.settlementStatus}`
  ).join("\n");
  const encodedUri = encodeURI(csvContent);
  const link = document.createElement("a");
@@ -234,7 +234,7 @@ export default function TravelListPage() {
  startDate: new Date(formData.get('startDate') as string).toISOString(),
  endDate: new Date(formData.get('endDate') as string).toISOString(),
  travelMode: formData.get('travelMode'),
- advanceRequested: Number(formData.get('advanceRequested')) || 0,
+ amountRequired: Number(formData.get('amountRequired')),
  };
  if (typeof billUpload === 'string' && billUpload) {
  payload.billUpload = billUpload;
@@ -367,10 +367,15 @@ export default function TravelListPage() {
          </dl>
        </section>
        <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
-         <h3 className="font-semibold text-text-heading mb-4">Expenses & advances</h3>
+         <h3 className="font-semibold text-text-heading mb-4">Amount & expenses</h3>
          <dl className="space-y-3">
            {[
-             ['Advance requested', details.advanceRequested], ['Advance approved', details.advanceApproved],
+             ...(details.amountRequired != null
+               ? [['Amount required', details.amountRequired]]
+               : details.advanceRequested != null
+                 ? [['Legacy advance requested', details.advanceRequested]]
+                 : []),
+             ['Advance approved', details.advanceApproved],
              ['Hotel', details.hotelExpense], ['Food', details.foodAllowance],
              ['Local transport', details.localConveyance], ['Other expenses', details.otherExpenses],
            ].map(([label, value]) => <div key={String(label)} className="flex justify-between gap-4"><dt className="text-text-muted">{label}</dt><dd className="font-medium text-text-heading whitespace-nowrap">{money(value)}</dd></div>)}
@@ -416,7 +421,7 @@ export default function TravelListPage() {
  <option value="OWN_VEHICLE">Personal Vehicle</option>
  </Select>
  </div>
- <Input name="advanceRequested" label="Advance Required (₹)" type="number" step="0.01" min="0" defaultValue={0} onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
+ <Input name="amountRequired" label="Amount Required (₹)" type="number" step="0.01" min="0.01" required onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} />
  </div>
  <FileUpload name="billUpload" label="Upload Attachment (Optional)" module="travel" action="add" />
  
@@ -432,17 +437,17 @@ export default function TravelListPage() {
  {/* Approval Modal */}
  <Modal isOpen={approvalModalOpen && mayApproveTravel} onClose={() => setApprovalModalOpen(false)} title="Review Travel Request">
  <div className="space-y-4">
- <p className="text-sm text-gray-600">Please review this travel request. Specify the approved advance amount if applicable.</p>
+ <p className="text-sm text-gray-600">Review the estimated amount required for this trip. Enter an advance only if funds will be paid before the employee submits expenses.</p>
  
  <div className="bg-surface p-4 rounded-lg">
  <div className="grid grid-cols-2 gap-4 text-sm">
  <div><span className="text-gray-500">Employee:</span> <span className="font-medium text-text-heading">{selectedRequest?.employee?.firstName} {selectedRequest?.employee?.lastName}</span></div>
  <div><span className="text-gray-500">Destination:</span> <span className="font-medium text-text-heading">{selectedRequest?.destination}</span></div>
- <div><span className="text-gray-500">Advance Requested:</span> <span className="font-medium text-text-heading">₹{selectedRequest?.advanceRequested || 0}</span></div>
+ <div><span className="text-gray-500">Amount Required:</span> <span className="font-medium text-text-heading">{selectedRequest?.amountRequired != null ? `₹${selectedRequest.amountRequired}` : 'Not provided (legacy request)'}</span></div>
  </div>
  </div>
 
- <Input id="advanceApproved" label="Advance Approved (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={selectedRequest?.advanceRequested || 0} />
+ <Input id="advanceApproved" label="Advance to Disburse (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
  
  <div className="flex justify-end space-x-3 pt-4 border-t border-slate-border dark:border-slate-border">
  <Button variant="outline" onClick={() => setApprovalModalOpen(false)}>Cancel</Button>
