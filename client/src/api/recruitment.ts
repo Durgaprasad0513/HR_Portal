@@ -2,7 +2,7 @@ import apiClient from "./client";
 import { ApiResponse } from "../types";
 
 export const recruitmentApi = {
-  getPipeline: async (filters: Record<string, string> = {}) => {
+  getPipeline: async (filters: Record<string, string | number> = {}) => {
     const { data } = await apiClient.get<ApiResponse<any>>("/recruitment/pipeline", { params: filters });
     return data;
   },

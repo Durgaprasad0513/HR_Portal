@@ -43,11 +43,20 @@ export class RecruitmentService {
   }
 
   async getPipeline(currentUser: CurrentUser, filters: any = {}) {
+    const pageSize = Math.min(100, Math.max(1, Number.parseInt(String(filters.pageSize || "25"), 10) || 25));
+    let requestedPages: Record<string, number> = {};
+    try {
+      const parsed = JSON.parse(String(filters.pages || "{}"));
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) requestedPages = parsed;
+    } catch {
+      requestedPages = {};
+    }
     const columns = await Promise.all(candidateStages.map(async stage => {
-      const result = await this.getCandidates(currentUser, {...filters, stage, page: 1, pageSize: 100, pipeline: true});
-      return {stage, total: result.total, items: result.items, truncated: result.total > result.items.length};
+      const page = Math.max(1, Number.parseInt(String(requestedPages[stage] || "1"), 10) || 1);
+      const result = await this.getCandidates(currentUser, {...filters, stage, page, pageSize, pipeline: true});
+      return {stage, ...result};
     }));
-    return {columns};
+    return {columns, pageSize};
   }
   async protectCandidateCompensation<T extends Record<string, any>>(
     rows: T[],

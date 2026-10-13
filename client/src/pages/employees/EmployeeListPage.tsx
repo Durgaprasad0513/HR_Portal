@@ -39,11 +39,12 @@ export default function EmployeeListPage() {
  });
 
  const { data: empData, isLoading } = useQuery({
- queryKey: ['employees', { search: debouncedSearch, departmentId, location, status }],
- queryFn: () => employeesApi.getAll({ search: debouncedSearch, departmentId, location, status }),
+ queryKey: ['employees', { search: debouncedSearch, departmentId, location, status, page, pageSize }],
+ queryFn: () => employeesApi.getAll({ search: debouncedSearch, departmentId, location, status, page, limit: pageSize }),
  });
 
- const displayedEmployees = empData?.data?.slice((page - 1) * pageSize, page * pageSize) || [];
+ const displayedEmployees = empData?.data || [];
+ const employeeTotal = empData?.meta?.total ?? displayedEmployees.length;
  const customOrder = ['HR&ADMIN-IT', 'HR & ADMIN', 'COMMERCIAL', 'ACCOUNTS', 'PROCUREMENT'];
  const sortedDepts = [...(deptData?.data || [])].sort((a, b) => {
  const indexA = customOrder.indexOf(a.name);
@@ -201,7 +202,7 @@ export default function EmployeeListPage() {
  <div className="flex w-full shrink-0 items-center justify-between gap-3 lg:w-auto">
  {!isLoading && (
  <p className="text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
- {empData?.data?.length || 0} {empData?.data?.length === 1 ? 'employee' : 'employees'}
+ {employeeTotal} {employeeTotal === 1 ? 'employee' : 'employees'}
  </p>
  )}
 
@@ -237,7 +238,7 @@ export default function EmployeeListPage() {
  {/* Content Area */}
  {isLoading ? (
  <div className="py-12"><LoadingSpinner /></div>
- ) : empData?.data?.length === 0 ? (
+ ) : displayedEmployees.length === 0 ? (
  <EmptyState 
  icon={UsersRound}
  title="No employees found"
@@ -382,7 +383,7 @@ export default function EmployeeListPage() {
  ))}
  </div>
 
- <PaginationControls page={page} pageSize={pageSize} total={empData?.data?.length || 0} onPageChange={setPage} itemLabel="results" />
+ <PaginationControls page={page} pageSize={pageSize} total={employeeTotal} onPageChange={setPage} itemLabel="employees" />
  </div>
  )}
  </div>

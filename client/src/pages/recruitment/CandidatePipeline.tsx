@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { recruitmentApi } from "@/api/recruitment";
@@ -5,20 +6,24 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 import { CANDIDATE_STAGES, candidateNextAction, stageAge } from "./pipelineModel";
 
 export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
   const [params, setParams] = useSearchParams();
+  const [pages, setPages] = useState<Record<string, number>>({});
+  const pageSize = 25;
   const search = params.get("q") || "";
   const requisitionId = params.get("opening") || "";
   const updateFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value); else next.delete(key);
     setParams(next, { replace: true });
+    setPages({});
   };
   const query = useQuery({
-    queryKey: ["candidate-pipeline", search, requisitionId],
-    queryFn: () => recruitmentApi.getPipeline({ search, requisitionId }),
+    queryKey: ["candidate-pipeline", search, requisitionId, pages, pageSize],
+    queryFn: () => recruitmentApi.getPipeline({ search, requisitionId, pages: JSON.stringify(pages), pageSize }),
   });
   return (
     <section aria-label="Candidate pipeline" className="space-y-4">
@@ -28,7 +33,7 @@ export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
           <option value="">All openings</option>
           {requisitions.map((opening) => <option key={opening.id} value={opening.id}>{opening.positionTitle}</option>)}
         </Select>
-        <Button variant="outline" className="self-end" onClick={() => { const next = new URLSearchParams(params); next.delete("q"); next.delete("opening"); setParams(next, { replace: true }); }}>Clear filters</Button>
+        <Button variant="outline" className="self-end" onClick={() => { const next = new URLSearchParams(params); next.delete("q"); next.delete("opening"); setParams(next, { replace: true }); setPages({}); }}>Clear filters</Button>
       </div>
       {query.isLoading ? <LoadingSpinner /> : query.isError ? (
         <div role="alert" className="rounded-xl border border-slate-border p-4">Could not load the pipeline. <Button variant="outline" onClick={() => query.refetch()}>Retry</Button></div>
@@ -56,7 +61,7 @@ export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
                     );
                   })}
                   {!column?.items?.length && <p className="py-8 text-center text-sm text-text-muted">No candidates</p>}
-                  {column?.truncated && <p className="px-2 py-1 text-xs text-text-muted">Showing the first 100. Narrow the opening or search to find more candidates.</p>}
+                  <PaginationControls page={pages[stage.value] || 1} pageSize={pageSize} total={column?.total ?? 0} onPageChange={(nextPage) => setPages((current) => ({ ...current, [stage.value]: nextPage }))} itemLabel="candidates" />
                 </div>
               </section>
             );
