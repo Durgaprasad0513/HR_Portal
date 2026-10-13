@@ -30,7 +30,6 @@ export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
         </Select>
         <Button variant="outline" className="self-end" onClick={() => { const next = new URLSearchParams(params); next.delete("q"); next.delete("opening"); setParams(next, { replace: true }); }}>Clear filters</Button>
       </div>
-      <p className="text-sm text-text-muted">Select a candidate to review feedback and progress their application through each recruitment stage.</p>
       {query.isLoading ? <LoadingSpinner /> : query.isError ? (
         <div role="alert" className="rounded-xl border border-slate-border p-4">Could not load the pipeline. <Button variant="outline" onClick={() => query.refetch()}>Retry</Button></div>
       ) : (

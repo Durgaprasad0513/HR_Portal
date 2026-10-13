@@ -12,6 +12,9 @@ import { Select } from "@/components/ui/Select";
 import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInterviewModal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { interviewCsv } from "./interviewExport";
+import { calendarCandidates, hiringHistoryLabel, isHiringHistory } from "./calendarCandidates";
+import { stageLabel } from "./pipelineModel";
+import { candidateDetailsUrl } from "./recruitmentNavigation";
 import toast from "react-hot-toast";
 import { CalendarDays, MapPin, UserRound } from "lucide-react";
 const zone = "Asia/Kolkata";
@@ -44,7 +47,7 @@ export default function InterviewCalendarPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const reqId = params.get("reqId") || "";
-  const { canAdd, canEdit, canExport } = usePermissions();
+  const { canEdit, canExport } = usePermissions();
   const cache = useQueryClient();
   const [view, setView] = useState<"agenda" | "week" | "month">(() => {
     const saved = localStorage.getItem("recruitment-calendar-view");
@@ -53,6 +56,7 @@ export default function InterviewCalendarPage() {
       : window.innerWidth < 768 ? "agenda" : "week";
   });
   const [date, setDate] = useState(() => new Date());
+  const [bucket, setBucket] = useState(params.get("history") === "true" ? "history" : "active");
   const [search, setSearch] = useState(params.get("search") || "");
   const [round, setRound] = useState(params.get("round") || "");
   const [status, setStatus] = useState(params.get("status") || "");
@@ -111,47 +115,8 @@ export default function InterviewCalendarPage() {
         error?.response?.data?.message || "Could not update candidate",
       ),
   });
-  const appointments = useMemo(
-    () =>
-      (data || [])
-        .flatMap((candidate: any) =>
-          candidate.interviews?.length
-            ? candidate.interviews
-                .filter((interview: any) => interview.round !== "OFFER")
-                .map((interview: any) => ({
-                ...candidate,
-                interviewId: interview.id,
-                interviewDate: interview.startsAt,
-                startsAt: interview.startsAt,
-                endsAt: interview.endsAt,
-                interviewRound: interview.round,
-                interviewLocation: interview.location,
-                mode: interview.mode,
-                status: interview.status,
-                interviewFeedback: interview.feedback,
-                interviewerId: interview.interviewerId,
-                interviewer: interview.interviewer,
-              }))
-            : candidate.interviewDate && candidate.interviewRound !== "OFFER"
-              ? [
-                  {
-                    ...candidate,
-                    status:
-                      candidate.status ||
-                      (candidate.interviewFeedback === "Finished"
-                        ? "COMPLETED"
-                        : "SCHEDULED"),
-                  },
-                ]
-              : [],
-        )
-        .sort(
-          (a: any, b: any) =>
-            new Date(a.interviewDate).getTime() -
-            new Date(b.interviewDate).getTime(),
-        ),
-    [data],
-  );
+  const candidateCards = useMemo(() => calendarCandidates(data || []), [data]);
+  const appointments = candidateCards.filter(candidate => bucket === "history" ? isHiringHistory(candidate) : !isHiringHistory(candidate));
   const interviewers = useMemo(
     () =>
       Array.from(
@@ -180,7 +145,7 @@ export default function InterviewCalendarPage() {
     day.setDate(day.getDate() + index);
     return day;
   });
-  const visible = view === "agenda" ? filtered : view === "week"
+  const visible = bucket === "history" || view === "agenda" ? filtered : view === "week"
     ? filtered.filter((appointment: any) => week.some((day) => dayKey(day) === dayKey(appointment.interviewDate)))
     : filtered.filter((appointment: any) => dayKey(appointment.interviewDate) === dayKey(date));
   React.useEffect(() => {
@@ -191,15 +156,16 @@ export default function InterviewCalendarPage() {
       round,
       status,
       panel,
+      history: bucket === "history" ? "true" : "",
     }).forEach(([key, value]) => {
       if (value) next.set(key, value);
     });
     if (next.toString() !== params.toString())
       setParams(next, { replace: true });
-  }, [reqId, search, round, status, panel, params, setParams]);
+  }, [reqId, search, round, status, panel, bucket, params, setParams]);
   const card = (a: any) => (
     <article
-      key={a.interviewId || a.id}
+      key={a.id}
       className="min-w-0 overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="space-y-4 p-4">
@@ -209,7 +175,7 @@ export default function InterviewCalendarPage() {
               className="text-left text-base font-semibold text-text-heading hover:text-primary-700 hover:underline dark:hover:text-primary-300"
               onClick={() =>
                 navigate(
-                  `/recruitment?tab=candidates&reqId=${encodeURIComponent(a.requisitionId)}&candidateId=${encodeURIComponent(a.id)}`,
+                  candidateDetailsUrl(a.requisitionId, a.id),
                 )
               }
             >
@@ -220,22 +186,23 @@ export default function InterviewCalendarPage() {
             </p>
           </div>
           <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${colors[a.status] || colors.SCHEDULED}`}>
-            {readable(a.status)}
+            {isHiringHistory(a) ? hiringHistoryLabel(a) : a.selectionStatus === "SELECTED" ? "Selected" : a.currentStage && a.currentStage !== a.interviewRound ? "Awaiting next round" : readable(a.status)}
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 border-y border-slate-border py-3">
           <span className="rounded-md bg-tint px-2.5 py-1 text-sm font-semibold capitalize text-text-heading">
-            {readable(a.interviewRound)} interview
+            {stageLabel(a.interviewRound)}{a.interviewRound === "TELEPHONIC" ? " interview" : ""}
           </span>
           {a.status === "COMPLETED" && a.interviewFeedback && (
             <span className="text-xs text-text-muted">Feedback submitted{a.interviewScore != null ? ` · Score ${a.interviewScore}/10` : ""}</span>
           )}
-          {a.status === "COMPLETED" && !a.interviewFeedback && (
+          {a.status === "COMPLETED" && !a.interviewFeedback && !isHiringHistory(a) && (
             <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Feedback needed</span>
           )}
         </div>
 
+        <p className="text-sm text-text-muted">Stage: <span className="font-medium text-text-heading">{stageLabel(a.currentStage || a.interviewRound)}</span>{a.selectionStatus === "SELECTED" && !isHiringHistory(a) && <span> · {a.offerStatus === "OFFER_ACCEPTED" ? "Offer accepted · joining pending" : "Offer and joining pending"}</span>}</p>
         <dl className="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
           <div className="flex min-w-0 items-start gap-2.5">
             <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" aria-hidden="true" />
@@ -263,7 +230,7 @@ export default function InterviewCalendarPage() {
           </div>
         </dl>
 
-      {canEdit("recruitment") ? (
+      {canEdit("recruitment") && !isHiringHistory(a) ? (
         <>
           <Select
             label="Candidate hiring decision"
@@ -281,7 +248,7 @@ export default function InterviewCalendarPage() {
             <option value="SELECTED">Selected</option>
             <option value="SELECTION_REJECTED">Rejected</option>
           </Select>
-          {a.status === "SCHEDULED" && a.interviewId && (
+          {a.status === "SCHEDULED" && a.interviewId && (!a.currentStage || a.currentStage === a.interviewRound) && (
             <div className="flex flex-wrap gap-2 border-t border-slate-border pt-3">
               <Button
                 size="sm"
@@ -319,16 +286,16 @@ export default function InterviewCalendarPage() {
           )}
         </>
       ) : (
-        <p className="text-sm text-text-muted">Candidate decision: <span className="font-medium text-text-heading">{readable(a.selectionStatus || "IN_PROGRESS")}</span></p>
+        <p className="text-sm text-text-muted">Candidate decision: <span className="font-medium text-text-heading">{isHiringHistory(a) ? hiringHistoryLabel(a) : readable(a.selectionStatus || "IN_PROGRESS")}</span></p>
       )}
       </div>
     </article>
   );
   const calendarEntry = (appointment: any) => (
     <button
-      key={appointment.interviewId || appointment.id}
+      key={appointment.id}
       type="button"
-      onClick={() => navigate(`/recruitment?tab=candidates&reqId=${encodeURIComponent(appointment.requisitionId)}&candidateId=${encodeURIComponent(appointment.id)}`)}
+      onClick={() => navigate(candidateDetailsUrl(appointment.requisitionId, appointment.id))}
       className="block w-full rounded-md border border-slate-border bg-surface p-2 text-left shadow-sm transition hover:border-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
     >
       <span className="block truncate text-xs font-semibold text-text-heading">{appointment.candidateName}</span>
@@ -372,15 +339,14 @@ export default function InterviewCalendarPage() {
                 Export CSV
               </Button>
             )}
-            {canAdd("recruitment") && (
-              <Button onClick={() => setSchedule({})}>
-                Schedule interview
-              </Button>
-            )}
           </div>
         }
       />
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface p-3">
+      <div role="tablist" aria-label="Candidate hiring status" className="flex gap-2">
+        <Button role="tab" aria-selected={bucket === "active"} variant={bucket === "active" ? "primary" : "outline"} onClick={() => setBucket("active")}>Active ({candidateCards.filter(candidate => !isHiringHistory(candidate)).length})</Button>
+        <Button role="tab" aria-selected={bucket === "history"} variant={bucket === "history" ? "primary" : "outline"} onClick={() => setBucket("history")}>History ({candidateCards.filter(isHiringHistory).length})</Button>
+      </div>
+      {bucket === "active" && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface p-3">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Interview view">
           {(["agenda", "week", "month"] as const).map((value) => (
             <Button key={value} variant={view === value ? "primary" : "outline"} aria-pressed={view === value} onClick={() => {
@@ -393,6 +359,7 @@ export default function InterviewCalendarPage() {
           ? `${week[0].toLocaleDateString("en-IN")} – ${week[6].toLocaleDateString("en-IN")}`
           : date.toLocaleDateString("en-IN", { month: "long", year: "numeric" })} · Asia/Kolkata</p>
       </div>
+      }
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Input
           label="Search"
@@ -459,7 +426,7 @@ export default function InterviewCalendarPage() {
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-text-muted">
         <p>
-          {visible.length} appointments /{" "}
+          {visible.length} {visible.length === 1 ? "candidate" : "candidates"}{bucket === "active" && <> /{" "}
           {
             appointments.filter(
               (a: any) =>
@@ -473,7 +440,7 @@ export default function InterviewCalendarPage() {
               (a: any) => a.status === "COMPLETED" && !a.interviewFeedback,
             ).length
           }{" "}
-          awaiting feedback
+          awaiting feedback</>}
         </p>
         <Button
           variant="ghost"
@@ -496,7 +463,7 @@ export default function InterviewCalendarPage() {
         </div>
       ) : isLoading ? (
         <LoadingSpinner />
-      ) : view === "week" ? (
+      ) : bucket === "active" && view === "week" ? (
         <div className="overflow-x-auto rounded-xl border border-slate-border bg-surface">
           <div className="grid min-w-[1120px] grid-cols-7 divide-x divide-slate-border">
             {week.map((day) => {
@@ -509,13 +476,13 @@ export default function InterviewCalendarPage() {
           </div>
         </div>
       ) : (
-        <div className={view === "month" ? "grid gap-5 md:grid-cols-[20rem_1fr]" : ""}>
-          {view === "month" && <Calendar value={date} onChange={setDate} getDayCount={(day) => filtered.filter((appointment: any) => dayKey(appointment.interviewDate) === dayKey(day)).length} />}
+        <div className={bucket === "active" && view === "month" ? "grid gap-5 md:grid-cols-[20rem_1fr]" : ""}>
+          {bucket === "active" && view === "month" && <Calendar value={date} onChange={setDate} getDayCount={(day) => filtered.filter((appointment: any) => dayKey(appointment.interviewDate) === dayKey(day)).length} />}
         <div className="grid gap-3">
           {visible.map(card)}
           {!visible.length && (
             <p className="rounded-xl border border-dashed border-slate-border p-8 text-text-muted">
-              No interviews match these filters.
+              No candidates match these filters.
             </p>
           )}
         </div>

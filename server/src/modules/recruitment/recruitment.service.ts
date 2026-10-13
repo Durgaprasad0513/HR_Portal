@@ -298,6 +298,8 @@ export class RecruitmentService {
             selectionStatus: true,
             screeningStatus: true,
             currentStage: true,
+            stageEnteredAt: true,
+            joiningStatus: true,
             interviewRound: true,
             offerStatus: true,
             updatedAt: true,

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, LogOut, User, Search, Sun, Moon, Bell, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react';
+import { Menu, X, LogOut, Search, Sun, Moon, Bell, PanelLeftClose, PanelLeftOpen, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -22,7 +22,6 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  const isAdminOrHR = hasAdminAccess(user?.role);
  const navigate = useNavigate();
  const queryClient = useQueryClient();
- const [dropdownOpen, setDropdownOpen] = useState(false);
  const [notifOpen, setNotifOpen] = useState(false);
  const [cmdOpen, setCmdOpen] = useState(false);
  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -32,7 +31,6 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  useEffect(() => {
  function handleClickOutside(event: MouseEvent) {
  if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
- setDropdownOpen(false);
  setNotifOpen(false);
  }
  }
@@ -127,7 +125,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
  <Button 
  variant="ghost" 
  size="sm" 
- onClick={() => { setNotifOpen(!notifOpen); setDropdownOpen(false); }}
+ onClick={() => setNotifOpen(!notifOpen)}
  className="text-gray-600 dark:text-gray-300 relative"
  aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
  aria-expanded={notifOpen}
@@ -181,10 +179,13 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
    <button
      type="button"
      className="flex items-center cursor-pointer gap-3 text-left focus:outline-none group"
-     onClick={() => { setDropdownOpen(!dropdownOpen); setNotifOpen(false); }}
-     aria-label="Open user menu"
-     aria-expanded={dropdownOpen}
-     aria-controls="user-menu"
+     onClick={() => {
+       setNotifOpen(false);
+       const empId = user?.employeeId || (user as any)?.employee?.id;
+       navigate(empId ? `/employees/${empId}?digitalId=1` : '/');
+     }}
+     aria-label="Open digital ID card"
+     title="Open digital ID card"
    >
      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold overflow-hidden ring-2 ring-white dark:ring-slate-800">
        {user?.employee?.profilePhoto ? (
@@ -214,30 +215,6 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
    </button>
  </div>
 
- {dropdownOpen && (
- <div id="user-menu" className="absolute right-0 top-10 mt-2 w-48 rounded-md bg-surface py-1 shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-slate-border">
- <div className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400 border-b border-slate-border">
- Signed in as {user?.role}
- </div>
- <button
- className="flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700"
- onClick={() => {
- setDropdownOpen(false);
- const empId = user?.employeeId || (user as any)?.employee?.id;
- if (empId) {
- navigate(`/employees/${empId}`);
- } else {
- // Fallback for users without an employee record (like system admins)
- navigate('/');
- }
- }} 
- >
- <User className="mr-2 h-4 w-4" /> Profile
- </button>
- 
- 
- </div>
- )}
  </div>
  </header>
  <CommandPalette open={cmdOpen} setOpen={setCmdOpen} />

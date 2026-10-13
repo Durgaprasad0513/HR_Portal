@@ -13,7 +13,6 @@ import { Select } from "@/components/ui/Select";
 import {
   Plus,
   ChevronLeft,
-  ChevronRight,
   Download,
   CheckCircle2,
 } from "lucide-react";
@@ -25,6 +24,7 @@ import { JobPositions } from "./JobPositions";
 import { CandidatePipeline } from "./CandidatePipeline";
 import { CandidateStageControls } from "./CandidateStageControls";
 import { CANDIDATE_STAGES } from "./pipelineModel";
+import { candidateDetailsUrl, normalizeRecruitmentSearch } from "./recruitmentNavigation";
 
 const EMPTY_REQUISITIONS: any[] = [];
 
@@ -38,27 +38,23 @@ export default function RecruitmentPage() {
   const [selectedReq, setSelectedReq] = useState<any>(null);
   const [editingReq, setEditingReq] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [activeTab, setActiveTab] = useState(
-    searchParams.get("tab") === "pipeline" ? "pipeline" : searchParams.get("tab") === "candidates"
-      ? "candidates"
-      : searchParams.get("tab") === "history"
-        ? "history"
-        : "openings",
-  );
-  const [candidateSearch, setCandidateSearch] = useState("");
-  const [candidateStageFilter, setCandidateStageFilter] = useState("");
-  const [candidateOutcomeFilter, setCandidateOutcomeFilter] = useState("");
-  const [candidatePage, setCandidatePage] = useState(1);
+  const [activeTab, setActiveTab] = useState(() => normalizeRecruitmentSearch(searchParams).get("tab") || "openings");
   const [closureRequest, setClosureRequest] = useState<any>(null);
   const [closureReason, setClosureReason] = useState("");
   const [applicationOpen, setApplicationOpen] = useState(false);
   const [scheduleCandidate, setScheduleCandidate] = useState<any>(null);
   const [screeningNotes, setScreeningNotes] = useState("");
+  const [reviewStage, setReviewStage] = useState("SCREENING");
+  const [joiningOutcome, setJoiningOutcome] = useState("PENDING");
   React.useEffect(() => {
-    const tab = searchParams.get("tab");
-    setActiveTab(["openings", "pipeline", "candidates", "history"].includes(tab || "") ? tab! : "openings");
+    const next = normalizeRecruitmentSearch(searchParams);
+    const tab = next.get("tab") || "openings";
+    setActiveTab(tab);
     setShowHistory(tab === "history");
-  }, [searchParams]);
+    if (next.toString() !== searchParams.toString()) {
+      navigate(`/recruitment?${next}`, { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   const { data: deptData } = useQuery({
     queryKey: ["departments"],
@@ -76,30 +72,7 @@ export default function RecruitmentPage() {
       enabled: !!selectedReq,
     },
   );
-  const {
-    data: registerResponse,
-    isLoading: isRegisterLoading,
-    isError: isRegisterError,
-  } = useQuery({
-    queryKey: [
-      "candidate-register",
-      candidateSearch,
-      candidateStageFilter,
-      candidateOutcomeFilter,
-      candidatePage,
-    ],
-    queryFn: () =>
-      recruitmentApi.getCandidateRegister({
-        search: candidateSearch,
-        stage: candidateStageFilter,
-        outcome: candidateOutcomeFilter,
-        page: candidatePage,
-        pageSize: 25,
-      }),
-    enabled: !selectedReq && activeTab === "candidates",
-  });
   const candidatesData = candidatesResponse?.data || [];
-  const candidateRegister = registerResponse?.data?.items || [];
 
   const data = reqResponse?.data ?? EMPTY_REQUISITIONS;
   const historyRequisitions = data.filter((req: any) =>
@@ -122,8 +95,17 @@ export default function RecruitmentPage() {
   React.useEffect(() => {
     setScreeningNotes(routeCandidate?.screeningNotes || "");
   }, [routeCandidate?.id, routeCandidate?.screeningNotes]);
+  React.useEffect(() => {
+    setJoiningOutcome(routeCandidate?.joiningStatus || "PENDING");
+  }, [routeCandidate?.id, routeCandidate?.joiningStatus]);
   const candidateStages = CANDIDATE_STAGES;
   const currentCandidateStage = routeCandidate?.currentStage || "SCREENING";
+  const completedRoundInterviews = (routeCandidate?.interviews || []).filter(
+    (interview: any) => interview.round === reviewStage && interview.status === "COMPLETED",
+  );
+  React.useEffect(() => {
+    setReviewStage(currentCandidateStage);
+  }, [routeCandidate?.id, currentCandidateStage]);
   const candidateStageIndex = routeCandidate
     ? Math.max(
         0,
@@ -191,6 +173,7 @@ export default function RecruitmentPage() {
       queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
       queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
       toast.success("Screening updated");
+      queryClient.invalidateQueries({ queryKey: ["interviews"] });
     },
     onError: (error: any) =>
       toast.error(
@@ -207,6 +190,7 @@ export default function RecruitmentPage() {
       queryClient.invalidateQueries({ queryKey: ["requisitions"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
       toast.success("Offer status updated");
+      queryClient.invalidateQueries({ queryKey: ["interviews"] });
     },
     onError: (error: any) =>
       toast.error(error?.response?.data?.message || "Could not update offer"),
@@ -247,9 +231,10 @@ export default function RecruitmentPage() {
       queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
       queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
       navigate(
-        `/recruitment?tab=candidates&reqId=${response.data.requisitionId}&candidateId=${response.data.id}`,
+        candidateDetailsUrl(response.data.requisitionId, response.data.id),
       );
       toast.success("Application saved");
+      queryClient.invalidateQueries({ queryKey: ["candidates"] });
     },
     onError: (error: any) =>
       toast.error(
@@ -290,6 +275,10 @@ export default function RecruitmentPage() {
     const values = new FormData(event.currentTarget);
     if (!routeCandidate) return;
     const salaryText = String(values.get("offeredSalary") || "");
+    if (values.get("joiningStatus") === "JOINED" && values.get("offerStatus") !== "OFFER_ACCEPTED") {
+      toast.error("Set Offer response to Accepted before confirming joining.");
+      return;
+    }
     offerMutation.mutate({
       id: routeCandidate.id,
       payload: {
@@ -301,7 +290,7 @@ export default function RecruitmentPage() {
           ? new Date(String(values.get("joiningDate"))).toISOString()
           : undefined,
         offeredSalary: salaryText ? Number(salaryText) : undefined,
-        joiningStatus: String(values.get("joiningStatus") || "PENDING"),
+        joiningStatus: values.has("joiningStatus") ? String(values.get("joiningStatus")) : undefined,
         actualJoiningDate: values.get("actualJoiningDate")
           ? new Date(String(values.get("actualJoiningDate"))).toISOString()
           : undefined,
@@ -415,11 +404,12 @@ export default function RecruitmentPage() {
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
+                  aria-label="Back to position pipeline"
                   onClick={() =>
                     navigate(
                       activeTab === "pipeline"
                         ? `/recruitment?tab=pipeline&q=${encodeURIComponent(searchParams.get("q") || "")}&opening=${encodeURIComponent(searchParams.get("opening") || "")}`
-                        : `/recruitment?tab=${activeTab === "candidates" ? "candidates" : "openings"}`,
+                        : "/recruitment?tab=openings",
                     )
                   }
                   className="px-2"
@@ -467,35 +457,13 @@ export default function RecruitmentPage() {
                       <h3 className="text-lg font-bold text-navy-900 dark:text-white">
                         {routeCandidate.candidateName}
                       </h3>
-                      {canAdd("recruitment") &&
-                        !["SELECTED", "SELECTION_REJECTED"].includes(
-                          routeCandidate.selectionStatus,
-                        ) &&
-                        routeCandidate.screeningStatus !==
-                          "SCREENING_REJECTED" &&
-                        routeCandidate.joiningStatus !== "JOINED" && (
-                          <Button
-                            className="mt-3"
-                            onClick={() =>
-                              setScheduleCandidate({
-                                ...routeCandidate,
-                                interviewId: undefined,
-                                interviewDate: undefined,
-                                interviewRound: "",
-                              })
-                            }
-                          >
-                            Schedule next round
-                          </Button>
-                        )}
                       <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         {routeCandidate.email || "No email provided"}
-                        {routeCandidate.interviewDate
-                          ? ` · Interview ${new Date(routeCandidate.interviewDate).toLocaleString()}`
-                          : ""}
                       </p>
                     </div>
-                    <dl className="grid min-w-full grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-border pt-3 text-sm text-gray-600 dark:text-gray-300 sm:min-w-0 sm:grid-cols-3 sm:border-0 sm:pt-0">
+                    <details className="w-full rounded-lg border border-slate-border p-3">
+                      <summary className="cursor-pointer text-sm font-medium">Candidate details</summary>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-text-muted sm:grid-cols-3">
                       <div>
                         <dt className="text-xs text-gray-500">Phone</dt>
                         <dd>{routeCandidate.mobile || "Not provided"}</dd>
@@ -522,6 +490,14 @@ export default function RecruitmentPage() {
                           {routeCandidate.currentCompany || "Not provided"}
                         </dd>
                       </div>
+                      <div>
+                        <dt className="text-xs text-gray-500">Notice period</dt>
+                        <dd>{routeCandidate.noticePeriod != null ? `${routeCandidate.noticePeriod} days` : "Not provided"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-gray-500">Application source</dt>
+                        <dd>{routeCandidate.source || "Not provided"}</dd>
+                      </div>
                       {canViewRestricted("recruitment") && (
                         <>
                           <div>
@@ -547,9 +523,9 @@ export default function RecruitmentPage() {
                         </>
                       )}
                     </dl>
+                    </details>
                   </div>
-                  <CandidateStageControls candidate={routeCandidate} editable={canEdit("recruitment")} />
-                  <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+                  <ol aria-label="View recruitment stage" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
                     {candidateStages.map((stage, index) => {
                       const complete =
                         stage.value === "SCREENING"
@@ -568,7 +544,9 @@ export default function RecruitmentPage() {
                       return (
                         <li
                           key={stage.value}
-                          className={`rounded-xl border p-4 ${current ? "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30" : complete ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30" : "border-slate-border bg-surface"}`}
+                          className="min-w-0"
+                        >
+                          <button type="button" aria-pressed={reviewStage === stage.value} onClick={() => setReviewStage(stage.value)} className={`h-full w-full rounded-xl border p-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary ${reviewStage === stage.value ? "ring-2 ring-brand-primary" : ""} ${current ? "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30" : complete ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30" : "border-slate-border bg-surface"}`}
                         >
                           <div className="flex items-center gap-2">
                             <span
@@ -591,82 +569,165 @@ export default function RecruitmentPage() {
                                 ? "Completed"
                                 : index < candidateStageIndex ? "No completed review recorded" : "Upcoming"}
                           </p>
+                          </button>
                         </li>
                       );
                     })}
                   </ol>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <div className="rounded-xl border border-slate-border p-4">
-                      <p className="text-xs font-semibold uppercase text-gray-500">
-                        Screening
-                      </p>
-                      <p className="mt-1 font-semibold">
-                        {routeCandidate.screeningStatus?.replaceAll("_", " ") ||
-                          "SCREENING PENDING"}
-                      </p>
-                      <p className="mt-2 whitespace-pre-wrap text-sm text-gray-500">
-                        {routeCandidate.screeningNotes || "No screening notes"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-slate-border p-4">
-                      <p className="text-xs font-semibold uppercase text-gray-500">
-                        Candidate outcome
-                      </p>
-                      <p className="mt-1 font-semibold">
-                        {routeCandidate.selectionStatus?.replaceAll("_", " ") ||
-                          "In progress"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-slate-border p-4">
-                      <p className="text-xs font-semibold uppercase text-gray-500">
-                        Offer
-                      </p>
-                      <p className="mt-1 font-semibold">
-                        {routeCandidate.offerStatus?.replaceAll("_", " ") ||
-                          "Not released"}
-                      </p>
-                      {routeCandidate.offerDate && (
-                        <p className="mt-1 text-sm text-gray-500">
-                          Offered{" "}
-                          {new Date(
-                            routeCandidate.offerDate,
-                          ).toLocaleDateString()}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        Joining outcome:{" "}
-                        {(routeCandidate.joiningStatus || "PENDING").replace(
-                          /_/g,
-                          " ",
-                        )}
-                        {routeCandidate.actualJoiningDate
-                          ? ` / ${new Date(routeCandidate.actualJoiningDate).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}`
-                          : ""}
-                      </p>
-                      {routeCandidate.joiningDate && (
-                        <p className="text-sm text-gray-500">
-                          Joining{" "}
-                          {new Date(
-                            routeCandidate.joiningDate,
-                          ).toLocaleDateString()}
-                        </p>
-                      )}
-                      {canViewRestricted("recruitment") &&
-                        routeCandidate.offeredSalary != null && (
-                          <p className="text-sm text-gray-500">
-                            ₹
-                            {Number(
-                              routeCandidate.offeredSalary,
-                            ).toLocaleString("en-IN")}
-                          </p>
-                        )}
-                    </div>
+                  <div className="rounded-xl border border-slate-border bg-tint p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">{reviewStage === currentCandidateStage ? "Current stage" : "Stage details"}</p>
+                    <h4 className="mt-1 text-lg font-semibold text-text-heading">{candidateStages.find(stage => stage.value === reviewStage)?.label}</h4>
+                    <p className="mt-2 text-sm font-medium">Application outcome: {(routeCandidate.selectionStatus || "IN_PROGRESS").replaceAll("_", " ").toLowerCase()}</p>
                   </div>
 
-                  <section className="space-y-3" aria-label="Interview history">
-                    <h4 className="font-semibold">Interview history</h4>
-                    {(routeCandidate.interviews || []).length ? (
-                      routeCandidate.interviews.map((interview: any) => (
+                  {canEdit("recruitment") && (
+                    <div className="space-y-4">
+                      {reviewStage === "SCREENING" && <form
+                        onSubmit={handleScreeningSubmit}
+                        className="space-y-3 rounded-xl border border-slate-border p-4"
+                      >
+                        <h4 className="font-semibold">Screening decision</h4>
+                        <Select
+                          name="screeningStatus"
+                          label="Screening status"
+                          defaultValue={
+                            routeCandidate.screeningStatus ||
+                            "SCREENING_PENDING"
+                          }
+                        >
+                          <option value="SCREENING_PENDING">Pending</option>
+                          <option value="SHORTLISTED">Shortlisted</option>
+                          <option value="SCREENING_REJECTED">Rejected</option>
+                        </Select>
+                        <label
+                          className="block text-sm font-medium"
+                          htmlFor="screening-notes"
+                        >
+                          Screening notes
+                        </label>
+                        <textarea
+                          id="screening-notes"
+                          className="min-h-24 w-full rounded-lg border border-slate-border bg-surface p-3 text-sm"
+                          value={screeningNotes}
+                          onChange={(e) => setScreeningNotes(e.target.value)}
+                          placeholder="Record relevant screening notes"
+                        />
+                        <Button
+                          type="submit"
+                          disabled={screenMutation.isPending}
+                        >
+                          {screenMutation.isPending
+                            ? "Saving…"
+                            : "Save screening"}
+                        </Button>
+                      </form>}
+                      {["OFFER", "JOINED"].includes(reviewStage) && <form
+                        key={`${routeCandidate.id}:${reviewStage}`}
+                        onSubmit={handleOfferSubmit}
+                        className="space-y-3 rounded-xl border border-slate-border p-4"
+                      >
+                        <h4 className="font-semibold">{reviewStage === "JOINED" ? "Joining outcome" : "Offer management"}</h4>
+                        {reviewStage === "OFFER" && <>
+                        <Select
+                          name="offerStatus"
+                          label="Offer status"
+                          defaultValue={
+                            routeCandidate.offerStatus || "NOT_RELEASED"
+                          }
+                        >
+                          <option value="NOT_RELEASED">Not released</option>
+                          <option value="RELEASED">Released</option>
+                          <option value="OFFER_ACCEPTED">Accepted</option>
+                          <option value="OFFER_DECLINED">Declined</option>
+                        </Select>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {canViewRestricted("recruitment") && (
+                            <Input
+                              name="offeredSalary"
+                              label="Offer salary (₹)"
+                              type="number"
+                              min="0"
+                              defaultValue={routeCandidate.offeredSalary ?? ""}
+                            />
+                          )}
+                          <Input
+                            name="offerDate"
+                            label="Offer date"
+                            type="date"
+                            defaultValue={
+                              routeCandidate.offerDate?.slice(0, 10) || ""
+                            }
+                          />
+                          <Input
+                            name="joiningDate"
+                            label="Expected joining date"
+                            type="date"
+                            defaultValue={
+                              routeCandidate.joiningDate?.slice(0, 10) || ""
+                            }
+                          />
+                        </div>
+                        </>}
+                        {reviewStage === "JOINED" && <>
+                        <Select
+                          name="offerStatus"
+                          label="Offer response"
+                          defaultValue={routeCandidate.offerStatus || "NOT_RELEASED"}
+                          required
+                        >
+                          {routeCandidate.offerStatus === "NOT_RELEASED" && <option value="NOT_RELEASED">Not released</option>}
+                          <option value="RELEASED">Awaiting acceptance</option>
+                          <option value="OFFER_ACCEPTED" disabled={!["RELEASED", "OFFER_ACCEPTED"].includes(routeCandidate.offerStatus)}>Accepted</option>
+                          {routeCandidate.offerStatus === "OFFER_DECLINED" && <option value="OFFER_DECLINED">Declined</option>}
+                        </Select>
+                        {!["RELEASED", "OFFER_ACCEPTED"].includes(routeCandidate.offerStatus) && <Button type="button" variant="outline" onClick={() => setReviewStage("OFFER")}>Review offer</Button>}
+                        <Select
+                          name="joiningStatus"
+                          label="Joining outcome"
+                          value={joiningOutcome}
+                          onChange={(event) => setJoiningOutcome(event.target.value)}
+                        >
+                          <option value="PENDING">Pending</option>
+                          <option value="JOINED">Joined</option>
+                          <option value="NOT_JOINED">Did not join</option>
+                        </Select>
+                        <Input
+                          name="actualJoiningDate"
+                          label="Actual joining date"
+                          type="date"
+                          required={joiningOutcome === "JOINED"}
+                          defaultValue={
+                            routeCandidate.actualJoiningDate?.slice(0, 10) || ""
+                          }
+                        />
+                        </>}
+                        <Button
+                          type="submit"
+                          disabled={offerMutation.isPending}
+                        >
+                          {offerMutation.isPending
+                            ? "Saving…"
+                            : reviewStage === "JOINED" ? "Save joining outcome" : "Save offer status"}
+                        </Button>
+                      </form>}
+                    </div>
+                  )}
+                  {!canEdit("recruitment") && reviewStage === "SCREENING" && <div className="rounded-xl border border-slate-border p-4">
+                    <p className="font-medium">{(routeCandidate.screeningStatus || "SCREENING_PENDING").replace("SCREENING_", "").replaceAll("_", " ").toLowerCase()}</p>
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-text-muted">{routeCandidate.screeningNotes || "No screening notes"}</p>
+                  </div>}
+                  {["OFFER", "JOINED"].includes(reviewStage) && <dl className="grid grid-cols-1 gap-3 rounded-xl border border-slate-border p-4 text-sm sm:grid-cols-2">
+                    <div><dt className="text-text-muted">{reviewStage === "OFFER" ? "Offer response" : "Joining outcome"}</dt><dd className="mt-1 font-medium">{(reviewStage === "OFFER" ? routeCandidate.offerStatus || "NOT_RELEASED" : routeCandidate.joiningStatus || "PENDING").replace("OFFER_", "").replaceAll("_", " ").toLowerCase()}</dd></div>
+                    <div><dt className="text-text-muted">Expected joining date</dt><dd className="mt-1 font-medium">{routeCandidate.joiningDate ? new Date(routeCandidate.joiningDate).toLocaleDateString("en-IN", {timeZone:"Asia/Kolkata"}) : "Not provided"}</dd></div>
+                    {reviewStage === "OFFER" && <div><dt className="text-text-muted">Offer date</dt><dd className="mt-1 font-medium">{routeCandidate.offerDate ? new Date(routeCandidate.offerDate).toLocaleDateString("en-IN", {timeZone:"Asia/Kolkata"}) : "Not provided"}</dd></div>}
+                    {reviewStage === "OFFER" && canViewRestricted("recruitment") && <div><dt className="text-text-muted">Offered salary</dt><dd className="mt-1 font-medium">{routeCandidate.offeredSalary != null ? `₹${Number(routeCandidate.offeredSalary).toLocaleString("en-IN")}` : "Not provided"}</dd></div>}
+                    {reviewStage === "JOINED" && <div><dt className="text-text-muted">Actual joining date</dt><dd className="mt-1 font-medium">{routeCandidate.actualJoiningDate ? new Date(routeCandidate.actualJoiningDate).toLocaleDateString("en-IN", {timeZone:"Asia/Kolkata"}) : "Not provided"}</dd></div>}
+                  </dl>}
+                  {!["SCREENING", "OFFER", "JOINED"].includes(reviewStage) && <>
+                  {canAdd("recruitment") && !["SELECTED", "SELECTION_REJECTED"].includes(routeCandidate.selectionStatus) && routeCandidate.screeningStatus !== "SCREENING_REJECTED" && routeCandidate.joiningStatus !== "JOINED" && <Button onClick={() => setScheduleCandidate({ ...routeCandidate, interviewId: undefined, interviewDate: undefined, interviewRound: reviewStage })}>Schedule {candidateStages.find(stage => stage.value === reviewStage)?.label.toLowerCase()}</Button>}
+                  {completedRoundInterviews.length > 0 && <section className="space-y-3" aria-label="Interview history">
+                    <h4 className="font-semibold">Round appointments & feedback</h4>
+                    {completedRoundInterviews.map((interview: any) => (
                         <article
                           key={interview.id}
                           className="rounded-lg border border-slate-border p-3"
@@ -797,58 +858,13 @@ export default function RecruitmentPage() {
                               </form>
                             )}
                         </article>
-                      ))
-                    ) : routeCandidate.interviewDate ? (
-                      <p className="text-sm text-gray-500">
-                        Legacy interview scheduled for{" "}
-                        {new Date(
-                          routeCandidate.interviewDate,
-                        ).toLocaleString()}
-                        .
-                      </p>
-                    ) : (
-                      <p className="text-sm text-gray-500">
-                        No interviews scheduled.
-                      </p>
-                    )}
-                  </section>
+                      ))}
+                  </section>}
 
-                  <section
-                    aria-label="Candidate activity"
-                    className="space-y-2"
-                  >
-                    <h4 className="font-semibold">Activity</h4>
-                    {routeCandidate.activity?.length ? (
-                      <ol className="max-h-60 space-y-2 overflow-y-auto">
-                        {routeCandidate.activity.map((event: any) => (
-                          <li
-                            key={event.id}
-                            className="rounded-lg bg-tint p-3 text-sm"
-                          >
-                            <span className="capitalize">
-                              {event.actionPerformed
-                                .replace(/_/g, " ")
-                                .toLowerCase()}
-                            </span>
-                            <p className="text-xs text-text-muted">
-                              {event.user?.email || "System"} /{" "}
-                              {new Date(event.createdAt).toLocaleString(
-                                "en-IN",
-                                { timeZone: "Asia/Kolkata" },
-                              )}
-                            </p>
-                          </li>
-                        ))}
-                      </ol>
-                    ) : (
-                      <p className="text-sm text-text-muted">
-                        No activity recorded.
-                      </p>
-                    )}
-                  </section>
-                  {canEdit("recruitment") && (
+                  </>}
+                  {canEdit("recruitment") && reviewStage === "MANAGEMENT" && (
                     <form
-                      className="grid gap-3 rounded-xl border border-slate-border p-4 sm:grid-cols-3"
+                      className="grid gap-3 rounded-xl border border-slate-border p-4 sm:grid-cols-2"
                       onSubmit={(e) => {
                         e.preventDefault();
                         const values = new FormData(e.currentTarget);
@@ -882,121 +898,8 @@ export default function RecruitmentPage() {
                       </div>
                     </form>
                   )}
-                  {canEdit("recruitment") && (
-                    <div className="grid gap-5 lg:grid-cols-2">
-                      <form
-                        onSubmit={handleScreeningSubmit}
-                        className="space-y-3 rounded-xl border border-slate-border p-4"
-                      >
-                        <h4 className="font-semibold">Screening decision</h4>
-                        <Select
-                          name="screeningStatus"
-                          label="Screening status"
-                          defaultValue={
-                            routeCandidate.screeningStatus ||
-                            "SCREENING_PENDING"
-                          }
-                        >
-                          <option value="SCREENING_PENDING">Pending</option>
-                          <option value="SHORTLISTED">Shortlisted</option>
-                          <option value="SCREENING_REJECTED">Rejected</option>
-                        </Select>
-                        <label
-                          className="block text-sm font-medium"
-                          htmlFor="screening-notes"
-                        >
-                          Screening notes
-                        </label>
-                        <textarea
-                          id="screening-notes"
-                          className="min-h-24 w-full rounded-lg border border-slate-border bg-surface p-3 text-sm"
-                          value={screeningNotes}
-                          onChange={(e) => setScreeningNotes(e.target.value)}
-                          placeholder="Record relevant screening notes"
-                        />
-                        <Button
-                          type="submit"
-                          disabled={screenMutation.isPending}
-                        >
-                          {screenMutation.isPending
-                            ? "Saving…"
-                            : "Save screening"}
-                        </Button>
-                      </form>
-                      <form
-                        onSubmit={handleOfferSubmit}
-                        className="space-y-3 rounded-xl border border-slate-border p-4"
-                      >
-                        <h4 className="font-semibold">Offer management</h4>
-                        <Select
-                          name="offerStatus"
-                          label="Offer status"
-                          defaultValue={
-                            routeCandidate.offerStatus || "NOT_RELEASED"
-                          }
-                        >
-                          <option value="NOT_RELEASED">Not released</option>
-                          <option value="RELEASED">Released</option>
-                          <option value="OFFER_ACCEPTED">Accepted</option>
-                          <option value="OFFER_DECLINED">Declined</option>
-                        </Select>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {canViewRestricted("recruitment") && (
-                            <Input
-                              name="offeredSalary"
-                              label="Offer salary (₹)"
-                              type="number"
-                              min="0"
-                              defaultValue={routeCandidate.offeredSalary ?? ""}
-                            />
-                          )}
-                          <Input
-                            name="offerDate"
-                            label="Offer date"
-                            type="date"
-                            defaultValue={
-                              routeCandidate.offerDate?.slice(0, 10) || ""
-                            }
-                          />
-                          <Input
-                            name="joiningDate"
-                            label="Expected joining date"
-                            type="date"
-                            defaultValue={
-                              routeCandidate.joiningDate?.slice(0, 10) || ""
-                            }
-                          />
-                        </div>
-                        <Select
-                          name="joiningStatus"
-                          label="Joining outcome"
-                          defaultValue={
-                            routeCandidate.joiningStatus || "PENDING"
-                          }
-                        >
-                          <option value="PENDING">Pending</option>
-                          <option value="JOINED">Joined</option>
-                          <option value="NOT_JOINED">Did not join</option>
-                        </Select>
-                        <Input
-                          name="actualJoiningDate"
-                          label="Actual joining date"
-                          type="date"
-                          defaultValue={
-                            routeCandidate.actualJoiningDate?.slice(0, 10) || ""
-                          }
-                        />
-                        <Button
-                          type="submit"
-                          disabled={offerMutation.isPending}
-                        >
-                          {offerMutation.isPending
-                            ? "Saving…"
-                            : "Save offer status"}
-                        </Button>
-                      </form>
-                    </div>
-                  )}
+                  <CandidateStageControls candidate={routeCandidate} editable={canEdit("recruitment") && reviewStage === currentCandidateStage} onOpenJoining={() => setReviewStage("JOINED")} />
+
                 </section>
               ) : (
                 <div className="rounded-xl border border-dashed border-slate-border p-8 text-center text-gray-500">
@@ -1041,169 +944,6 @@ export default function RecruitmentPage() {
             </nav>
             {activeTab === "pipeline" ? (
               <CandidatePipeline requisitions={data} />
-            ) : activeTab === "candidates" ? (
-              <section aria-label="Candidate register" className="space-y-4">
-                <div className="grid gap-3 md:grid-cols-[minmax(14rem,1fr)_12rem_12rem]">
-                  <Input
-                    aria-label="Search candidates"
-                    placeholder="Search name or email…"
-                    value={candidateSearch}
-                    onChange={(e) => {
-                      setCandidateSearch(e.target.value);
-                      setCandidatePage(1);
-                    }}
-                  />
-                  <Select
-                    aria-label="Filter by interview stage"
-                    value={candidateStageFilter}
-                    onChange={(e) => {
-                      setCandidateStageFilter(e.target.value);
-                      setCandidatePage(1);
-                    }}
-                  >
-                    <option value="">All stages</option>
-                    <option value="SCREENING">Screening</option>
-                    <option value="TELEPHONIC">Telephonic</option>
-                    <option value="HR_INTERVIEW">HR interview</option>
-                    <option value="TECHNICAL">Technical</option>
-                    <option value="MANAGEMENT">Management</option>
-                    <option value="OFFER">Offer</option>
-                    <option value="JOINED">Joined</option>
-                  </Select>
-                  <Select
-                    aria-label="Filter by candidate outcome"
-                    value={candidateOutcomeFilter}
-                    onChange={(e) => {
-                      setCandidateOutcomeFilter(e.target.value);
-                      setCandidatePage(1);
-                    }}
-                  >
-                    <option value="">All outcomes</option>
-                    <option value="IN_PROGRESS">In progress</option>
-                    <option value="SELECTED">Selected</option>
-                    <option value="SELECTION_ON_HOLD">On hold</option>
-                    <option value="SELECTION_REJECTED">Rejected</option>
-                  </Select>
-                </div>
-                {isRegisterError ? (
-                  <div
-                    role="alert"
-                    className="rounded-xl border border-red-200 p-4 text-sm text-red-700"
-                  >
-                    Could not load candidates. Refresh the page to retry.
-                  </div>
-                ) : null}
-                {isRegisterLoading ? (
-                  <div className="py-10">
-                    <LoadingSpinner />
-                  </div>
-                ) : candidateRegister.length ? (
-                  <div className="grid gap-3 lg:grid-cols-2">
-                    {candidateRegister.map((candidate: any) => {
-                      const next = candidate.interviews?.[0];
-                      const round = candidate.currentStage || "SCREENING";
-                      return (
-                        <article
-                          key={candidate.id}
-                          className="rounded-xl border border-slate-border bg-surface p-4 shadow-sm"
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <button
-                                type="button"
-                                className="font-semibold text-primary-700 hover:underline dark:text-primary-300"
-                                onClick={() =>
-                                  navigate(
-                                    `/recruitment?tab=candidates&reqId=${encodeURIComponent(candidate.requisitionId)}&candidateId=${encodeURIComponent(candidate.id)}`,
-                                  )
-                                }
-                              >
-                                {candidate.candidateName}
-                              </button>
-                              <p className="truncate text-sm text-gray-500">
-                                {candidate.requisition?.positionTitle ||
-                                  "Opening"}{" "}
-                                · {candidate.email || "No email"}
-                              </p>
-                            </div>
-                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold dark:bg-slate-800">
-                              {round.replaceAll("_", " ")}
-                            </span>
-                          </div>
-                          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                            <div>
-                              <dt className="text-xs text-gray-500">Outcome</dt>
-                              <dd className="font-medium">
-                                {candidate.selectionStatus?.replaceAll(
-                                  "_",
-                                  " ",
-                                ) || "In progress"}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs text-gray-500">
-                                Screening
-                              </dt>
-                              <dd className="font-medium">
-                                {candidate.screeningStatus?.replaceAll(
-                                  "_",
-                                  " ",
-                                )}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs text-gray-500">
-                                Next interview
-                              </dt>
-                              <dd className="font-medium">
-                                {next
-                                  ? new Date(next.startsAt).toLocaleString(
-                                      "en-IN",
-                                      { timeZone: "Asia/Kolkata" },
-                                    )
-                                  : "Not scheduled"}
-                              </dd>
-                            </div>
-                          </dl>
-                        </article>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-slate-border p-8 text-center text-sm text-gray-500">
-                    No candidates match these filters.
-                  </div>
-                )}
-                <div className="flex items-center justify-between border-t border-slate-border pt-3 text-sm text-gray-500">
-                  <span>
-                    {registerResponse?.data?.total || 0} candidates · Page{" "}
-                    {candidatePage} of{" "}
-                    {Math.max(
-                      1,
-                      Math.ceil((registerResponse?.data?.total || 0) / 25),
-                    )}
-                  </span>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      disabled={candidatePage <= 1}
-                      onClick={() => setCandidatePage((page) => page - 1)}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      disabled={
-                        candidatePage >=
-                        Math.ceil((registerResponse?.data?.total || 0) / 25)
-                      }
-                      onClick={() => setCandidatePage((page) => page + 1)}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              </section>
             ) : (
               <JobPositions
                 requisitions={visibleRequisitions}
@@ -1346,12 +1086,21 @@ export default function RecruitmentPage() {
           onSubmit={(e) => {
             e.preventDefault();
             const values = new FormData(e.currentTarget);
+            const optionalNumber = (name: string) => {
+              const value = String(values.get(name) ?? "").trim();
+              return value === "" ? undefined : Number(value);
+            };
             applicationMutation.mutate({
               candidateName: values.get("candidateName"),
               requisitionId: values.get("requisitionId"),
               email: values.get("email") || undefined,
               mobile: values.get("mobile") || undefined,
               qualification: values.get("qualification") || undefined,
+              totalExperience: optionalNumber("totalExperience"),
+              currentCompany: values.get("currentCompany") || undefined,
+              currentSalary: optionalNumber("currentSalary"),
+              expectedSalary: optionalNumber("expectedSalary"),
+              noticePeriod: optionalNumber("noticePeriod"),
               source: values.get("source") || undefined,
             });
           }}
@@ -1364,11 +1113,31 @@ export default function RecruitmentPage() {
               </option>
             ))}
           </Select>
-          <Input name="candidateName" label="Candidate name" required />
-          <Input name="email" label="Email" type="email" />
-          <Input name="mobile" label="Phone" />
-          <Input name="qualification" label="Qualification" />
-          <Input name="source" label="Application source" />
+          <fieldset className="space-y-3 rounded-xl border border-slate-border p-4">
+            <legend className="px-1 font-semibold text-text-heading">Contact details</legend>
+            <Input name="candidateName" label="Candidate name" required />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input name="email" label="Email" type="email" required />
+              <Input name="mobile" label="Phone" type="tel" maxLength={20} required />
+            </div>
+          </fieldset>
+          <fieldset className="space-y-3 rounded-xl border border-slate-border p-4">
+            <legend className="px-1 font-semibold text-text-heading">Education & experience</legend>
+            <Input name="qualification" label="Qualification" required />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input name="totalExperience" label="Total experience (years)" type="number" min="0" step="0.01" placeholder="0 for a fresher" required />
+              <Input name="currentCompany" label="Current company (optional)" />
+            </div>
+          </fieldset>
+          <fieldset className="space-y-3 rounded-xl border border-slate-border p-4">
+            <legend className="px-1 font-semibold text-text-heading">Availability & compensation</legend>
+            {canViewRestricted("recruitment") && <div className="grid gap-3 sm:grid-cols-2">
+              <Input name="currentSalary" label="Current salary (₹, optional)" type="number" min="0" step="0.01" />
+              <Input name="expectedSalary" label="Expected salary (₹, optional)" type="number" min="0" step="0.01" />
+            </div>}
+            <Input name="noticePeriod" label="Notice period (days)" type="number" min="0" step="1" placeholder="0 for immediate availability" required />
+            <Input name="source" label="Application source (optional)" placeholder="Referral, job portal, company website…" />
+          </fieldset>
           <Button type="submit" disabled={applicationMutation.isPending}>
             Save application
           </Button>

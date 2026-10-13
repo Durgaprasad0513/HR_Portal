@@ -53,9 +53,9 @@ const normalizeRecruitmentStage = (value?: string | null) => {
 
 const getCurrentRequisitionProgress = (requisition: any) => {
   const candidateProgress = (requisition.candidates || [])
-    .filter((candidate: any) => candidate.selectionStatus !== 'SELECTION_REJECTED')
+    .filter((candidate: any) => candidate.selectionStatus !== 'SELECTION_REJECTED' && candidate.screeningStatus !== 'SCREENING_REJECTED' && candidate.joiningStatus !== 'NOT_JOINED' && candidate.offerStatus !== 'OFFER_DECLINED')
     .map((candidate: any) => {
-      const interviewStage = normalizeRecruitmentStage(candidate.interviewRound);
+      const interviewStage = normalizeRecruitmentStage(candidate.currentStage || candidate.interviewRound);
       const stage = candidate.offerStatus && candidate.offerStatus !== 'NOT_RELEASED'
         ? 'OFFER'
         : candidate.selectionStatus === 'SELECTED'
@@ -63,7 +63,7 @@ const getCurrentRequisitionProgress = (requisition: any) => {
           : interviewStage;
       const isOpeningFilled = candidate.selectionStatus === 'SELECTED'
         || ['RELEASED', 'OFFER_ACCEPTED'].includes(candidate.offerStatus || '');
-      return { stage, updatedAt: candidate.updatedAt, isOpeningFilled };
+      return { stage, updatedAt: candidate.stageEnteredAt || candidate.updatedAt, isOpeningFilled };
     })
     .filter((candidate: any) => RECRUITMENT_STAGE_ORDER.includes(candidate.stage));
 
@@ -255,15 +255,29 @@ export default function DashboardPage() {
    return total + Math.max(0, vacancies - filled);
  }, 0);
  const openVacanciesCount = reqResponse?.data ? totalOpenVacancies : headline.openVacancies || 0;
+ const interviewRequisitions = activeRequisitions
+   .filter((requisition: any) => Number(requisition.remainingCount ?? Math.max(0, Number(requisition.numberOfVacancies || 0) - Number(requisition.selectedCount || 0))) > 0)
+   .map((requisition: any) => getCurrentRequisitionProgress({
+     ...requisition,
+     candidates: (requisition.candidates || []).filter((candidate: any) =>
+       RECRUITMENT_LEVELS.some(level => level.stage === normalizeRecruitmentStage(candidate.currentStage || candidate.interviewRound))
+       && !['SELECTED', 'SELECTION_REJECTED'].includes(candidate.selectionStatus)
+       && candidate.screeningStatus !== 'SCREENING_REJECTED'
+       && candidate.offerStatus !== 'OFFER_DECLINED'
+       && candidate.joiningStatus !== 'NOT_JOINED'
+       && (!candidate.offerStatus || candidate.offerStatus === 'NOT_RELEASED')),
+   }))
+   .filter((requisition: any) => requisition.candidates.length > 0);
+ const interviewingVacancies = interviewRequisitions.reduce((total: number, requisition: any) => total + Number(requisition.remainingCount ?? Math.max(0, Number(requisition.numberOfVacancies || 0) - Number(requisition.selectedCount || 0))), 0);
  const currentStageCandidateCounts = RECRUITMENT_LEVELS.map((level) =>
-   activeRequisitions.reduce((count: number, requisition: any) => {
+   interviewRequisitions.reduce((count: number, requisition: any) => {
      const candidates = (requisition.candidates || []).filter((candidate: any) => {
        if (candidate.selectionStatus === 'SELECTION_REJECTED') return false;
        const stage = candidate.offerStatus && candidate.offerStatus !== 'NOT_RELEASED'
          ? 'OFFER'
          : candidate.selectionStatus === 'SELECTED'
            ? 'SELECTED'
-           : normalizeRecruitmentStage(candidate.interviewRound);
+           : normalizeRecruitmentStage(candidate.currentStage || candidate.interviewRound);
        return stage === level.stage;
      });
      return count + candidates.length;
@@ -272,7 +286,10 @@ export default function DashboardPage() {
  const overallRecruitmentProgress = activeRequisitions.length
    ? Math.round(activeRequisitions.reduce((total: number, requisition: any) => total + getCompletedRecruitmentLevels(requisition.currentStage) * 25, 0) / activeRequisitions.length)
    : 0;
- const trackedRequisitions = [...activeRequisitions]
+ const interviewRecruitmentProgress = interviewRequisitions.length
+   ? Math.round(interviewRequisitions.reduce((total: number, requisition: any) => total + getCompletedRecruitmentLevels(requisition.currentStage) * 25, 0) / interviewRequisitions.length)
+   : 0;
+ const trackedRequisitions = [...interviewRequisitions]
    .sort((first: any, second: any) => new Date(first.currentStageUpdatedAt).getTime() - new Date(second.currentStageUpdatedAt).getTime())
    .slice(0, 6);
 
@@ -547,7 +564,7 @@ export default function DashboardPage() {
                 <div className="flex flex-wrap justify-between items-start gap-3 mb-5">
                   <div>
                     <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Recruitment Progress</h3>
-                    <p className="text-xs text-text-muted mt-1">Role-wise interview levels, current stage, and stage dates</p>
+                    <p className="text-xs text-text-muted mt-1">Open vacancies with candidates in telephonic, HR, technical, or management interviews</p>
                   </div>
                   <button onClick={() => navigate('/recruitment')} className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors shrink-0 cursor-pointer">
                     View All <ArrowRight size={12} />
@@ -556,9 +573,9 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 mb-5">
                   <div className="rounded-lg bg-tint p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Open roles</p>
-                    <p className="mt-1 text-xl font-bold text-text-heading">{activeRequisitions.length}</p>
-                    <p className="text-[11px] text-text-muted">{totalOpenVacancies} vacancies</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Interviewing roles</p>
+                    <p className="mt-1 text-xl font-bold text-text-heading">{interviewRequisitions.length}</p>
+                    <p className="text-[11px] text-text-muted">{interviewingVacancies} vacancies</p>
                   </div>
                   {RECRUITMENT_LEVELS.map((level, index) => (
                     <div key={level.label} className="rounded-lg bg-tint p-3">
@@ -569,7 +586,7 @@ export default function DashboardPage() {
                   ))}
                   <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-950/30">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Overall</p>
-                    <p className="mt-1 text-xl font-bold text-blue-800 dark:text-blue-200">{overallRecruitmentProgress}%</p>
+                    <p className="mt-1 text-xl font-bold text-blue-800 dark:text-blue-200">{interviewRecruitmentProgress}%</p>
                     <p className="text-[11px] text-blue-700 dark:text-blue-300">rounds complete</p>
                   </div>
                 </div>
@@ -634,18 +651,18 @@ export default function DashboardPage() {
                             <div><span className="block text-text-muted">Opening date</span><span className="font-semibold text-text-heading">{formatDate(requisition.requisitionDate)}</span></div>
                             <div><span className="block text-text-muted">Current stage since</span><span className="font-semibold text-text-heading">{formatDate(stageDate)}</span></div>
                             <div><span className="block text-text-muted">Days in stage</span><span className="font-semibold text-text-heading">{daysInStage}</span></div>
-                            <button type="button" onClick={() => navigate('/recruitment?tab=vacancies')} className="justify-self-start self-center font-semibold text-blue-600 hover:text-blue-700">Open recruitment tracker</button>
+                            <button type="button" onClick={() => navigate(`/recruitment?tab=pipeline&opening=${encodeURIComponent(requisition.id)}`)} className="justify-self-start self-center font-semibold text-blue-600 hover:text-blue-700">Open recruitment tracker</button>
                           </div>
                         )}
                       </div>
                     );
                   })}
-                  {activeRequisitions.length === 0 && (
+                  {interviewRequisitions.length === 0 && (
                     <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
                       <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center mb-2">
                         <Briefcase className="h-5 w-5 text-slate-400" />
                       </div>
-                      <p className="text-sm font-medium text-text-heading">No open requisitions</p>
+                      <p className="text-sm font-medium text-text-heading">No vacancies currently in interview stages</p>
                     </div>
                   )}
                 </div>

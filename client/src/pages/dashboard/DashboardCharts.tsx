@@ -44,10 +44,10 @@ export function DashboardCharts({
   return (
     <>
       {isAdminOrHR && attendanceTrend && (
-        <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full">
-          <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5">
+        <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full [&>div:first-child]:h-full">
+          <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
             <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
-            <div className="h-48 w-full min-w-0">
+            <div className="flex-1 min-h-48 w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={attendanceTrend} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
                   <defs>
@@ -77,7 +77,7 @@ export function DashboardCharts({
         </BoxReveal>
       )}
 
-      <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full">
+      <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full [&>div:first-child]:h-full">
         <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -89,11 +89,11 @@ export function DashboardCharts({
             </button>
           </div>
 
-          <div className="flex-1 flex flex-col 2xl:flex-row items-center justify-center gap-6 2xl:gap-8 w-full min-w-0 mt-4">
-            <div className="w-56 h-56 relative shrink-0">
+          <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-6 md:gap-4 xl:gap-6 w-full min-w-0 mt-4">
+            <div className="w-56 aspect-square relative shrink-0 md:w-[42%] md:max-w-56">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={expenseSummary} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={4} dataKey="value" stroke="none">
+                  <Pie data={expenseSummary} cx="50%" cy="50%" innerRadius="62%" outerRadius="85%" paddingAngle={4} dataKey="value" stroke="none">
                     {expenseSummary.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.hex} />)}
                   </Pie>
                   <Tooltip
@@ -104,14 +104,14 @@ export function DashboardCharts({
               </ResponsiveContainer>
             </div>
 
-            <div className="flex flex-col gap-4 flex-1 w-full max-w-xs justify-center">
+            <div className="flex flex-col gap-4 flex-1 w-full max-w-xs min-w-0 justify-center">
               {expenseSummary.map((item, index) => (
-                <div key={`${item.name}-${index}`} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${item.color}`} />
+                <div key={`${item.name}-${index}`} className="flex items-center justify-between gap-2 text-sm">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={`w-3 h-3 shrink-0 rounded-full ${item.color}`} />
                     <span className="text-text-muted font-medium">{item.name}</span>
                   </div>
-                  <span className="font-bold text-text-heading flex items-center">
+                  <span className="font-bold text-text-heading flex items-center shrink-0">
                     <IndianRupee className="w-3.5 h-3.5 inline mr-0.5" />{item.value.toLocaleString('en-IN')}
                   </span>
                 </div>
