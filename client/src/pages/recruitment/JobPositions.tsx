@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Users, Pencil, ArrowRight, Search } from "lucide-react";
+import { Briefcase, Pencil, ArrowRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -39,7 +39,7 @@ export function JobPositions({ requisitions, editable, history, onEdit, onClose 
     {!filtered.length ? <div className="rounded-xl border border-dashed border-slate-border p-10 text-center text-sm text-text-muted">{search || department ? "No positions match these filters." : history ? "No closed positions yet." : "No open positions yet. Create a new position to start recruiting."}</div> :
       <div className="overflow-hidden rounded-xl border border-slate-border bg-surface">
         <div className="hidden grid-cols-[minmax(14rem,2fr)_minmax(8rem,1fr)_minmax(9rem,1fr)_minmax(10rem,1fr)_auto] items-center gap-4 border-b border-slate-border bg-tint px-5 py-3 text-xs font-semibold uppercase tracking-wide text-text-muted md:grid">
-          <span>Job position</span><span>Department</span><span>Location</span><span>New applications</span><span className="text-right">Vacancies</span>
+          <span>Job position</span><span>Department</span><span>Location</span><span>Openings</span><span className="text-right">Vacancies</span>
         </div>
         <ul className="divide-y divide-slate-border">
         {filtered.map((opening) => {
@@ -54,8 +54,8 @@ export function JobPositions({ requisitions, editable, history, onEdit, onClose 
               <div className="min-w-0"><span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Department</span><span className="truncate text-sm text-text-body">{opening.department?.name || "—"}</span></div>
               <div className="min-w-0"><span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Location</span><span className="truncate text-sm text-text-body">{opening.location || "—"}</span></div>
               <div className="min-w-0">
-                <span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Applications</span>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text-heading"><Users aria-hidden="true" className="h-4 w-4 shrink-0 text-primary-600" />{opening.newApplicationCount == null ? "Unavailable" : `${opening.newApplicationCount} new`}</span>
+                <span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Openings</span>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text-heading"><Briefcase aria-hidden="true" className="h-4 w-4 shrink-0 text-primary-600" />{opening.numberOfVacancies ?? "Unavailable"}</span>
               </div>
               <div className="min-w-0 md:text-right">
                 <span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Vacancies</span>
@@ -75,6 +75,5 @@ export function JobPositions({ requisitions, editable, history, onEdit, onClose 
         })}
         </ul>
       </div>}
-    <p className="text-xs text-text-muted">New applications are applicants awaiting screening.</p>
   </section>;
 }

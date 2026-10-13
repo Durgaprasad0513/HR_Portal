@@ -35,13 +35,13 @@ export function DeferredDashboardCharts(props: DashboardChartsProps) {
   }, []);
 
   return (
-    <div ref={containerRef} className="min-w-0 w-full lg:col-span-2 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8" aria-busy={!Charts}>
+    <div ref={containerRef} className="min-w-0 w-full lg:col-span-2 grid auto-rows-fr grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8" aria-busy={!Charts}>
       {Charts ? (
         <Charts {...props} />
       ) : (
         <>
           {props.isAdminOrHR && props.attendanceTrend && (
-            <div className="min-h-[300px] rounded-xl border border-slate-border bg-surface" aria-hidden="true" />
+            <div className="min-h-[360px] rounded-xl border border-slate-border bg-surface" aria-hidden="true" />
           )}
           <div className="min-h-[360px] rounded-xl border border-slate-border bg-surface" aria-hidden="true" />
         </>

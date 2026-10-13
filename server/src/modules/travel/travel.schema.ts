@@ -25,9 +25,9 @@ export const updateSettlementSchema = z.object({
 });
 
 export const submitExpenseSchema = z.object({
-  hotelExpense: z.number().min(0),
-  foodAllowance: z.number().min(0),
-  localConveyance: z.number().min(0),
-  otherExpenses: z.number().min(0),
+  hotelExpense: z.number().min(0).default(0),
+  foodAllowance: z.number().min(0).default(0),
+  localConveyance: z.number().min(0).default(0),
+  otherExpenses: z.number().min(0).default(0),
   billUpload: z.string().optional()
 });

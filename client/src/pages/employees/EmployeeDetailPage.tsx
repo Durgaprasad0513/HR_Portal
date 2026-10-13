@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { employeesApi } from '@/api/employees';
@@ -30,6 +30,7 @@ function DetailBlock({ label, value }: { label: string, value: React.ReactNode }
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const isHR = hasAdminAccess(user?.role);
   const { canEdit: hasEditPermission, canApprove, canExport } = usePermissions();
@@ -52,6 +53,14 @@ export default function EmployeeDetailPage() {
     queryKey: ['employee', id],
     queryFn: () => employeesApi.getById(id!),
   });
+
+  useEffect(() => {
+    if (searchParams.get('digitalId') !== '1' || !empData?.data) return;
+    setIsDigitalIDModalOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('digitalId');
+    setSearchParams(nextParams, { replace: true });
+  }, [empData?.data, searchParams, setSearchParams]);
 
   const verifyDocumentMutation = useMutation({
     mutationFn: (documentId: string) => employeesApi.verifyDocument(documentId),

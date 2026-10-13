@@ -478,13 +478,13 @@ export default function TravelListPage() {
  <p className="text-sm text-gray-600">Fill in your expenses for this trip. The advance you received (if any) will be automatically deducted during settlement.</p>
  
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
- <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
- <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} required defaultValue={0} />
+ <Input name="hotelExpense" label="Hotel Expense (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
+ <Input name="foodAllowance" label="Food Allowance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
+ <Input name="localConveyance" label="Local Conveyance (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
  <Input name="otherExpenses" label="Other Expenses (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
  </div>
 
- <FileUpload name="billUpload" label="Upload Bills/Receipts" required module="travel" action="add" />
+ <FileUpload name="billUpload" label="Upload Bills/Receipts (Optional)" module="travel" action="add" />
  
  <div className="flex justify-end space-x-2 pt-4">
  <Button type="button" variant="outline" onClick={() => setExpenseModalOpen(false)}>Cancel</Button>

@@ -5,8 +5,6 @@ import { dashboardApi } from '@/api/dashboard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import {
  AlertTriangle,
- ArrowDownRight,
- ArrowUpRight,
  Building2,
  Filter,
 TrendingUp,
@@ -55,14 +53,12 @@ function InsightCard({
  label,
  value,
  detail,
- footer,
 }: {
  icon: ReactNode;
  iconClass: string;
  label: string;
  value: ReactNode;
  detail: ReactNode;
- footer?: ReactNode;
 }) {
  return (
  <article className="min-w-0 rounded-2xl border border-slate-border bg-surface p-5 shadow-sm">
@@ -74,7 +70,6 @@ function InsightCard({
  <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">{label}</p>
  <div className="mt-1 text-2xl font-bold tracking-tight text-text-heading">{value}</div>
  <div className="mt-1 text-xs text-text-muted">{detail}</div>
- {footer && <div className="mt-3 border-t border-slate-border pt-3 text-xs">{footer}</div>}
  </div>
  </div>
  </article>
@@ -134,9 +129,6 @@ export default function AttritionDashboardPage() {
  if (isLoading) return <LoadingSpinner />;
  if (error) return <div className="p-6 text-red-500">Failed to load attrition stats.</div>;
 
- const rateChange = stats.attritionRateChange;
- const changeIsPositive = typeof rateChange === 'number' && rateChange > 0;
- const changeIsNegative = typeof rateChange === 'number' && rateChange < 0;
  const separationLabel = Number(stats.attritionCount || 0) === 1 ? 'separation' : 'separations';
  const classifiedExitLabel = totalExits === 1 ? 'exit' : 'exits';
 
@@ -163,12 +155,6 @@ export default function AttritionDashboardPage() {
  label={`${periodLabel} Attrition Rate`}
  value={formatRate(stats.attritionRate)}
  detail={`${stats.attritionCount || 0} ${separationLabel} · avg ${Number(stats.averageStrength || 0).toFixed(1)} employees`}
- footer={typeof rateChange === 'number' ? (
- <span className={`inline-flex items-center gap-1 font-medium ${changeIsPositive ? 'text-red-600' : changeIsNegative ? 'text-emerald-600' : 'text-text-muted'}`}>
- {changeIsPositive ? <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /> : changeIsNegative ? <ArrowDownRight className="h-3.5 w-3.5" aria-hidden="true" /> : null}
- {Math.abs(rateChange).toFixed(1)} pts vs prior {filters.periodMonths} months
- </span>
- ) : <span className="text-text-muted">No prior-period baseline</span>}
  />
  <InsightCard
  icon={<Users className="h-5 w-5" aria-hidden="true" />}
@@ -176,7 +162,6 @@ export default function AttritionDashboardPage() {
  label="Net Workforce Change"
  value={<span className={netChange >= 0 ? 'text-emerald-600' : 'text-red-600'}>{netChange >= 0 ? '+' : ''}{netChange}</span>}
  detail={`${totalJoiners} joined · ${totalDepartures} exited`}
- footer="Movement within the selected period"
  />
  <InsightCard
  icon={<Building2 className="h-5 w-5" aria-hidden="true" />}
@@ -184,7 +169,6 @@ export default function AttritionDashboardPage() {
  label="Priority Department"
  value={<span className="block truncate" title={priorityDepartment?.name}>{priorityDepartment?.name || 'No recorded exits'}</span>}
  detail={priorityDepartment ? `${formatRate(priorityDepartment.attritionRate)} rate · ${priorityDepartment.count} exit${priorityDepartment.count === 1 ? '' : 's'} / avg ${Number(priorityDepartment.averageHeadcount || 0).toFixed(1)}` : 'No recorded exits in this scope.'}
- footer="Ranked by attrition rate and exit volume"
  />
  <InsightCard
  icon={<UserMinus className="h-5 w-5" aria-hidden="true" />}
@@ -192,7 +176,6 @@ export default function AttritionDashboardPage() {
  label="Voluntary Exit Share"
  value={voluntaryShare === null ? '—' : `${voluntaryShare}%`}
  detail={voluntaryShare === null ? 'No classified exits in this scope' : `${stats.voluntaryExits || 0} of ${totalExits} classified ${classifiedExitLabel} voluntary`}
- footer={voluntaryShare === null ? 'Add exit type data to improve the signal' : 'A leading indicator for retention action'}
  />
  </section>
 
@@ -201,7 +184,6 @@ export default function AttritionDashboardPage() {
  <div className="mb-5 flex items-start justify-between gap-3">
  <div>
  <h2 className="text-lg font-semibold text-text-heading">New joiners vs exits ({filters.periodMonths} Mos)</h2>
- <p className="mt-1 text-xs text-text-muted">See whether workforce growth is offsetting departures.</p>
  </div>
  <TrendingUp className="h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
  </div>
@@ -224,7 +206,6 @@ export default function AttritionDashboardPage() {
  <div className="mb-5 flex items-start justify-between gap-3">
  <div>
  <h2 className="text-lg font-semibold text-text-heading">Where exits happened</h2>
- <p className="mt-1 text-xs text-text-muted">Rate normalised by average department headcount.</p>
  </div>
  <Building2 className="h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
  </div>
@@ -245,7 +226,6 @@ export default function AttritionDashboardPage() {
  <div className="mb-5 flex items-start justify-between gap-3">
  <div>
  <h2 className="text-lg font-semibold text-text-heading">Why employees left</h2>
- <p className="mt-1 text-xs text-text-muted">Use coded exit reasons to target retention actions.</p>
  </div>
  <AlertTriangle className="h-5 w-5 shrink-0 text-red-600" aria-hidden="true" />
  </div>
@@ -266,7 +246,6 @@ export default function AttritionDashboardPage() {
  <div className="mb-5 flex items-start justify-between gap-3">
  <div>
  <h2 className="text-lg font-semibold text-text-heading">Exits by tenure</h2>
- <p className="mt-1 text-xs text-text-muted">Spot early-tenure churn and long-term retention risk.</p>
  </div>
  <Users className="h-5 w-5 shrink-0 text-violet-600" aria-hidden="true" />
  </div>
