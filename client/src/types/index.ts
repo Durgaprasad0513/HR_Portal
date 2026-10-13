@@ -170,6 +170,7 @@ export interface TravelRequest {
  startDate: string;
  endDate: string;
  travelMode: TravelMode;
+ amountRequired?: number;
  advanceRequested?: number;
  advanceApproved?: number;
  approvalStatus: ApprovalStatus;

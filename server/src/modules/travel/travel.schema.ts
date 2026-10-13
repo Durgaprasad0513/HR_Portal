@@ -6,7 +6,7 @@ export const createTravelSchema = z.object({
   startDate: z.string(),
   endDate: z.string(),
   travelMode: z.enum(['AIR', 'TRAIN', 'ROAD', 'OWN_VEHICLE']),
-  advanceRequested: z.number().min(0).optional(),
+  amountRequired: z.number().positive(),
   billUpload: z.string().optional()
 });
 
