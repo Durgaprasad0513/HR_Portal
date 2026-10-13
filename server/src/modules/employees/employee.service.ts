@@ -6,6 +6,7 @@ import { performanceService } from '../performance/performance.service';
 import { CreateEmployeeInput, UpdateEmployeeInput } from './employee.schema';
 import { Prisma, Role } from '@prisma/client';
 import { getModuleScope, getEmployeeScopeQuery } from '../../utils/authorization';
+import { generatePublicEmployeeCardToken, verifyPublicEmployeeCardToken } from '../../utils/jwt';
 
 interface CurrentUser {
   id: string;
@@ -14,6 +15,36 @@ interface CurrentUser {
 }
 
 export class EmployeeService {
+  async createPublicCardToken(currentUser: CurrentUser, id: string) {
+    const scope = getModuleScope(currentUser.role, 'employees');
+    if (scope !== 'ORG' && !currentUser.employeeId) throw new Error('Not authorized');
+    const scopeQuery = currentUser.employeeId
+      ? getEmployeeScopeQuery(scope, currentUser.employeeId)
+      : {};
+    const employee = await prisma.employee.findFirst({
+      where: { AND: [{ id, isActive: true, status: { in: ['ACTIVE', 'ON_LEAVE'] } }, scopeQuery] },
+      select: { id: true },
+    });
+    if (!employee) throw new Error('Employee not found or not accessible');
+    return generatePublicEmployeeCardToken(employee.id);
+  }
+
+  async getPublicCard(token: string) {
+    const employeeId = verifyPublicEmployeeCardToken(token);
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, isActive: true, status: { in: ['ACTIVE', 'ON_LEAVE'] } },
+      select: {
+        employeeCode: true,
+        firstName: true,
+        lastName: true,
+        designation: true,
+        department: { select: { name: true } },
+      },
+    });
+    if (!employee) throw new Error('This employee pass is no longer active.');
+    return employee;
+  }
+
   async getAll(
     currentUser: CurrentUser,
     query: {

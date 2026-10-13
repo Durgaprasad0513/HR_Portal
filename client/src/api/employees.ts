@@ -1,6 +1,14 @@
 import apiClient from './client';
 import { ApiResponse, Employee } from '../types';
 
+export interface PublicEmployeeCard {
+ employeeCode: string;
+ firstName: string;
+ lastName: string;
+ designation: string | null;
+ department: { name: string } | null;
+}
+
 export const employeesApi = {
  getAll: async (params?: { page?: number; limit?: number; search?: string; departmentId?: string; status?: string; location?: string }) => {
  const { data } = await apiClient.get<ApiResponse<Employee[]>>('/employees', { params });
@@ -8,6 +16,14 @@ export const employeesApi = {
  },
  getById: async (id: string) => {
  const { data } = await apiClient.get<ApiResponse<Employee>>(`/employees/${id}`);
+ return data;
+ },
+ getPublicCardToken: async (id: string) => {
+ const { data } = await apiClient.get<ApiResponse<{ token: string }>>(`/employees/${id}/public-card-token`);
+ return data;
+ },
+ getPublicCard: async (token: string) => {
+ const { data } = await apiClient.get<ApiResponse<PublicEmployeeCard>>(`/employees/public-card/${encodeURIComponent(token)}`);
  return data;
  },
  create: async (employeeData: Partial<Employee>) => {

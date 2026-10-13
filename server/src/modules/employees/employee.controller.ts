@@ -7,6 +7,31 @@ import { permissionService } from '../permissions/permission.service';
 import { omitRestrictedFromPayload, stripRestrictedFields } from '../../utils/restrictedFields';
 
 export class EmployeeController {
+  async createPublicCardToken(req: AuthRequest, res: Response): Promise<void> {
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+      const token = await employeeService.createPublicCardToken(req.user! as any, req.params.id as string);
+      sendSuccess(res, { token }, 'Public employee pass created');
+    } catch (error: any) {
+      const expectedFailure = error.message === 'Not authorized' || error.message === 'Employee not found or not accessible';
+      sendError(res, expectedFailure ? error.message : 'Could not create employee pass.', expectedFailure ? 404 : 500);
+    }
+  }
+
+  async getPublicCard(req: AuthRequest, res: Response): Promise<void> {
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+      const employee = await employeeService.getPublicCard(req.params.token as string);
+      sendSuccess(res, employee, 'Public employee pass verified');
+    } catch (error: any) {
+      const invalidPass = error.name === 'JsonWebTokenError'
+        || error.name === 'TokenExpiredError'
+        || error.message === 'Invalid public employee card token.'
+        || error.message === 'This employee pass is no longer active.';
+      sendError(res, invalidPass ? 'This pass is invalid or no longer active.' : 'Unable to verify this pass right now.', invalidPass ? 404 : 500);
+    }
+  }
+
   async getAll(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { page, limit, search, departmentId, status, location } = req.query;

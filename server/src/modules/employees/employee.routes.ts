@@ -9,12 +9,18 @@ import { config } from '../../config';
 
 const router = Router();
 
+// Public endpoint returns only the safe, verified fields shown on an employee ID pass.
+router.get('/public-card/:token', (req, res) => employeeController.getPublicCard(req as any, res));
+
 router.use(authenticate);
 
 router.get('/dashboard-stats', requirePermission('dashboard', 'view'), (req, res) =>
   employeeController.getDashboardStats(req, res)
 );
 router.get('/', requirePermission('employees', 'view'), (req, res) => employeeController.getAll(req, res));
+router.get('/:id/public-card-token', requirePermission('employees', 'view'), (req, res) =>
+  employeeController.createPublicCardToken(req, res)
+);
 router.get('/:id', requirePermission('employees', 'view'), (req, res) => employeeController.getById(req, res));
 router.post('/', requirePermission('employees', 'add'), validate(createEmployeeSchema), (req, res) =>
   employeeController.create(req, res)

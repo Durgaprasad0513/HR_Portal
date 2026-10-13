@@ -12,6 +12,7 @@ const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const EmployeeListPage = lazy(() => import('@/pages/employees/EmployeeListPage'));
 const EmployeeFormPage = lazy(() => import('@/pages/employees/EmployeeFormPage'));
 const EmployeeDetailPage = lazy(() => import('@/pages/employees/EmployeeDetailPage'));
+const PublicEmployeeVerificationPage = lazy(() => import('@/pages/employees/PublicEmployeeVerificationPage'));
 const DepartmentListPage = lazy(() => import('@/pages/departments/DepartmentListPage'));
 const DepartmentFormPage = lazy(() => import('@/pages/departments/DepartmentFormPage'));
 const PerformanceListPage = lazy(() => import('@/pages/performance/PerformanceListPage'));
@@ -43,6 +44,7 @@ const AppRoutes = () => {
  <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-surface"><LoadingSpinner /></div>}>
  <Routes>
  <Route path="/login" element={<LoginPage />} />
+ <Route path="/employee-verification/:token" element={<PublicEmployeeVerificationPage />} />
  
  <Route element={<ProtectedRoute />}>
  <Route element={<MainLayout />}>
