@@ -2,6 +2,9 @@ import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Employee } from '@/types';
 import { ShieldCheck, Droplet } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { QRCodeSVG } from 'qrcode.react';
+import { employeesApi } from '@/api/employees';
 
 interface DigitalIDCardModalProps {
   isOpen: boolean;
@@ -10,9 +13,15 @@ interface DigitalIDCardModalProps {
 }
 
 export function DigitalIDCardModal({ isOpen, onClose, employee }: DigitalIDCardModalProps) {
-  // Use current URL for QR code, simulating a verification link
-  const verificationUrl = typeof window !== 'undefined' ? `${window.location.origin}/employees/${employee.id}` : '';
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verificationUrl)}&color=064e3b`;
+  const { data: passData, isLoading: isPassLoading, isError: isPassError } = useQuery({
+    queryKey: ['employee-public-card-token', employee.id],
+    queryFn: () => employeesApi.getPublicCardToken(employee.id),
+    enabled: isOpen,
+    staleTime: 60_000,
+  });
+  const verificationUrl = passData?.data?.token && typeof window !== 'undefined'
+    ? `${window.location.origin}/employee-verification/${passData.data.token}`
+    : '';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Digital ID Pass" className="max-w-md bg-slate-50 dark:bg-slate-900/50">
@@ -65,11 +74,17 @@ export function DigitalIDCardModal({ isOpen, onClose, employee }: DigitalIDCardM
                 <ShieldCheck className="w-4 h-4" /> VERIFIED QR PASS
               </div>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-snug">
-                Scan with any smartphone camera to view verified staff slip.
+                Scan to view the public staff pass and company website.
               </p>
             </div>
             <div className="bg-white p-1.5 rounded-lg shadow-sm border border-slate-200 shrink-0">
-              <img src={qrCodeUrl} alt="QR Pass" className="w-14 h-14 object-contain" crossOrigin="anonymous" />
+              {verificationUrl ? (
+                <QRCodeSVG value={verificationUrl} size={88} level="M" title="Scan to open the employee pass and company website" />
+              ) : (
+                <span className="flex h-[88px] w-[88px] items-center justify-center text-center text-[9px] text-slate-500" role="status">
+                  {isPassLoading ? 'Loading…' : isPassError ? 'QR unavailable' : 'Preparing…'}
+                </span>
+              )}
             </div>
           </div>
         </div>
