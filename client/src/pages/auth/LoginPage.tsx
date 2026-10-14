@@ -36,8 +36,8 @@ export default function LoginPage() {
  };
 
  const formFields = {
- header: 'Welcome back',
- subHeader: 'Sign in to your HR Portal',
+ header: 'Pratibha Agro Foods',
+ subHeader: 'Private Limited · HR Portal sign in',
  fields: [
  {
  label: 'Username / Email',
@@ -71,7 +71,7 @@ export default function LoginPage() {
  
  <div className="text-center mb-8 relative z-10">
  <div className="mx-auto w-16 h-16 flex items-center justify-center mb-6">
-              <img src="/lohitha-logo-green.jpg" alt="Sri Lohitha Logo" className="w-full h-full object-contain rounded-full mix-blend-multiply dark:mix-blend-normal dark:bg-white p-1" />
+              <img src="/pafpl-logo.webp" alt="Pratibha Agro Foods Private Limited" className="w-full h-full object-contain rounded-full" />
             </div>
  </div>
  <div className="relative z-10">
