@@ -36,7 +36,7 @@ export default function LoginPage() {
  };
 
  const formFields = {
- header: 'Pratibha Agro Foods',
+ header: 'Pattabhi Agro Foods',
  subHeader: 'Private Limited · HR Portal sign in',
  fields: [
  {
@@ -71,7 +71,7 @@ export default function LoginPage() {
  
  <div className="text-center mb-8 relative z-10">
  <div className="mx-auto w-16 h-16 flex items-center justify-center mb-6">
-              <img src="/pafpl-logo.webp" alt="Pratibha Agro Foods Private Limited" className="w-full h-full object-contain rounded-full" />
+              <img src="/pafpl-logo.webp" alt="Pattabhi Agro Foods Private Limited" className="w-full h-full object-contain rounded-full" />
             </div>
  </div>
  <div className="relative z-10">

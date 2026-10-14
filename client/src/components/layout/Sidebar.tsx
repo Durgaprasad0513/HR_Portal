@@ -95,10 +95,10 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   <div className={cn("h-[72px] flex items-center shrink-0 ", collapsed ? "justify-center" : "px-6")}>
   <NavLink to="/dashboard" className="flex items-center gap-3 w-full" title={collapsed ? 'HR Portal' : undefined}>
     <div className={cn("flex items-center justify-center shrink-0 transition-all bg-white rounded-full", collapsed ? "h-10 w-10" : "h-12 w-12")}>
-      <img src="/pafpl-logo.webp" alt="Pratibha Agro Foods Private Limited" className="w-full h-full object-contain rounded-full p-1" />
+      <img src="/pafpl-logo.webp" alt="Pattabhi Agro Foods Private Limited" className="w-full h-full object-contain rounded-full p-1" />
     </div>
     <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
-      <span className="text-lg font-bold tracking-tight text-white truncate">PAFPL HR Portal</span>
+      <span className="text-lg font-bold tracking-tight text-white truncate">Pattabhi Agro Foods</span>
     </div>
   </NavLink>
   </div>
