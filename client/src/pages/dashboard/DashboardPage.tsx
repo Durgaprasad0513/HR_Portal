@@ -21,6 +21,7 @@ import {
 import { formatDate } from '@/utils/dateFormat';
 import { hasAdminAccess } from '@/utils/roles';
 import { getUpcomingInterviews } from './upcomingInterviews';
+import { useDashboardStats } from './useDashboardStats';
 
 const RECRUITMENT_STAGE_ORDER = [
   'REQUIREMENT',
@@ -122,10 +123,7 @@ export default function DashboardPage() {
    return () => window.clearInterval(timer);
  }, []);
 
- const { data: statsData, isLoading: isStatsLoading, error: statsError } = useQuery({
- queryKey: ['dashboard-stats'],
- queryFn: () => dashboardApi.getStats().then((res: any) => res.data),
- });
+ const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats(user?.id);
 
  const {
    data: interviewData,

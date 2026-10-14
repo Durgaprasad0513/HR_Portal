@@ -65,6 +65,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  onSuccess: () => {
  toast.success('Review details updated!');
  queryClient.invalidateQueries({ queryKey: ['performance'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  setIsEditingCore(false);
  },
  onError: (error: any) => toast.error(error.message || 'Failed to update')
@@ -75,6 +76,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  onSuccess: () => {
  toast.success('Self-review submitted and locked.');
  queryClient.invalidateQueries({ queryKey: ['performance'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
  onError: (error: any) => toast.error(error.message || 'Failed to submit')
@@ -85,6 +87,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  onSuccess: () => {
  toast.success('Manager review submitted and locked.');
  queryClient.invalidateQueries({ queryKey: ['performance'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
  onError: (error: any) => toast.error(error.message || 'Failed to submit')
@@ -95,6 +98,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  onSuccess: () => {
  toast.success('HR review submitted and locked.');
  queryClient.invalidateQueries({ queryKey: ['performance'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
  onError: (error: any) => toast.error(error.message || 'Failed to submit')
@@ -105,6 +109,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  onSuccess: () => {
  toast.success('Review finalized.');
  queryClient.invalidateQueries({ queryKey: ['performance'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
  onError: (error: any) => toast.error(error.message || 'Failed to submit')
