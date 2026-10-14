@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -20,6 +20,8 @@ import {
 , Coffee, IndianRupee } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormat';
 import { hasAdminAccess } from '@/utils/roles';
+import { getUpcomingInterviews } from './upcomingInterviews';
+import { useDashboardStats } from './useDashboardStats';
 
 const RECRUITMENT_STAGE_ORDER = [
   'REQUIREMENT',
@@ -121,10 +123,23 @@ export default function DashboardPage() {
    return () => window.clearInterval(timer);
  }, []);
 
- const { data: statsData, isLoading: isStatsLoading, error: statsError } = useQuery({
- queryKey: ['dashboard-stats'],
- queryFn: () => dashboardApi.getStats().then((res: any) => res.data),
+ const { data: statsData, isLoading: isStatsLoading, error: statsError } = useDashboardStats(user?.id);
+
+ const {
+   data: interviewData,
+   isLoading: isInterviewsLoading,
+   isError: isInterviewsError,
+ } = useQuery({
+   queryKey: ['interviews', 'dashboard-upcoming', user?.id],
+   queryFn: () => recruitmentApi.getInterviews().then((res: any) => res.data),
+   enabled: isAdminOrHR && Boolean(user?.id),
+   refetchInterval: 30_000,
+   refetchOnMount: 'always',
  });
+ const upcomingInterviews = useMemo(
+   () => getUpcomingInterviews(interviewData || [], clockNow),
+   [interviewData, clockNow],
+ );
 
  const { data: attritionData, isLoading: isAttritionLoading } = useQuery({
  queryKey: ['dashboard-attrition'],
@@ -494,52 +509,52 @@ export default function DashboardPage() {
               View Calendar <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
-          {(() => {
-            const upcoming = stats?.upcomingInterviews || [];
-            
-            return upcoming.length > 0 ? (
-              <div className="space-y-1">
-                {upcoming.map((candidate: any) => {
-                  const dateStr = new Date(candidate.interviewDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    const interviewerName = candidate.interviewer ? `${candidate.interviewer.firstName} ${candidate.interviewer.lastName}` : 'Unassigned';
-                  return (
-                    <div
-                      key={candidate.id}
-                      onClick={() => navigate('/recruitment/interviews')}
-                      className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
-                    >
-                      <div className="h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
-                        <Users className="h-4 w-4 text-violet-700 dark:text-violet-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-text-heading truncate group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
-                          {candidate.candidateName}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                            {candidate.interviewRound || 'Interview'}
-                          </span>
-                          <span className="text-xs text-text-muted truncate">{candidate.requisition?.positionTitle}</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end shrink-0 gap-1">
-                        <span className="text-xs font-semibold text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400">{dateStr}</span>
-                          <span className="text-[10px] text-slate-500 font-medium">{interviewerName}</span>
+          {isInterviewsLoading ? (
+            <p className="py-8 text-center text-sm text-text-muted">Loading interviews…</p>
+          ) : isInterviewsError ? (
+            <p className="py-8 text-center text-sm text-text-muted">Could not load upcoming interviews. Open the calendar to retry.</p>
+          ) : upcomingInterviews.length > 0 ? (
+            <div className="space-y-1">
+              {upcomingInterviews.map((candidate: any) => {
+                const dateStr = new Date(candidate.interviewDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const interviewerName = candidate.interviewer ? `${candidate.interviewer.firstName} ${candidate.interviewer.lastName}` : 'Unassigned';
+                return (
+                  <div
+                    key={candidate.interviewId || candidate.id}
+                    onClick={() => navigate('/recruitment/interviews')}
+                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-tint cursor-pointer transition-colors group"
+                  >
+                    <div className="h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
+                      <Users className="h-4 w-4 text-violet-700 dark:text-violet-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-text-heading truncate group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
+                        {candidate.candidateName}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                          {candidate.interviewRound || 'Interview'}
+                        </span>
+                        <span className="text-xs text-text-muted truncate">{candidate.requisition?.positionTitle}</span>
                       </div>
                     </div>
-                  );
-                })}
+                    <div className="flex flex-col items-end shrink-0 gap-1">
+                      <span className="text-xs font-semibold text-text-muted group-hover:text-accent-600 dark:group-hover:text-accent-400">{dateStr}</span>
+                      <span className="text-[10px] text-slate-500 font-medium">{interviewerName}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="h-12 w-12 rounded-full bg-tint flex items-center justify-center mb-3">
+                <Clock className="h-6 w-6 text-text-muted" />
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="h-12 w-12 rounded-full bg-tint flex items-center justify-center mb-3">
-                  <Clock className="h-6 w-6 text-text-muted" />
-                </div>
-                <p className="text-sm font-medium text-text-heading">No interviews scheduled</p>
-                <p className="text-xs text-text-muted mt-1">Candidates with upcoming interviews will appear here</p>
-              </div>
-            );
-          })()}
+              <p className="text-sm font-medium text-text-heading">No interviews scheduled</p>
+              <p className="text-xs text-text-muted mt-1">Candidates with upcoming interviews will appear here</p>
+            </div>
+          )}
         </div>
  </div>
  </BoxReveal>

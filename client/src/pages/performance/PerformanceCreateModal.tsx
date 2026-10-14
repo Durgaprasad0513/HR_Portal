@@ -34,6 +34,7 @@ export function PerformanceCreateModal({ isOpen, onClose }: PerformanceCreateMod
  onSuccess: () => {
  toast.success('Performance review initiated!');
  queryClient.invalidateQueries({ queryKey: ['performance'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
  onError: (error: any) => toast.error(error.message || 'Failed to create')
