@@ -98,7 +98,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
       <img src="/pafpl-logo.webp" alt="Pattabhi Agro Foods Private Limited" className="w-full h-full object-contain rounded-full p-1" />
     </div>
     <div className={cn("flex flex-col min-w-0 transition-opacity duration-300", collapsed ? "opacity-0 w-0 hidden" : "opacity-100")}>
-      <span className="text-lg font-bold tracking-tight text-white truncate">Pattabhi Agro Foods</span>
+      <span className="text-lg font-bold tracking-tight text-white truncate">PAFPL HR Portal</span>
     </div>
   </NavLink>
   </div>
