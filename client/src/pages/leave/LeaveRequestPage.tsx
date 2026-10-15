@@ -96,7 +96,7 @@ export default function LeaveRequestPage() {
  <div className="overflow-hidden rounded-xl border border-slate-border bg-surface shadow-sm">
  <p className="border-b border-slate-border px-4 py-2 text-xs text-text-muted sm:hidden">Scroll horizontally to see all columns.</p>
  <div className="overflow-x-auto" role="region" tabIndex={0} aria-label="Leave requests table. Scroll horizontally for more columns.">
- <table className="w-full min-w-[64rem] border-collapse text-left">
+ <table className="w-full min-w-[70rem] border-collapse text-left">
  <thead>
  <tr className="bg-surface border-b border-slate-border text-xs font-bold text-gray-700 uppercase tracking-wider">
  <th className="py-4 px-6">EMPLOYEE ID</th>
@@ -104,6 +104,7 @@ export default function LeaveRequestPage() {
  <th className="py-4 px-6">LEAVE TYPE</th>
  <th className="py-4 px-6">FROM</th>
  <th className="py-4 px-6">TO</th>
+ <th className="py-4 px-6">DURATION</th>
  <th className="py-4 px-6">REASON</th>
  <th className="py-4 px-6 text-center">ACTION</th>
  </tr>
@@ -139,6 +140,13 @@ export default function LeaveRequestPage() {
  {formatDate(leave.endDate)}
  </td>
  <td className="py-4 px-6 text-slate-600">
+ {leave.isHalfDay
+   ? `Half day · ${leave.halfDayPeriod === 'AFTERNOON' ? 'Afternoon' : leave.halfDayPeriod === 'MORNING' ? 'Morning' : 'unspecified'}`
+   : leave.isHourly
+     ? `${leave.hourlyDuration || 0} min${leave.hourlyStartTime ? ` from ${leave.hourlyStartTime}` : ''}`
+     : `${leave.totalDays} day${leave.totalDays === 1 ? '' : 's'}`}
+ </td>
+ <td className="py-4 px-6 text-slate-600">
  <span className="truncate max-w-[150px] inline-block" title={leave.reason}>
  {leave.reason?.length > 20 ? leave.reason.substring(0, 20) + '...' : leave.reason}
  </span>
@@ -167,7 +175,7 @@ export default function LeaveRequestPage() {
  ))}
  {leaveRows.length === 0 && (
  <tr>
- <td colSpan={7} className="py-8 text-center text-gray-500">
+ <td colSpan={8} className="py-8 text-center text-gray-500">
  No pending leave requests found.
  </td>
  </tr>

@@ -2,6 +2,8 @@ import { formatDate, formatDateTime } from '@/utils/dateFormat';
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { trainingApi } from '@/api/training';
+import { employeesApi } from '@/api/employees';
+import { employeeAssignmentOptions } from '@/utils/employeeAssignmentOptions';
 import { Timeline, type TimelineItem } from '@/components/ui/Timeline';
 import { DataTable } from '@/components/ui/DataTable';
 import {} from '@/components/ui/Badge';
@@ -59,11 +61,8 @@ export default function TrainingListPage() {
  });
 
  const { data: employeesData } = useQuery({
- queryKey: ['employees'],
- queryFn: async () => {
- const { data } = await apiClient.get('/employees');
- return data;
- },
+ queryKey: ['employees', 'assignment-options'],
+ queryFn: employeesApi.getAllForAssignments,
  enabled: isAdminOrHR
  });
 
@@ -545,9 +544,7 @@ export default function TrainingListPage() {
  onChange={(e) => setNewParticipantId(e.target.value)}
  >
  <option value="">Select Employee...</option>
- {employeesData?.data?.map((emp: any) => (
- <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
- ))}
+ {employeeAssignmentOptions(employeesData?.data)}
  </Select>
  <Button
  size="sm"

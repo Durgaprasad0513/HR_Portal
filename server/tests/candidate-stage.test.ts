@@ -12,6 +12,12 @@ describe("Authoritative recruitment stage guards", () => {
     expect(() => assertStageTransition(screening, "TECHNICAL", "Role has no phone or HR assessment", false)).not.toThrow();
     expect(() => assertStageTransition({...screening, currentStage: "TECHNICAL"}, "SCREENING", undefined, true)).toThrow("reason");
   });
+  test("a previously completed interview stage locks backward transitions", () => {
+    expect(() => assertStageTransition({...screening, currentStage: "TECHNICAL"}, "HR_INTERVIEW", "Reopen", true, true))
+      .toThrow("completed interview stage is locked");
+    expect(() => assertStageTransition({...screening, currentStage: "TECHNICAL"}, "HR_INTERVIEW", "Reopen", true, false))
+      .not.toThrow();
+  });
   test("even a reason cannot replace submitted evaluation", () => {
     expect(() => assertStageTransition({...screening, currentStage: "TELEPHONIC"}, "TECHNICAL", "Skip HR", false)).toThrow("Submit feedback");
     expect(() => assertStageTransition({...screening, currentStage: "TELEPHONIC"}, "HR_INTERVIEW", undefined, true)).not.toThrow();

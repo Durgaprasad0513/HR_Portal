@@ -34,7 +34,7 @@ export class EmployeeController {
 
   async getAll(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { page, limit, search, departmentId, status, location } = req.query;
+      const { page, limit, search, departmentId, status, location, history } = req.query;
       const result = await employeeService.getAll(req.user! as any, {
         page: page ? parseInt(page as string) : undefined,
         limit: limit ? parseInt(limit as string) : undefined,
@@ -42,6 +42,7 @@ export class EmployeeController {
         departmentId: departmentId as string,
         status: status as string,
         location: location as string,
+        history: history === 'true',
       });
       const canViewRestricted = await permissionService.canViewRestricted(req.user!.role as Role, 'employees');
       sendSuccess(

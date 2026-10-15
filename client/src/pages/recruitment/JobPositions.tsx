@@ -49,7 +49,7 @@ export function JobPositions({ requisitions, editable, history, onEdit, onClose 
                 <h2 className="truncate font-semibold text-text-heading">
                   <Link to={`/recruitment?tab=pipeline&opening=${encodeURIComponent(opening.id)}`} aria-label={`View applicants for ${opening.positionTitle}`} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-primary-500">{opening.positionTitle}</Link>
               </h2>
-                <p className="mt-1 truncate text-xs text-text-muted">Raised by {raisedBy} · {opening._count?.candidates ?? 0} total applicants</p>
+                <p className="mt-1 truncate text-xs text-text-muted"><span>Raised by {raisedBy}</span> · <span>{opening.newApplicationCount ?? 0} new</span> · <span>{opening._count?.candidates ?? 0} total applicants</span></p>
               </div>
               <div className="min-w-0"><span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Department</span><span className="truncate text-sm text-text-body">{opening.department?.name || "—"}</span></div>
               <div className="min-w-0"><span className="mb-1 block text-[11px] font-medium uppercase text-text-muted md:hidden">Location</span><span className="truncate text-sm text-text-body">{opening.location || "—"}</span></div>

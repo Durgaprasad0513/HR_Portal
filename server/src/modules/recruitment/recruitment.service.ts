@@ -23,10 +23,18 @@ export class RecruitmentService {
   }
 
   private async validateStageMove(tx: Prisma.TransactionClient, candidate: any, stage: string, reason?: string) {
+    const fromIndex = candidateStages.indexOf(candidate.currentStage as typeof candidateStages[number]);
+    const toIndex = candidateStages.indexOf(stage as typeof candidateStages[number]);
     const feedback = await tx.interview.findFirst({ where: {
       candidateId: candidate.id, round: candidate.currentStage, status: "COMPLETED", feedbackSubmittedAt: { not: null },
     }, select: { id: true } });
-    assertStageTransition(candidate, stage, reason, !!feedback);
+    const priorInterviewRounds = candidateStages.slice(1, 5).filter((_, index) => index + 1 >= toIndex && index + 1 < fromIndex);
+    const priorFeedback = fromIndex > toIndex && priorInterviewRounds.length
+      ? await tx.interview.findFirst({ where: {
+          candidateId: candidate.id, round: { in: priorInterviewRounds }, status: "COMPLETED", feedbackSubmittedAt: { not: null },
+        }, select: { id: true } })
+      : null;
+    assertStageTransition(candidate, stage, reason, !!feedback, !!priorFeedback);
   }
 
   async transitionCandidateStage(id: string, data: {stage: string; expectedStage: string; reason?: string}, userId: string, reqContext: {ipAddress?: string} = {}) {

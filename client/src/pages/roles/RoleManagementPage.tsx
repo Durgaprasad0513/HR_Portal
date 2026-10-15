@@ -163,13 +163,13 @@ function UserAccountsTab() {
  const [resetModal, setResetModal] = useState<any>(null);
  const [newPassword, setNewPassword] = useState('');
  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
- const [newUser, setNewUser] = useState({ email: '', password: '', role: 'MANAGER' });
+ const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'MANAGER' });
 
  const addUserMutation = useMutation({
  mutationFn: async (data: any) => {
  await apiClient.post(`/users`, data);
  },
- onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['all-users'] }); toast.success('User created successfully'); setIsAddModalOpen(false); setNewUser({ email: '', password: '', role: 'MANAGER' }); },
+ onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['all-users'] }); queryClient.invalidateQueries({ queryKey: ['employees'] }); queryClient.invalidateQueries({ queryKey: ['hr-users'] }); queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }); queryClient.invalidateQueries({ queryKey: ['departments'] }); toast.success('User and employee profile created successfully'); setIsAddModalOpen(false); setNewUser({ name: '', email: '', password: '', role: 'MANAGER' }); },
  onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to create user'),
  });
 
@@ -320,7 +320,13 @@ function UserAccountsTab() {
  {mayAddUsers && isAddModalOpen && (
  <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Create Management User">
  <div className="space-y-4 py-2">
- <p className="text-sm text-slate-500">Create a standalone user account that is not linked to an employee profile.</p>
+ <p className="text-sm text-slate-500">Create a user account and a linked employee profile. Only the name and email are needed for the employee profile.</p>
+ <Input
+ label="Full Name"
+ value={newUser.name}
+ onChange={e => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+ required
+ />
  <Input
  label="Email Address"
  type="email"
@@ -348,7 +354,7 @@ function UserAccountsTab() {
  <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
  <Button
  onClick={() => addUserMutation.mutate(newUser)}
- disabled={addUserMutation.isPending || newUser.password.length < 6 || !newUser.email}
+ disabled={addUserMutation.isPending || newUser.password.length < 6 || !newUser.email.trim() || !newUser.name.trim()}
  >
  {addUserMutation.isPending ? 'Creating...' : 'Create User'}
  </Button>

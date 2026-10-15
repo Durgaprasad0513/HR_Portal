@@ -10,12 +10,12 @@ const publicAccount = (user: { id: string; email: string; role: string; isActive
 export class UserController {
   async createUser(req: AuthRequest, res: Response) {
     try {
-      const { email, password, role } = req.body;
-      if (!email || !password || !role) return sendError(res, 'Email, password and role are required', 400);
-      const user = await userManagementService.createUser({ email, password, role }, req.user!.userId);
+      const { name, email, password, role } = req.body;
+      if (!name || !email || !password || !role) return sendError(res, 'Name, email, password and role are required', 400);
+      const user = await userManagementService.createUser({ name, email, password, role }, req.user!.userId);
       return sendSuccess(res, publicAccount(user), 'User created successfully', 201);
     } catch (error: any) {
-      if (error.code === 'P2002') return sendError(res, 'Email already exists', 400);
+      if (error.code === 'P2002') return sendError(res, 'A user or employee with this email already exists', 400);
       return sendError(res, error.message, 400);
     }
   }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { employeesApi } from '@/api/employees';
+import { employeeAssignmentOptions } from '@/utils/employeeAssignmentOptions';
 import { departmentsApi } from '@/api/departments';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -42,8 +43,8 @@ export default function EmployeeFormPage() {
  });
 
  const { data: employeesList } = useQuery({
- queryKey: ['employees', 'all'],
- queryFn: () => employeesApi.getAll({ limit: 1000 }),
+ queryKey: ['employees', 'assignment-options'],
+queryFn: () => employeesApi.getAllForAssignments(),
  });
 
  const { data: empData, isLoading: isLoadingEmp } = useQuery({
@@ -132,6 +133,10 @@ export default function EmployeeFormPage() {
  
  toast.success(`Employee ${isEdit ? 'updated' : 'created'} successfully`);
  queryClient.invalidateQueries({ queryKey: ['employees'] });
+ if (isEdit) queryClient.invalidateQueries({ queryKey: ['employee', id] });
+ queryClient.invalidateQueries({ queryKey: ['attrition-stats'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-attrition'] });
+ queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  
  if (!isEdit && (res?.data as any)?.temporaryPassword) {
  // Show credentials modal instead of navigating immediately
@@ -193,7 +198,8 @@ export default function EmployeeFormPage() {
  // Convert empty strings to undefined to not fail validations
  Object.keys(payload).forEach(key => {
  if (payload[key] === '' || payload[key] === null) {
- delete payload[key];
+ if (isEdit) payload[key] = null;
+ else delete payload[key];
  }
  });
 
@@ -260,16 +266,16 @@ export default function EmployeeFormPage() {
  <Input label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />
  <Input label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required />
  <Input label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} required />
- <Input label="Phone" name="phone" value={formData.phone} onChange={handleChange} required pattern="[0-9]{10}" minLength={10} maxLength={10} title="Phone number must be exactly 10 digits" />
+ <Input label="Phone" name="phone" value={formData.phone} onChange={handleChange} pattern="[0-9]{10}" minLength={10} maxLength={10} title="Phone number must be exactly 10 digits" />
  <Input label="Alternate Mobile" name="alternateMobile" value={formData.alternateMobile} onChange={handleChange} pattern="[0-9]{10}" minLength={10} maxLength={10} title="Mobile number must be exactly 10 digits" />
  <Input label="Personal Email" type="email" name="personalEmail" value={formData.personalEmail} onChange={handleChange} />
- <Input label="Blood Group" name="bloodGroup" value={formData.bloodGroup} required onChange={handleChange} />
+ <Input label="Blood Group" name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} />
  <Input label="Qualification" name="qualification" value={formData.qualification} onChange={handleChange} />
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-marital" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Marital Status <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-marital" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Marital Status</label>
  <Select 
  id="employee-marital"
- name="maritalStatus" required 
+ name="maritalStatus"
  value={formData.maritalStatus} 
  onChange={handleChange}
  >
@@ -285,12 +291,12 @@ export default function EmployeeFormPage() {
  <Input label="Emergency Contact Number" name="emergencyContactNumber" value={formData.emergencyContactNumber} onChange={handleChange} pattern="[0-9]{10}" minLength={10} maxLength={10} title="Contact number must be exactly 10 digits" />
  <Input label="Emergency Contact Relation" name="emergencyContactRelation" value={formData.emergencyContactRelation} onChange={handleChange} />
 
- <DatePicker label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
+ <DatePicker label="Date of Birth" type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-gender" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Gender <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-gender" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Gender</label>
  <Select 
  id="employee-gender"
- name="gender" required 
+ name="gender"
  value={formData.gender} 
  onChange={handleChange}
  className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
@@ -312,12 +318,12 @@ export default function EmployeeFormPage() {
  <CardContent className="space-y-4">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div className="md:col-span-2">
- <Input label="Street Address" name="address" value={formData.address} onChange={handleChange} required />
+ <Input label="Street Address" name="address" value={formData.address} onChange={handleChange} />
  </div>
- <Input label="City" name="city" value={formData.city} onChange={handleChange} required />
- <Input label="State / Province" name="state" value={formData.state} onChange={handleChange} required />
- <Input label="ZIP / Postal Code" name="zipCode" value={formData.zipCode} onChange={handleChange} required />
- <Input label="Country" name="country" value={formData.country} onChange={handleChange} required />
+ <Input label="City" name="city" value={formData.city} onChange={handleChange} />
+ <Input label="State / Province" name="state" value={formData.state} onChange={handleChange} />
+ <Input label="ZIP / Postal Code" name="zipCode" value={formData.zipCode} onChange={handleChange} />
+ <Input label="Country" name="country" value={formData.country} onChange={handleChange} />
  </div>
  </CardContent>
  </Card>
@@ -329,14 +335,14 @@ export default function EmployeeFormPage() {
  <CardContent className="space-y-4">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div className="flex flex-col space-y-1 w-full">
- <label htmlFor="employee-department" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Department <span className="text-red-500">*</span></label>
+ <label htmlFor="employee-department" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-slate-700 dark:text-slate-300">Department</label>
  <Select 
  id="employee-department"
  name="departmentId"
  value={formData.departmentId} 
  onChange={handleChange}
  className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
- required
+
  >
  <option value="">Select Department</option>
  {deptData?.data?.map(dept => (
@@ -380,9 +386,7 @@ export default function EmployeeFormPage() {
  className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 focus:border-slate-border dark:focus:border-slate-600"
  >
  <option value="">Select Manager</option>
- {employeesList?.data?.map((emp: any) => (
- <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
- ))}
+ {employeeAssignmentOptions(employeesList?.data)}
  </Select>
  </div>
 

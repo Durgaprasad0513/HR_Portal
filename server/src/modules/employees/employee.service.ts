@@ -54,6 +54,7 @@ export class EmployeeService {
       departmentId?: string;
       status?: string;
       location?: string;
+      history?: boolean;
     }
   ) {
     const page = query.page || 1;
@@ -70,9 +71,19 @@ export class EmployeeService {
       ? getEmployeeScopeQuery(scope, currentUser.employeeId) 
       : {};
 
+    const employmentStatusFilter: Prisma.EmployeeWhereInput = query.history
+      ? { status: { in: ['INACTIVE', 'RESIGNED', 'TERMINATED'] } }
+      : { isActive: true };
+    // Role Management creates lightweight, linked account profiles with reserved USR-* codes.
+    // Keep those profiles available to assignment lookups, but out of employee management.
+    const roleAccountProfileFilter: Prisma.EmployeeWhereInput = {
+      NOT: { employeeCode: { startsWith: 'USR-' } },
+    };
+
     const baseWhere: Prisma.EmployeeWhereInput = {
       AND: [
-        { isActive: true },
+        employmentStatusFilter,
+        roleAccountProfileFilter,
         scopeQuery
       ]
     };
@@ -80,7 +91,8 @@ export class EmployeeService {
     const searchTerms = query.search?.trim().split(/\s+/).filter(Boolean) ?? [];
     if (searchTerms.length) {
       baseWhere.AND = [
-        { isActive: true },
+        employmentStatusFilter,
+        roleAccountProfileFilter,
         scopeQuery,
         ...searchTerms.map((term): Prisma.EmployeeWhereInput => ({
           OR: [
@@ -113,6 +125,7 @@ export class EmployeeService {
         include: {
           department: { select: { id: true, name: true } },
           manager: { select: { id: true, firstName: true, lastName: true } },
+          user: { select: { role: true, isActive: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -183,6 +196,9 @@ export class EmployeeService {
       if (createData.departmentId === '') createData.departmentId = null;
       if (createData.managerId === '') createData.managerId = null;
 
+      for (const field of ['dateOfBirth', 'joiningDate', 'confirmationDate', 'resignationDate', 'lastWorkingDate']) {
+        if (createData[field]) createData[field] = new Date(createData[field]);
+      }
       const { dateOfBirth, joiningDate, ...restData } = createData;
 
       let employee;
@@ -269,6 +285,19 @@ export class EmployeeService {
     }
 
     const updateData: any = { ...data };
+    if (data.status === 'INACTIVE' || data.status === 'TERMINATED') {
+      updateData.isActive = false;
+      updateData.deactivatedAt = beforeUpdate?.deactivatedAt || new Date();
+    } else if (data.status === 'ACTIVE') {
+      updateData.isActive = true;
+      updateData.deactivatedAt = null;
+      if (beforeUpdate?.status === 'INACTIVE' || beforeUpdate?.status === 'TERMINATED') {
+        updateData.lastWorkingDate = null;
+      }
+    }
+    if (data.lastWorkingDate && data.status !== 'ACTIVE') {
+      updateData.lastWorkingDate = new Date(data.lastWorkingDate);
+    }
 
     const numericFields = ['salary', 'ctc', 'basicSalary', 'grossSalary', 'probationPeriod', 'noticePeriod'];
     for (const field of numericFields) {
@@ -281,8 +310,8 @@ export class EmployeeService {
     
     if (updateData.departmentId === '') updateData.departmentId = null;
 
-    if (data.dateOfBirth) {
-      updateData.dateOfBirth = new Date(data.dateOfBirth);
+    for (const field of ['dateOfBirth', 'confirmationDate', 'resignationDate', 'lastWorkingDate']) {
+      if (updateData[field]) updateData[field] = new Date(updateData[field]);
     }
     if (data.joiningDate) {
       updateData.joiningDate = new Date(data.joiningDate);
@@ -361,6 +390,7 @@ export class EmployeeService {
     const baseWhere = {
       AND: [
         { isActive: true },
+        { NOT: { employeeCode: { startsWith: 'USR-' } } },
         scopeQuery
       ]
     };

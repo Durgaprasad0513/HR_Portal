@@ -459,6 +459,8 @@ model Leave {
   isHalfDay      Boolean  @default(false)
   isHourly       Boolean  @default(false)
   hourlyDuration Int?      // minutes, e.g. 60 for 1 hour
+  halfDayPeriod  String?   // MORNING or AFTERNOON
+  hourlyStartTime String? // Local time in HH:mm format
   reason    String
   status    LeaveStatus @default(PENDING)
   remarks   String?

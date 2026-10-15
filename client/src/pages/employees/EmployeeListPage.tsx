@@ -25,13 +25,13 @@ export default function EmployeeListPage() {
  const debouncedSearch = useDebounce(search, 500);
  const [departmentId, setDepartmentId] = useState('');
  const [location, setLocation] = useState('');
- const [status, setStatus] = useState('');
+ const [showHistory, setShowHistory] = useState(false);
 
  const [page, setPage] = useState(1);
  const pageSize = 10;
 
  // reset pagination when filters change
- useEffect(() => { setPage(1); }, [debouncedSearch, departmentId, location, status]);
+ useEffect(() => { setPage(1); }, [debouncedSearch, departmentId, location, showHistory]);
  
  const { data: deptData } = useQuery({
  queryKey: ['departments'],
@@ -39,8 +39,8 @@ export default function EmployeeListPage() {
  });
 
  const { data: empData, isLoading } = useQuery({
- queryKey: ['employees', { search: debouncedSearch, departmentId, location, status, page, pageSize }],
- queryFn: () => employeesApi.getAll({ search: debouncedSearch, departmentId, location, status, page, limit: pageSize }),
+ queryKey: ['employees', { search: debouncedSearch, departmentId, location, page, pageSize, showHistory }],
+ queryFn: () => employeesApi.getAll({ search: debouncedSearch, departmentId, location, page, limit: pageSize, history: showHistory }),
  });
 
  const displayedEmployees = empData?.data || [];
@@ -93,7 +93,14 @@ export default function EmployeeListPage() {
  title="Employee Management"
  description="Find, review, and manage employee records."
  actions={
- <div className="flex items-center gap-3">
+ <div className="flex flex-wrap items-center gap-3">
+ <Button
+ variant={showHistory ? 'primary' : 'outline'}
+ aria-pressed={showHistory}
+ onClick={() => setShowHistory((current) => !current)}
+ >
+ {showHistory ? 'Current employees' : 'History'}
+ </Button>
  {canExport('employees') && (
  <Button variant="outline" onClick={handleExport}>
  <Download className="w-4 h-4 mr-2" /> Export Register
@@ -172,17 +179,6 @@ export default function EmployeeListPage() {
  <option value="Peddapuram Plant">Peddapuram Plant</option>
  </Select>
  
- <Select 
- aria-label="Filter employees by status"
- className="px-3 py-2 bg-surface border border-slate-border rounded-lg text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
- value={status}
- onChange={(e) => setStatus(e.target.value)}
- >
- <option value="">All Statuses</option>
- <option value="ACTIVE">Active</option>
- <option value="INACTIVE">Inactive</option>
- <option value="TERMINATED">Terminated</option>
- </Select>
 
  <button
  type="button"
@@ -190,9 +186,8 @@ export default function EmployeeListPage() {
  setSearch('');
  setDepartmentId('');
  setLocation('');
- setStatus('');
  }}
- disabled={!search && !departmentId && !location && !status}
+ disabled={!search && !departmentId && !location}
  className="text-sm text-gray-500 dark:text-gray-400 hover:text-navy-900 dark:hover:text-white underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline"
  >
  Clear filters
@@ -209,7 +204,7 @@ export default function EmployeeListPage() {
  </div>
  </div>
 
- {(search || departmentId || location || status) && (
+ {(search || departmentId || location) && (
  <div className="flex flex-wrap items-center gap-2" aria-label="Active employee filters">
  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Active filters:</span>
  {search && (
@@ -227,11 +222,6 @@ export default function EmployeeListPage() {
  Office: {location} ×
  </button>
  )}
- {status && (
- <button type="button" onClick={() => setStatus('')} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-gray-700 hover:bg-slate-200 bg-surface dark:text-gray-300 dark:hover:bg-slate-700">
- Status: {status} ×
- </button>
- )}
  </div>
  )}
 
@@ -242,14 +232,13 @@ export default function EmployeeListPage() {
  <EmptyState 
  icon={UsersRound}
  title="No employees found"
- description={search || departmentId || location || status ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
- actionLabel={search || departmentId || location || status ? "Clear Filters" : (mayAddEmployees ? "Add Employee" : undefined)}
+ description={search || departmentId || location ? "Try adjusting your search or filters to find what you're looking for." : "No employees are currently in the system."}
+ actionLabel={search || departmentId || location ? "Clear Filters" : (mayAddEmployees ? "Add Employee" : undefined)}
  onAction={() => {
- if (search || departmentId || location || status) {
+ if (search || departmentId || location) {
  setSearch('');
  setDepartmentId('');
  setLocation('');
- setStatus('');
  } else if (mayAddEmployees) {
  navigate('/employees/new');
  }

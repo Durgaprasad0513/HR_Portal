@@ -38,6 +38,10 @@ export class LeaveService {
       throw new Error('Leave period must include at least one working day');
     }
 
+    if ((data.isHalfDay || data.isHourly) && startDate.getTime() !== endDate.getTime()) {
+      throw new Error('Half-day and hourly leaves must be for a single day only.');
+    }
+
     // Adjust for half-day or hourly leave
     if (data.isHalfDay && totalDays === 1) {
       totalDays = 0.5;
@@ -87,6 +91,8 @@ export class LeaveService {
         isHalfDay: data.isHalfDay ?? false,
         isHourly: data.isHourly ?? false,
         hourlyDuration: data.isHourly ? (data.hourlyDuration ?? null) : null,
+        halfDayPeriod: data.isHalfDay ? (data.halfDayPeriod ?? null) : null,
+        hourlyStartTime: data.isHourly ? (data.hourlyStartTime ?? null) : null,
         reason: data.reason,
       },
       include: {

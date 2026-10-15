@@ -33,6 +33,8 @@ export default function LeaveApplicationPage() {
   });
   const [durationType, setDurationType] = useState<DurationType>('full');
   const [hourlyDuration, setHourlyDuration] = useState(60); // minutes
+  const [halfDayPeriod, setHalfDayPeriod] = useState<'' | 'MORNING' | 'AFTERNOON'>('');
+  const [hourlyStartTime, setHourlyStartTime] = useState('');
 
   const { data: leavesData, isLoading } = useQuery({
     queryKey: ['my-leaves'],
@@ -47,6 +49,8 @@ export default function LeaveApplicationPage() {
       setFormData({ leaveType: 'PERSONAL', startDate: '', endDate: '', reason: '' });
       setDurationType('full');
       setHourlyDuration(60);
+      setHalfDayPeriod('');
+      setHourlyStartTime('');
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to apply leave'),
   });
@@ -68,10 +72,10 @@ export default function LeaveApplicationPage() {
       if (d !== 0) days++;
       cur.setDate(cur.getDate() + 1);
     }
-    if (durationType === 'half' && days === 1) return '0.5 Days';
-    if (durationType === 'hour' && days === 1) return `${hourlyDuration} Minutes`;
+    if (durationType === 'half' && days === 1) return `0.5 Days${halfDayPeriod ? ` · ${halfDayPeriod === 'MORNING' ? 'Morning' : 'Afternoon'}` : ''}`;
+    if (durationType === 'hour' && days === 1) return `${hourlyDuration} Minutes${hourlyStartTime ? ` from ${hourlyStartTime}` : ''}`;
     return `${days} Day${days !== 1 ? 's' : ''}`;
-  }, [formData.startDate, formData.endDate, durationType, hourlyDuration]);
+  }, [formData.startDate, formData.endDate, durationType, hourlyDuration, halfDayPeriod, hourlyStartTime]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,11 +87,21 @@ export default function LeaveApplicationPage() {
         return;
       }
     }
+    if (durationType === 'half' && !halfDayPeriod) {
+      toast.error('Choose a morning half or afternoon half for your leave.');
+      return;
+    }
+    if (durationType === 'hour' && !hourlyStartTime) {
+      toast.error('Choose a start time for your hourly leave.');
+      return;
+    }
     applyMutation.mutate({
       ...formData,
       isHalfDay: durationType === 'half',
       isHourly: durationType === 'hour',
       hourlyDuration: durationType === 'hour' ? hourlyDuration : undefined,
+      halfDayPeriod: durationType === 'half' ? halfDayPeriod : undefined,
+      hourlyStartTime: durationType === 'hour' ? hourlyStartTime : undefined,
     } as any);
   };
 
@@ -105,8 +119,8 @@ export default function LeaveApplicationPage() {
     { header: 'Start Date', accessor: (row: any) => formatDate(row.startDate).split(' ')[0] },
     { header: 'End Date', accessor: (row: any) => formatDate(row.endDate).split(' ')[0] },
     { header: 'Duration', accessor: (row: any) => {
-      if (row.isHalfDay) return '0.5 Days';
-      if (row.isHourly && row.hourlyDuration) return `${row.hourlyDuration} min`;
+      if (row.isHalfDay) return `0.5 Days · ${row.halfDayPeriod === 'AFTERNOON' ? 'Afternoon' : row.halfDayPeriod === 'MORNING' ? 'Morning' : 'Half day'}`;
+      if (row.isHourly && row.hourlyDuration) return `${row.hourlyDuration} min${row.hourlyStartTime ? ` from ${row.hourlyStartTime}` : ''}`;
       return `${row.totalDays} Day${row.totalDays !== 1 ? 's' : ''}`;
     }},
     { header: 'Reason', accessor: (row: any) => row.reason },
@@ -199,19 +213,27 @@ export default function LeaveApplicationPage() {
                     </button>
                   </div>
 
-                  {/* Half Day note */}
+                  {/* Half-day period */}
                   {durationType === 'half' && (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 ml-1">
-                      Applicable for single-day applications (0.5 day)
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 ml-1">Choose which half of the day you will be away.</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['MORNING', 'AFTERNOON'] as const).map(period => (
+                          <button key={period} type="button" aria-pressed={halfDayPeriod === period} onClick={() => setHalfDayPeriod(period)} className={`py-2 rounded-xl text-xs font-semibold border-2 transition-all ${halfDayPeriod === period ? 'border-brand-primary bg-brand-light text-brand-primary dark:bg-brand-primary/20' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'}`}>
+                            {period === 'MORNING' ? 'Morning Half' : 'Afternoon Half'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
 
                   {/* Hourly selector */}
                   {durationType === 'hour' && (
                     <div className="space-y-2 mt-1">
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 ml-1">
-                        Applicable for single-day applications only
+                        Choose the start time and duration for your single-day leave.
                       </p>
+                      <Input label="Leave start time" type="time" value={hourlyStartTime} onChange={event => setHourlyStartTime(event.target.value)} required />
                       <div className="grid grid-cols-3 gap-2">
                         {[60, 120, 180].map(mins => (
                           <button

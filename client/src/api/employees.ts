@@ -10,9 +10,18 @@ export interface PublicEmployeeCard {
 }
 
 export const employeesApi = {
- getAll: async (params?: { page?: number; limit?: number; search?: string; departmentId?: string; status?: string; location?: string }) => {
+ getAll: async (params?: { page?: number; limit?: number; search?: string; departmentId?: string; status?: string; location?: string; history?: boolean }) => {
  const { data } = await apiClient.get<ApiResponse<Employee[]>>('/employees', { params });
  return data;
+ },
+ getAllForAssignments: async (): Promise<ApiResponse<Employee[]>> => {
+ const first = await employeesApi.getAll({ page: 1, limit: 100 });
+ const employees = [...first.data];
+ for (let page = 2; page <= (first.meta?.totalPages || 1); page++) {
+ const next = await employeesApi.getAll({ page, limit: 100 });
+ employees.push(...next.data);
+ }
+ return { ...first, data: employees.filter((employee: any) => !employee.user || employee.user.isActive) };
  },
  getById: async (id: string) => {
  const { data } = await apiClient.get<ApiResponse<Employee>>(`/employees/${id}`);

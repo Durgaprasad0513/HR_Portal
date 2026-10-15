@@ -130,6 +130,11 @@ export interface Leave {
  startDate: string;
  endDate: string;
  totalDays: number;
+ isHalfDay?: boolean;
+ isHourly?: boolean;
+ hourlyDuration?: number | null;
+ halfDayPeriod?: 'MORNING' | 'AFTERNOON' | null;
+ hourlyStartTime?: string | null;
  reason: string;
  status: LeaveStatus;
  remarks?: string;

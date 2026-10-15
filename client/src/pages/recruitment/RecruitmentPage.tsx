@@ -527,6 +527,9 @@ export default function RecruitmentPage() {
                   </div>
                   <ol aria-label="View recruitment stage" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
                     {candidateStages.map((stage, index) => {
+                      const locked = index < candidateStageIndex && (routeCandidate.interviews || []).some(
+                        (interview: any) => interview.round === stage.value && interview.status === "COMPLETED" && !!interview.feedbackSubmittedAt,
+                      );
                       const complete =
                         stage.value === "SCREENING"
                           ? routeCandidate.screeningStatus === "SHORTLISTED"
@@ -546,7 +549,7 @@ export default function RecruitmentPage() {
                           key={stage.value}
                           className="min-w-0"
                         >
-                          <button type="button" aria-pressed={reviewStage === stage.value} onClick={() => setReviewStage(stage.value)} className={`h-full w-full rounded-xl border p-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary ${reviewStage === stage.value ? "ring-2 ring-brand-primary" : ""} ${current ? "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30" : complete ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30" : "border-slate-border bg-surface"}`}
+                          <button type="button" aria-pressed={reviewStage === stage.value} disabled={locked} title={locked ? "Completed stage locked after feedback submission" : undefined} onClick={() => setReviewStage(stage.value)} className={`h-full w-full rounded-xl border p-3 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary ${locked ? "cursor-not-allowed opacity-70" : ""} ${reviewStage === stage.value ? "ring-2 ring-brand-primary" : ""} ${current ? "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30" : complete ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30" : "border-slate-border bg-surface"}`}
                         >
                           <div className="flex items-center gap-2">
                             <span
