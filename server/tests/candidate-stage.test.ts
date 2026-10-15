@@ -1,16 +1,16 @@
 import { assertStageTransition } from "../src/modules/recruitment/candidate-stage";
 import { candidateStageSchema } from "../src/modules/recruitment/recruitment.schema";
 
-const screening = {currentStage: "SCREENING", screeningStatus: "SHORTLISTED", selectionStatus: null};
+const screening = {currentStage: "TELEPHONIC", selectionStatus: null};
 describe("Authoritative recruitment stage guards", () => {
   test("does not infer a stage from missing appointments", () => {
-    expect(() => assertStageTransition(screening, "TELEPHONIC", undefined, false)).not.toThrow();
-    expect(() => assertStageTransition({...screening, screeningStatus: "SCREENING_PENDING"}, "TELEPHONIC", undefined, false)).toThrow("Shortlist");
+    expect(() => assertStageTransition(screening, "HR_INTERVIEW", undefined, false)).not.toThrow();
+    expect(candidateStageSchema.safeParse({stage: "SCREENING", expectedStage: "TELEPHONIC"}).success).toBe(false);
   });
   test("skip and backward changes require a reason", () => {
     expect(() => assertStageTransition(screening, "TECHNICAL", undefined, false)).toThrow("reason");
     expect(() => assertStageTransition(screening, "TECHNICAL", "Role has no phone or HR assessment", false)).not.toThrow();
-    expect(() => assertStageTransition({...screening, currentStage: "TECHNICAL"}, "SCREENING", undefined, true)).toThrow("reason");
+    expect(() => assertStageTransition({...screening, currentStage: "TECHNICAL"}, "TELEPHONIC", undefined, true)).toThrow("reason");
   });
   test("a previously completed interview stage locks backward transitions", () => {
     expect(() => assertStageTransition({...screening, currentStage: "TECHNICAL"}, "HR_INTERVIEW", "Reopen", true, true))
@@ -19,7 +19,7 @@ describe("Authoritative recruitment stage guards", () => {
       .not.toThrow();
   });
   test("even a reason cannot replace submitted evaluation", () => {
-    expect(() => assertStageTransition({...screening, currentStage: "TELEPHONIC"}, "TECHNICAL", "Skip HR", false)).toThrow("Submit feedback");
+    expect(() => assertStageTransition({...screening, currentStage: "HR_INTERVIEW"}, "TECHNICAL", "Advance", false)).toThrow("Submit feedback");
     expect(() => assertStageTransition({...screening, currentStage: "TELEPHONIC"}, "HR_INTERVIEW", undefined, true)).not.toThrow();
   });
   test("selection precedes offer and joining uses only the offer workflow", () => {
@@ -29,16 +29,16 @@ describe("Authoritative recruitment stage guards", () => {
   });
   test.each([
     {selectionStatus: "SELECTION_REJECTED"}, {selectionStatus: "SELECTION_ON_HOLD"},
-    {offerStatus: "OFFER_DECLINED"}, {joiningStatus: "NOT_JOINED"}, {screeningStatus: "SCREENING_REJECTED"},
+    {offerStatus: "OFFER_DECLINED"}, {joiningStatus: "NOT_JOINED"},
   ])("inactive decisions block stage advance: %j", (outcome) => {
     expect(() => assertStageTransition({...screening, ...outcome}, "TELEPHONIC", undefined, true)).toThrow("Restore");
-    expect(() => assertStageTransition({...screening, ...outcome}, "SCREENING", undefined, true)).toThrow("Restore");
+    expect(() => assertStageTransition({...screening, ...outcome}, "TELEPHONIC", undefined, true)).toThrow("Restore");
   });
   test("joining cannot be undone by stage moves", () => {
-    expect(() => assertStageTransition({...screening, currentStage: "JOINED"}, "SCREENING", "Restart", true)).toThrow("joined candidate");
+    expect(() => assertStageTransition({...screening, currentStage: "JOINED"}, "TELEPHONIC", "Restart", true)).toThrow("joined candidate");
   });
   test("transition requests require an expected stage and reject unknown stages", () => {
     expect(candidateStageSchema.safeParse({stage: "TELEPHONIC"}).success).toBe(false);
-    expect(candidateStageSchema.safeParse({stage: "MADE_UP", expectedStage: "SCREENING"}).success).toBe(false);
+    expect(candidateStageSchema.safeParse({stage: "MADE_UP", expectedStage: "TELEPHONIC"}).success).toBe(false);
   });
 });

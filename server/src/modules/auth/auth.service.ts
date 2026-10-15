@@ -10,6 +10,7 @@ export class AuthService {
   async login(input: LoginInput, reqContext: { ipAddress?: string, deviceBrowser?: string } = {}) {
     const user = await prisma.user.findFirst({
       where: { 
+        deletedAt: null,
         OR: [
           { email: input.email },
           { employee: { employeeCode: input.email } }
@@ -155,7 +156,7 @@ export class AuthService {
     const userId = input.token;
     
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new Error('Invalid token');
+    if (!user || user.deletedAt) throw new Error('Invalid token');
 
     const hashedPassword = await hashPassword(input.newPassword);
 

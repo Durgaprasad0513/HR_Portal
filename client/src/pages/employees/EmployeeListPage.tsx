@@ -24,7 +24,7 @@ export default function EmployeeListPage() {
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 500);
  const [departmentId, setDepartmentId] = useState('');
- const [location, setLocation] = useState('');
+ const [location, setLocation] = useState('Hyderabad Office');
  const [showHistory, setShowHistory] = useState(false);
 
  const [page, setPage] = useState(1);
@@ -197,7 +197,9 @@ export default function EmployeeListPage() {
  <div className="flex w-full shrink-0 items-center justify-between gap-3 lg:w-auto">
  {!isLoading && (
  <p className="text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
- {employeeTotal} {employeeTotal === 1 ? 'employee' : 'employees'}
+ {showHistory
+   ? `${employeeTotal} former ${employeeTotal === 1 ? 'employee' : 'employees'}`
+   : `${employeeTotal} active ${employeeTotal === 1 ? 'employee' : 'employees'}${location ? ` in ${location}` : ' across all offices'}`}
  </p>
  )}
 

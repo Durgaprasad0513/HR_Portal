@@ -192,29 +192,6 @@ export class RecruitmentController {
     }
   }
 
-  async screenCandidate(req: AuthRequest, res: Response) {
-    try {
-      const result = await recruitmentService.screenCandidate(
-        req.params.id as string,
-        req.body,
-        req.user!.userId,
-        { ipAddress: req.ip },
-      );
-      return sendSuccess(
-        res,
-        (
-          await recruitmentService.protectCandidateCompensation(
-            [result],
-            req.user!.role as Role,
-          )
-        )[0],
-        "Candidate screened successfully",
-      );
-    } catch (error: any) {
-      return sendError(res, error.message, 400);
-    }
-  }
-
   async interviewCandidate(req: AuthRequest, res: Response) {
     try {
       const result = await recruitmentService.interviewCandidate(

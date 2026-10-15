@@ -159,7 +159,6 @@ enum AssetStatus {
 enum RequisitionStatus {
   REQUIREMENT
   SOURCING
-  SCREENING
   TELEPHONIC
   HR_INTERVIEW
   TECHNICAL
@@ -286,6 +285,7 @@ model User {
   isActive   Boolean  @default(true)
   employeeId String?  @unique
   employee   Employee? @relation(fields: [employeeId], references: [id])
+  deletedAt  DateTime?
 
   // New fields from requirements
   failedLoginAttempts   Int       @default(0)
@@ -618,7 +618,7 @@ model Requisition {
 }
 
 model Candidate {
-  currentStage      String @default("SCREENING")
+  currentStage      String @default("TELEPHONIC")
   stageEnteredAt    DateTime @default(now())
   stageHistory      CandidateStageHistory[]
   id                String           @id @default(cuid())
@@ -633,7 +633,7 @@ model Candidate {
   noticePeriod      Int?
   source            String?
   resumePath        String?
-  screeningStatus   ScreeningStatus  @default(SCREENING_PENDING)
+  screeningStatus   ScreeningStatus  @default(SHORTLISTED)
   screeningNotes    String?
   interviewRound    String?
   interviewLocation String?

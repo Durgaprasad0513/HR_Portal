@@ -9,7 +9,7 @@ This system acts as a centralized HR portal, designed from the ground up with st
 - **Dashboard**: Role-specific overview with key metrics and quick actions for pending approvals.
 - **Employee Management**: Full employee directory, profile management, document verification, and automatic user account provisioning.
 - **Leave Management**: Leave requests, holiday lists, manager approvals, and real-time attendance tracking.
-- **Recruitment Tracker**: Manage job requisitions, track candidates through screening, interviewing, and offering stages.
+- **Recruitment Tracker**: Manage job requisitions, track candidates from Telephonic through HR, Technical, Management, Offer, and Joining. Upload a text PDF or DOCX resume (up to 20 MB) to autofill editable application fields; notice period is optional.
 - **Asset Management**: Track company laptops and assets, issue/return workflows, and condition monitoring.
 - **Performance Review**: Goal setting, manager evaluations, and continuous feedback tracking.
 - **Training Management**: Schedule training sessions, manage participants, and track completion.
@@ -96,3 +96,14 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:5173`.
+
+### Updating an existing installation
+
+Before starting the updated server, apply committed database migrations from `server`:
+
+```bash
+npx prisma migrate deploy
+npm run build
+```
+
+This release adds user soft deletion (`deletedAt`) and converts existing Screening candidates and requisitions to Telephonic. Previous screening rejections remain rejected. Use migrations for upgrades: `prisma db push` alone does not perform these data conversions. Databases originally created with `db push` must have their migration baseline reconciled before deploying migrations.

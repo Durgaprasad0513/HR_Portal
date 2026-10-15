@@ -23,18 +23,19 @@ export class RecruitmentService {
   }
 
   private async validateStageMove(tx: Prisma.TransactionClient, candidate: any, stage: string, reason?: string) {
-    const fromIndex = candidateStages.indexOf(candidate.currentStage as typeof candidateStages[number]);
+    const currentStage = candidate.currentStage === "SCREENING" ? "TELEPHONIC" : candidate.currentStage;
+    const fromIndex = candidateStages.indexOf(currentStage as typeof candidateStages[number]);
     const toIndex = candidateStages.indexOf(stage as typeof candidateStages[number]);
     const feedback = await tx.interview.findFirst({ where: {
-      candidateId: candidate.id, round: candidate.currentStage, status: "COMPLETED", feedbackSubmittedAt: { not: null },
+      candidateId: candidate.id, round: currentStage, status: "COMPLETED", feedbackSubmittedAt: { not: null },
     }, select: { id: true } });
-    const priorInterviewRounds = candidateStages.slice(1, 5).filter((_, index) => index + 1 >= toIndex && index + 1 < fromIndex);
+    const priorInterviewRounds = candidateStages.slice(0, 4).filter((_, index) => index >= toIndex && index < fromIndex);
     const priorFeedback = fromIndex > toIndex && priorInterviewRounds.length
       ? await tx.interview.findFirst({ where: {
           candidateId: candidate.id, round: { in: priorInterviewRounds }, status: "COMPLETED", feedbackSubmittedAt: { not: null },
         }, select: { id: true } })
       : null;
-    assertStageTransition(candidate, stage, reason, !!feedback, !!priorFeedback);
+    assertStageTransition({ ...candidate, currentStage }, stage, reason, !!feedback, !!priorFeedback);
   }
 
   async transitionCandidateStage(id: string, data: {stage: string; expectedStage: string; reason?: string}, userId: string, reqContext: {ipAddress?: string} = {}) {
@@ -42,7 +43,8 @@ export class RecruitmentService {
     return prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "candidates" WHERE "id" = ${id} FOR UPDATE`;
       const candidate = await tx.candidate.findUniqueOrThrow({ where: { id } });
-      if (candidate.currentStage !== data.expectedStage) throw new Error("This candidate stage changed. Refresh and try again.");
+      const normalizedCurrentStage = candidate.currentStage === "SCREENING" ? "TELEPHONIC" : candidate.currentStage;
+      if (normalizedCurrentStage !== data.expectedStage) throw new Error("This candidate stage changed. Refresh and try again.");
       await this.validateStageMove(tx, candidate, data.stage, data.reason);
       await this.setCandidateStage(tx, candidate, data.stage, userId, data.reason);
       if (candidate.currentStage !== data.stage) await tx.auditLog.create({ data: { actionPerformed: "MOVE_CANDIDATE_STAGE", moduleAffected: "recruitment", recordIdAffected: id, userId, ipAddress: reqContext.ipAddress, oldValue: JSON.stringify({stage: candidate.currentStage}), newValue: JSON.stringify({stage: data.stage, reason: data.reason}) } });
@@ -313,7 +315,6 @@ export class RecruitmentService {
         candidates: {
           select: {
             selectionStatus: true,
-            screeningStatus: true,
             currentStage: true,
             stageEnteredAt: true,
             joiningStatus: true,
@@ -330,7 +331,7 @@ export class RecruitmentService {
     return requisitions.map(({ candidates, ...requisition }) => ({
       ...requisition,
       candidates,
-      newApplicationCount: candidates.filter((candidate) => candidate.currentStage === "SCREENING" && candidate.screeningStatus === "SCREENING_PENDING" && candidate.selectionStatus !== "SELECTION_REJECTED").length,
+      newApplicationCount: candidates.filter((candidate) => ["TELEPHONIC", "SCREENING"].includes(candidate.currentStage) && candidate.selectionStatus !== "SELECTION_REJECTED").length,
       selectedCount: candidates.filter(
         (candidate) =>
           candidate.selectionStatus === "SELECTED" &&
@@ -437,12 +438,10 @@ export class RecruitmentService {
         interviewMode = "IN_PERSON",
         ...candidateData
       } = data;
-      if (candidateData.interviewDate && candidateData.screeningStatus === "SCREENING_REJECTED")
-        throw new Error("A rejected candidate cannot be scheduled.");
       const candidate = await tx.candidate.create({ data: {
         ...candidateData,
-        currentStage: candidateData.interviewDate ? candidateData.interviewRound || "TELEPHONIC" : "SCREENING",
-        screeningStatus: candidateData.interviewDate ? "SHORTLISTED" : candidateData.screeningStatus,
+        currentStage: candidateData.interviewDate ? candidateData.interviewRound || "HR_INTERVIEW" : "TELEPHONIC",
+        screeningStatus: "SHORTLISTED",
       } });
       if (candidate.interviewDate) {
         const endsAt = new Date(
@@ -466,7 +465,7 @@ export class RecruitmentService {
         await tx.interview.create({
           data: {
             candidateId: candidate.id,
-            round: candidate.interviewRound || "TELEPHONIC",
+            round: candidate.interviewRound || "HR_INTERVIEW",
             startsAt: candidate.interviewDate,
             endsAt: new Date(
               candidate.interviewDate.getTime() +
@@ -612,7 +611,9 @@ export class RecruitmentService {
       ...(filters.requisitionId
         ? { requisitionId: String(filters.requisitionId) }
         : {}),
-      ...(filters.stage ? { currentStage: String(filters.stage) } : {}),
+      ...(filters.stage === "TELEPHONIC"
+        ? { currentStage: { in: ["TELEPHONIC", "SCREENING"] } }
+        : filters.stage ? { currentStage: String(filters.stage) } : {}),
       ...(filters.outcome === "IN_PROGRESS"
         ? { selectionStatus: null }
         : filters.outcome
@@ -650,7 +651,10 @@ export class RecruitmentService {
         take: pageSize,
       }),
     ]);
-    const safeRows = await this.protectCandidateCompensation(rows, role);
+    const safeRows = await this.protectCandidateCompensation(rows.map((row) => ({
+      ...row,
+      currentStage: row.currentStage === "SCREENING" ? "TELEPHONIC" : row.currentStage,
+    })), role);
     return { items: safeRows, total, page, pageSize };
   }
 
@@ -710,6 +714,7 @@ export class RecruitmentService {
     return this.protectCandidateCompensation(
       rows.map((row) => ({
         ...row,
+        currentStage: row.currentStage === "SCREENING" ? "TELEPHONIC" : row.currentStage,
         activity: activity.filter((event) => event.recordIdAffected === row.id),
       })),
       currentUser.role as Role,
@@ -729,7 +734,7 @@ export class RecruitmentService {
         where: { id: candidateId },
       });
       if (!candidate) throw new Error("Candidate not found.");
-      if (candidate.selectionStatus === "SELECTION_REJECTED" || candidate.selectionStatus === "SELECTION_ON_HOLD" || candidate.screeningStatus === "SCREENING_REJECTED" || candidate.offerStatus === "OFFER_DECLINED" || candidate.joiningStatus === "NOT_JOINED")
+      if (candidate.selectionStatus === "SELECTION_REJECTED" || candidate.selectionStatus === "SELECTION_ON_HOLD" || candidate.offerStatus === "OFFER_DECLINED" || candidate.joiningStatus === "NOT_JOINED")
         throw new Error("Restore the candidate's decision before scheduling an interview.");
       await this.validateStageMove(tx, candidate, data.round, data.reason);
       if (data.interviewerId) {
@@ -1020,38 +1025,6 @@ export class RecruitmentService {
     });
   }
 
-  async screenCandidate(
-    id: string,
-    data: any,
-    userId: string,
-    reqContext: { ipAddress?: string } = {},
-  ) {
-    await this.assertCandidateAccess(id, userId);
-    const candidate = await prisma.candidate.findUnique({ where: { id } });
-    if (!candidate) throw new Error("Candidate not found.");
-
-    return prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT "id" FROM "candidates" WHERE "id" = ${id} FOR UPDATE`;
-      const updated = await tx.candidate.update({
-        where: { id },
-        data: {
-          screeningStatus: data.screeningStatus,
-          screeningNotes: data.screeningNotes ?? candidate.screeningNotes,
-        },
-      });
-      await tx.auditLog.create({
-        data: {
-          actionPerformed: "SCREEN_CANDIDATE",
-          moduleAffected: "recruitment",
-          recordIdAffected: id,
-          userId,
-          ipAddress: reqContext.ipAddress,
-        },
-      });
-      return updated;
-    });
-  }
-
   async interviewCandidate(
     id: string,
     data: any,
@@ -1073,10 +1046,6 @@ export class RecruitmentService {
       const updated = await tx.candidate.update({
         where: { id },
         data: {
-          screeningStatus:
-            current.screeningStatus === "SCREENING_PENDING"
-              ? "SHORTLISTED"
-              : current.screeningStatus,
           interviewRound: data.interviewRound ?? current.interviewRound,
           interviewDate: data.interviewDate
             ? new Date(data.interviewDate)

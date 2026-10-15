@@ -43,7 +43,6 @@ export function candidateCsv(candidates: any[]) {
       c.currentSalary ?? "",
       c.expectedSalary ?? "",
       c.noticePeriod ?? 0,
-      c.screeningStatus,
       c.selectionStatus,
       c.offerStatus,
     ]
@@ -51,7 +50,7 @@ export function candidateCsv(candidates: any[]) {
       .join(","),
   );
   return [
-    "Name,Email,Mobile,Qualification,Total Exp (Yrs),Current Co.,Current Salary,Expected Salary,Notice Period (Days),Screening Status,Interview Status,Offer Status",
+    "Name,Email,Mobile,Qualification,Total Exp (Yrs),Current Co.,Current Salary,Expected Salary,Notice Period (Days),Interview Status,Offer Status",
     ...rows,
   ].join("\r\n");
 }

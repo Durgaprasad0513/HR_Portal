@@ -7,12 +7,13 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Plus, Search, Shield, Users, Lock, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Shield, Users, Lock, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Select } from '@/components/ui/Select';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAuth } from '@/contexts/AuthContext';
 import { PaginationControls } from '@/components/ui/PaginationControls';
 const hasLockedPermissions = (role: string) => role === 'ADMIN' || role === 'HR';
 
@@ -152,15 +153,18 @@ function PermissionsMatrix() {
 
 function UserAccountsTab() {
  const queryClient = useQueryClient();
- const { canAdd, canEdit } = usePermissions();
+ const { user } = useAuth();
+ const { canAdd, canEdit, canDelete } = usePermissions();
  const mayAddUsers = canAdd('roles');
  const mayEditUsers = canEdit('roles');
+ const mayDeleteUsers = canDelete('roles');
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 500);
  const [roleFilter, setRoleFilter] = useState('');
  const [page, setPage] = useState(1);
  const pageSize = 10;
  const [resetModal, setResetModal] = useState<any>(null);
+ const [removeModal, setRemoveModal] = useState<any>(null);
  const [newPassword, setNewPassword] = useState('');
  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'MANAGER' });
@@ -209,6 +213,21 @@ function UserAccountsTab() {
  },
  onSuccess: () => { toast.success('Password reset successfully'); setResetModal(null); setNewPassword(''); },
  onError: () => toast.error('Failed to reset password'),
+ });
+
+ const removeMutation = useMutation({
+ mutationFn: async (id: string) => {
+   await apiClient.delete(`/users/${id}`);
+ },
+ onSuccess: () => {
+   queryClient.invalidateQueries({ queryKey: ['all-users'] });
+   queryClient.invalidateQueries({ queryKey: ['employees'] });
+   queryClient.invalidateQueries({ queryKey: ['hr-users'] });
+   queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+   setRemoveModal(null);
+   toast.success('User removed');
+ },
+ onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to remove user'),
  });
 
  return (
@@ -300,12 +319,23 @@ function UserAccountsTab() {
  {u.lastLogin ? formatDateTime(u.lastLogin) : 'Never'}
  </td>
  <td className="px-4 py-3">
+ <div className="flex flex-wrap items-center gap-3">
  {mayEditUsers && <button
  onClick={() => setResetModal(u)}
  className="text-xs text-gray-400 hover:text-navy-900 dark:text-gray-500 dark:hover:text-white transition-colors font-medium flex items-center gap-1"
  >
  <Lock className="w-3 h-3" /> Reset Password
  </button>}
+ {mayDeleteUsers && u.role !== 'ADMIN' && u.id !== user?.id && <button
+ type="button"
+ onClick={() => setRemoveModal(u)}
+ className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors font-medium flex items-center gap-1"
+ aria-label={`Remove user ${u.email}`}
+ title="Remove user"
+ >
+ <Trash2 className="w-3 h-3" /> Remove
+ </button>}
+ </div>
  </td>
  </tr>
  ))}
@@ -386,6 +416,21 @@ function UserAccountsTab() {
  </div>
  </Modal>
  )}
+
+      {mayDeleteUsers && removeModal && (
+        <Modal isOpen={!!removeModal} onClose={() => setRemoveModal(null)} title="Remove User">
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Remove access for <strong>{removeModal.employee ? `${removeModal.employee.firstName} ${removeModal.employee.lastName}` : removeModal.email}</strong>? They will no longer be able to sign in or appear in user assignment lists. Historical records and audit history will be retained.
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Administrator accounts and your own account cannot be removed.</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setRemoveModal(null)}>Cancel</Button>
+              <Button variant="danger" onClick={() => removeMutation.mutate(removeModal.id)} isLoading={removeMutation.isPending}>Remove User</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
  </div>
  );
 }

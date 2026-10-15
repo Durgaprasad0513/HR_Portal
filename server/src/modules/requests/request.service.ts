@@ -73,6 +73,11 @@ export class RequestService {
   }
 
   async assignRequest(id: string, assignedToId: string, userId: string, reqContext: { ipAddress?: string } = {}) {
+    const assignee = await prisma.user.findFirst({
+      where: { id: assignedToId, isActive: true, deletedAt: null, role: { in: ['ADMIN', 'HR', 'MANAGER'] } },
+      select: { id: true },
+    });
+    if (!assignee) throw new Error('Choose an active staff user to assign this request.');
     const req = await prisma.employeeRequest.update({
       where: { id },
       data: { assignedToId }

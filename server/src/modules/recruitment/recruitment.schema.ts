@@ -1,5 +1,5 @@
 import { z } from "zod";
-export const candidateStages = ["SCREENING", "TELEPHONIC", "HR_INTERVIEW", "TECHNICAL", "MANAGEMENT", "OFFER", "JOINED"] as const;
+export const candidateStages = ["TELEPHONIC", "HR_INTERVIEW", "TECHNICAL", "MANAGEMENT", "OFFER", "JOINED"] as const;
 export const candidateStageSchema = z.object({
   stage: z.enum(candidateStages),
   expectedStage: z.enum(candidateStages),
@@ -7,6 +7,11 @@ export const candidateStageSchema = z.object({
 });
 const interviewRoundSchema = z.enum([
   "TELEPHONIC",
+  "HR_INTERVIEW",
+  "TECHNICAL",
+  "MANAGEMENT",
+]);
+const schedulableInterviewRoundSchema = z.enum([
   "HR_INTERVIEW",
   "TECHNICAL",
   "MANAGEMENT",
@@ -33,7 +38,6 @@ export const updateRequisitionStatusSchema = z.object({
   status: z.enum([
     "REQUIREMENT",
     "SOURCING",
-    "SCREENING",
     "TELEPHONIC",
     "HR_INTERVIEW",
     "TECHNICAL",
@@ -58,23 +62,11 @@ export const createCandidateSchema = z.object({
   source: z.string().optional(),
   requisitionId: z.string(),
   interviewDate: dateSchema.optional(),
-  screeningStatus: z
-    .enum(["SCREENING_PENDING", "SHORTLISTED", "SCREENING_REJECTED"])
-    .optional(),
   interviewerId: z.string().optional(),
-  interviewRound: interviewRoundSchema.optional(),
+  interviewRound: schedulableInterviewRoundSchema.optional(),
   interviewLocation: z.string().optional(),
   interviewDurationMinutes: z.number().int().min(15).max(480).optional(),
   interviewMode: z.enum(["IN_PERSON", "VIDEO", "PHONE"]).optional(),
-});
-
-export const screenCandidateSchema = z.object({
-  screeningStatus: z.enum([
-    "SCREENING_PENDING",
-    "SHORTLISTED",
-    "SCREENING_REJECTED",
-  ]),
-  screeningNotes: z.string().optional(),
 });
 
 export const interviewCandidateSchema = z.object({
@@ -116,7 +108,9 @@ const interviewScheduleFields = z.object({
   interviewerId: z.string().optional(),
 });
 
-export const createInterviewSchema = interviewScheduleFields.refine(
+export const createInterviewSchema = interviewScheduleFields.extend({
+  round: schedulableInterviewRoundSchema,
+}).refine(
   (value) => new Date(value.endsAt) > new Date(value.startsAt),
   {
     path: ["endsAt"],

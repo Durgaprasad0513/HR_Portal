@@ -15,7 +15,7 @@ export function CandidateStageControls({ candidate, editable, onOpenJoining }: S
 
 function StageEditor({ candidate, editable, onOpenJoining }: StageControlsProps) {
   const cache = useQueryClient();
-  const current = candidate.currentStage || "SCREENING";
+  const current = candidate.currentStage === "SCREENING" ? "TELEPHONIC" : candidate.currentStage || "TELEPHONIC";
   const nextStage = CANDIDATE_STAGES[CANDIDATE_STAGES.findIndex(stage => stage.value === current) + 1];
   const [target, setTarget] = useState(nextStage?.value !== "JOINED" ? nextStage?.value || "" : "");
   const [reason, setReason] = useState("");
@@ -31,7 +31,7 @@ function StageEditor({ candidate, editable, onOpenJoining }: StageControlsProps)
       toast.error(error?.response?.data?.message || "Could not update stage");
     },
   });
-  const terminal = candidate.selectionStatus === "SELECTION_REJECTED" || candidate.screeningStatus === "SCREENING_REJECTED" || candidate.joiningStatus === "JOINED";
+  const terminal = candidate.selectionStatus === "SELECTION_REJECTED" || candidate.joiningStatus === "JOINED";
   return <div className="space-y-4">
     {editable && !terminal && current === "OFFER" && onOpenJoining && (
       <div className="rounded-xl border border-slate-border bg-tint p-4">

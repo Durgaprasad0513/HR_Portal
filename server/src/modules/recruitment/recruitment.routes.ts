@@ -15,7 +15,6 @@ import {
   updateRequisitionSchema,
   updateRequisitionStatusSchema,
   createCandidateSchema,
-  screenCandidateSchema,
   interviewCandidateSchema,
   offerCandidateSchema,
   createInterviewSchema,
@@ -130,12 +129,6 @@ router.get(
   "/requisitions/:reqId/candidates",
   requirePermission("recruitment", "view"),
   (req, res) => recruitmentController.getCandidatesByRequisition(req, res),
-);
-router.put(
-  "/candidates/:id/screen",
-  requirePermission("recruitment", "edit"),
-  validateRequest({ body: screenCandidateSchema }),
-  (req, res) => recruitmentController.screenCandidate(req, res),
 );
 router.put(
   "/candidates/:id/interview",

@@ -132,8 +132,9 @@ suite(
       ).toEqual(before.interviewDate);
     });
 
-    it("supports screening rejection and restoration with notes", async () => {
+    it("removes the screening endpoint without changing the candidate", async () => {
       const id = await schedule(await opening());
+      const before = await prisma.candidate.findUniqueOrThrow({ where: { id } });
       expect(
         (
           await api("HR").put(`/candidates/${id}/screen`, {
@@ -141,19 +142,18 @@ suite(
             screeningNotes: "QA screen",
           })
         ).status,
-      ).toBe(200);
+      ).toBe(404);
       expect(
         (
           await api("HR").put(`/candidates/${id}/screen`, {
             screeningStatus: "SHORTLISTED",
           })
         ).status,
-      ).toBe(200);
+      ).toBe(404);
       const candidate = await prisma.candidate.findUniqueOrThrow({
         where: { id },
       });
-      expect(candidate.screeningStatus).toBe("SHORTLISTED");
-      expect(candidate.screeningNotes).toBe("QA screen");
+      expect(candidate).toEqual(before);
     });
 
     it("reopens automatically filled vacancies when capacity increases and refuses capacity below selections", async () => {
@@ -214,19 +214,19 @@ suite(
       const creation = await api("HR").post("/candidates", {candidateName: "Pipeline QA", requisitionId: reqId});
       expect(creation.status).toBe(200);
       const id = creation.body.data.id;
-      expect(creation.body.data.currentStage).toBe("SCREENING");
+      expect(creation.body.data.currentStage).toBe("TELEPHONIC");
       expect((await api("HR").get("/requisitions")).body.data.find((opening: any) => opening.id === reqId).newApplicationCount).toBe(1);
       expect((await api("HR").put(`/candidates/${id}/stage`, {stage: "TELEPHONIC", expectedStage: "SCREENING"})).status).toBe(400);
-      expect((await api("HR").put(`/candidates/${id}/screen`, {screeningStatus: "SHORTLISTED"})).status).toBe(200);
-      expect((await api("HR").get("/requisitions")).body.data.find((opening: any) => opening.id === reqId).newApplicationCount).toBe(0);
       const transitions = await Promise.all([
-        api("HR").put(`/candidates/${id}/stage`, {stage: "TELEPHONIC", expectedStage: "SCREENING"}),
-        api("HR").put(`/candidates/${id}/stage`, {stage: "HR_INTERVIEW", expectedStage: "SCREENING", reason: "Direct HR assessment for this role"}),
+        api("HR").put(`/candidates/${id}/stage`, {stage: "HR_INTERVIEW", expectedStage: "TELEPHONIC"}),
+        api("HR").put(`/candidates/${id}/stage`, {stage: "HR_INTERVIEW", expectedStage: "TELEPHONIC"}),
       ]);
       expect(transitions.map(result => result.status).sort()).toEqual([200, 409]);
       const candidate = await prisma.candidate.findUniqueOrThrow({where: {id}, include: {stageHistory: true}});
       expect(candidate.stageHistory).toHaveLength(1);
-      expect(candidate.stageHistory[0]).toMatchObject({fromStage: "SCREENING", toStage: candidate.currentStage});
+      expect(candidate.currentStage).toBe("HR_INTERVIEW");
+      expect(candidate.stageHistory[0]).toMatchObject({fromStage: "TELEPHONIC", toStage: "HR_INTERVIEW"});
+      expect((await api("HR").get("/requisitions")).body.data.find((opening: any) => opening.id === reqId).newApplicationCount).toBe(0);
       expect((await api("HR").put(`/candidates/${id}/stage`, {stage: "MANAGEMENT", expectedStage: candidate.currentStage, reason: "Skip assessment"})).status).toBe(400);
       const pipeline = await api("HR").get(`/pipeline?requisitionId=${reqId}`);
       expect(pipeline.status).toBe(200);
@@ -234,7 +234,7 @@ suite(
       expect(pipeline.body.data.columns.find((column: any) => column.stage === candidate.currentStage).items[0].id).toBe(id);
       const detail = await api("HR").get(`/requisitions/${reqId}/candidates`);
       expect(detail.body.data[0].stageHistory).toHaveLength(1);
-      expect((await api("EMPLOYEE").put(`/candidates/${id}/stage`, {stage: "SCREENING", expectedStage: candidate.currentStage, reason: "Invalid access"})).status).toBe(403);
+      expect((await api("EMPLOYEE").put(`/candidates/${id}/stage`, {stage: "TELEPHONIC", expectedStage: candidate.currentStage, reason: "Invalid access"})).status).toBe(403);
     });
     const submitCurrentFeedback = async (candidateId: string) => {
       const candidate = await prisma.candidate.findUniqueOrThrow({where: {id: candidateId}});
@@ -256,15 +256,41 @@ suite(
         candidateName: "Synthetic Candidate",
         email: "candidate@recruitment.test",
         requisitionId: id,
-        screeningStatus: "SHORTLISTED",
         interviewDate,
-        interviewRound: "TELEPHONIC",
+        interviewRound: "HR_INTERVIEW",
         interviewerId,
         interviewLocation: "QA Meeting",
       });
       expect(res.status).toBe(200);
+      expect(res.body.data.currentStage).toBe("HR_INTERVIEW");
       return res.body.data.id;
     };
+    test("telephonic intake cannot create an interview appointment", async () => {
+      const reqId = await opening(2);
+      const startsAt = "2029-01-01T09:00:00.000Z";
+      const endsAt = "2029-01-01T10:00:00.000Z";
+      const scheduledApplication = await api("HR").post("/candidates", {
+        candidateName: "Blocked telephonic appointment",
+        requisitionId: reqId,
+        interviewRound: "TELEPHONIC",
+        interviewDate: startsAt,
+      });
+      expect(scheduledApplication.status).toBe(400);
+      expect(await prisma.candidate.count({ where: { requisitionId: reqId } })).toBe(0);
+
+      const creation = await api("HR").post("/candidates", {
+        candidateName: "Telephonic intake",
+        requisitionId: reqId,
+      });
+      expect(creation.status).toBe(200);
+      const id = creation.body.data.id;
+      expect(creation.body.data.currentStage).toBe("TELEPHONIC");
+      expect((await api("HR").post(`/candidates/${id}/interviews`, {
+        round: "TELEPHONIC", startsAt, endsAt,
+      })).status).toBe(400);
+      expect(await prisma.interview.count({ where: { candidateId: id } })).toBe(0);
+      expect((await prisma.candidate.findUniqueOrThrow({ where: { id } })).currentStage).toBe("TELEPHONIC");
+    });
     test("HR schedules, management progresses rounds, selection fills the vacancy and updates dashboard", async () => {
       const reqId = await opening();
       const id = await schedule(reqId);
@@ -272,7 +298,6 @@ suite(
         .get("/api/dashboard/stats")
         .set("Authorization", `Bearer ${tokens.MANAGER}`);
       for (const interviewRound of [
-        "HR_INTERVIEW",
         "TECHNICAL",
         "MANAGEMENT",
       ]) {
@@ -356,7 +381,7 @@ suite(
         `/candidates/${candidateId}/interviews`,
         {
           round: "TECHNICAL",
-          reason: "Technical assessment follows telephonic screening for this role",
+          reason: "Technical assessment follows HR interview for this role",
           startsAt: "2026-11-04T09:00:00.000Z",
           endsAt: "2026-11-04T10:00:00.000Z",
           timezone: "Asia/Kolkata",
@@ -522,7 +547,7 @@ suite(
       expect(
         (await prisma.candidate.findUniqueOrThrow({ where: { id } }))
           .interviewRound,
-      ).toBe("TELEPHONIC");
+      ).toBe("HR_INTERVIEW");
     });
     test("closed requisitions cannot receive new scheduled candidates", async () => {
       const reqId = await opening();
@@ -818,7 +843,7 @@ suite(
             requisitionId: reqId,
             interviewDate: appointment.startsAt.toISOString(),
             interviewerId,
-            interviewRound: "TELEPHONIC",
+            interviewRound: "HR_INTERVIEW",
           })
         ).status,
       ).toBe(400);

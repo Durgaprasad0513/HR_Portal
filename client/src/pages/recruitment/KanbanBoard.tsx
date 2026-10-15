@@ -3,12 +3,11 @@ import { DndContext, DragOverlay, closestCorners, PointerSensor, KeyboardSensor,
 import { sortableKeyboardCoordinates, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Star, MoreHorizontal, Check, Bookmark, Send, FileText, Phone, Users, Code, Briefcase, UserCheck, CheckCircle } from 'lucide-react';
+import { Star, MoreHorizontal, Check, Bookmark, FileText, Phone, Users, Code, Briefcase, UserCheck, CheckCircle } from 'lucide-react';
 
 const COLUMNS = [
   { id: 'REQUIREMENT', title: 'Requirement', icon: FileText, colors: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-600 dark:text-cyan-400' } },
   { id: 'SOURCING', title: 'Sourcing', icon: Bookmark, colors: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' } },
-  { id: 'SCREENING', title: 'Screening', icon: Send, colors: { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400' } },
   { id: 'TELEPHONIC', title: 'Telephonic', icon: Phone, colors: { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400' } },
   { id: 'HR_INTERVIEW', title: 'HR Interview', icon: Users, colors: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' } },
   { id: 'TECHNICAL', title: 'Technical', icon: Code, colors: { bg: 'bg-fuchsia-100 dark:bg-fuchsia-900/30', text: 'text-fuchsia-600 dark:text-fuchsia-400' } },
