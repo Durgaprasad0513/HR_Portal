@@ -212,7 +212,11 @@ export class PerformanceService {
     const managerAverage = metricAverage(data.metricRatings);
     
     if (!isOverride) {
-      if (!currentUser.employeeId || review.employee.managerId !== currentUser.employeeId) {
+      if (review.employeeId === currentUser.employeeId) {
+        throw new Error('You cannot submit the manager appraisal for your own review');
+      }
+      const scope = getModuleScope(currentUser.role as Role, 'performance');
+      if (scope !== 'ORG' && (scope !== 'TEAM' || !currentUser.employeeId || review.employee.managerId !== currentUser.employeeId)) {
         throw new Error('Only the direct manager can submit manager appraisal');
       }
     }

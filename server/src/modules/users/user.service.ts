@@ -1,29 +1,48 @@
 import prisma from '../../config/database';
+import crypto from 'crypto';
 
 export class UserManagementService {
-  async createUser(data: { email: string, password: string, role: string }, adminUserId: string) {
+  async createUser(data: { email: string, password: string, role: string, name: string }, adminUserId: string) {
+    const fullName = data.name.trim();
+    const nameParts = fullName.split(/\s+/).filter(Boolean);
+    const email = data.email.trim();
+    if (!nameParts.length) throw new Error('Name is required');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid email is required');
     const { hashPassword } = await import('../../utils/password');
     const hashed = await hashPassword(data.password);
 
-    const user = await prisma.user.create({
-      data: {
-        email: data.email,
-        password: hashed,
-        role: data.role as any,
-      }
-    });
+    return prisma.$transaction(async (tx) => {
+      const employee = await tx.employee.create({
+        data: {
+          employeeCode: `USR-${crypto.randomBytes(5).toString('hex').toUpperCase()}`,
+          firstName: nameParts[0],
+          lastName: nameParts.slice(1).join(' '),
+          email,
+          joiningDate: new Date(),
+          designation: 'Not specified',
+        },
+      });
+      const user = await tx.user.create({
+        data: {
+          email,
+          password: hashed,
+          role: data.role as any,
+          employeeId: employee.id,
+        },
+      });
 
-    await prisma.auditLog.create({
-      data: {
-        actionPerformed: 'CREATE_USER',
-        moduleAffected: 'roles',
-        recordIdAffected: user.id,
-        newValue: JSON.stringify({ email: data.email, role: data.role }),
-        userId: adminUserId,
-      },
-    });
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'CREATE_USER',
+          moduleAffected: 'roles',
+          recordIdAffected: user.id,
+          newValue: JSON.stringify({ email, role: data.role, employeeId: employee.id }),
+          userId: adminUserId,
+        },
+      });
 
-    return user;
+      return user;
+    });
   }
 
   async getAllUsers(filters: any = {}) {

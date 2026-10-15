@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from '@/api/assets';
 import { employeesApi } from '@/api/employees';
+import { employeeAssignmentOptions } from '@/utils/employeeAssignmentOptions';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { DataTable } from '@/components/ui/DataTable';
@@ -34,6 +35,7 @@ export default function AssetListPage() {
  const [returnConfirmOpen, setReturnConfirmOpen] = useState(false);
  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
  const [editingAsset, setEditingAsset] = useState<any>(null);
+ const [detailsAsset, setDetailsAsset] = useState<any>(null);
  const [search, setSearch] = useState('');
  const debouncedSearch = useDebounce(search, 300);
  const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -73,8 +75,8 @@ export default function AssetListPage() {
  }, [data, debouncedSearch, categoryFilter, statusFilter]);
 
  const { data: empData } = useQuery({
- queryKey: ['employees'],
- queryFn: () => employeesApi.getAll({}),
+ queryKey: ['employees', 'assignment-options'],
+queryFn: () => employeesApi.getAllForAssignments(),
  enabled: isAdminOrHR,
  });
 
@@ -148,7 +150,7 @@ export default function AssetListPage() {
  {
  header: 'Action',
  accessor: (row: any) => (
- <div className="flex items-center gap-2">
+ <div className="flex items-center gap-2" onClick={(event) => event.stopPropagation()}>
  {row.photoUrl && (
  <a
  href={row.photoUrl}
@@ -199,6 +201,8 @@ export default function AssetListPage() {
  )
  },
  ];
+
+ const openDetails = (asset: any) => setDetailsAsset(asset);
 
  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
  e.preventDefault();
@@ -316,11 +320,46 @@ export default function AssetListPage() {
  columns={columns}
  data={filteredData}
  keyField="id"
+ onRowClick={openDetails}
  emptyMessage="No assets found matching your search."
  />
  </div>
  )}
  </div>
+
+ <Modal isOpen={Boolean(detailsAsset)} onClose={() => setDetailsAsset(null)} title="Asset Details" className="max-w-2xl">
+ {detailsAsset && <div className="space-y-4 text-sm">
+ <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:p-5">
+ <div className="flex items-start gap-3">
+ <div className="rounded-xl bg-blue-100 dark:bg-blue-900/40 p-2.5 text-blue-600 dark:text-blue-300"><Laptop className="h-5 w-5" /></div>
+ <div className="min-w-0 flex-1">
+ <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">{detailsAsset.assetType?.replace(/_/g, ' ')}</p>
+ <h3 className="mt-0.5 text-xl font-semibold text-navy-900 dark:text-white break-words">{detailsAsset.brandModel || detailsAsset.assetType}</h3>
+ <p className="mt-1 text-gray-500 dark:text-gray-400">Serial number: {detailsAsset.serialNumber || '—'}</p>
+ </div>
+ </div>
+ <div className="mt-4"><Badge variant={detailsAsset.status === 'IN_USE' ? 'success' : detailsAsset.status === 'RETURN_REQUESTED' ? 'warning' : 'default'}>{detailsAsset.status?.replace(/_/g, ' ')}</Badge></div>
+ </div>
+ <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
+ <h3 className="font-semibold text-navy-900 dark:text-white mb-4">Asset information</h3>
+ <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+ {[
+ ['Category', detailsAsset.assetCategory?.replace(/_/g, ' ') || '—'],
+ ['Assigned to', detailsAsset.assignedEmployee ? `${detailsAsset.assignedEmployee.firstName} ${detailsAsset.assignedEmployee.lastName}` : 'Unassigned'],
+ ['Location', detailsAsset.assetLocation || '—'],
+ ['Purchase date', detailsAsset.purchaseDate ? formatDate(detailsAsset.purchaseDate) : '—'],
+ ['Purchase value', detailsAsset.purchaseValue != null ? `₹${Number(detailsAsset.purchaseValue).toLocaleString('en-IN')}` : '—'],
+ ['Issue date', detailsAsset.issueDate ? formatDate(detailsAsset.issueDate) : '—'],
+ ['Issue condition', detailsAsset.issueCondition || '—'],
+ ['Return date', detailsAsset.returnDate ? formatDate(detailsAsset.returnDate) : '—'],
+ ['Return condition', detailsAsset.returnCondition || '—'],
+ ['Created', formatDateTime(detailsAsset.createdAt)],
+ ].map(([label, value]) => <div key={label}><dt className="text-xs text-gray-500 dark:text-gray-400">{label}</dt><dd className="mt-1 font-medium text-navy-900 dark:text-white break-words">{value}</dd></div>)}
+ </dl>
+ </section>
+ <div className="flex justify-end border-t border-slate-border pt-4"><Button variant="outline" onClick={() => setDetailsAsset(null)}>Close</Button></div>
+ </div>}
+ </Modal>
 
  <Modal isOpen={isModalOpen && (editingAsset ? mayEditAssets : mayAddAssets)} onClose={() => setIsModalOpen(false)} title={editingAsset ? 'Edit Asset' : 'Add New Asset'}>
  <form key={editingAsset ? editingAsset.id : 'new'} onSubmit={handleSubmit} className="space-y-4">
@@ -362,9 +401,7 @@ export default function AssetListPage() {
  <label htmlFor="asset-assignee" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1  text-gray-700 dark:text-gray-300 mb-1">Assign To (Optional)</label>
  <Select id="asset-assignee" name="assignedEmployeeId" defaultValue={editingAsset?.assignedEmployeeId || ""} className="w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600">
  <option value="">Unassigned</option>
- {empData?.data?.map((emp: any) => (
- <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
- ))}
+ {employeeAssignmentOptions(empData?.data)}
  </Select>
  </div>
  <Input name="assetLocation" defaultValue={editingAsset?.assetLocation || ""} label="Location" placeholder="e.g. Hyderabad Office" />

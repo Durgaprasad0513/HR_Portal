@@ -2,7 +2,7 @@ import { candidateStages } from "./recruitment.schema";
 
 export function assertStageTransition(candidate: {
   currentStage: string; screeningStatus: string; selectionStatus: string | null; offerStatus?: string | null; joiningStatus?: string;
-}, stage: string, reason: string | undefined, hasSubmittedFeedback: boolean) {
+}, stage: string, reason: string | undefined, hasSubmittedFeedback: boolean, hasLockedPriorFeedback = false) {
   const from = candidateStages.indexOf(candidate.currentStage as typeof candidateStages[number]);
   const to = candidateStages.indexOf(stage as typeof candidateStages[number]);
   if (from < 0 || to < 0) throw new Error("Unknown recruitment stage.");
@@ -15,6 +15,8 @@ export function assertStageTransition(candidate: {
   if (stage === "OFFER" && candidate.selectionStatus !== "SELECTED")
     throw new Error("Select the candidate before moving to offer.");
   if (stage === candidate.currentStage) return;
+  if (to < from && hasLockedPriorFeedback)
+    throw new Error("A completed interview stage is locked after feedback is submitted.");
   if (stage === "JOINED") throw new Error("Record joining through the accepted offer workflow.");
   if (candidate.currentStage === "JOINED") throw new Error("A joined candidate cannot move back into recruitment.");
   if (to !== from + 1 && !reason?.trim())

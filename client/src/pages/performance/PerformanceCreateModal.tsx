@@ -6,6 +6,7 @@ import { Select } from '@/components/ui/Select';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { performanceApi } from '@/api/performance';
 import { employeesApi } from '@/api/employees';
+import { employeeAssignmentOptions } from '@/utils/employeeAssignmentOptions';
 import toast from 'react-hot-toast';
 
 interface PerformanceCreateModalProps {
@@ -25,8 +26,8 @@ export function PerformanceCreateModal({ isOpen, onClose }: PerformanceCreateMod
  });
 
  const { data: employees } = useQuery({
- queryKey: ['employees'],
- queryFn: () => employeesApi.getAll()
+ queryKey: ['employees', 'assignment-options'],
+queryFn: () => employeesApi.getAllForAssignments()
  });
 
  const createMutation = useMutation({
@@ -62,9 +63,7 @@ export function PerformanceCreateModal({ isOpen, onClose }: PerformanceCreateMod
  <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
  <Select required name="employeeId" label="Employee" value={formData.employeeId} onChange={handleChange}>
  <option value="">Select Employee</option>
- {employees?.data?.map((emp: any) => (
- <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
- ))}
+ {employeeAssignmentOptions(employees?.data)}
  </Select>
  <Select name="reviewPeriod" label="Review Period" value={formData.reviewPeriod} onChange={handleChange}>
  <option value="MONTHLY">Monthly</option>

@@ -1,5 +1,7 @@
 import prisma from '../../config/database';
 import { hasAdminAccess } from '../../utils/roles';
+import { getModuleScope } from '../../utils/authorization';
+import { Role } from '@prisma/client';
 
 interface CurrentUser {
   userId: string;
@@ -20,7 +22,9 @@ export class DashboardService {
     // 1. Headline Metrics
     // Active Employees
     const activeEmployees = hasOrganizationAccess
-      ? await prisma.employee.count({ where: { isActive: true } })
+      ? await prisma.employee.count({
+          where: { isActive: true, NOT: { employeeCode: { startsWith: 'USR-' } } },
+        })
       : 1;
 
     // Monthly Attrition
@@ -30,7 +34,7 @@ export class DashboardService {
 
     if (hasOrganizationAccess) {
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const empWhere = {};
+      const empWhere = { NOT: { employeeCode: { startsWith: 'USR-' } } };
 
       const [recentExits, recentJoins, totalHistoricalEmployees] = await Promise.all([
         prisma.employee.count({
@@ -80,7 +84,9 @@ export class DashboardService {
     // Today's Attendance (from Leave module)
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-    const leaveEmpWhere = {};
+    const leaveEmpWhere = {
+      employee: { is: { NOT: { employeeCode: { startsWith: 'USR-' } } } },
+    };
 
     const absentEmployees = hasOrganizationAccess
       ? await prisma.leave.findMany({
@@ -178,14 +184,19 @@ export class DashboardService {
     const pendingReviewStatuses = currentUser.role === 'MANAGER' ? ['MANAGER_REVIEW', 'FINAL_APPROVAL']
       : currentUser.role === 'ADMIN' ? ['HR_REVIEW', 'MANAGER_REVIEW', 'FINAL_APPROVAL']
       : currentUser.role === 'HR' ? ['HR_REVIEW', 'FINAL_APPROVAL'] : ['EMPLOYEE_REVIEW'];
+    // Match the scope used by PerformanceService.getReviews and the review register.
+    const performanceScope = getModuleScope(currentUser.role as Role, 'performance');
+    const performanceScopeQuery = performanceScope === 'ORG' ? {}
+      : performanceScope === 'TEAM'
+        ? { employee: { managerId: currentUser.employeeId ?? '__no_employee__' } }
+        : { employeeId: currentUser.employeeId ?? '__no_employee__' };
     const pendingReviewsList = await prisma.performanceReview.findMany({
       where: {
         status: { in: pendingReviewStatuses as any },
-        ...(currentUser.role === 'MANAGER'
-          ? { employee: { managerId: currentUser.employeeId ?? '__no_employee__' } }
-          : hasOrganizationAccess ? {} : { employeeId: currentUser.employeeId! })
+        ...performanceScopeQuery
       },
       include: { employee: { select: { firstName: true, lastName: true } } },
+      orderBy: { createdAt: 'asc' },
       take: 5
     });
     for (const review of pendingReviewsList) {
@@ -391,7 +402,7 @@ export class DashboardService {
     // Process employees
     for (const emp of scopedEmployees) {
       const joinDate = new Date(emp.joiningDate);
-      const exitDate = emp.lastWorkingDate ? new Date(emp.lastWorkingDate) : (emp.deactivatedAt ? new Date(emp.deactivatedAt) : (emp.status === 'RESIGNED' || emp.status === 'TERMINATED' ? new Date(emp.updatedAt) : null));
+      const exitDate = emp.lastWorkingDate ? new Date(emp.lastWorkingDate) : (emp.deactivatedAt ? new Date(emp.deactivatedAt) : (emp.status === 'INACTIVE' || emp.status === 'RESIGNED' || emp.status === 'TERMINATED' ? new Date(emp.updatedAt) : null));
       const departmentName = emp.department?.name || 'Unassigned';
 
       if (!departmentHeadcount[departmentName]) {

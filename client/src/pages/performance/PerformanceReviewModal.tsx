@@ -68,7 +68,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  setIsEditingCore(false);
  },
- onError: (error: any) => toast.error(error.message || 'Failed to update')
+ onError: (error: any) => toast.error(error.response?.data?.message || error.message || 'Failed to update')
  });
 
  const selfAppraisalMutation = useMutation({
@@ -79,7 +79,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
- onError: (error: any) => toast.error(error.message || 'Failed to submit')
+ onError: (error: any) => toast.error(error.response?.data?.message || error.message || 'Failed to submit')
  });
 
  const managerAppraisalMutation = useMutation({
@@ -90,7 +90,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
- onError: (error: any) => toast.error(error.message || 'Failed to submit')
+ onError: (error: any) => toast.error(error.response?.data?.message || error.message || 'Failed to submit')
  });
 
  const hrAppraisalMutation = useMutation({
@@ -101,7 +101,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
- onError: (error: any) => toast.error(error.message || 'Failed to submit')
+ onError: (error: any) => toast.error(error.response?.data?.message || error.message || 'Failed to submit')
  });
 
  const finalApprovalMutation = useMutation({
@@ -112,7 +112,7 @@ export function PerformanceReviewModal({ isOpen, onClose, review }: PerformanceR
  queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
  onClose();
  },
- onError: (error: any) => toast.error(error.message || 'Failed to submit')
+ onError: (error: any) => toast.error(error.response?.data?.message || error.message || 'Failed to submit')
  });
 
  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

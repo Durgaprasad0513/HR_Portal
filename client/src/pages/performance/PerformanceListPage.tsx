@@ -30,7 +30,7 @@ export default function PerformanceListPage() {
  const tabs: Tab[] = isManager
  ? ['Team/Company Reviews']
  : isAdminOrHR
- ? ['My Performance', 'Team/Company Reviews']
+ ? ['Team/Company Reviews', 'My Performance']
  : ['My Performance'];
  const [selectedReview, setSelectedReview] = useState<any>(null);
  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

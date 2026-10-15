@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { recruitmentApi } from "@/api/recruitment";
 import { employeesApi } from "@/api/employees";
+import { employeeAssignmentOptions } from "@/utils/employeeAssignmentOptions";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 
@@ -71,8 +72,8 @@ export function ScheduleInterviewModal({
   }, [isOpen, initialRequisitionId, existingCandidate]);
 
   const { data: empData } = useQuery({
-    queryKey: ["employees"],
-    queryFn: () => employeesApi.getAll(),
+    queryKey: ["employees", "assignment-options"],
+queryFn: () => employeesApi.getAllForAssignments(),
     enabled: isOpen,
   });
 
@@ -212,13 +213,7 @@ export function ScheduleInterviewModal({
           required
         >
           <option value="">Select an interviewer...</option>
-          {(empData as any)?.data
-            ?.filter((e: any) => e.isActive)
-            .map((emp: any) => (
-              <option key={emp.id} value={emp.id}>
-                {emp.firstName} {emp.lastName}
-              </option>
-            ))}
+          {employeeAssignmentOptions((empData as any)?.data)}
         </Select>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

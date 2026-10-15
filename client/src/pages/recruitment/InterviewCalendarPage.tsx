@@ -49,11 +49,11 @@ export default function InterviewCalendarPage() {
   const reqId = params.get("reqId") || "";
   const { canEdit, canExport } = usePermissions();
   const cache = useQueryClient();
-  const [view, setView] = useState<"agenda" | "week" | "month">(() => {
+  const [view, setView] = useState<"agenda" | "month">(() => {
     const saved = localStorage.getItem("recruitment-calendar-view");
-    return saved === "agenda" || saved === "week" || saved === "month"
+    return saved === "agenda" || saved === "month"
       ? saved
-      : window.innerWidth < 768 ? "agenda" : "week";
+      : "agenda";
   });
   const [date, setDate] = useState(() => new Date());
   const [bucket, setBucket] = useState(params.get("history") === "true" ? "history" : "active");
@@ -138,15 +138,7 @@ export default function InterviewCalendarPage() {
       (!status || a.status === status) &&
       (!panel || a.interviewerId === panel),
   );
-  const weekStart = new Date(`${dayKey(date)}T12:00:00+05:30`);
-  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
-  const week = Array.from({ length: 7 }, (_, index) => {
-    const day = new Date(weekStart);
-    day.setDate(day.getDate() + index);
-    return day;
-  });
-  const visible = bucket === "history" || view === "agenda" ? filtered : view === "week"
-    ? filtered.filter((appointment: any) => week.some((day) => dayKey(day) === dayKey(appointment.interviewDate)))
+  const visible = bucket === "history" || view === "agenda" ? filtered
     : filtered.filter((appointment: any) => dayKey(appointment.interviewDate) === dayKey(date));
   React.useEffect(() => {
     const next = new URLSearchParams();
@@ -291,18 +283,6 @@ export default function InterviewCalendarPage() {
       </div>
     </article>
   );
-  const calendarEntry = (appointment: any) => (
-    <button
-      key={appointment.id}
-      type="button"
-      onClick={() => navigate(candidateDetailsUrl(appointment.requisitionId, appointment.id))}
-      className="block w-full rounded-md border border-slate-border bg-surface p-2 text-left shadow-sm transition hover:border-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
-    >
-      <span className="block truncate text-xs font-semibold text-text-heading">{appointment.candidateName}</span>
-      <span className="mt-1 block text-[11px] text-text-muted">{time(appointment.interviewDate)} · {readable(appointment.interviewRound)}</span>
-      <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${colors[appointment.status] || colors.SCHEDULED}`}>{readable(appointment.status)}</span>
-    </button>
-  );
   return (
     <div className="space-y-5">
       <PageHeader
@@ -348,15 +328,14 @@ export default function InterviewCalendarPage() {
       </div>
       {bucket === "active" && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-border bg-surface p-3">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Interview view">
-          {(["agenda", "week", "month"] as const).map((value) => (
+          {(["agenda", "month"] as const).map((value) => (
             <Button key={value} variant={view === value ? "primary" : "outline"} aria-pressed={view === value} onClick={() => {
               setView(value);
               localStorage.setItem("recruitment-calendar-view", value);
             }}>{value === "agenda" ? "List" : value[0].toUpperCase() + value.slice(1)}</Button>
           ))}
         </div>
-        <p className="text-sm text-text-muted">{view === "agenda" ? "All interview dates" : view === "week"
-          ? `${week[0].toLocaleDateString("en-IN")} – ${week[6].toLocaleDateString("en-IN")}`
+        <p className="text-sm text-text-muted">{view === "agenda" ? "All interview dates"
           : date.toLocaleDateString("en-IN", { month: "long", year: "numeric" })} · Asia/Kolkata</p>
       </div>
       }
@@ -463,18 +442,6 @@ export default function InterviewCalendarPage() {
         </div>
       ) : isLoading ? (
         <LoadingSpinner />
-      ) : bucket === "active" && view === "week" ? (
-        <div className="overflow-x-auto rounded-xl border border-slate-border bg-surface">
-          <div className="grid min-w-[1120px] grid-cols-7 divide-x divide-slate-border">
-            {week.map((day) => {
-              const dayAppointments = filtered.filter((appointment: any) => dayKey(appointment.interviewDate) === dayKey(day));
-              return <section key={dayKey(day)} aria-label={day.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })} className="min-h-64 min-w-0 bg-tint/40">
-                <h2 className="border-b border-slate-border bg-surface px-3 py-3 text-sm font-semibold text-text-heading">{day.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</h2>
-                <div className="space-y-2 p-2">{dayAppointments.map(calendarEntry)}{!dayAppointments.length && <p className="py-4 text-center text-xs text-text-muted">No interviews</p>}</div>
-              </section>;
-            })}
-          </div>
-        </div>
       ) : (
         <div className={bucket === "active" && view === "month" ? "grid gap-5 md:grid-cols-[20rem_1fr]" : ""}>
           {bucket === "active" && view === "month" && <Calendar value={date} onChange={setDate} getDayCount={(day) => filtered.filter((appointment: any) => dayKey(appointment.interviewDate) === dayKey(day)).length} />}

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { departmentsApi } from '@/api/departments';
 import { employeesApi } from '@/api/employees';
+import { employeeAssignmentOptions } from '@/utils/employeeAssignmentOptions';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -29,8 +30,8 @@ export default function DepartmentFormPage() {
  });
 
  const { data: empData } = useQuery({
- queryKey: ['employees', 'basic'],
- queryFn: () => employeesApi.getAll({ limit: 100 }), // Get some employees for head selection
+ queryKey: ['employees', 'assignment-options'],
+queryFn: () => employeesApi.getAllForAssignments(), // Load all employees for head selection
  });
 
  useEffect(() => {
@@ -108,9 +109,7 @@ export default function DepartmentFormPage() {
  className="flex h-10 w-full rounded-[1.25rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface px-4 py-3 text-[13px] focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
  >
  <option value="">None</option>
- {empData?.data?.map(emp => (
- <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
- ))}
+ {employeeAssignmentOptions(empData?.data)}
  </Select>
  </div>
  
