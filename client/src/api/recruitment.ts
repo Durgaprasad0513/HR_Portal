@@ -66,13 +66,6 @@ export const recruitmentApi = {
     );
     return data;
   },
-  screenCandidate: async (id: string, payload: any) => {
-    const { data } = await apiClient.put<ApiResponse<any>>(
-      `/recruitment/candidates/${id}/screen`,
-      payload,
-    );
-    return data;
-  },
   interviewCandidate: async (id: string, payload: any) => {
     const { data } = await apiClient.put<ApiResponse<any>>(
       `/recruitment/candidates/${id}/interview`,

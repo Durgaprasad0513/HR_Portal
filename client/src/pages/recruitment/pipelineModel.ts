@@ -1,5 +1,4 @@
 export const CANDIDATE_STAGES = [
-  { value: "SCREENING", label: "Screening" },
   { value: "TELEPHONIC", label: "Telephonic" },
   { value: "HR_INTERVIEW", label: "HR interview" },
   { value: "TECHNICAL", label: "Technical interview" },
@@ -9,18 +8,17 @@ export const CANDIDATE_STAGES = [
 ];
 
 export const stageLabel = (stage: string) =>
-  CANDIDATE_STAGES.find((item) => item.value === stage)?.label || "Stage unavailable";
+  stage === "SCREENING" ? "Telephonic" : CANDIDATE_STAGES.find((item) => item.value === stage)?.label || "Stage unavailable";
 
 export function candidateNextAction(candidate: any, now = Date.now()): string {
   if (candidate.joiningStatus === "JOINED") return "Hiring completed";
-  if (candidate.screeningStatus === "SCREENING_REJECTED" || candidate.selectionStatus === "SELECTION_REJECTED") return "Rejected";
+  if (candidate.selectionStatus === "SELECTION_REJECTED") return "Rejected";
   if (candidate.selectionStatus === "SELECTION_ON_HOLD") return "On hold — review decision";
   if (candidate.offerStatus === "OFFER_DECLINED" || candidate.joiningStatus === "NOT_JOINED") return "Review hiring outcome";
   if (candidate.offerStatus === "OFFER_ACCEPTED") return "Confirm joining";
   if (candidate.offerStatus === "RELEASED") return "Await offer response";
   if (candidate.selectionStatus === "SELECTED" || candidate.currentStage === "OFFER") return "Manage offer";
-  if (candidate.screeningStatus === "SCREENING_PENDING") return "Complete screening";
-  if (candidate.currentStage === "SCREENING") return "Advance or schedule first interview";
+  if (["TELEPHONIC", "SCREENING"].includes(candidate.currentStage)) return "Review telephonic assessment";
   const interviews = candidate.interviews || [];
   if (interviews.some((item: any) => item.status === "COMPLETED" && !item.feedbackSubmittedAt)) return "Submit interview feedback";
   const next = interviews.find((item: any) => item.status === "SCHEDULED");

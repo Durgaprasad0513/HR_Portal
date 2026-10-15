@@ -1,15 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { candidateNextAction, stageAge } from "./pipelineModel";
+import { CANDIDATE_STAGES, candidateNextAction, stageAge } from "./pipelineModel";
 
 describe("pipeline next actions", () => {
+  it("starts candidate tracking at the first interview stage", () => {
+    expect(CANDIDATE_STAGES[0]).toEqual({ value: "TELEPHONIC", label: "Telephonic" });
+    expect(CANDIDATE_STAGES.some((stage) => stage.label.toLowerCase() === "screening")).toBe(false);
+  });
   it("keeps rejection and joining outcomes ahead of appointments", () => {
     const interviews = [{ status: "SCHEDULED", startsAt: "2026-10-10T00:00:00Z" }];
     expect(candidateNextAction({ selectionStatus: "SELECTION_REJECTED", interviews })).toBe("Rejected");
     expect(candidateNextAction({ joiningStatus: "JOINED", interviews })).toBe("Hiring completed");
   });
-  it("never treats draft feedback as submitted or a missing appointment as Telephonic", () => {
+  it("never treats draft feedback as submitted and sends unadvanced candidates to their first interview", () => {
     expect(candidateNextAction({ screeningStatus: "SHORTLISTED", currentStage: "TECHNICAL", interviews: [{ round: "TECHNICAL", status: "COMPLETED", feedback: "Draft" }] })).toBe("Submit interview feedback");
-    expect(candidateNextAction({ screeningStatus: "SCREENING_PENDING" })).toBe("Complete screening");
+    expect(candidateNextAction({ currentStage: "TELEPHONIC" })).toBe("Review telephonic assessment");
+    expect(candidateNextAction({ currentStage: "SCREENING" })).toBe("Review telephonic assessment");
   });
   it("flags overdue appointments and distinguishes submitted feedback", () => {
     expect(candidateNextAction({ screeningStatus: "SHORTLISTED", interviews: [{ status: "SCHEDULED", startsAt: "2026-10-10T00:00:00Z" }] }, Date.parse("2026-10-11T00:00:00Z"))).toContain("overdue");

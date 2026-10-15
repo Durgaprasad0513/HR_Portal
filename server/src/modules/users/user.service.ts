@@ -48,7 +48,7 @@ export class UserManagementService {
   async getAllUsers(filters: any = {}) {
     const { search, role } = filters;
 
-    const where: any = {};
+    const where: any = { deletedAt: null };
     if (role) where.role = role;
     if (search) {
       where.OR = [
@@ -186,6 +186,49 @@ export class UserManagementService {
     });
 
     return user;
+  }
+
+  async removeUser(id: string, adminUserId: string) {
+    if (id === adminUserId) throw new Error('You cannot remove your own account');
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { employee: { select: { id: true, employeeCode: true } } },
+    });
+    if (!user || user.deletedAt) throw new Error('User not found');
+    if (user.role === 'ADMIN') throw new Error('Administrator accounts cannot be removed');
+
+    const removedAt = new Date();
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id },
+        data: {
+          deletedAt: removedAt,
+          isActive: false,
+          deactivatedAt: removedAt,
+          tokenVersion: { increment: 1 },
+        },
+      });
+
+      // Role Management creates lightweight USR-* employee profiles for assignment
+      // dropdowns. Deactivate those profiles too while retaining historical links.
+      if (user.employee?.employeeCode.startsWith('USR-')) {
+        await tx.employee.update({
+          where: { id: user.employee.id },
+          data: { isActive: false, status: 'INACTIVE', deactivatedAt: removedAt },
+        });
+      }
+
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: 'REMOVE_USER',
+          moduleAffected: 'roles',
+          recordIdAffected: id,
+          oldValue: JSON.stringify({ email: user.email, role: user.role }),
+          userId: adminUserId,
+        },
+      });
+    });
   }
 }
 

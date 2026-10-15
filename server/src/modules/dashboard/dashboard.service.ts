@@ -18,12 +18,13 @@ export class DashboardService {
   async getStats(currentUser: CurrentUser) {
     const hasOrganizationAccess = hasAdminAccess(currentUser.role);
     const now = new Date();
+    const dashboardOffice = 'Hyderabad Office';
 
     // 1. Headline Metrics
     // Active Employees
     const activeEmployees = hasOrganizationAccess
       ? await prisma.employee.count({
-          where: { isActive: true, NOT: { employeeCode: { startsWith: 'USR-' } } },
+          where: { isActive: true, location: dashboardOffice, NOT: { employeeCode: { startsWith: 'USR-' } } },
         })
       : 1;
 
@@ -79,13 +80,13 @@ export class DashboardService {
     // Recruitment Stats Fixes
     const selectedCandidates = hasOrganizationAccess ? await prisma.candidate.count({ where: { selectionStatus: 'SELECTED' } }) : 0;
     const offersAccepted = hasOrganizationAccess ? await prisma.candidate.count({ where: { offerStatus: 'OFFER_ACCEPTED' } }) : 0;
-    const invitedForInterview = hasOrganizationAccess ? await prisma.candidate.count({ where: { screeningStatus: 'SHORTLISTED' } }) : 0;
+    const invitedForInterview = hasOrganizationAccess ? await prisma.candidate.count({ where: { interviewDate: { not: null } } }) : 0;
 
     // Today's Attendance (from Leave module)
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     const leaveEmpWhere = {
-      employee: { is: { NOT: { employeeCode: { startsWith: 'USR-' } } } },
+      employee: { is: { isActive: true, location: dashboardOffice, NOT: { employeeCode: { startsWith: 'USR-' } } } },
     };
 
     const absentEmployees = hasOrganizationAccess
@@ -262,8 +263,9 @@ export class DashboardService {
       }
     };
 
-    // Calculate 7-day attendance trend
-    const trendDays = 7;
+    // Keep a month of daily attendance points so the dashboard can switch
+    // between day, week, and month views without another request.
+    const trendDays = 30;
     const trendStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - trendDays + 1);
     const trendEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     
@@ -298,7 +300,7 @@ export class DashboardService {
       }
       
       attendanceTrend.push({
-         date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+         date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
          present: presentOnDay,
          absent: absentOnDay
       });
@@ -307,6 +309,7 @@ export class DashboardService {
     return {
       headline: {
         activeEmployees,
+        employeeOffice: hasOrganizationAccess ? dashboardOffice : null,
         monthlyAttrition: Math.round(monthlyAttrition * 10) / 10,
         exitsThisMonth,
         joinersThisMonth,
@@ -641,7 +644,6 @@ export class DashboardService {
       name: c.candidateName,
       email: c.email,
       position: c.requisition?.positionTitle || 'N/A',
-      screeningStatus: c.screeningStatus,
       selectionStatus: c.selectionStatus,
       offerStatus: c.offerStatus
     }));

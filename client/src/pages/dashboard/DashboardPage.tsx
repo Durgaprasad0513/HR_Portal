@@ -26,7 +26,6 @@ import { useDashboardStats } from './useDashboardStats';
 const RECRUITMENT_STAGE_ORDER = [
   'REQUIREMENT',
   'SOURCING',
-  'SCREENING',
   'TELEPHONIC',
   'HR_INTERVIEW',
   'TECHNICAL',
@@ -49,6 +48,7 @@ const normalizeRecruitmentStage = (value?: string | null) => {
     'HR_ROUND': 'HR_INTERVIEW',
     'TECHNICAL_ROUND': 'TECHNICAL',
     'MANAGEMENT_ROUND': 'MANAGEMENT',
+    'SCREENING': 'TELEPHONIC',
   };
   return aliases[stage] || stage;
 };
@@ -248,7 +248,6 @@ export default function DashboardPage() {
  const getStatusClasses = (status: string) => {
  if (status === 'REQUIREMENT') return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400';
  if (status === 'SOURCING') return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
- if (status === 'SCREENING') return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
  if (status === 'TELEPHONIC') return 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400';
  if (status === 'HR_INTERVIEW') return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
  if (status === 'TECHNICAL') return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-400';
@@ -277,7 +276,6 @@ export default function DashboardPage() {
      candidates: (requisition.candidates || []).filter((candidate: any) =>
        RECRUITMENT_LEVELS.some(level => level.stage === normalizeRecruitmentStage(candidate.currentStage || candidate.interviewRound))
        && !['SELECTED', 'SELECTION_REJECTED'].includes(candidate.selectionStatus)
-       && candidate.screeningStatus !== 'SCREENING_REJECTED'
        && candidate.offerStatus !== 'OFFER_DECLINED'
        && candidate.joiningStatus !== 'NOT_JOINED'
        && (!candidate.offerStatus || candidate.offerStatus === 'NOT_RELEASED')),

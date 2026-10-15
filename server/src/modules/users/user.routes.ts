@@ -14,5 +14,6 @@ router.get('/:id', requirePermission('roles', 'view'), userController.getUserByI
 router.patch('/:id/role', requirePermission('roles', 'edit'), userController.changeRole);
 router.patch('/:id/status', requirePermission('roles', 'edit'), userController.toggleStatus);
 router.post('/:id/reset-password', requirePermission('roles', 'edit'), userController.resetPassword);
+router.delete('/:id', requirePermission('roles', 'delete'), userController.removeUser);
 
 export default router;

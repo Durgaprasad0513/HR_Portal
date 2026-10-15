@@ -64,7 +64,7 @@ export default function LeaveApprovalsPage() {
  return;
  }
 
- const headers = ['Employee', 'Employee Code', 'Department', 'Leave Type', 'Start Date', 'End Date', 'Days', 'Reason', 'Status', 'Applied On'];
+ const headers = ['Employee', 'Employee Code', 'Department', 'Leave Type', 'Start Date', 'End Date', 'Days', 'Reason', 'Status', 'Approved By', 'Applied On'];
  const rows = leaves.map((leave: any) => [
  `${leave.employee?.firstName || ''} ${leave.employee?.lastName || ''}`,
  leave.employee?.employeeCode || '',
@@ -75,6 +75,7 @@ export default function LeaveApprovalsPage() {
  leave.totalDays,
  `"${(leave.reason || '').replace(/"/g, '""')}"`,
  leave.status,
+ `${leave.approver?.firstName || ''} ${leave.approver?.lastName || ''}`.trim(),
  formatDate(leave.createdAt),
  ]);
 
@@ -104,6 +105,12 @@ export default function LeaveApprovalsPage() {
  {
  header: 'Employee',
  accessor: (row: any) => `${row.employee?.firstName} ${row.employee?.lastName}`
+ },
+ {
+ header: 'Approved By',
+ accessor: (row: any) => row.approver
+ ? `${row.approver.firstName || ''} ${row.approver.lastName || ''}`.trim() || 'Not recorded'
+ : row.status === 'PENDING' ? 'Pending' : 'Not recorded'
  },
  { header: 'Type', accessor: 'leaveType' as const },
  {

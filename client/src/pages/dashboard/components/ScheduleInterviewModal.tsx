@@ -141,10 +141,9 @@ queryFn: () => employeesApi.getAllForAssignments(),
       interviewLocation: interviewLocation || undefined,
       interviewDurationMinutes: Number(durationMinutes),
       interviewMode,
-      screeningStatus: "SHORTLISTED", // Auto-shortlist for interview
       schedule: existingCandidate
         ? {
-            round: interviewRound || "TELEPHONIC",
+            round: interviewRound || "HR_INTERVIEW",
             startsAt: startsAt.toISOString(),
             endsAt: new Date(
               startsAt.getTime() + Number(durationMinutes) * 60000,
@@ -224,7 +223,6 @@ queryFn: () => employeesApi.getAllForAssignments(),
             required
           >
             <option value="">Select interview type...</option>
-            <option value="TELEPHONIC">Telephonic</option>
             <option value="HR_INTERVIEW">HR Interview</option>
             <option value="TECHNICAL">Technical Interview</option>
             <option value="MANAGEMENT">Management Interview</option>

@@ -447,7 +447,7 @@ export default function TravelListPage() {
  </div>
  </div>
 
- <Input id="advanceApproved" label="Advance to Disburse (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
+ <Input id="advanceApproved" label="Amount to Disburse (₹)" type="number" step="0.01" min="0" onKeyDown={(e) => { if(e.key === "-") e.preventDefault(); }} defaultValue={0} />
  
  <div className="flex justify-end space-x-3 pt-4 border-t border-slate-border dark:border-slate-border">
  <Button variant="outline" onClick={() => setApprovalModalOpen(false)}>Cancel</Button>

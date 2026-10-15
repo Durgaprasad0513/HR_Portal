@@ -36,6 +36,12 @@ export default function OfficeExpensesPage() {
  };
  const money = (value: any) => `₹${Number(value ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
  const statusLabel = (value: string | undefined) => value?.replace(/_/g, ' ') || '—';
+ const expenseAmounts = (expense: any) => {
+   const requested = Number(expense?.amount ?? 0);
+   const paid = expense?.status === 'PAID' ? requested : 0;
+   const due = expense?.status === 'REJECTED' ? 0 : Math.max(0, requested - paid);
+   return { requested, paid, due };
+ };
 
  const { data, isLoading } = useQuery({
  queryKey: ['office-expenses'],
@@ -259,6 +265,12 @@ export default function OfficeExpensesPage() {
      </section>
      <section className="rounded-2xl border border-slate-border p-4 sm:p-5">
        <h3 className="font-semibold text-text-heading mb-4">Approval & payment</h3>
+       <dl className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+         <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60"><dt className="text-xs text-text-muted">Amount requested</dt><dd className="mt-1 text-lg font-semibold text-text-heading">{money(expenseAmounts(selectedExpense).requested)}</dd></div>
+         <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60"><dt className="text-xs text-text-muted">Amount paid</dt><dd className="mt-1 text-lg font-semibold text-text-heading">{money(expenseAmounts(selectedExpense).paid)}</dd></div>
+         <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60"><dt className="text-xs text-text-muted">Amount due</dt><dd className="mt-1 text-lg font-semibold text-text-heading">{money(expenseAmounts(selectedExpense).due)}</dd></div>
+       </dl>
+       {selectedExpense.status === 'REJECTED' && <p className="-mt-3 mb-4 text-xs text-text-muted">Rejected expenses are not payable.</p>}
        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
          <div><dt className="text-xs text-text-muted">Current status</dt><dd className="mt-1 font-medium text-text-heading capitalize">{statusLabel(selectedExpense.status).toLowerCase()}</dd></div>
          <div><dt className="text-xs text-text-muted">Reviewed by</dt><dd className="mt-1 font-medium text-text-heading break-words">{[selectedExpense.approvedBy?.firstName, selectedExpense.approvedBy?.lastName].filter(Boolean).join(' ') || '—'}</dd></div>

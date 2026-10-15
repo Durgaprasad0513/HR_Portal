@@ -37,7 +37,7 @@ export const authenticate = async (
       where: { id: decoded.userId }
     });
 
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || user.deletedAt) {
       sendError(res, 'Account deactivated or invalid.', 401);
       return;
     }

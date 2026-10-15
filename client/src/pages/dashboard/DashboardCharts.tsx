@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -41,15 +42,45 @@ export function DashboardCharts({
   shouldAnimate,
   onViewExpenses,
 }: DashboardChartsProps) {
+  const [attendanceRange, setAttendanceRange] = useState<'day' | 'week' | 'month'>('week');
+  const visibleAttendance = useMemo(() => {
+    const points = attendanceTrend || [];
+    const pointCount = attendanceRange === 'day' ? 1 : attendanceRange === 'week' ? 7 : 30;
+    return points.slice(-pointCount);
+  }, [attendanceTrend, attendanceRange]);
+  const selectedAttendanceDay = attendanceRange === 'day' ? visibleAttendance[0] : undefined;
+
   return (
     <>
       {isAdminOrHR && attendanceTrend && (
         <BoxReveal disabled={!shouldAnimate} boxColor="var(--skeleton)" duration={0.5} width="100%" className="h-full [&>div:first-child]:h-full">
           <div className="min-w-0 w-full bg-surface rounded-xl shadow-sm border border-slate-border p-5 flex flex-col h-full">
-            <h3 className="font-bold text-text-heading mb-4 text-sm uppercase tracking-wider">Attendance (7 Days)</h3>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h3 className="font-bold text-text-heading text-sm uppercase tracking-wider">Attendance ({attendanceRange})</h3>
+              <div className="inline-flex rounded-lg border border-slate-border p-1" role="group" aria-label="Attendance history range">
+                {(['day', 'week', 'month'] as const).map((range) => (
+                  <button
+                    key={range}
+                    type="button"
+                    aria-pressed={attendanceRange === range}
+                    onClick={() => setAttendanceRange(range)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${attendanceRange === range ? 'bg-accent-600 text-white' : 'text-text-muted hover:bg-tint hover:text-text-heading'}`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {selectedAttendanceDay && (
+              <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-text-muted" aria-live="polite">
+                <span className="font-medium text-text-heading">{selectedAttendanceDay.date}</span>
+                <span>Absent: <strong className="text-rose-500">{selectedAttendanceDay.absent}</strong></span>
+                <span>Present: <strong className="text-emerald-500">{selectedAttendanceDay.present}</strong></span>
+              </div>
+            )}
             <div className="flex-1 min-h-48 w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={attendanceTrend} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+                <AreaChart data={visibleAttendance} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
@@ -68,8 +99,8 @@ export function DashboardCharts({
                     itemStyle={{ fontSize: '12px', fontWeight: 500 }}
                     labelStyle={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}
                   />
-                  <Area type="monotone" name="Present" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" />
-                  <Area type="monotone" name="Absent" dataKey="absent" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorAbsent)" />
+                  <Area type="monotone" name="Present" dataKey="present" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" dot={attendanceRange === 'day' ? { r: 5 } : false} activeDot={{ r: 7 }} />
+                  <Area type="monotone" name="Absent" dataKey="absent" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorAbsent)" dot={attendanceRange === 'day' ? { r: 5 } : false} activeDot={{ r: 7 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

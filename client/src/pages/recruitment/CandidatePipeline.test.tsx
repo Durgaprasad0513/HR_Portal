@@ -6,7 +6,7 @@ import { CandidatePipeline } from "./CandidatePipeline";
 import { CandidateStageControls } from "./CandidateStageControls";
 
 vi.mock("@/api/recruitment", () => ({ recruitmentApi: {
-  getPipeline: vi.fn(async () => ({ data: { columns: [{ stage: "SCREENING", total: 104, items: [{ id: "qa", candidateName: "QA Candidate", requisitionId: "opening", currentStage: "SCREENING", screeningStatus: "SCREENING_PENDING", requisition: { positionTitle: "Developer" } }] }] } })),
+  getPipeline: vi.fn(async () => ({ data: { columns: [{ stage: "TELEPHONIC", total: 104, items: [{ id: "qa", candidateName: "QA Candidate", requisitionId: "opening", currentStage: "TELEPHONIC", screeningStatus: "SCREENING_PENDING", requisition: { positionTitle: "Developer" } }] }] } })),
   moveCandidateStage: vi.fn(),
 } }));
 
@@ -24,7 +24,7 @@ describe("pipeline access and complete counts", () => {
     expect(screen.getByText("Showing 1–25 of 104 candidates")).toBeInTheDocument();
   });
   it("does not expose stage mutation controls to a read-only manager", () => {
-    render(wrapper(<CandidateStageControls editable={false} candidate={{ id: "qa", currentStage: "SCREENING", stageHistory: [{ id: "event", fromStage: "SCREENING", toStage: "TELEPHONIC", reason: "Shortlist reviewed", createdAt: "2026-10-12T09:00:00Z" }] }} />));
+    render(wrapper(<CandidateStageControls editable={false} candidate={{ id: "qa", currentStage: "TELEPHONIC", stageHistory: [{ id: "event", fromStage: "SCREENING", toStage: "TELEPHONIC", reason: "Shortlist reviewed", createdAt: "2026-10-12T09:00:00Z" }] }} />));
     expect(screen.queryByRole("button", { name: "Move stage" })).toBeNull();
     expect(screen.getByText("Shortlist reviewed")).toBeInTheDocument();
   });

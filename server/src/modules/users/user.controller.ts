@@ -71,6 +71,15 @@ export class UserController {
       return sendError(res, error.message, 400);
     }
   }
+
+  async removeUser(req: AuthRequest, res: Response) {
+    try {
+      await userManagementService.removeUser(req.params.id as string, req.user!.userId);
+      return sendSuccess(res, null, 'User removed successfully');
+    } catch (error: any) {
+      return sendError(res, error.message, error.message === 'User not found' ? 404 : 400);
+    }
+  }
 }
 
 export const userController = new UserController();

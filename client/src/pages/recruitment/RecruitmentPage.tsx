@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recruitmentApi } from "@/api/recruitment";
@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   Download,
   CheckCircle2,
+  Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInterviewModal";
@@ -42,9 +43,12 @@ export default function RecruitmentPage() {
   const [closureRequest, setClosureRequest] = useState<any>(null);
   const [closureReason, setClosureReason] = useState("");
   const [applicationOpen, setApplicationOpen] = useState(false);
+  const [isParsingResume, setIsParsingResume] = useState(false);
+  const [resumeFileName, setResumeFileName] = useState("");
+  const applicationFormRef = useRef<HTMLFormElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
   const [scheduleCandidate, setScheduleCandidate] = useState<any>(null);
-  const [screeningNotes, setScreeningNotes] = useState("");
-  const [reviewStage, setReviewStage] = useState("SCREENING");
+  const [reviewStage, setReviewStage] = useState("TELEPHONIC");
   const [joiningOutcome, setJoiningOutcome] = useState("PENDING");
   React.useEffect(() => {
     const next = normalizeRecruitmentSearch(searchParams);
@@ -93,13 +97,10 @@ export default function RecruitmentPage() {
     (candidate: any) => candidate.id === routeCandidateId,
   );
   React.useEffect(() => {
-    setScreeningNotes(routeCandidate?.screeningNotes || "");
-  }, [routeCandidate?.id, routeCandidate?.screeningNotes]);
-  React.useEffect(() => {
     setJoiningOutcome(routeCandidate?.joiningStatus || "PENDING");
   }, [routeCandidate?.id, routeCandidate?.joiningStatus]);
   const candidateStages = CANDIDATE_STAGES;
-  const currentCandidateStage = routeCandidate?.currentStage || "SCREENING";
+  const currentCandidateStage = routeCandidate?.currentStage === "SCREENING" ? "TELEPHONIC" : routeCandidate?.currentStage || "TELEPHONIC";
   const completedRoundInterviews = (routeCandidate?.interviews || []).filter(
     (interview: any) => interview.round === reviewStage && interview.status === "COMPLETED",
   );
@@ -154,32 +155,6 @@ export default function RecruitmentPage() {
       ),
   });
 
-  const screenMutation = useMutation({
-    mutationFn: ({
-      id,
-      screeningStatus,
-      notes,
-    }: {
-      id: string;
-      screeningStatus: string;
-      notes?: string;
-    }) =>
-      recruitmentApi.screenCandidate(id, {
-        screeningStatus,
-        screeningNotes: notes,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["candidates"] });
-      queryClient.invalidateQueries({ queryKey: ["candidate-register"] });
-      queryClient.invalidateQueries({ queryKey: ["candidate-pipeline"] });
-      toast.success("Screening updated");
-      queryClient.invalidateQueries({ queryKey: ["interviews"] });
-    },
-    onError: (error: any) =>
-      toast.error(
-        error?.response?.data?.message || "Could not update screening",
-      ),
-  });
   const offerMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: any }) =>
       recruitmentApi.offerCandidate(id, payload),
@@ -260,16 +235,6 @@ export default function RecruitmentPage() {
         error?.response?.data?.message || "Could not save candidate decision",
       ),
   });
-  const handleScreeningSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const values = new FormData(event.currentTarget);
-    if (!routeCandidate) return;
-    screenMutation.mutate({
-      id: routeCandidate.id,
-      screeningStatus: String(values.get("screeningStatus")),
-      notes: screeningNotes,
-    });
-  };
   const handleOfferSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const values = new FormData(event.currentTarget);
@@ -531,8 +496,8 @@ export default function RecruitmentPage() {
                         (interview: any) => interview.round === stage.value && interview.status === "COMPLETED" && !!interview.feedbackSubmittedAt,
                       );
                       const complete =
-                        stage.value === "SCREENING"
-                          ? routeCandidate.screeningStatus === "SHORTLISTED"
+                        stage.value === "TELEPHONIC"
+                          ? index < candidateStageIndex
                           : stage.value === "JOINED" ? routeCandidate.joiningStatus === "JOINED"
                           : stage.value === "OFFER"
                             ? ["OFFER_ACCEPTED", "OFFER_DECLINED"].includes(
@@ -585,45 +550,6 @@ export default function RecruitmentPage() {
 
                   {canEdit("recruitment") && (
                     <div className="space-y-4">
-                      {reviewStage === "SCREENING" && <form
-                        onSubmit={handleScreeningSubmit}
-                        className="space-y-3 rounded-xl border border-slate-border p-4"
-                      >
-                        <h4 className="font-semibold">Screening decision</h4>
-                        <Select
-                          name="screeningStatus"
-                          label="Screening status"
-                          defaultValue={
-                            routeCandidate.screeningStatus ||
-                            "SCREENING_PENDING"
-                          }
-                        >
-                          <option value="SCREENING_PENDING">Pending</option>
-                          <option value="SHORTLISTED">Shortlisted</option>
-                          <option value="SCREENING_REJECTED">Rejected</option>
-                        </Select>
-                        <label
-                          className="block text-sm font-medium"
-                          htmlFor="screening-notes"
-                        >
-                          Screening notes
-                        </label>
-                        <textarea
-                          id="screening-notes"
-                          className="min-h-24 w-full rounded-lg border border-slate-border bg-surface p-3 text-sm"
-                          value={screeningNotes}
-                          onChange={(e) => setScreeningNotes(e.target.value)}
-                          placeholder="Record relevant screening notes"
-                        />
-                        <Button
-                          type="submit"
-                          disabled={screenMutation.isPending}
-                        >
-                          {screenMutation.isPending
-                            ? "Saving…"
-                            : "Save screening"}
-                        </Button>
-                      </form>}
                       {["OFFER", "JOINED"].includes(reviewStage) && <form
                         key={`${routeCandidate.id}:${reviewStage}`}
                         onSubmit={handleOfferSubmit}
@@ -715,10 +641,6 @@ export default function RecruitmentPage() {
                       </form>}
                     </div>
                   )}
-                  {!canEdit("recruitment") && reviewStage === "SCREENING" && <div className="rounded-xl border border-slate-border p-4">
-                    <p className="font-medium">{(routeCandidate.screeningStatus || "SCREENING_PENDING").replace("SCREENING_", "").replaceAll("_", " ").toLowerCase()}</p>
-                    <p className="mt-2 whitespace-pre-wrap text-sm text-text-muted">{routeCandidate.screeningNotes || "No screening notes"}</p>
-                  </div>}
                   {["OFFER", "JOINED"].includes(reviewStage) && <dl className="grid grid-cols-1 gap-3 rounded-xl border border-slate-border p-4 text-sm sm:grid-cols-2">
                     <div><dt className="text-text-muted">{reviewStage === "OFFER" ? "Offer response" : "Joining outcome"}</dt><dd className="mt-1 font-medium">{(reviewStage === "OFFER" ? routeCandidate.offerStatus || "NOT_RELEASED" : routeCandidate.joiningStatus || "PENDING").replace("OFFER_", "").replaceAll("_", " ").toLowerCase()}</dd></div>
                     <div><dt className="text-text-muted">Expected joining date</dt><dd className="mt-1 font-medium">{routeCandidate.joiningDate ? new Date(routeCandidate.joiningDate).toLocaleDateString("en-IN", {timeZone:"Asia/Kolkata"}) : "Not provided"}</dd></div>
@@ -726,8 +648,8 @@ export default function RecruitmentPage() {
                     {reviewStage === "OFFER" && canViewRestricted("recruitment") && <div><dt className="text-text-muted">Offered salary</dt><dd className="mt-1 font-medium">{routeCandidate.offeredSalary != null ? `₹${Number(routeCandidate.offeredSalary).toLocaleString("en-IN")}` : "Not provided"}</dd></div>}
                     {reviewStage === "JOINED" && <div><dt className="text-text-muted">Actual joining date</dt><dd className="mt-1 font-medium">{routeCandidate.actualJoiningDate ? new Date(routeCandidate.actualJoiningDate).toLocaleDateString("en-IN", {timeZone:"Asia/Kolkata"}) : "Not provided"}</dd></div>}
                   </dl>}
-                  {!["SCREENING", "OFFER", "JOINED"].includes(reviewStage) && <>
-                  {canAdd("recruitment") && !["SELECTED", "SELECTION_REJECTED"].includes(routeCandidate.selectionStatus) && routeCandidate.screeningStatus !== "SCREENING_REJECTED" && routeCandidate.joiningStatus !== "JOINED" && <Button onClick={() => setScheduleCandidate({ ...routeCandidate, interviewId: undefined, interviewDate: undefined, interviewRound: reviewStage })}>Schedule {candidateStages.find(stage => stage.value === reviewStage)?.label.toLowerCase()}</Button>}
+                  {!["TELEPHONIC", "OFFER", "JOINED"].includes(reviewStage) && <>
+                  {canAdd("recruitment") && !["SELECTED", "SELECTION_REJECTED"].includes(routeCandidate.selectionStatus) && routeCandidate.joiningStatus !== "JOINED" && <Button onClick={() => setScheduleCandidate({ ...routeCandidate, interviewId: undefined, interviewDate: undefined, interviewRound: reviewStage })}>Schedule {candidateStages.find(stage => stage.value === reviewStage)?.label.toLowerCase()}</Button>}
                   {completedRoundInterviews.length > 0 && <section className="space-y-3" aria-label="Interview history">
                     <h4 className="font-semibold">Round appointments & feedback</h4>
                     {completedRoundInterviews.map((interview: any) => (
@@ -1081,10 +1003,15 @@ export default function RecruitmentPage() {
       </Modal>
       <Modal
         isOpen={applicationOpen && canAdd("recruitment")}
-        onClose={() => setApplicationOpen(false)}
+        onClose={() => {
+          setApplicationOpen(false);
+          setIsParsingResume(false);
+          setResumeFileName("");
+        }}
         title="New application"
       >
         <form
+          ref={applicationFormRef}
           className="space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
@@ -1108,6 +1035,71 @@ export default function RecruitmentPage() {
             });
           }}
         >
+          <div className="rounded-xl border border-slate-border p-4">
+            <p className="mb-2 text-sm font-semibold text-text-heading">Fill application from resume</p>
+            <input
+              ref={resumeInputRef}
+              id="candidate-resume"
+              type="file"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              disabled={isParsingResume}
+              hidden
+              onChange={async (event) => {
+                const fileInput = event.currentTarget;
+                const file = fileInput.files?.[0];
+                if (!file) return;
+                if (file.size > 20 * 1024 * 1024) {
+                  toast.error("Resume must be 20 MB or smaller.");
+                  setResumeFileName("");
+                  fileInput.value = "";
+                  return;
+                }
+                setResumeFileName(file.name);
+                setIsParsingResume(true);
+                try {
+                  const { extractResumeFields, readResumeText } = await import("./resumeAutofill");
+                  const text = await readResumeText(file);
+                  const fields = extractResumeFields(text);
+                  const form = applicationFormRef.current;
+                  let filledCount = 0;
+                  for (const [name, value] of Object.entries(fields)) {
+                    const input = form?.elements.namedItem(name);
+                    if (input instanceof HTMLInputElement && value) {
+                      input.value = value;
+                      input.dispatchEvent(new Event("input", { bubbles: true }));
+                      input.dispatchEvent(new Event("change", { bubbles: true }));
+                      filledCount += 1;
+                    }
+                  }
+                  if (filledCount) {
+                    toast.success(`Filled ${filledCount} field${filledCount === 1 ? "" : "s"}. Review the details before saving.`);
+                  } else {
+                    toast.error("No supported details were found. This resume may be scanned or use an unsupported layout.");
+                  }
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Could not read this resume.");
+                } finally {
+                  setIsParsingResume(false);
+                  fileInput.value = "";
+                }
+              }}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isParsingResume}
+                onClick={() => resumeInputRef.current?.click()}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {isParsingResume ? "Reading resume…" : "Upload resume"}
+              </Button>
+              {resumeFileName && <span className="max-w-full truncate text-xs text-text-muted">{resumeFileName}</span>}
+            </div>
+            <p className="mt-2 text-xs text-text-muted">
+              Choose a PDF or DOCX (up to 20 MB). Extracted details stay editable; review them before saving.
+            </p>
+          </div>
           <Select name="requisitionId" label="Opening" required>
             <option value="">Choose an opening</option>
             {activeRequisitions.map((req: any) => (
@@ -1138,7 +1130,7 @@ export default function RecruitmentPage() {
               <Input name="currentSalary" label="Current salary (₹, optional)" type="number" min="0" step="0.01" />
               <Input name="expectedSalary" label="Expected salary (₹, optional)" type="number" min="0" step="0.01" />
             </div>}
-            <Input name="noticePeriod" label="Notice period (days)" type="number" min="0" step="1" placeholder="0 for immediate availability" required />
+            <Input name="noticePeriod" label="Notice period (days, optional)" type="number" min="0" step="1" placeholder="0 for immediate availability" />
             <Input name="source" label="Application source (optional)" placeholder="Referral, job portal, company website…" />
           </fieldset>
           <Button type="submit" disabled={applicationMutation.isPending}>
