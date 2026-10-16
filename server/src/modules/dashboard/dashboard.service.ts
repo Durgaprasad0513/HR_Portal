@@ -187,7 +187,9 @@ export class DashboardService {
       : currentUser.role === 'HR' ? ['HR_REVIEW', 'FINAL_APPROVAL'] : ['EMPLOYEE_REVIEW'];
     // Match the scope used by PerformanceService.getReviews and the review register.
     const performanceScope = getModuleScope(currentUser.role as Role, 'performance');
-    const performanceScopeQuery = performanceScope === 'ORG' ? {}
+    const performanceScopeQuery = currentUser.role === 'MANAGER'
+      ? { employee: { managerId: currentUser.employeeId ?? '__no_employee__' } }
+      : performanceScope === 'ORG' ? {}
       : performanceScope === 'TEAM'
         ? { employee: { managerId: currentUser.employeeId ?? '__no_employee__' } }
         : { employeeId: currentUser.employeeId ?? '__no_employee__' };

@@ -6,6 +6,14 @@ import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3
 import { createFileStorage, imageContentType, MAX_FILE_BYTES, newFilename } from '../src/config/storage';
 
 const env = { STORAGE_PROVIDER: 'r2', R2_ACCOUNT_ID: 'a'.repeat(32), R2_BUCKET: 'synthetic-qa', R2_ACCESS_KEY_ID: 'synthetic', R2_SECRET_ACCESS_KEY: 'synthetic' };
+const supabaseEnv = {
+  STORAGE_PROVIDER: 'supabase',
+  SUPABASE_STORAGE_ENDPOINT: 'https://project.storage.supabase.co/storage/v1/s3',
+  SUPABASE_STORAGE_REGION: 'ap-southeast-2',
+  SUPABASE_STORAGE_BUCKET: 'synthetic-qa',
+  SUPABASE_STORAGE_ACCESS_KEY_ID: 'synthetic',
+  SUPABASE_STORAGE_SECRET_ACCESS_KEY: 'synthetic',
+};
 
 describe('Private file storage', () => {
   afterEach(() => jest.restoreAllMocks());
@@ -13,6 +21,7 @@ describe('Private file storage', () => {
   it.each([
     ['R2', env],
     ['S3', { STORAGE_PROVIDER: 's3', S3_BUCKET: 'synthetic-qa', AWS_REGION: 'ap-south-1', AWS_ACCESS_KEY_ID: 'synthetic', AWS_SECRET_ACCESS_KEY: 'synthetic' }],
+    ['Supabase', supabaseEnv],
   ])('writes and reads private %s objects with stable keys', async (_provider, settings) => {
     const objects = new Map<string, Buffer>();
     const send = jest.spyOn(S3Client.prototype, 'send').mockImplementation((async (command: any) => {
@@ -33,7 +42,9 @@ describe('Private file storage', () => {
 
   it('fails configuration validation instead of silently using temporary disk', () => {
     expect(() => createFileStorage({ STORAGE_PROVIDER: 'r2' })).toThrow('R2 storage requires');
-    expect(() => createFileStorage({ STORAGE_PROVIDER: 'other' })).toThrow('STORAGE_PROVIDER');
+    expect(() => createFileStorage({ STORAGE_PROVIDER: 'supabase' })).toThrow('Supabase storage requires');
+    expect(() => createFileStorage({ ...supabaseEnv, SUPABASE_STORAGE_ENDPOINT: 'http://project.storage.supabase.co/storage/v1/s3' })).toThrow('valid HTTPS S3 endpoint');
+    expect(() => createFileStorage({ STORAGE_PROVIDER: 'other' })).toThrow('local, r2, s3 or supabase');
     expect(() => createFileStorage({ STORAGE_PROVIDER: 's3' })).toThrow('S3 storage requires');
     expect(() => createFileStorage({ STORAGE_PROVIDER: 's3', S3_BUCKET: 'synthetic', AWS_REGION: 'ap-south-1', AWS_ACCESS_KEY_ID: 'incomplete' })).toThrow('Set both');
   });
