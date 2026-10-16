@@ -40,19 +40,19 @@ export function extractResumeFields(rawText: string): ResumeFields {
   });
 
   const qualification = firstMatch(text, [
-    /(?:qualification|highest education|degree)\s*[:\-]\s*([^\n]{2,100})/i,
-    /(?:education)\s*[:\-]\s*([^\n]{2,100})/i,
+    /(?:qualification|highest education|degree)\s*[:-]\s*([^\n]{2,100})/i,
+    /(?:education)\s*[:-]\s*([^\n]{2,100})/i,
   ]) || lines.find((line) => /\b(B\.?Tech|M\.?Tech|B\.?E\.?|M\.?B\.?A\.?|B\.?Sc|M\.?Sc|BCA|MCA|Bachelor|Master|Diploma|Ph\.D)\b/i.test(line));
   const experienceValue = firstMatch(text, [
-    /(?:total\s+)?(?:experience|work experience)\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*\+?\s*(?:years?|yrs?)/i,
+    /(?:total\s+)?(?:experience|work experience)\s*[:-]?\s*(\d+(?:\.\d+)?)\s*\+?\s*(?:years?|yrs?)/i,
     /(\d+(?:\.\d+)?)\s*\+?\s*(?:years?|yrs?)\s+(?:of\s+)?experience/i,
   ]);
   const currentCompany = firstMatch(text, [
-    /(?:current company|currently working at|employer)\s*[:\-]\s*([^\n]{2,100})/i,
+    /(?:current company|currently working at|employer)\s*[:-]\s*([^\n]{2,100})/i,
   ]);
   const noticePeriod = firstMatch(text, [
-    /(?:notice period|availability)\s*[:\-]\s*(\d+)\s*days?/i,
-    /(?:notice period|availability)\s*[:\-]\s*(immediate)/i,
+    /(?:notice period|availability)\s*[:-]\s*(\d+)\s*days?/i,
+    /(?:notice period|availability)\s*[:-]\s*(immediate)/i,
   ]);
 
   return {

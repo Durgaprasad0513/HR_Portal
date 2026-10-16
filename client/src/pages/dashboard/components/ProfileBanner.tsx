@@ -1,3 +1,4 @@
+import { profilePhotoUrl as resolveProfilePhotoUrl } from '@/utils/profilePhotoUrl';
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +36,7 @@ export function ProfileBanner() {
       <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-6">
         <div className="w-20 h-20 rounded-full bg-slate-200 overflow-hidden shrink-0 border-4 border-white shadow-sm flex items-center justify-center text-3xl font-bold text-slate-500">
           {employee?.profilePhoto ? (
-            <img src={employee.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+            <img src={resolveProfilePhotoUrl(employee.profilePhoto)} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             firstName.charAt(0)
           )}

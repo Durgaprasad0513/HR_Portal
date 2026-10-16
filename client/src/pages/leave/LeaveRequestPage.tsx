@@ -1,3 +1,4 @@
+import { profilePhotoUrl as resolveProfilePhotoUrl } from '@/utils/profilePhotoUrl';
 import { formatDate } from '@/utils/dateFormat';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -118,7 +119,7 @@ export default function LeaveRequestPage() {
  <td className="py-4 px-6">
  <div className="flex items-center gap-3">
  {leave.employee?.profilePhoto ? (
- <img src={leave.employee.profilePhoto} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+ <img src={resolveProfilePhotoUrl(leave.employee.profilePhoto)} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
  ) : (
  <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">
  {leave.employee?.firstName?.[0] || ''}{leave.employee?.lastName?.[0] || ''}
