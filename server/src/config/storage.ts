@@ -36,10 +36,10 @@ export function imageContentType(bytes: Buffer): string | undefined {
 
 export function createFileStorage(env: NodeJS.ProcessEnv, injectedClient?: S3Client) {
   const provider = env.STORAGE_PROVIDER || 'local';
-  if (!['local', 'r2', 's3'].includes(provider)) throw new Error('STORAGE_PROVIDER must be local, r2 or s3.');
+  if (!['local', 'r2', 's3', 'supabase'].includes(provider)) throw new Error('STORAGE_PROVIDER must be local, r2, s3 or supabase.');
   const directory = path.resolve(env.UPLOAD_DIR || 'uploads');
   let client: S3Client | undefined;
-  const bucket = provider === 's3' ? env.S3_BUCKET : env.R2_BUCKET;
+  const bucket = provider === 's3' ? env.S3_BUCKET : provider === 'supabase' ? env.SUPABASE_STORAGE_BUCKET : env.R2_BUCKET;
   if (provider === 'r2') {
     if (!/^[a-f0-9]{32}$/.test(env.R2_ACCOUNT_ID || '') || !bucket || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY) {
       throw new Error('R2 storage requires a valid R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY.');
@@ -60,6 +60,24 @@ export function createFileStorage(env: NodeJS.ProcessEnv, injectedClient?: S3Cli
         accessKeyId: env.AWS_ACCESS_KEY_ID, secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
         ...(env.AWS_SESSION_TOKEN ? { sessionToken: env.AWS_SESSION_TOKEN } : {}),
       } } : {}),
+    });
+  } else if (provider === 'supabase') {
+    const endpoint = env.SUPABASE_STORAGE_ENDPOINT;
+    const region = env.SUPABASE_STORAGE_REGION;
+    if (!endpoint || !bucket || !region || !env.SUPABASE_STORAGE_ACCESS_KEY_ID || !env.SUPABASE_STORAGE_SECRET_ACCESS_KEY) {
+      throw new Error('Supabase storage requires SUPABASE_STORAGE_ENDPOINT, SUPABASE_STORAGE_REGION, SUPABASE_STORAGE_BUCKET, SUPABASE_STORAGE_ACCESS_KEY_ID and SUPABASE_STORAGE_SECRET_ACCESS_KEY.');
+    }
+    let parsedEndpoint: URL;
+    try { parsedEndpoint = new URL(endpoint); } catch { throw new Error('SUPABASE_STORAGE_ENDPOINT must be a valid HTTPS S3 endpoint.'); }
+    if (parsedEndpoint.protocol !== 'https:' || parsedEndpoint.username || parsedEndpoint.password || parsedEndpoint.search || parsedEndpoint.hash) {
+      throw new Error('SUPABASE_STORAGE_ENDPOINT must be a valid HTTPS S3 endpoint without credentials or query parameters.');
+    }
+    client = injectedClient || new S3Client({
+      region,
+      endpoint: parsedEndpoint.toString().replace(/\/$/, ''),
+      forcePathStyle: true,
+      credentials: { accessKeyId: env.SUPABASE_STORAGE_ACCESS_KEY_ID, secretAccessKey: env.SUPABASE_STORAGE_SECRET_ACCESS_KEY },
+      requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED',
     });
   } else {
     fs.mkdirSync(directory, { recursive: true });

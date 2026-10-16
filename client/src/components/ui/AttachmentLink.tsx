@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import apiClient from '@/api/client';
 import toast from 'react-hot-toast';
+import { fileDownloadError } from '@/utils/fileDownloadError';
 
 type Props = React.AnchorHTMLAttributes<HTMLAnchorElement> & { module: 'travel' | 'expenses' | 'policies'; href: string };
 export function AttachmentLink({ module, href, children, onClick, ...props }: Props) {
@@ -27,7 +28,7 @@ export function AttachmentLink({ module, href, children, onClick, ...props }: Pr
       const link = document.createElement('a'); link.href = url; link.download = file!;
       document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch { toast.error('Unable to download this attachment. Check your access or try again.'); }
+    } catch (error) { toast.error(fileDownloadError(error as { response?: { status?: number } }, 'Unable to download this attachment. Please try again.')); }
     finally { setBusy(false); }
-  }}>{busy ? 'Downloading…' : children}</a>;
+  }}>{busy ? 'Downloadingâ€¦' : children}</a>;
 }

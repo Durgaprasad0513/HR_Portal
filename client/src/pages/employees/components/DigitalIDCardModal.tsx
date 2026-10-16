@@ -1,3 +1,4 @@
+import { profilePhotoUrl as resolveProfilePhotoUrl } from '@/utils/profilePhotoUrl';
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Employee } from '@/types';
@@ -37,7 +38,7 @@ export function DigitalIDCardModal({ isOpen, onClose, employee }: DigitalIDCardM
           <div className="flex flex-col items-center -mt-10 px-6 pb-6">
             <div className="relative">
               {employee.profilePhoto ? (
-                <img src={employee.profilePhoto} alt="Profile" className="w-24 h-24 rounded-[1.25rem] object-cover border-4 border-white dark:border-surface shadow-sm bg-slate-100" />
+                <img src={resolveProfilePhotoUrl(employee.profilePhoto)} alt="Profile" className="w-24 h-24 rounded-[1.25rem] object-cover border-4 border-white dark:border-surface shadow-sm bg-slate-100" />
               ) : (
                 <div className="w-24 h-24 rounded-[1.25rem] border-4 border-white dark:border-surface shadow-sm bg-brand-primary flex items-center justify-center text-white text-3xl font-bold">
                   {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}

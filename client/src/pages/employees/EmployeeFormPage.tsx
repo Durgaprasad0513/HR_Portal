@@ -1,3 +1,4 @@
+import { profilePhotoUrl as resolveProfilePhotoUrl } from '@/utils/profilePhotoUrl';
 import { formatDate, formatDateTime } from '@/utils/dateFormat';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -237,7 +238,7 @@ queryFn: () => employeesApi.getAllForAssignments(),
  <div className="relative">
  <div className="w-24 h-24 rounded-full border-4 border-slate-border dark:border-slate-border overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
  {profilePhotoUrl ? (
- <img src={profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+ <img src={resolveProfilePhotoUrl(profilePhotoUrl)} alt="Profile" className="w-full h-full object-cover" />
  ) : (
  <User className="w-12 h-12 text-slate-400" />
  )}

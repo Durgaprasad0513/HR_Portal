@@ -1,3 +1,4 @@
+import { profilePhotoUrl as resolveProfilePhotoUrl } from '@/utils/profilePhotoUrl';
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -279,7 +280,7 @@ export default function EmployeeListPage() {
  <td className="px-5 py-4">
  <div className="flex items-center gap-3">
  {emp.profilePhoto ? (
- <img src={emp.profilePhoto} alt="" className="h-10 w-10 rounded-full border border-slate-border object-cover " />
+ <img src={resolveProfilePhotoUrl(emp.profilePhoto)} alt="" className="h-10 w-10 rounded-full border border-slate-border object-cover " />
  ) : (
  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 font-semibold text-slate-600 bg-surface dark:text-slate-300">
  {emp.firstName?.[0]}{emp.lastName?.[0]}
@@ -326,7 +327,7 @@ export default function EmployeeListPage() {
  <div className="flex justify-between items-start">
  <div className="flex gap-2 xl:gap-4 items-center min-w-0">
  {emp.profilePhoto ? (
- <img src={emp.profilePhoto} alt={`${emp.firstName}`} className="w-12 h-12 rounded-full object-cover border border-slate-border flex-shrink-0" />
+ <img src={resolveProfilePhotoUrl(emp.profilePhoto)} alt={`${emp.firstName}`} className="w-12 h-12 rounded-full object-cover border border-slate-border flex-shrink-0" />
  ) : (
  <div className="w-12 h-12 rounded-full bg-surface flex items-center justify-center font-bold text-slate-500 flex-shrink-0">
  {emp.firstName?.[0]}{emp.lastName?.[0]}

@@ -1,3 +1,4 @@
+import { profilePhotoUrl as resolveProfilePhotoUrl } from '@/utils/profilePhotoUrl';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -189,7 +190,7 @@ export function Header({ onMenuClick, menuOpen = false, sidebarCollapsed = false
    >
      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold overflow-hidden ring-2 ring-white dark:ring-slate-800">
        {user?.employee?.profilePhoto ? (
-         <img src={user.employee.profilePhoto} alt="Profile" className="h-full w-full object-cover" />
+         <img src={resolveProfilePhotoUrl(user.employee.profilePhoto)} alt="Profile" className="h-full w-full object-cover" />
        ) : (
          user?.email?.[0].toUpperCase()
        )}

@@ -1,3 +1,4 @@
+import { profilePhotoUrl as resolveProfilePhotoUrl } from '@/utils/profilePhotoUrl';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,6 +18,7 @@ import { DigitalIDCardModal } from './components/DigitalIDCardModal';
 import { hasAdminAccess } from '@/utils/roles';
 import { usePermissions } from '@/hooks/usePermissions';
 import toast from 'react-hot-toast';
+import { fileDownloadError } from '@/utils/fileDownloadError';
 
 function DetailBlock({ label, value }: { label: string, value: React.ReactNode }) {
   return (
@@ -76,7 +78,7 @@ export default function EmployeeDetailPage() {
       const url = URL.createObjectURL(blob);
       setDocumentPreview({ name: doc.documentName, url, type: blob.type || 'application/octet-stream' });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Unable to open this document. It may need to be uploaded again.');
+      toast.error(fileDownloadError(error, 'Unable to open this document. It may need to be uploaded again.'));
     } finally {
       setOpeningDocumentId(null);
     }
@@ -107,7 +109,7 @@ export default function EmployeeDetailPage() {
       <div className="bg-[#11112B] dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 shadow-lg relative overflow-hidden flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start text-white">
         <div className="h-32 w-32 shrink-0 rounded-[1.5rem] overflow-hidden border-4 border-white/10 bg-slate-800 flex items-center justify-center text-4xl font-bold">
           {emp.profilePhoto ? (
-            <img src={emp.profilePhoto} alt={emp.firstName} className="h-full w-full object-cover" />
+            <img src={resolveProfilePhotoUrl(emp.profilePhoto)} alt={emp.firstName} className="h-full w-full object-cover" />
           ) : (
             <span>{emp.firstName?.[0]}{emp.lastName?.[0]}</span>
           )}
