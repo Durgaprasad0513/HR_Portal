@@ -112,18 +112,18 @@ suite('Portal readiness: role boundaries and complete module journeys', () => {
     } finally { fs.unlinkSync(path.join(uploadsDirectory,filename)); }
   });
   it('supports travel creation, approval, own expense submission and settlement with numeric totals',async()=>{
-    const travel=succeeds(await call('EMPLOYEE','post','/travel',{travelPurpose:'Synthetic QA journey',destination:'QA Office',startDate:'2030-01-07',endDate:'2030-01-08',travelMode:'TRAIN',advanceRequested:100}));
+    const travel=succeeds(await call('EMPLOYEE','post','/travel',{travelPurpose:'Synthetic QA journey',destination:'QA Office',startDate:'2030-01-07',endDate:'2030-01-08',travelMode:'TRAIN',amountRequired:100}));
     expect((await call('OTHER','get',`/travel/${travel.id}`)).status).toBe(404);
     const approved=succeeds(await call('HR','put',`/travel/${travel.id}/approve`,{approvalStatus:'APPROVED',advanceApproved:100}));
     expect(approved.approverId).toBe(employeeIds.HR);
-    succeeds(await call('EMPLOYEE','put',`/travel/${travel.id}/expenses`,{hotelExpense:100.1,foodAllowance:50.2,localConveyance:30,otherExpenses:20}));
+    succeeds(await call('EMPLOYEE','put',`/travel/${travel.id}/expenses`,{hotelExpense:100,foodAllowance:50,localConveyance:30,otherExpenses:20}));
     const settled=succeeds(await call('ADMIN','put',`/travel/${travel.id}/settle`,{}));
-    expect(Number(settled.totalExpenseClaimed)).toBe(200.3); expect(Number(settled.amountPayable)).toBe(100.3);
+    expect(Number(settled.totalExpenseClaimed)).toBe(200); expect(Number(settled.amountPayable)).toBe(100);
     expect(settled.verifiedById).toBe(userIds.ADMIN);
     expect((await call('EMPLOYEE','put',`/travel/${travel.id}/expenses`,{hotelExpense:1,foodAllowance:1,localConveyance:1,otherExpenses:1})).status).toBeGreaterThanOrEqual(400);
   });
   it('prevents settling travel before approval',async()=>{
-    const travel=succeeds(await call('OTHER','post','/travel',{travelPurpose:'Pending QA',destination:'QA',startDate:'2030-02-04',endDate:'2030-02-05',travelMode:'ROAD'}));
+    const travel=succeeds(await call('OTHER','post','/travel',{travelPurpose:'Pending QA',destination:'QA',startDate:'2030-02-04',endDate:'2030-02-05',travelMode:'ROAD',amountRequired:1}));
     expect((await call('HR','put',`/travel/${travel.id}/settle`,{hotelExpense:100})).status).toBe(400);
   });
   it('supports office expense approval and payment, rejecting payment before approval',async()=>{
