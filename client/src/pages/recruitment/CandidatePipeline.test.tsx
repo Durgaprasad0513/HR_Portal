@@ -7,6 +7,7 @@ import { CandidateStageControls } from "./CandidateStageControls";
 
 vi.mock("@/api/recruitment", () => ({ recruitmentApi: {
   getPipeline: vi.fn(async () => ({ data: { columns: [{ stage: "TELEPHONIC", total: 104, items: [{ id: "qa", candidateName: "QA Candidate", requisitionId: "opening", currentStage: "TELEPHONIC", requisition: { positionTitle: "Developer" } }] }] } })),
+  getCandidateRegister: vi.fn(async () => ({ data: { total: 1, items: [{ id: "qa", candidateName: "QA Candidate", requisitionId: "opening", currentStage: "TELEPHONIC", screeningStatus: "SHORTLISTED", qualification: "B.Tech", totalExperience: 2, requisition: { positionTitle: "Developer" } }] } })),
   moveCandidateStage: vi.fn(),
 } }));
 
@@ -33,6 +34,13 @@ describe("pipeline access and complete counts", () => {
     render(wrapper(<CandidatePipeline requisitions={[]} deleteAllowed onDeleteCandidate={remove} />));
     fireEvent.click(await screen.findByRole("button", { name: "Delete QA Candidate" }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: "qa", candidateName: "QA Candidate" }));
+  });
+  it("shows shortlisted applicants in a dedicated grid", async () => {
+    render(wrapper(<CandidatePipeline requisitions={[]} />));
+    fireEvent.click(await screen.findByRole("button", { name: "Shortlist" }));
+    expect(await screen.findByRole("table")).toBeInTheDocument();
+    expect(screen.getByText("B.Tech")).toBeInTheDocument();
+    expect(screen.getByText("Shortlisted")).toBeInTheDocument();
   });
 });
 
