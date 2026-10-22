@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { CANDIDATE_STAGES, candidateNextAction, stageAge } from "./pipelineModel";
+import { Trash2 } from "lucide-react";
 
-export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
+export function CandidatePipeline({ requisitions, deleteAllowed = false, onDeleteCandidate }: { requisitions: any[]; deleteAllowed?: boolean; onDeleteCandidate?: (candidate: any) => void }) {
   const [params, setParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pages, setPages] = useState<Record<string, number>>({});
@@ -55,7 +56,8 @@ export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
                     const age = stageAge(candidate.stageEnteredAt);
                     const next = candidate.interviews?.find((item: any) => item.status === "SCHEDULED" && item.round === candidate.currentStage);
                     return (
-                      <Link key={candidate.id} to={`/recruitment?tab=pipeline&q=${encodeURIComponent(search)}&opening=${encodeURIComponent(requisitionId)}&reqId=${encodeURIComponent(candidate.requisitionId)}&candidateId=${encodeURIComponent(candidate.id)}&viewStage=${encodeURIComponent(candidate.currentStage || mobileStage)}`} className="block rounded-md border border-slate-border bg-surface p-3 shadow-sm transition hover:border-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500">
+                      <article key={candidate.id} className="rounded-md border border-slate-border bg-surface p-3 shadow-sm transition hover:border-primary-500">
+                      <Link to={`/recruitment?tab=pipeline&q=${encodeURIComponent(search)}&opening=${encodeURIComponent(requisitionId)}&reqId=${encodeURIComponent(candidate.requisitionId)}&candidateId=${encodeURIComponent(candidate.id)}&viewStage=${encodeURIComponent(candidate.currentStage || mobileStage)}`} className="block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500">
                         <div className="flex items-start justify-between gap-2">
                           <h3 className="break-words font-medium text-text-heading">{candidate.candidateName}</h3>
                         </div>
@@ -64,6 +66,8 @@ export function CandidatePipeline({ requisitions }: { requisitions: any[] }) {
                         {next && <p className="mt-2 text-xs text-text-muted">{new Date(next.startsAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} · Asia/Kolkata<br />{next.interviewer ? `${next.interviewer.firstName} ${next.interviewer.lastName}` : "Interviewer unassigned"}</p>}
                         <p className="mt-2 text-[11px] text-text-muted">{age === null ? "Stage age unavailable" : `${age} ${age === 1 ? "day" : "days"} in stage`}</p>
                       </Link>
+                      {deleteAllowed && <div className="mt-2 flex justify-end border-t border-slate-border pt-2"><Button size="sm" variant="ghost" className="text-status-danger hover:text-status-danger" aria-label={`Delete ${candidate.candidateName}`} onClick={() => onDeleteCandidate?.(candidate)}><Trash2 aria-hidden="true" className="mr-1 h-3.5 w-3.5" />Delete candidate</Button></div>}
+                      </article>
                     );
                   })}
                   {!column?.items?.length && <p className="py-8 text-center text-sm text-text-muted">No candidates</p>}

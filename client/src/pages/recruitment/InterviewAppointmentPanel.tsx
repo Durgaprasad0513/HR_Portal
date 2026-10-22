@@ -30,7 +30,7 @@ export function InterviewAppointmentPanel({ interview, editable, onReschedule, s
     <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-semibold">{stageLabel(interview.round)}</h4><span className="rounded-md bg-tint px-2 py-1 text-xs font-medium capitalize">{readable(interview.status)}</span></div>
     {showAppointmentDetails && <dl className="grid gap-3 text-sm sm:grid-cols-2">
       <div><dt className="text-xs text-text-muted">Date and time · Asia/Kolkata</dt><dd className="mt-1">{new Date(interview.startsAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</dd></div>
-      <div><dt className="text-xs text-text-muted">Interviewer</dt><dd className="mt-1">{interview.interviewer ? `${interview.interviewer.firstName} ${interview.interviewer.lastName}` : "Not assigned"}</dd></div>
+      <div><dt className="text-xs text-text-muted">Interviewer for this round</dt><dd className="mt-1">{interview.interviewer ? `${interview.interviewer.firstName} ${interview.interviewer.lastName}` : "Not assigned"}</dd></div>
       <div className="sm:col-span-2"><dt className="text-xs text-text-muted">Format and location</dt><dd className="mt-1 break-words capitalize">{readable(interview.mode || "IN_PERSON")} · {interview.location || "Not provided"}</dd></div>
     </dl>}
     <PreviousRoundFeedback value={interview.previousRoundFeedback} />

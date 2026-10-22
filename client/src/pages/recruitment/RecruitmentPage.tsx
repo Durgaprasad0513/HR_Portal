@@ -17,6 +17,7 @@ import {
   Download,
   CheckCircle2,
   Upload,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ScheduleInterviewModal } from "@/pages/dashboard/components/ScheduleInterviewModal";
@@ -43,7 +44,7 @@ export default function RecruitmentPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const { canExport, canEdit, canAdd, canViewRestricted } = usePermissions();
+  const { canExport, canEdit, canAdd, canDelete, canViewRestricted } = usePermissions();
 
   const [isReqModalOpen, setIsReqModalOpen] = useState(false);
   const [selectedReq, setSelectedReq] = useState<any>(null);
@@ -60,6 +61,7 @@ export default function RecruitmentPage() {
   const [scheduleCandidate, setScheduleCandidate] = useState<any>(null);
   const [reviewStage, setReviewStage] = useState("TELEPHONIC");
   const [joiningOutcome, setJoiningOutcome] = useState("PENDING");
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "candidate" | "requisition"; record: any } | null>(null);
   React.useEffect(() => {
     const next = normalizeRecruitmentSearch(searchParams);
     const tab = next.get("tab") || "openings";
@@ -202,6 +204,23 @@ export default function RecruitmentPage() {
     },
     onError: (error: any) =>
       toast.error(error?.response?.data?.message || "Could not update opening"),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: ({ type, record }: { type: "candidate" | "requisition"; record: any }) =>
+      type === "candidate" ? recruitmentApi.deleteCandidate(record.id) as Promise<any> : recruitmentApi.deleteRequisition(record.id) as Promise<any>,
+    onSuccess: (_response, variables) => {
+      ["requisitions", "candidates", "candidate-register", "candidate-pipeline", "interviews", "dashboard-stats"].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+      setDeleteTarget(null);
+      if (variables.type === "candidate") {
+        const openingId = variables.record.requisitionId || selectedReq?.id;
+        navigate(`/recruitment?tab=pipeline&opening=${encodeURIComponent(openingId || "")}&viewStage=${encodeURIComponent(variables.record.currentStage || "TELEPHONIC")}`);
+      } else {
+        setSelectedReq(null);
+        navigate("/recruitment?tab=openings");
+      }
+      toast.success(variables.type === "candidate" ? "Candidate deleted" : "Opening and its applicants deleted");
+    },
+    onError: (error: any) => toast.error(error?.response?.data?.message || "Could not delete record"),
   });
   const applicationMutation = useMutation({
     mutationFn: (payload: any) => recruitmentApi.createCandidate(payload),
@@ -393,6 +412,11 @@ export default function RecruitmentPage() {
               {canExport("recruitment") && (
                 <Button variant="outline" onClick={handleExportCandidates}>
                   <Download className="w-4 h-4 mr-2" /> Export Register
+                </Button>
+              )}
+              {routeCandidate && canDelete("recruitment") && (
+                <Button variant="danger" onClick={() => setDeleteTarget({ type: "candidate", record: routeCandidate })}>
+                  <Trash2 className="w-4 h-4 mr-2" /> Delete candidate
                 </Button>
               )}
             </div>
@@ -744,7 +768,7 @@ export default function RecruitmentPage() {
               ))}
             </nav>}
             {activeTab === "pipeline" ? (
-              <CandidatePipeline requisitions={data} />
+              <CandidatePipeline requisitions={data} deleteAllowed={canDelete("recruitment")} onDeleteCandidate={(candidate) => setDeleteTarget({ type: "candidate", record: candidate })} />
             ) : (
               <JobPositions
                 requisitions={visibleRequisitions}
@@ -755,6 +779,8 @@ export default function RecruitmentPage() {
                   setClosureReason("");
                   setClosureRequest({ id: opening.id, status: ["CLOSED", "JOINED_REJECTED"].includes(opening.status) ? "REQUIREMENT" : "CLOSED" });
                 }}
+                deleteAllowed={canDelete("recruitment")}
+                onDelete={(opening) => setDeleteTarget({ type: "requisition", record: opening })}
               />
             )}
           </>
@@ -842,6 +868,26 @@ export default function RecruitmentPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
+        title={deleteTarget?.type === "candidate" ? "Delete candidate" : "Delete recruitment opening"}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-body">
+            {deleteTarget?.type === "candidate" ? (
+              <>Permanently delete <strong>{deleteTarget.record.candidateName}</strong>? Their interview appointments, feedback, and stage history will also be removed.</>
+            ) : (
+              <>Permanently delete <strong>{deleteTarget?.record.positionTitle}</strong> and its {deleteTarget?.record._count?.candidates ?? deleteTarget?.record.candidateCount ?? 0} applicant(s)? Their interview appointments, feedback, and stage history will also be removed.</>
+            )}
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" disabled={deleteMutation.isPending} onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="danger" isLoading={deleteMutation.isPending} onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget)}><Trash2 className="mr-2 h-4 w-4" />Delete permanently</Button>
+          </div>
+        </div>
       </Modal>
 
       <Modal

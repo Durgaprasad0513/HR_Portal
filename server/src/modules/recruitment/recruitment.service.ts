@@ -124,6 +124,66 @@ export class RecruitmentService {
     }
   }
 
+  private async assertRequisitionAccess(requisitionId: string, userId: string) {
+    const [user, requisition] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId } }),
+      prisma.requisition.findUnique({ where: { id: requisitionId } }),
+    ]);
+    if (!user || !requisition) throw new Error("Requisition not found.");
+    const scope = getModuleScope(user.role, "recruitment");
+    if (scope === "ORG") return;
+    if (!user.employeeId) throw new Error("Unauthorized to access this opening.");
+    if (scope === "SELF" && requisition.raisedById !== user.employeeId) throw new Error("Unauthorized to access this opening.");
+    if (scope === "TEAM") {
+      const employee = await prisma.employee.findUnique({ where: { id: user.employeeId }, select: { departmentId: true } });
+      if (!employee?.departmentId || requisition.departmentId !== employee.departmentId) throw new Error("Unauthorized to access this opening.");
+    }
+  }
+
+  async deleteCandidate(candidateId: string, userId: string, reqContext: { ipAddress?: string } = {}) {
+    await this.assertCandidateAccess(candidateId, userId);
+    return prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "candidates" WHERE "id" = ${candidateId} FOR UPDATE`;
+      const candidate = await tx.candidate.findUnique({ where: { id: candidateId }, include: { requisition: { select: { positionTitle: true } } } });
+      if (!candidate) throw new Error("Candidate not found.");
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: "DELETE_CANDIDATE",
+          moduleAffected: "recruitment",
+          recordIdAffected: candidate.id,
+          userId,
+          ipAddress: reqContext.ipAddress,
+          oldValue: JSON.stringify({ candidateName: candidate.candidateName, requisitionId: candidate.requisitionId, positionTitle: candidate.requisition.positionTitle }),
+        },
+      });
+      await tx.candidate.delete({ where: { id: candidate.id } });
+      return { id: candidate.id, requisitionId: candidate.requisitionId, candidateName: candidate.candidateName };
+    });
+  }
+
+  async deleteRequisition(requisitionId: string, userId: string, reqContext: { ipAddress?: string } = {}) {
+    await this.assertRequisitionAccess(requisitionId, userId);
+    return prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "requisitions" WHERE "id" = ${requisitionId} FOR UPDATE`;
+      const requisition = await tx.requisition.findUnique({ where: { id: requisitionId }, include: { _count: { select: { candidates: true } } } });
+      if (!requisition) throw new Error("Requisition not found.");
+      const candidateCount = requisition._count.candidates;
+      await tx.auditLog.create({
+        data: {
+          actionPerformed: "DELETE_REQUISITION",
+          moduleAffected: "recruitment",
+          recordIdAffected: requisition.id,
+          userId,
+          ipAddress: reqContext.ipAddress,
+          oldValue: JSON.stringify({ positionTitle: requisition.positionTitle, candidateCount }),
+        },
+      });
+      await tx.candidate.deleteMany({ where: { requisitionId: requisition.id } });
+      await tx.requisition.delete({ where: { id: requisition.id } });
+      return { id: requisition.id, candidateCount, positionTitle: requisition.positionTitle };
+    });
+  }
+
   private async closeFilledRequisition(
     tx: Prisma.TransactionClient,
     requisitionId: string,

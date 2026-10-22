@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CandidatePipeline } from "./CandidatePipeline";
@@ -27,6 +27,12 @@ describe("pipeline access and complete counts", () => {
     render(wrapper(<CandidateStageControls editable={false} candidate={{ id: "qa", currentStage: "TELEPHONIC", stageHistory: [{ id: "event", fromStage: "SCREENING", toStage: "TELEPHONIC", reason: "Shortlist reviewed", createdAt: "2026-10-12T09:00:00Z" }] }} />));
     expect(screen.queryByRole("button", { name: "Move stage" })).toBeNull();
     expect(screen.getByText("Shortlist reviewed")).toBeInTheDocument();
+  });
+  it("offers candidate deletion when permission is granted", async () => {
+    const remove = vi.fn();
+    render(wrapper(<CandidatePipeline requisitions={[]} deleteAllowed onDeleteCandidate={remove} />));
+    fireEvent.click(await screen.findByRole("button", { name: "Delete QA Candidate" }));
+    expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: "qa", candidateName: "QA Candidate" }));
   });
 });
 
